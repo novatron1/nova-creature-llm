@@ -1,1 +1,8 @@
 {"lesson_id": "test", "question_type": "recall", "question": "Q", "score": 0.9, "passed": true, "timestamp": "2026-06-18T23:29:36.243511"}
+{"lesson_id": "ls_20260618_dc06", "question_type": "direct_recall", "question": "What is the claim about nova?", "score": 0.8, "passed": true, "timestamp": "2026-06-18T23:54:03.403441"}
+{"lesson_id": "ls_20260618_dc06", "question_type": "reverse", "question": "Can you explain nova in your own words?", "score": 0.8, "passed": true, "timestamp": "2026-06-18T23:54:03.403441"}
+{"lesson_id": "test", "question_type": "recall", "question": "Q", "score": 0.9, "passed": true, "timestamp": "2026-06-18T23:54:13.541043"}
+{"lesson_id": "test", "question_type": "recall", "question": "Q", "score": 0.9, "passed": true, "timestamp": "2026-06-18T23:54:23.534402"}
+{"lesson_id": "ls_20260618_8c5c", "question_type": "direct_recall", "question": "What is the claim about nova?", "score": 0.8, "passed": true, "timestamp": "2026-06-18T23:54:23.741066"}
+{"lesson_id": "ls_20260618_8c5c", "question_type": "reverse", "question": "Can you explain nova in your own words?", "score": 0.8, "passed": true, "timestamp": "2026-06-18T23:54:23.741066"}
+{"lesson_id": "test", "question_type": "recall", "question": "Q", "score": 0.9, "passed": true, "timestamp": "2026-06-18T23:54:23.870466"}
