@@ -1,0 +1,76 @@
+{
+  "routes_by_task_type": {
+    "math": [
+      {
+        "primary": "left_hemisphere",
+        "frequency": 0.95
+      }
+    ],
+    "science": [
+      {
+        "primary": "memory_transformer",
+        "frequency": 0.8
+      },
+      {
+        "secondary": "critic_conscience_transformer",
+        "frequency": 0.6
+      }
+    ],
+    "unknown": [
+      {
+        "primary": "critic_conscience_transformer",
+        "frequency": 0.9
+      }
+    ],
+    "coding": [
+      {
+        "primary": "left_hemisphere",
+        "frequency": 0.85
+      },
+      {
+        "secondary": "planner_transformer",
+        "frequency": 0.7
+      }
+    ],
+    "memory": [
+      {
+        "primary": "memory_transformer",
+        "frequency": 0.95
+      }
+    ],
+    "people": [
+      {
+        "primary": "memory_transformer",
+        "frequency": 0.85
+      }
+    ],
+    "planning": [
+      {
+        "primary": "planner_transformer",
+        "frequency": 0.9
+      }
+    ]
+  },
+  "most_used_roles": [
+    {
+      "role": "left_hemisphere",
+      "total": 245
+    },
+    {
+      "role": "memory_transformer",
+      "total": 210
+    },
+    {
+      "role": "critic_conscience_transformer",
+      "total": 180
+    }
+  ],
+  "strongest_chains": [
+    "left->planner->critic->speech",
+    "memory->critic->speech"
+  ],
+  "failed_chains": [],
+  "new_chains": [
+    "physics->left->critic->right->speech"
+  ]
+}

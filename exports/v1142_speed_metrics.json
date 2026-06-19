@@ -1,0 +1,8 @@
+{
+  "average_ms": 85,
+  "by_category": {
+    "coding": 120,
+    "math": 25,
+    "memory": 35
+  }
+}

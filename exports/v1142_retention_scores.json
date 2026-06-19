@@ -1,0 +1,8 @@
+{
+  "overall": 0.89,
+  "by_domain": {
+    "coding": 0.94,
+    "math": 0.96,
+    "memory": 0.91
+  }
+}

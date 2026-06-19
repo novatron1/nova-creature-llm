@@ -1,0 +1,22 @@
+{
+  "domain": "coding",
+  "questions": [
+    {
+      "q": "Fix this Python: print('hello'",
+      "type": "syntax",
+      "expected": "missing closing paren"
+    },
+    {
+      "q": "What does import os do?",
+      "type": "knowledge",
+      "expected": "os module import"
+    },
+    {
+      "q": "Fix: if x = 5:",
+      "type": "syntax",
+      "expected": "use == not ="
+    }
+  ],
+  "count": 3,
+  "created_at": "2026-06-19T00:54:43.981957"
+}

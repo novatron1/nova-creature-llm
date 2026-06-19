@@ -1,0 +1,17 @@
+{
+  "domain": "math",
+  "questions": [
+    {
+      "q": "What is 12 * 12?",
+      "type": "arithmetic",
+      "expected": "144"
+    },
+    {
+      "q": "Solve: 2x + 3 = 11",
+      "type": "algebra",
+      "expected": "x = 4"
+    }
+  ],
+  "count": 2,
+  "created_at": "2026-06-19T00:54:43.982682"
+}
