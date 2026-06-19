@@ -1,0 +1,15 @@
+{
+  "version": "v284_test_generator",
+  "created_at": "2026-06-18T12:51:16.225483",
+  "tests": [
+    {
+      "name": "test_app",
+      "type": "unit"
+    },
+    {
+      "name": "test_api",
+      "type": "integration"
+    }
+  ],
+  "sandbox": true
+}

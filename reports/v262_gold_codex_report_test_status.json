@@ -1,0 +1,12 @@
+{
+  "version": "v262_codex_report_parser",
+  "created_at": "2026-06-18T12:49:50.228747",
+  "project": "Nova Creature",
+  "versions": [
+    "v095",
+    "v059",
+    "v061"
+  ],
+  "pass_fail": "pass",
+  "next_step": "vision expansion"
+}

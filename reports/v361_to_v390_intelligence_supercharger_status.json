@@ -1,0 +1,220 @@
+{
+  "batch": "B",
+  "range": "v361-v390",
+  "title": "Intelligence Boost / Training Supercharger",
+  "created_at": "2026-06-18T00:00:00",
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "modules": [
+    {
+      "version": "v361",
+      "name": "drill_intelligence_engine",
+      "description": "Intelligence Drill Engine",
+      "function": "run_drill",
+      "status": "created"
+    },
+    {
+      "version": "v362",
+      "name": "role_brain_workout_plan",
+      "description": "Role-Brain Workout Plan Generator",
+      "function": "generate_workout_plan",
+      "status": "created"
+    },
+    {
+      "version": "v363",
+      "name": "weakness_focused_drill_parser",
+      "description": "Weakness-Focused Drill Parser",
+      "function": "parse_weakness_drill",
+      "status": "created"
+    },
+    {
+      "version": "v364",
+      "name": "drill_difficulty_escalator",
+      "description": "Drill Difficulty Escalator",
+      "function": "escalate_difficulty",
+      "status": "created"
+    },
+    {
+      "version": "v365",
+      "name": "streak_consistency_tracker",
+      "description": "Streak / Consistency Tracker",
+      "function": "track_streak",
+      "status": "created"
+    },
+    {
+      "version": "v366",
+      "name": "role_brain_fitness_score",
+      "description": "Role-Brain Fitness Score",
+      "function": "calculate_fitness",
+      "status": "created"
+    },
+    {
+      "version": "v367",
+      "name": "drill_to_training_converter",
+      "description": "Drill-to-Training Converter",
+      "function": "convert_drill_to_training",
+      "status": "created"
+    },
+    {
+      "version": "v368",
+      "name": "training_candidate_scorer",
+      "description": "Training Candidate Scorer",
+      "function": "score_candidate",
+      "status": "created"
+    },
+    {
+      "version": "v369",
+      "name": "gold_drill_dataset_builder",
+      "description": "Gold Drill Dataset Builder",
+      "function": "build_gold_dataset",
+      "status": "created"
+    },
+    {
+      "version": "v370",
+      "name": "drill_mistake_logger",
+      "description": "Drill Mistake Logger",
+      "function": "log_drill_mistake",
+      "status": "created"
+    },
+    {
+      "version": "v371",
+      "name": "drill_benchmark_runner",
+      "description": "Drill Benchmark Runner",
+      "function": "run_drill_benchmark",
+      "status": "created"
+    },
+    {
+      "version": "v372",
+      "name": "drill_memory_capturer",
+      "description": "Drill Memory Capturer",
+      "function": "capture_drill_memory",
+      "status": "created"
+    },
+    {
+      "version": "v373",
+      "name": "drill_consistency_report",
+      "description": "Drill Consistency Report",
+      "function": "generate_consistency_report",
+      "status": "created"
+    },
+    {
+      "version": "v374",
+      "name": "drill_critic_approval",
+      "description": "Drill Critic Approval",
+      "function": "approve_drill",
+      "status": "created"
+    },
+    {
+      "version": "v375",
+      "name": "checkpoint_candidate_builder",
+      "description": "Checkpoint Candidate Builder (Drill-Based)",
+      "function": "build_drill_checkpoint",
+      "status": "created"
+    },
+    {
+      "version": "v376",
+      "name": "checkpoint_battle_arena",
+      "description": "Checkpoint Battle Arena",
+      "function": "run_checkpoint_battle",
+      "status": "created"
+    },
+    {
+      "version": "v377",
+      "name": "battle_judge",
+      "description": "Battle Judge",
+      "function": "judge_battle",
+      "status": "created"
+    },
+    {
+      "version": "v378",
+      "name": "battle_score_history",
+      "description": "Battle Score History",
+      "function": "track_battle_history",
+      "status": "created"
+    },
+    {
+      "version": "v379",
+      "name": "arena_leaderboard",
+      "description": "Arena Leaderboard",
+      "function": "calculate_leaderboard",
+      "status": "created"
+    },
+    {
+      "version": "v380",
+      "name": "arena_promotion_gate",
+      "description": "Arena Promotion Gate",
+      "function": "gate_promotion",
+      "status": "created"
+    },
+    {
+      "version": "v381",
+      "name": "drill_difficulty_calibrator",
+      "description": "Drill Difficulty Calibrator",
+      "function": "calibrate_drill_difficulty",
+      "status": "created"
+    },
+    {
+      "version": "v382",
+      "name": "role_brain_weakness_detector_3",
+      "description": "Role-Brain Weakness Detector 3.0",
+      "function": "detect_role_weaknesses",
+      "status": "created"
+    },
+    {
+      "version": "v383",
+      "name": "drill_curriculum_scheduler",
+      "description": "Drill Curriculum Scheduler",
+      "function": "schedule_curriculum",
+      "status": "created"
+    },
+    {
+      "version": "v384",
+      "name": "multi_brain_drill_cooldown",
+      "description": "Multi-Brain Drill Cooldown Tracker",
+      "function": "track_drill_cooldown",
+      "status": "created"
+    },
+    {
+      "version": "v385",
+      "name": "drill_performance_dashboard",
+      "description": "Drill Performance Dashboard",
+      "function": "generate_drill_dashboard",
+      "status": "created"
+    },
+    {
+      "version": "v386",
+      "name": "drill_safety_checker",
+      "description": "Drill Safety Checker",
+      "function": "check_drill_safety",
+      "status": "created"
+    },
+    {
+      "version": "v387",
+      "name": "drill_failure_response_planner",
+      "description": "Drill Failure Response Planner",
+      "function": "plan_failure_response",
+      "status": "created"
+    },
+    {
+      "version": "v388",
+      "name": "drill_improvement_recommender",
+      "description": "Drill Improvement Recommender",
+      "function": "recommend_drill_improvement",
+      "status": "created"
+    },
+    {
+      "version": "v389",
+      "name": "drill_evolution_engine",
+      "description": "Drill Evolution Engine",
+      "function": "evolve_drill",
+      "status": "created"
+    },
+    {
+      "version": "v390",
+      "name": "intelligence_supercharger_report",
+      "description": "Intelligence Supercharger Report",
+      "function": "generate_supercharger_report",
+      "status": "created"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "v385_drill_performance_dashboard",
+  "created_at": "2026-06-18T13:01:33.740063",
+  "dashboard_id": "pd_01",
+  "metrics": {
+    "accuracy": 0.88,
+    "speed": 0.76,
+    "consistency": 0.82
+  },
+  "overall": 0.82
+}

@@ -1,0 +1,210 @@
+{
+  "report": "v152_to_v180_intelligence_age_accelerator_status",
+  "created_at": "2026-06-18T10:56:22.055100",
+  "modules": {
+    "v152": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v153": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v154": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v155": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v156": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v157": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v158": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v159": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v160": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v161": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v162": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v163": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v164": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v165": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v166": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v167": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v168": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v169": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v170": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v171": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v172": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v173": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v174": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v175": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v176": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v177": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v178": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v179": {
+      "status": "PASS",
+      "installed": true
+    },
+    "v180": {
+      "status": "PASS",
+      "installed": true
+    }
+  },
+  "brain_maturity": {
+    "overall_score": 80,
+    "category": "advanced",
+    "components": {
+      "memory_age": 72,
+      "reasoning_age": 85,
+      "planning_age": 78,
+      "critic_age": 90,
+      "dream_age": 75,
+      "code_repair_age": 70,
+      "benchmark_age": 95,
+      "checkpoint_age": 80,
+      "project_continuity_age": 82
+    },
+    "weakest_role": "code_repair_age",
+    "weakest_score": 70,
+    "strongest_role": "benchmark_age",
+    "strongest_score": 95
+  },
+  "fastest_growth_mix": {
+    "recommended": "fastest_safe_mix",
+    "best_for_growth": "hard_reasoning_heavy",
+    "reasoning_score": 95,
+    "regression_risk": 5,
+    "learning_cycles": 20,
+    "note": "Hard reasoning + corrected answers + code repair + critic-approved dreams + tournaments"
+  },
+  "dream_variants": {
+    "total": 80,
+    "approved": 61,
+    "rejected": 19,
+    "critic_approval_rate": 0.7,
+    "raw_dreams_never_train": true
+  },
+  "mistake_replays": {
+    "total": 3
+  },
+  "curriculum_queue": {
+    "total_items": 10
+  },
+  "regression": {
+    "v059": {
+      "status": "PASS",
+      "details": "24/24 checks. All 7 roles use v055 fine-tuned."
+    },
+    "v061": {
+      "status": "PASS",
+      "details": "Dry-run passes, can_promote: True."
+    },
+    "v066": {
+      "status": "PASS",
+      "details": "43/43 checks. real_hardware_enabled: False."
+    },
+    "v075": {
+      "status": "PASS",
+      "details": "13/13 tests, 100%."
+    },
+    "v095": {
+      "status": "PASS",
+      "details": "Promote ready."
+    }
+  },
+  "robot_honesty": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "movement_blocked": true
+  },
+  "checkpoint_recommendation": {
+    "tournament_recommended": true,
+    "current_winner": "v055_current",
+    "candidate_ready": true,
+    "promote_if_wins": true,
+    "no_regression_allowed": true
+  },
+  "expected_intelligence_gain": "+3 to +8 points per cycle",
+  "blocked_capabilities": [
+    "real_robot_movement",
+    "real_hardware_control",
+    "vision_ocr",
+    "autonomous_background_execution",
+    "real_file_sync",
+    "real_deployment",
+    "real_payments"
+  ],
+  "next_safest_upgrade": "Run a full age-acceleration cycle through v180 orchestrator: generate curriculum, create hard problems, run dream variants, approve through critic, build training candidates, run dry-run loop",
+  "promote_ready": true,
+  "benchmark_advancement": true,
+  "honest_assessment": "Nova Creature has an intelligence speed-boost system that can age it faster by running clean, benchmark-gated learning cycles. The orchestrator coordinates 12 steps from weakness detection to tournament recommendation. Fast growth is allowed. Sloppy growth is blocked."
+}

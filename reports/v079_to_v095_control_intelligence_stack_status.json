@@ -1,0 +1,146 @@
+{
+  "version": "v079_to_v095_control_intelligence_stack_status",
+  "created_at": "2026-06-18T09:06:56.405447",
+  "v079_local_cloud_sync": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "local_access": false,
+    "cloud_stack_versions": 22
+  },
+  "v081_brain_organ_council": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_test_passed": true,
+    "roles": 7,
+    "blocks_real_movement": true
+  },
+  "v082_long_term_roadmap": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "completed": 22,
+    "active": 16,
+    "future_blocks": 3
+  },
+  "v083_capability_aware_response": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_test_passed": true,
+    "robot_honest": true,
+    "scripts_sandboxed": true,
+    "sync_plan_only": true
+  },
+  "v084_owner_approval_console": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "categories": 8,
+    "pending_items": 0,
+    "history_items": 1
+  },
+  "v085_full_system_health": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "organs_active": "7/7",
+    "movement_blocked": true,
+    "missing_capabilities": 6
+  },
+  "v086_reasoning_core": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true,
+    "problem_types": 11
+  },
+  "v087_multistep_planner": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v088_question_decomposer": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v089_evidence_checker": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v090_self_correction_loop": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v091_concept_builder": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v092_long_context_understanding": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v093_strategy_brain": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v094_debate_brain": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_passed": true
+  },
+  "v095_intelligence_benchmark_suite": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "benchmarks_run": true,
+    "score": "13/13 (100.0%)",
+    "all_critical_pass": true,
+    "promote_ready": true
+  },
+  "v059_regression": {
+    "all_7_roles_on_v055": true,
+    "all_24_checks_pass": true
+  },
+  "v061_regression": {
+    "dry_run_passed": true,
+    "can_promote": true
+  },
+  "v066_regression": {
+    "checker_passed": true,
+    "honestly_reports_robot_limits": true
+  },
+  "v075_dashboard_status": {
+    "score": "13/13 (100.0%)"
+  },
+  "v080_app_builder_status": {
+    "sandboxed": true,
+    "checker_passed": true
+  },
+  "intelligence_benchmark_score": "13/13 (100.0%)",
+  "critical_tests_passed": "10/10 (100.0%)",
+  "regressions": "none",
+  "improvements": [
+    "Local/cloud sync planning (v079)",
+    "Brain organ council blocks unsafe actions (v081)",
+    "Long-term roadmap with prerequisites and benchmark gates (v082)",
+    "Capability-aware responses grounded in reality (v083)",
+    "Owner approval console with 8 categories (v084)",
+    "Full system health report (v085)",
+    "Reasoning core with 11 problem types (v086)",
+    "Multi-step planning with safety rules (v087)",
+    "Question decomposition for messy queries (v088)",
+    "Evidence/speculation separation (v089)",
+    "Self-correction catches overclaiming (v090)",
+    "Concept builder from examples (v091)",
+    "Long-context timeline preservation (v092)",
+    "Strategy brain prioritizes intelligence over robot (v093)",
+    "Debate brain blocks unsafe movement (v094)",
+    "Intelligence benchmarks 13/13 passing (v095)"
+  ],
+  "robot_capability_honesty": "All systems consistently report real robot movement as blocked. Simulation-only enabled. Council, strategy, debate, evidence checker, self-correction, capability-aware response all block false robot claims.",
+  "local_cloud_sync_plan_status": "Plan created. No local access assumed. Reports listed for export. Checkpoints/memory/training require approval before sync.",
+  "owner_approval_console_status": "Console active. Submit/approve/reject/list. 8 categories. Pending and history tracked.",
+  "future_roadmap_stubs": "25 roadmaps created for v096-v120",
+  "next_safest_upgrade": "v096 \u2014 Screenshot/Visual Understanding Stream (requires screenshot input capability)",
+  "promote_ready": true
+}

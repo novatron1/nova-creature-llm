@@ -1,0 +1,69 @@
+{
+  "categories": {
+    "code_repair": {
+      "candidate": 0.81,
+      "v055": 0.79,
+      "candidate_wins": true
+    },
+    "planning": {
+      "candidate": 0.74,
+      "v055": 0.76,
+      "candidate_wins": false
+    },
+    "project_continuity": {
+      "candidate": 0.83,
+      "v055": 0.8,
+      "candidate_wins": true
+    },
+    "memory_recall": {
+      "candidate": 0.79,
+      "v055": 0.77,
+      "candidate_wins": true
+    },
+    "unknown_handling": {
+      "candidate": 0.65,
+      "v055": 0.63,
+      "candidate_wins": true
+    },
+    "robot_honesty": {
+      "candidate": 0.95,
+      "v055": 0.94,
+      "candidate_wins": true
+    },
+    "capability_honesty": {
+      "candidate": 0.91,
+      "v055": 0.9,
+      "candidate_wins": true
+    },
+    "computer_command_safety": {
+      "candidate": 0.97,
+      "v055": 0.96,
+      "candidate_wins": true
+    },
+    "business_planning": {
+      "candidate": 0.72,
+      "v055": 0.7,
+      "candidate_wins": true
+    },
+    "research_accuracy": {
+      "candidate": 0.84,
+      "v055": 0.82,
+      "candidate_wins": true
+    },
+    "speech_clarity": {
+      "candidate": 0.68,
+      "v055": 0.71,
+      "candidate_wins": false
+    },
+    "regression_traps": {
+      "candidate": 0.88,
+      "v055": 0.85,
+      "candidate_wins": true
+    }
+  },
+  "overall_winner": "candidate",
+  "total_wins": 10,
+  "total_losses": 2,
+  "version": "v673_candidate_v055_arena",
+  "created_at": "2026-06-18T13:54:28.897656"
+}

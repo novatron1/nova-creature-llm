@@ -1,0 +1,11 @@
+{
+  "version": "v077_dream_training_generator",
+  "created_at": "2026-06-18T08:48:25.459703",
+  "seed_question": "Who created you?",
+  "seed_answer": "Mr. Novotron",
+  "variants_generated": 20,
+  "approved": 18,
+  "rejected": 2,
+  "exported": 18,
+  "candidates_path": "data/dream_replay/v077_generated_training_candidates.jsonl"
+}

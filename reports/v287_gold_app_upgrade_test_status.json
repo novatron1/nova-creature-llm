@@ -1,0 +1,13 @@
+{
+  "version": "v287_app_upgrade",
+  "created_at": "2026-06-18T12:51:23.780294",
+  "current": "v1",
+  "target": "v2",
+  "steps": [
+    "backup",
+    "migrate",
+    "test",
+    "deploy"
+  ],
+  "sandbox": true
+}

@@ -1,0 +1,8 @@
+{
+  "version": "v363_weakness_focused_drill_parser",
+  "created_at": "2026-06-18T13:01:29.385610",
+  "drill_id": "wd_01",
+  "weakness": "logic_gaps",
+  "focus": "deductive_reasoning",
+  "steps": 3
+}

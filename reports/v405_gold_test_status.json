@@ -1,0 +1,7 @@
+{
+  "version": "v405_research_priority_ranker",
+  "created_at": "2026-06-18T13:01:57.065604",
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Research Priority Ranker module \u2014 simulation only. No real hardware."
+}

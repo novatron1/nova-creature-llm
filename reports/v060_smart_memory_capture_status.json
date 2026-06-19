@@ -1,0 +1,46 @@
+{
+  "version": "v060_smart_memory_capture",
+  "created_at": "2026-06-18T03:07:40.003185",
+  "tests_run": 5,
+  "tests_passed": 5,
+  "tests_failed": 0,
+  "classifier_test_results": [
+    {
+      "message": "v059 passed and all live routes select v055",
+      "expected": "auto_project_memory",
+      "actual": "auto_project_memory",
+      "passed": true
+    },
+    {
+      "message": "Remember my favorite color is blue",
+      "expected": "explicit_user_memory",
+      "actual": "explicit_user_memory",
+      "passed": true
+    },
+    {
+      "message": "Maybe this is the right checkpoint",
+      "expected": "pending_approval_memory",
+      "actual": "pending_approval_memory",
+      "passed": true
+    },
+    {
+      "message": "Do that",
+      "expected": "temporary_conversation_context",
+      "actual": "temporary_conversation_context",
+      "passed": true
+    },
+    {
+      "message": "The correct answer to who created you is Mr. Novotron",
+      "expected": "training_candidate_memory",
+      "actual": "training_candidate_memory",
+      "passed": true
+    }
+  ],
+  "storage_counts": {
+    "auto_project_memory": 1,
+    "explicit_user_memory": 2,
+    "temporary_conversation_context": 1,
+    "pending_approval_memory": 0,
+    "training_candidate_memory": 1
+  }
+}

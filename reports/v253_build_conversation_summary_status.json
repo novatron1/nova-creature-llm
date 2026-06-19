@@ -1,0 +1,14 @@
+{
+  "version": "v253_conversation_summary",
+  "created_at": "2026-06-18T12:48:50.652722",
+  "summaries": [
+    {
+      "topic": "training",
+      "key_points": [
+        "code_repair targeted",
+        "planner brain next"
+      ]
+    }
+  ],
+  "summary_active": true
+}

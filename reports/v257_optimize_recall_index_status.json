@@ -1,0 +1,7 @@
+{
+  "version": "v257_recall_optimizer",
+  "created_at": "2026-06-18T12:49:01.926863",
+  "optimization_active": true,
+  "index_size": 100,
+  "estimated_speed_gain": "+30%"
+}

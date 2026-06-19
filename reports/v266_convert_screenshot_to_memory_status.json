@@ -1,0 +1,8 @@
+{
+  "version": "v266_screenshot_memory",
+  "created_at": "2026-06-18T12:49:58.016904",
+  "converted": true,
+  "memory_type": "project_memory",
+  "requires_approval": true,
+  "note": "Screenshot reports become project memory candidates only after approval."
+}

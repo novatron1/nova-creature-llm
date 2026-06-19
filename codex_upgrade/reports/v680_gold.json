@@ -1,0 +1,18 @@
+{
+  "report_id": "v680-PR-001",
+  "candidate": "v673_candidate",
+  "champion": "v055_champion",
+  "arena_passed": true,
+  "judge_approved": true,
+  "safety_lock_cleared": false,
+  "owner_approval_granted": false,
+  "dry_run_complete": true,
+  "rollback_proof_valid": true,
+  "promotion_ready": false,
+  "blockers": [
+    "owner_approval"
+  ],
+  "overall_status": "awaiting_owner_approval",
+  "version": "v680_promotion_proof_report",
+  "created_at": "2026-06-18T13:54:30.327731"
+}

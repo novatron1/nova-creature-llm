@@ -1,0 +1,8 @@
+{
+  "version": "v286_patch_packager",
+  "created_at": "2026-06-18T12:51:16.947590",
+  "patch": "fix_syntax.patch",
+  "packaged": true,
+  "sandbox": true,
+  "note": "Patch packaged in sandbox. Core files excluded."
+}

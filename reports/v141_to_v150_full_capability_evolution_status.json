@@ -1,0 +1,260 @@
+{
+  "report": "v141_to_v150_full_capability_evolution_status",
+  "created_at": "2026-06-18T10:15:16.856116",
+  "modules": {
+    "v141_stronger_base_readiness": {
+      "status": "ROADMAP_CREATED",
+      "files": [
+        "docs/ROADMAP_v141_stronger_base_model_readiness.md"
+      ],
+      "active": false,
+      "note": "Roadmap doc created. Active module to be built later."
+    },
+    "v142_dataset_growth_engine": {
+      "status": "PASS",
+      "files": [
+        "src/v142_dataset_growth_engine.py",
+        "scripts/check_v142_dataset_growth.py"
+      ],
+      "active": true,
+      "note": "Dataset classification, approval, and stats working. No rejected memory stored."
+    },
+    "v143_benchmark_history_tracker": {
+      "status": "PASS",
+      "files": [
+        "src/v143_benchmark_history_tracker.py",
+        "data/benchmarks/benchmark_history.jsonl"
+      ],
+      "active": true,
+      "note": "Records benchmark scores over time for trend tracking."
+    },
+    "v144_vision_input_expansion": {
+      "status": "ROADMAP_CREATED",
+      "files": [
+        "docs/ROADMAP_v144_vision_input_expansion.md"
+      ],
+      "active": false,
+      "note": "Roadmap doc created. Vision stack v096-v100 active as text-first."
+    },
+    "v145_voice_first_intelligence": {
+      "status": "PASS",
+      "files": [
+        "src/v144_voice_first_intelligence.py",
+        "scripts/check_v144_voice_first.py"
+      ],
+      "active": true,
+      "note": "Voice-optimized mode. Short answers, no fake robot/tool claims, confirms risky actions."
+    },
+    "v146_long_term_project_memory": {
+      "status": "PASS",
+      "files": [
+        "src/v145_long_term_project_memory.py",
+        "scripts/check_v145_project_memory.py",
+        "data/project_memory/project_state.json"
+      ],
+      "active": true,
+      "note": "Tracks project state, patches, blockers, goals across versions."
+    },
+    "v147_hard_reasoning_benchmark": {
+      "status": "PASS",
+      "files": [
+        "src/v146_hard_reasoning_benchmark.py",
+        "scripts/check_v146_hard_reasoning.py"
+      ],
+      "active": true,
+      "note": "11 hard reasoning tests: logic, contradiction, unknown, strategy, robot safety, business, app planning."
+    },
+    "v148_checkpoint_tournament": {
+      "status": "PASS",
+      "files": [
+        "src/v147_checkpoint_tournament.py",
+        "scripts/check_v147_checkpoint_tournament.py"
+      ],
+      "active": true,
+      "note": "Compares checkpoints by benchmark accuracy, memory recall, route correctness, unknown honesty, robot safety. Best score wins."
+    },
+    "v149_tool_execution_readiness": {
+      "status": "PASS",
+      "files": [
+        "src/v148_tool_execution_readiness.py",
+        "scripts/check_v148_tool_execution.py"
+      ],
+      "active": true,
+      "note": "8 tool classes with safety/approval/sandbox checks. Future hardware tools blocked by default."
+    },
+    "v150_robot_body_bridge": {
+      "status": "ROADMAP_CREATED",
+      "files": [
+        "docs/ROADMAP_v149_robot_body_bridge.md"
+      ],
+      "active": false,
+      "note": "Roadmap doc created. Robot stack v070-v107 active as simulation-only."
+    },
+    "v151_creation_speed_engine": {
+      "status": "PASS",
+      "files": [
+        "src/v150_creation_speed_engine.py",
+        "scripts/check_v150_creation_speed.py"
+      ],
+      "active": true,
+      "note": "10 creation lanes: app, game, music, content, studio, revenue, code, training, simulation, templates."
+    }
+  },
+  "regression": {
+    "v059_live_router": {
+      "status": "PASS",
+      "details": "24/24 checks. All 7 roles use v055 fine-tuned checkpoints."
+    },
+    "v061_learning_loop": {
+      "status": "PASS",
+      "details": "Dry-run passes, can_promote: True, no blockers."
+    },
+    "v066_capability_self_map": {
+      "status": "PASS",
+      "details": "43/43 checks. real_hardware_enabled: False. 7 brain organs. 33 active capabilities."
+    },
+    "v075_benchmark_dashboard": {
+      "status": "PASS",
+      "details": "13/13 tests, 100%."
+    },
+    "v095_intelligence_benchmark": {
+      "status": "PASS",
+      "details": "4/4 checks. Promote ready."
+    }
+  },
+  "robot_status": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "movement_blocked_by": [
+      "v071 safety spine",
+      "v073 deployment gate",
+      "v102 emergency stop not verified",
+      "v107 readiness test not passed",
+      "v149 roadmap - body bridge not built"
+    ],
+    "simulation_only": true
+  },
+  "active_capabilities": [
+    "conversation_memory",
+    "dictionary_memory",
+    "learning_loop",
+    "benchmark_gate",
+    "inner_voice",
+    "dream_replay",
+    "memory_law",
+    "skill_hands",
+    "self_test",
+    "capability_self_map",
+    "self_scripting_sandbox",
+    "robot_simulation_bridge",
+    "safety_spine",
+    "body_sensor_registry",
+    "deployment_gate",
+    "mistake_memory",
+    "benchmark_dashboard",
+    "auto_patch_repair",
+    "dream_training_2",
+    "voice_mode",
+    "app_builder_sandbox",
+    "sync_plan",
+    "brain_organ_council",
+    "roadmap_planner",
+    "capability_aware_response",
+    "owner_approval_console",
+    "full_system_health",
+    "reasoning_core",
+    "multi_step_planner",
+    "question_decomposer",
+    "evidence_checker",
+    "self_correction_loop",
+    "concept_builder",
+    "long_context_understanding",
+    "strategy_brain",
+    "debate_brain",
+    "intelligence_benchmark_suite",
+    "vision_text_stream",
+    "vision_error_reader",
+    "ui_action_planner",
+    "file_folder_inspector",
+    "visual_memory_builder",
+    "robot_hardware_config",
+    "emergency_stop_verifier",
+    "sensor_feedback_loop",
+    "safe_zone_mapper",
+    "robot_simulation_benchmark",
+    "owner_approval_gate",
+    "movement_readiness_test",
+    "mission_planner",
+    "task_queue",
+    "goal_memory",
+    "daily_self_test",
+    "dry_run_learning_scheduler",
+    "dry_run_repair_scheduler",
+    "upgrade_recommendation",
+    "studio_business_assistant",
+    "music_license_brain",
+    "game_builder_brain",
+    "app_builder_factory",
+    "content_creator_brain",
+    "revenue_planner",
+    "personality_style",
+    "tone_reader",
+    "timing_brain",
+    "natural_speech",
+    "conflict_handling",
+    "teaching_mode",
+    "voice_identity",
+    "memory_personalization",
+    "glasses_mode",
+    "deep_research",
+    "synthetic_lesson_generator",
+    "hard_question_generator",
+    "adversarial_critic_tests",
+    "weakness_detector",
+    "finetune_planner",
+    "dataset_quality_scorer",
+    "training_regression_detector",
+    "checkpoint_tournament",
+    "brain_promotion_system",
+    "model_evolution_report",
+    "dataset_growth_engine",
+    "benchmark_history_tracker",
+    "voice_first_intelligence",
+    "long_term_project_memory",
+    "hard_reasoning_benchmark",
+    "tool_execution_readiness",
+    "creation_speed_engine"
+  ],
+  "blocked_capabilities": [
+    "real_robot_movement",
+    "real_hardware_control",
+    "vision_ocr",
+    "autonomous_background_execution",
+    "real_file_sync",
+    "real_deployment",
+    "real_payments",
+    "stronger_base_model_swap"
+  ],
+  "benchmark_advancement": {
+    "is_advancement": true,
+    "new_benchmarks": [
+      "v146_hard_reasoning_benchmark (11 tests)",
+      "v105_robot_sim_benchmark (7 tests)",
+      "v111_daily_self_test (7 tests)"
+    ],
+    "regressions": [],
+    "improvements": [
+      "11 hard reasoning tests",
+      "checkpoint tournament scoring",
+      "benchmark history tracking"
+    ],
+    "v059": "stable",
+    "v061": "stable",
+    "v066": "stable",
+    "v075": "stable",
+    "v095": "stable"
+  },
+  "next_safest_upgrade": "v141 stronger base model loader \u2014 swap to a more capable base while preserving all role brains and benchmarks",
+  "promote_ready": true,
+  "honest_assessment": "Nova Creature is becoming an advanced personal AI brain architecture designed for rapid creation, memory-driven learning, benchmark-safe self-improvement, and future robot readiness. It is not the most advanced brain in the world. It is a structured, honest, benchmark-gated system that grows verifiably."
+}

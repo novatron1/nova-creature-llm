@@ -1,0 +1,12 @@
+{
+  "version": "v431_sales_call",
+  "module": "v431_sales_call",
+  "title": "Sales Call Simulation",
+  "created_at": "2026-06-18T13:02:52.949036",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:52.949071",
+  "type": "simulation"
+}

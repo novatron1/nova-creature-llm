@@ -1,0 +1,2 @@
+{"version": "v069_error_bank", "event_id": "err_20260618_034632_747428", "created_at": "2026-06-18T03:46:32.747536", "source": "test", "command": "python test.py", "error_text": "Test error 1", "category": "test", "severity": "warning", "resolved": true, "resolved_at": "2026-06-18T03:46:32.753730"}
+{"version": "v069_error_bank", "event_id": "err_20260618_034632_749328", "created_at": "2026-06-18T03:46:32.749380", "source": "benchmark", "command": "run.sh", "error_text": "Benchmark failed", "category": "benchmark", "severity": "critical", "resolved": false}

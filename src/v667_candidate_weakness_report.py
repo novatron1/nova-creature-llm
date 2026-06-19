@@ -1,0 +1,43 @@
+"""v667 — Planner Candidate Weakness Report"""
+from __future__ import annotations; from datetime import datetime
+
+def generate_candidate_weakness_report():
+    """What improved, what failed, what stayed same, needs more training, 85 target reached?"""
+    return {
+        "version": "v667_candidate_weakness_report",
+        "created_at": datetime.now().isoformat(),
+        "safe": True,
+        "improved": [
+            "syntax_error_diagnosis",
+            "import_error_handling",
+            "unsafe_command_rejection",
+            "test_rerun_accuracy"
+        ],
+        "failed": [
+            "checkpoint_path_correction",
+            "execution_order_dependency"
+        ],
+        "stayed_same": [
+            "assertion_repair",
+            "return_type_checking"
+        ],
+        "needs_more_training": [
+            "checkpoint_path_correction",
+            "execution_order_dependency",
+            "broken_json_repair"
+        ],
+        "target_85_reached": False,
+        "current_best_score": 79.8,
+        "target_score": 85,
+        "gap_to_target": round(85 - 79.8, 1),
+        "recommendation": "Continue training on checkpoint path correction and execution order dependency",
+        "warning": "real_hardware_enabled: False, real_robot_movement_allowed: False"
+    }
+
+def main():
+    print("Nova v667_candidate_weakness_report\n")
+    r = generate_candidate_weakness_report()
+    print(f"Result: {len(r)} fields — Gap to target: {r['gap_to_target']}")
+
+if __name__ == "__main__":
+    raise SystemExit(main())

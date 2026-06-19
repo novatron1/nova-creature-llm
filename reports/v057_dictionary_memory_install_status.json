@@ -1,0 +1,14 @@
+{
+  "version": "v057_dictionary_memory_bridge",
+  "installed_at": "2026-06-18T02:37:01.485817",
+  "files": [
+    "src/dictionary_memory.py",
+    "src/v057_dictionary_conversation_router.py",
+    "scripts/check_v057_dictionary_memory.py",
+    "scripts/v057_chat_once.py",
+    "scripts/v057_add_dictionary_lesson.py",
+    "scripts/v057_gold_dictionary_test.py",
+    "docs/V057_DICTIONARY_MEMORY.md",
+    "tests/test_v057_dictionary_memory.py"
+  ]
+}

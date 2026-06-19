@@ -1,0 +1,14 @@
+{
+  "version": "v264_file_tree_reader",
+  "created_at": "2026-06-18T12:49:56.784977",
+  "directories": [
+    "src",
+    "scripts",
+    "reports",
+    "data"
+  ],
+  "files_detected": [
+    "v095_intelligence_benchmark_suite.py"
+  ],
+  "missing_expected": []
+}

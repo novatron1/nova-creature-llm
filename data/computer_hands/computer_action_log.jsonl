@@ -1,0 +1,5 @@
+{"timestamp":"2026-06-18T00:00:01Z","action":"read_file","path":"/tmp/test.txt","risk":"low","approved":true,"status":"success"}
+{"timestamp":"2026-06-18T00:00:02Z","action":"execute_command","command":"ls -la","risk":"low","approved":true,"status":"success"}
+{"timestamp":"2026-06-18T00:00:03Z","action":"write_file","path":"/tmp/output.txt","risk":"medium","approved":true,"status":"success"}
+{"timestamp":"2026-06-18T00:00:04Z","action":"delete_file","path":"/tmp/temp.bak","risk":"medium","approved":true,"status":"success"}
+{"timestamp":"2026-06-18T00:00:05Z","action":"navigate_folder","path":"/home/user/projects","risk":"low","approved":true,"status":"success"}

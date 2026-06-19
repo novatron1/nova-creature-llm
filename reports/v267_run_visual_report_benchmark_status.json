@@ -1,0 +1,23 @@
+{
+  "version": "v267_visual_benchmark",
+  "created_at": "2026-06-18T12:49:58.658217",
+  "tests": [
+    {
+      "name": "parse_report",
+      "passed": true
+    },
+    {
+      "name": "detect_error",
+      "passed": true
+    },
+    {
+      "name": "read_tree",
+      "passed": true
+    },
+    {
+      "name": "ui_state",
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}

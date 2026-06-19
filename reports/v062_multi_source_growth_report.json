@@ -1,0 +1,66 @@
+{
+  "version": "v062_multi_source_growth",
+  "created_at": "2026-06-18T03:48:33.004983",
+  "roles": {
+    "left_hemisphere": {
+      "lessons": 2,
+      "sources": {
+        "manual_addition": 2
+      },
+      "primary_source": "manual_addition"
+    },
+    "right_hemisphere": {
+      "lessons": 2,
+      "sources": {
+        "manual_addition": 2
+      },
+      "primary_source": "manual_addition"
+    },
+    "memory_transformer": {
+      "lessons": 13,
+      "sources": {
+        "manual_addition": 2,
+        "v058_dictionary_export": 9,
+        "v063_dream_replay": 2
+      },
+      "primary_source": "v058_dictionary_export"
+    },
+    "planner_transformer": {
+      "lessons": 4,
+      "sources": {
+        "manual_addition": 2,
+        "v063_dream_replay": 2
+      },
+      "primary_source": "manual_addition"
+    },
+    "critic_conscience_transformer": {
+      "lessons": 4,
+      "sources": {
+        "manual_addition": 2,
+        "v058_dictionary_export": 2
+      },
+      "primary_source": "manual_addition"
+    },
+    "dream_simulation_transformer": {
+      "lessons": 2,
+      "sources": {
+        "manual_addition": 2
+      },
+      "primary_source": "manual_addition"
+    },
+    "speech_output_transformer": {
+      "lessons": 2,
+      "sources": {
+        "manual_addition": 2
+      },
+      "primary_source": "manual_addition"
+    }
+  },
+  "total_lessons": 29,
+  "source_breakdown": {
+    "manual_addition": 14,
+    "v058_dictionary_export": 11,
+    "v063_dream_replay": 4
+  },
+  "source_count": 3
+}

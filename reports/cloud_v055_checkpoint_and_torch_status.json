@@ -1,0 +1,151 @@
+{
+  "version": "codex_cloud_v055",
+  "created_at": "2026-06-18T03:17:22.029251",
+  "project_root": "/root/New Project (1)Nova LLM",
+  "torch": {
+    "installed": true,
+    "version": "2.7.0+cpu",
+    "cuda_available": false,
+    "error": null
+  },
+  "checkpoints": {
+    "base_checkpoint": {
+      "exists": true,
+      "path": "checkpoints/base/creature_v032_bigfit_twenty_plain.pt",
+      "size_bytes": 12005083
+    },
+    "experimental_checkpoint": {
+      "exists": true,
+      "path": "checkpoints/experimental/creature_v032_bigfit_twenty_plain.pt",
+      "size_bytes": 12005083
+    },
+    "other_pt_count": 3,
+    "other_pt_paths": [
+      "checkpoints/base/creature_v032_bigfit_twenty_plain.pt",
+      "checkpoints/base/creature_v019_proof_fallback.pt",
+      "checkpoints/experimental/creature_v032_bigfit_twenty_plain.pt"
+    ],
+    "role_slot_files": {
+      "left_hemisphere": {
+        "exists": true,
+        "is_placeholder": false
+      },
+      "right_hemisphere": {
+        "exists": true,
+        "is_placeholder": false
+      },
+      "memory_transformer": {
+        "exists": true,
+        "is_placeholder": false
+      },
+      "planner_transformer": {
+        "exists": true,
+        "is_placeholder": false
+      },
+      "critic_conscience_transformer": {
+        "exists": true,
+        "is_placeholder": false
+      },
+      "dream_simulation_transformer": {
+        "exists": true,
+        "is_placeholder": false
+      },
+      "speech_output_transformer": {
+        "exists": true,
+        "is_placeholder": false
+      }
+    }
+  },
+  "training_sets": {
+    "left_hemisphere": {
+      "exists": true,
+      "lesson_count": 2
+    },
+    "right_hemisphere": {
+      "exists": true,
+      "lesson_count": 2
+    },
+    "memory_transformer": {
+      "exists": true,
+      "lesson_count": 11
+    },
+    "planner_transformer": {
+      "exists": true,
+      "lesson_count": 2
+    },
+    "critic_conscience_transformer": {
+      "exists": true,
+      "lesson_count": 4
+    },
+    "dream_simulation_transformer": {
+      "exists": true,
+      "lesson_count": 2
+    },
+    "speech_output_transformer": {
+      "exists": true,
+      "lesson_count": 2
+    },
+    "total_lessons": 25,
+    "all_roles_have_data": true
+  },
+  "brain_slots": {
+    "left_hemisphere": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "left_hemisphere_v054_specialized.pt"
+    },
+    "right_hemisphere": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "right_hemisphere_v054_specialized.pt"
+    },
+    "memory_transformer": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "memory_transformer_v054_specialized.pt"
+    },
+    "planner_transformer": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "planner_transformer_v054_specialized.pt"
+    },
+    "critic_conscience_transformer": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "critic_conscience_transformer_v054_specialized.pt"
+    },
+    "dream_simulation_transformer": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "dream_simulation_transformer_v054_specialized.pt"
+    },
+    "speech_output_transformer": {
+      "dir_exists": true,
+      "config_exists": true,
+      "manifest_exists": true,
+      "checkpoint_file": "speech_output_transformer_v054_specialized.pt"
+    }
+  },
+  "readiness": {
+    "can_finetune": true,
+    "torch_ready": true,
+    "checkpoint_ready": true,
+    "training_data_ready": true,
+    "blockers": [],
+    "summary": "Ready for gradient fine-tuning"
+  },
+  "architecture_versions": {
+    "v049_brain_slots": true,
+    "v050_v052_role_router": true,
+    "v051_chat_adapter": true,
+    "v053_training_prep": true,
+    "v054_role_checkpoint_builder": true,
+    "v055_finetune_readiness": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "battle_id": "v673-v055-001",
+  "candidate": "v673_candidate",
+  "champion": "v055_champion",
+  "winner": "candidate_v673",
+  "score_delta": 0.04,
+  "categories_tested": 12,
+  "categories_won": 10,
+  "categories_lost": 2,
+  "promotion_recommended": true,
+  "summary": "Candidate v673 outperformed v055 champion in 10/12 categories. Regression-safe. Promotion recommended pending owner approval.",
+  "version": "v679_battle_summary",
+  "created_at": "2026-06-18T13:54:30.082023"
+}

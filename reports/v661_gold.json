@@ -1,0 +1,60 @@
+{
+  "version": "v661_planner_code_repair_hard_benchmark_3",
+  "created_at": "2026-06-18T13:50:01.223112",
+  "safe": true,
+  "total_categories": 12,
+  "passed": 8,
+  "failed": 4,
+  "categories": {
+    "syntax_error_diagnosis": {
+      "status": "PASS",
+      "score": 92
+    },
+    "import_error": {
+      "status": "PASS",
+      "score": 84
+    },
+    "missing_file": {
+      "status": "FAIL",
+      "score": 50
+    },
+    "broken_json": {
+      "status": "FAIL",
+      "score": 55
+    },
+    "assertion_repair": {
+      "status": "PASS",
+      "score": 82
+    },
+    "return_type": {
+      "status": "PASS",
+      "score": 89
+    },
+    "checkpoint_path": {
+      "status": "FAIL",
+      "score": 40
+    },
+    "execution_order": {
+      "status": "PASS",
+      "score": 83
+    },
+    "unsafe_rejection": {
+      "status": "FAIL",
+      "score": 45
+    },
+    "patch_plan": {
+      "status": "PASS",
+      "score": 77
+    },
+    "test_rerun": {
+      "status": "PASS",
+      "score": 86
+    },
+    "rollback": {
+      "status": "PASS",
+      "score": 93
+    }
+  },
+  "overall_score": 66.7,
+  "warning": "real_hardware_enabled: False, real_robot_movement_allowed: False"
+}

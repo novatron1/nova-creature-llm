@@ -1,0 +1,12 @@
+{
+  "version": "v361_drill_intelligence_engine",
+  "created_at": "2026-06-18T13:01:28.965951",
+  "drills": [
+    "logic",
+    "reasoning",
+    "speed",
+    "accuracy"
+  ],
+  "active": true,
+  "intensity": "adaptive"
+}

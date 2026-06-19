@@ -1,0 +1,11 @@
+{
+  "version": "v387_drill_failure_response_planner",
+  "created_at": "2026-06-18T13:01:34.181142",
+  "failure_id": "fr_01",
+  "root_cause": "timing_overflow",
+  "corrective_actions": [
+    "reduce_complexity",
+    "increase_timeout"
+  ],
+  "estimated_recovery": "2026-06-19"
+}

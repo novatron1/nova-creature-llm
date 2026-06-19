@@ -1,0 +1,12 @@
+{
+  "version": "v252_timeline_compressor",
+  "created_at": "2026-06-18T12:48:50.211521",
+  "versions_tracked": 75,
+  "compressed_phases": [
+    "v056-v080",
+    "v081-v095",
+    "v141-v180",
+    "v181-v230",
+    "v231-v340"
+  ]
+}

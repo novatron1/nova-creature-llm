@@ -1,0 +1,86 @@
+{
+  "version": "v062_benchmark_gate",
+  "created_at": "2026-06-18T13:28:54.259811",
+  "total": 10,
+  "passed": 10,
+  "failed": 0,
+  "pass_rate_pct": 100.0,
+  "gate_passed": true,
+  "results": [
+    {
+      "id": "router_math",
+      "passed": true,
+      "actual_route": "left_hemisphere",
+      "actual_answer": "144.",
+      "route_ok": true,
+      "answer_ok": true
+    },
+    {
+      "id": "router_identity",
+      "passed": true,
+      "actual_route": "memory_transformer",
+      "actual_answer": "Mr. Novotron.",
+      "route_ok": true,
+      "answer_ok": true
+    },
+    {
+      "id": "router_planning",
+      "passed": true,
+      "actual_route": "planner_transformer",
+      "actual_answer": "Planner: keep the working stack as gold, add the next module in an experiment, r",
+      "route_ok": true,
+      "answer_ok": true
+    },
+    {
+      "id": "router_imagination",
+      "passed": true,
+      "actual_route": "right_hemisphere",
+      "actual_answer": "Right brain: connect the pieces as a living brain map \u2014 organs, routes, memory, ",
+      "route_ok": true,
+      "answer_ok": true
+    },
+    {
+      "id": "router_critic",
+      "passed": true,
+      "actual_route": "critic_conscience_transformer",
+      "actual_answer": "I do not know.",
+      "route_ok": true,
+      "answer_ok": true
+    },
+    {
+      "id": "memory_classify_project",
+      "passed": true,
+      "actual_memory_type": "auto_project_memory"
+    },
+    {
+      "id": "memory_classify_explicit",
+      "passed": true,
+      "actual_memory_type": "explicit_user_memory"
+    },
+    {
+      "id": "memory_classify_uncertain",
+      "passed": true,
+      "actual_memory_type": "pending_approval_memory"
+    },
+    {
+      "id": "memory_classify_temp",
+      "passed": true,
+      "actual_memory_type": "temporary_conversation_context"
+    },
+    {
+      "id": "memory_classify_training",
+      "passed": true,
+      "actual_memory_type": "training_candidate_memory"
+    }
+  ],
+  "gate": {
+    "label": "default",
+    "gate_passed": true,
+    "pass_rate": 100.0,
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "action": "promote",
+    "summary": "Gate PASSED \u2705 (10/10 passed, 100.0%)"
+  }
+}

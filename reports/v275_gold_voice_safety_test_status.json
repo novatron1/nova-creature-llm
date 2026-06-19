@@ -1,0 +1,8 @@
+{
+  "version": "v275_voice_safety",
+  "created_at": "2026-06-18T12:50:25.927658",
+  "action": "run command",
+  "needs_confirmation": true,
+  "confirmed": false,
+  "note": "Risky voice actions require safety confirmation before execution."
+}

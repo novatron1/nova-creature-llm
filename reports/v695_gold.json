@@ -1,0 +1,24 @@
+{
+  "version": "v695_next_checkpoint_tournament_planner",
+  "created_at": "2026-06-18T14:01:21.795541",
+  "safe": true,
+  "growth_proven": false,
+  "tournament_plan": {
+    "checkpoint_id": "cp_072",
+    "scheduled_at": "2026-07-01T00:00:00Z",
+    "participants": [
+      "v055_baseline",
+      "candidate_current"
+    ],
+    "benchmarks": [
+      "reasoning",
+      "coding",
+      "math",
+      "factual_recall",
+      "reading_comprehension"
+    ],
+    "status": "pending",
+    "ready_for_tournament": true
+  },
+  "estimated_duration_hours": 4
+}

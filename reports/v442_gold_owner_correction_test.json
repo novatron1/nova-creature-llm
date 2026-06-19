@@ -1,0 +1,12 @@
+{
+  "version": "v442_owner_correction",
+  "module": "v442_owner_correction",
+  "title": "Owner Correction Simulation",
+  "created_at": "2026-06-18T13:02:54.982025",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:54.982081",
+  "type": "simulation"
+}

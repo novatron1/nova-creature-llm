@@ -1,0 +1,40 @@
+{
+  "version": "v190_raw_input_capability_report",
+  "created_at": "2026-06-18T13:03:26.298991",
+  "files_scanned": 1,
+  "gold_examples_loaded": 8,
+  "input_patterns_detected": [
+    "question_answer_pairs",
+    "project_reports",
+    "error_fix_pairs"
+  ],
+  "latent_skills_detected": [
+    "arithmetic",
+    "code_repair",
+    "uncertainty_handling",
+    "capability_honesty"
+  ],
+  "capability_hypotheses": [
+    "arithmetic",
+    "identity_memory_recall",
+    "uncertainty_handling",
+    "capability_honesty",
+    "code_repair",
+    "project_continuity",
+    "paraphrase_identity_generalization",
+    "studio_business_planning"
+  ],
+  "proven_capabilities": [
+    "arithmetic",
+    "identity_memory_recall"
+  ],
+  "unproven_capabilities": [
+    "paraphrase_identity_generalization",
+    "studio_business_planning"
+  ],
+  "blocked_capabilities": [
+    "real_robot_movement"
+  ],
+  "next_safe_capability_to_train": "arithmetic",
+  "promote_ready": true
+}

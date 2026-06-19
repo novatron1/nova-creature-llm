@@ -1,0 +1,13 @@
+{
+  "version": "v056_conversation_memory_loop",
+  "installed_at": "2026-06-18T02:36:52.144596",
+  "installed_files": [
+    "src/conversation_memory.py",
+    "src/v056_conversation_router.py",
+    "scripts/v056_chat_once.py",
+    "scripts/v056_gold_conversation_test.py",
+    "scripts/check_v056_conversation_memory.py",
+    "docs/V056_CONVERSATION_MEMORY.md",
+    "tests/test_v056_conversation_memory.py"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "v242_compatibility_scanner",
+  "created_at": "2026-06-18T12:48:22.793337",
+  "candidate": "none",
+  "exists": false,
+  "type": "unknown",
+  "tokenizer_match": false,
+  "role_compatible": false,
+  "size": 0,
+  "missing_dependencies": [
+    "torch"
+  ],
+  "risk": "low",
+  "note": "No candidate model found. Compatibility not tested."
+}

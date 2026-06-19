@@ -1,0 +1,23 @@
+{
+  "bundle_name": "NovaCreature_Codex_Cloud_Catchup_v049_to_v055",
+  "target": "cloud_codex_project",
+  "purpose": "Catch a separate cloud Codex Nova Creature project up to the proven v049-v055 architecture without referencing or controlling any Windows laptop folder.",
+  "rules": [
+    "No Windows C-drive paths.",
+    "No .bat scripts.",
+    "No local laptop assumptions.",
+    "Apply to the current cloud repo/project root only.",
+    "Create backups before overwriting same-name files.",
+    "If no .pt checkpoint exists in the cloud project, create brain-slot configs and placeholder notices instead of failing the whole architecture setup.",
+    "Keep the cloud project separate from the local laptop version."
+  ],
+  "architecture_steps": {
+    "v049": "multi-brain slots",
+    "v050": "multi-brain router",
+    "v051": "app/browser chat adapter, framework-neutral",
+    "v052": "role-brain behavior layers",
+    "v053": "training prep/export pipeline",
+    "v054": "role checkpoint builder",
+    "v055": "gradient fine-tune trainer skeleton using torch when available"
+  }
+}

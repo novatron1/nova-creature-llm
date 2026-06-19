@@ -1,0 +1,12 @@
+{
+  "version": "v421_studio_session",
+  "module": "v421_studio_session",
+  "title": "Studio Session Simulation Pack",
+  "created_at": "2026-06-18T13:02:51.397450",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:51.397502",
+  "type": "simulation"
+}

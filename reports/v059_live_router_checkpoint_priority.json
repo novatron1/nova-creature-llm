@@ -1,0 +1,80 @@
+{
+  "version": "codex_cloud_v059_checkpoint_resolver",
+  "created_at": "2026-06-18T03:49:42.848651",
+  "project_root": "/root/New Project (1)Nova LLM",
+  "roles": [
+    {
+      "role": "left_hemisphere",
+      "selected_checkpoint": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12004817,
+      "sha256": "511cd812682a6bd5ea9f2537f97f3f2502824e787e9edcfeb50a3ac8c9cdcf70",
+      "fallback_used": false,
+      "promote_ready": true
+    },
+    {
+      "role": "right_hemisphere",
+      "selected_checkpoint": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12004927,
+      "sha256": "4d9c862bdd6dfd887bbdf860a26228adea6bc17c8447233d9317ca216c6e39d2",
+      "fallback_used": false,
+      "promote_ready": true
+    },
+    {
+      "role": "memory_transformer",
+      "selected_checkpoint": "checkpoints/brain_slots/memory_transformer/memory_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12005147,
+      "sha256": "f9025ffc05e781e7d02fb23a0976830009c7dd97d8cbfeeea3b031ce7ad4ec28",
+      "fallback_used": false,
+      "promote_ready": true
+    },
+    {
+      "role": "planner_transformer",
+      "selected_checkpoint": "checkpoints/brain_slots/planner_transformer/planner_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12005257,
+      "sha256": "3c555c9d1e70076852941b26b6e9527b58375eeb6782373c3db60da220a7c060",
+      "fallback_used": false,
+      "promote_ready": true
+    },
+    {
+      "role": "critic_conscience_transformer",
+      "selected_checkpoint": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12006421,
+      "sha256": "f5cad64002264127ef29f01f5013740c8370d846bbff43518fc296e77d08b0c4",
+      "fallback_used": false,
+      "promote_ready": true
+    },
+    {
+      "role": "dream_simulation_transformer",
+      "selected_checkpoint": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12006311,
+      "sha256": "d932eb6621575ba706382aeddbadb35158f2e303d90f6d553e5648f7a4af6572",
+      "fallback_used": false,
+      "promote_ready": true
+    },
+    {
+      "role": "speech_output_transformer",
+      "selected_checkpoint": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "exists": true,
+      "size_bytes": 12005917,
+      "sha256": "0ed831d4eb06c38b296817961e6527cc57b81341cecc07257e287832c43b7c5d",
+      "fallback_used": false,
+      "promote_ready": true
+    }
+  ],
+  "all_promoted_to_v055": true,
+  "any_fallback_active": false,
+  "summary": "All roles promoted to v055 fine-tuned checkpoints"
+}

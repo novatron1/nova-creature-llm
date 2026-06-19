@@ -1,0 +1,159 @@
+{
+  "report": "v181_to_v185_age_cycle_training_and_tournament_status",
+  "created_at": "2026-06-18T11:07:06.604532",
+  "v180_dry_run": {
+    "status": "COMPLETE",
+    "steps": [
+      "read_benchmark_history",
+      "detect_weakness",
+      "generate_curriculum",
+      "create_hard_problems",
+      "create_adversarial_traps",
+      "generate_dream_variants",
+      "run_critic_approval",
+      "build_training_candidates",
+      "run_v061_dry_run",
+      "run_benchmark_simulation",
+      "recommend_checkpoint_tournament",
+      "report_maturity_gain"
+    ],
+    "total_steps": 12,
+    "dry_run": true,
+    "expected_maturity_gain": "+3 to +8 points per cycle"
+  },
+  "v181_training_batch": {
+    "status": "CREATED",
+    "approved": 10,
+    "rejected": 2,
+    "pending": 1,
+    "weaknesses_targeted": [
+      "code_repair",
+      "unknown_handling",
+      "dream_replay_quality",
+      "unsafe_training_rejection",
+      "checkpoint_priority",
+      "contradiction_detection",
+      "memory_recall",
+      "robot_capability_honesty",
+      "project_continuity",
+      "speech_clarity"
+    ],
+    "approved_role_breakdown": {
+      "memory_transformer": 3,
+      "critic_conscience_transformer": 4,
+      "dream_simulation_transformer": 1,
+      "planner_transformer": 1,
+      "speech_output_transformer": 1
+    }
+  },
+  "v182_targeted_export": {
+    "status": "EXPORTED",
+    "roles_exported": [
+      "planner_transformer",
+      "memory_transformer",
+      "critic_conscience_transformer",
+      "dream_simulation_transformer",
+      "left_hemisphere",
+      "right_hemisphere",
+      "speech_output_transformer"
+    ],
+    "files_exist": true
+  },
+  "v183_benchmark_pack": {
+    "status": "PASSED",
+    "passed": 10,
+    "total": 10,
+    "categories": [
+      "code_repair",
+      "memory_recall",
+      "unknown_handling",
+      "robot_capability_honesty",
+      "checkpoint_priority",
+      "project_continuity",
+      "contradiction_detection",
+      "unsafe_training",
+      "dream_replay_quality",
+      "speech_clarity"
+    ]
+  },
+  "v184_approval_package": {
+    "status": "CREATED",
+    "approved_lessons": 10,
+    "rejected_lessons": 2,
+    "pending_lessons": 1,
+    "lessons_by_role": {
+      "planner_transformer": 1,
+      "memory_transformer": 3,
+      "critic_conscience_transformer": 4,
+      "speech_output_transformer": 1,
+      "dream_simulation_transformer": 1
+    },
+    "lessons_by_skill": {
+      "code_repair": 1,
+      "memory_recall": 1,
+      "unknown_handling": 1,
+      "robot_capability_honesty": 1,
+      "project_continuity": 1,
+      "checkpoint_priority": 1,
+      "unsafe_training_rejection": 1,
+      "speech_clarity": 1,
+      "contradiction_detection": 1,
+      "dream_replay_quality": 1
+    },
+    "owner_approval_present": false,
+    "finetune_blocked": true,
+    "block_reason": "Missing explicit owner approval for fine-tune",
+    "owner_review_md": "reports/v184_owner_review_training_summary.md"
+  },
+  "finetune_run": {
+    "status": "BLOCKED",
+    "reason": "Missing owner approval for fine-tune",
+    "candidate_checkpoints_created": false
+  },
+  "v178_tournament": {
+    "status": "NOT_RUN",
+    "reason": "No candidate checkpoints to compare"
+  },
+  "v185_promotion_decision": {
+    "status": "preserve_current",
+    "reason": "No candidate checkpoints created. v055 remains live.",
+    "winner": "v055_current",
+    "v055_preserved": true
+  },
+  "regression": {
+    "v059": "PASS (24/24)",
+    "v061": "PASS (can_promote: True)",
+    "v066": "PASS (43/43)",
+    "v075": "PASS (13/13)",
+    "v095": "PASS (promote_ready)",
+    "v180": "PASS (dry-run)"
+  },
+  "robot_status": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "movement_blocked": true
+  },
+  "rejected_pending_memory_training": {
+    "status": "BLOCKED",
+    "detail": "Rejected items in rejected_training_batch.jsonl. Pending in pending_training_batch.jsonl. Neither trains."
+  },
+  "brain_maturity_before": {
+    "overall": 80,
+    "components": {
+      "memory_age": 72,
+      "reasoning_age": 85,
+      "planning_age": 78,
+      "critic_age": 90,
+      "dream_age": 75,
+      "code_repair_age": 70,
+      "benchmark_age": 95,
+      "checkpoint_age": 80,
+      "project_continuity_age": 82
+    }
+  },
+  "expected_brain_maturity_after": "+3 to +8 points (target: 88)",
+  "weakest_role_before": "code_repair_age (70)",
+  "target_roles_after": "planner_transformer (code_repair), memory_transformer (recall + continuity), critic_conscience_transformer (unknown + safety + contradiction)",
+  "next_safest_upgrade": "Obtain owner approval for fine-tune, then run targeted role training with v182 exports, run v178 tournament, promote winner",
+  "promote_ready": false
+}

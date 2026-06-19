@@ -1,0 +1,33 @@
+{
+  "version": "v062_gold_gate_test",
+  "created_at": "2026-06-18T03:37:44.319310",
+  "benchmark": {
+    "version": "v062_benchmark_gate",
+    "created_at": "2026-06-18T03:37:44.314654",
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "pass_rate_pct": 100.0,
+    "gate_passed": true
+  },
+  "gate": {
+    "label": "default",
+    "gate_passed": true,
+    "pass_rate": 100.0,
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "action": "promote",
+    "summary": "Gate PASSED \u2705 (10/10 passed, 100.0%)"
+  },
+  "multi_source": {
+    "version": "v062_multi_source_growth",
+    "created_at": "2026-06-18T03:37:44.315787",
+    "total_lessons": 25,
+    "source_breakdown": {
+      "manual_addition": 14,
+      "v058_dictionary_export": 11
+    },
+    "source_count": 2
+  }
+}

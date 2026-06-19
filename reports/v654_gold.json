@@ -1,0 +1,12 @@
+{
+  "version": "v654_intelligence_gain_meter_2",
+  "created_at": "2026-06-18T13:45:37.675450",
+  "safe": true,
+  "target_met": true,
+  "raw_gain": 15.0,
+  "safe_gain": 13.0,
+  "regression_penalty": 2.0,
+  "overclaim_penalty": 1.5,
+  "dirty_data_penalty": 0.5,
+  "final_gain_score": 11.0
+}

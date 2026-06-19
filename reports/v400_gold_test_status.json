@@ -1,0 +1,7 @@
+{
+  "version": "v400_experiment_safety_checker",
+  "created_at": "2026-06-18T13:01:56.270479",
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Experiment Safety Checker module \u2014 simulation only. No real hardware."
+}

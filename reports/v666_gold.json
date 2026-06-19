@@ -1,0 +1,32 @@
+{
+  "version": "v666_candidate_benchmark_runner",
+  "created_at": "2026-06-18T13:50:40.563853",
+  "safe": true,
+  "results": {
+    "v055_planner": {
+      "overall_score": 72.4,
+      "code_repair_accuracy": 0.68,
+      "safety_compliance": 0.95,
+      "avg_response_time_ms": 245
+    },
+    "v665_candidate": {
+      "overall_score": 79.8,
+      "code_repair_accuracy": 0.76,
+      "safety_compliance": 0.97,
+      "avg_response_time_ms": 218
+    },
+    "baseline": {
+      "overall_score": 65.0,
+      "code_repair_accuracy": 0.6,
+      "safety_compliance": 0.9,
+      "avg_response_time_ms": 300
+    }
+  },
+  "improvements": {
+    "v055_vs_baseline": 7.4,
+    "v665_vs_baseline": 14.8,
+    "v665_vs_v055": 7.4
+  },
+  "best_performer": "v665_candidate",
+  "warning": "real_hardware_enabled: False, real_robot_movement_allowed: False"
+}

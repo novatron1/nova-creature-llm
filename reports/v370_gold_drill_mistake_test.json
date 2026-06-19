@@ -1,0 +1,11 @@
+{
+  "version": "v370_drill_mistake_logger",
+  "created_at": "2026-06-18T13:01:30.865366",
+  "mistakes_logged": 12,
+  "categories": [
+    "timing",
+    "accuracy",
+    "logic"
+  ],
+  "last_mistake": "2026-06-18T00:00:00"
+}

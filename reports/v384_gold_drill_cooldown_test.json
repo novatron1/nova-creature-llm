@@ -1,0 +1,17 @@
+{
+  "version": "v384_multi_brain_drill_cooldown",
+  "created_at": "2026-06-18T13:01:33.544809",
+  "brains": [
+    "brain_A",
+    "brain_B",
+    "brain_C"
+  ],
+  "cooldowns": {
+    "brain_A": 0,
+    "brain_B": 120,
+    "brain_C": 300
+  },
+  "ready": [
+    "brain_A"
+  ]
+}

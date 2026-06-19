@@ -1,0 +1,110 @@
+{
+  "version": "v065_skill_hands",
+  "created_at": "2026-06-18T13:28:54.947684",
+  "allowed_actions": [
+    {
+      "action": "read_text_files",
+      "description": "Read text files from the project",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "list_project_files",
+      "description": "List files in the project directory",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "write_reports",
+      "description": "Write reports to reports/ directory",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "create_sandbox_files",
+      "description": "Create files in sandbox/generated_scripts/",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "create_test_files",
+      "description": "Create test and checker files",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "run_allowed_scripts",
+      "description": "Run Python scripts that are in the project",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "summarize_reports",
+      "description": "Summarize report contents",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "compare_hashes",
+      "description": "Compare SHA256 hashes",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "verify_checkpoints",
+      "description": "Verify checkpoint files exist and have content",
+      "blocked": false,
+      "requires_backup": false
+    },
+    {
+      "action": "create_backups_before_edits",
+      "description": "Create timestamped backups before overwriting files",
+      "blocked": false,
+      "requires_backup": false
+    }
+  ],
+  "blocked_actions": [
+    {
+      "action": "delete_checkpoints",
+      "description": "Delete checkpoint files",
+      "blocked": true,
+      "reason": "Checkpoints must be preserved"
+    },
+    {
+      "action": "delete_memory",
+      "description": "Delete memory files",
+      "blocked": true,
+      "reason": "Memory must be preserved"
+    },
+    {
+      "action": "overwrite_core_without_backup",
+      "description": "Overwrite core files without backup",
+      "blocked": true,
+      "reason": "Core files require backup before overwriting"
+    },
+    {
+      "action": "run_destructive_shell",
+      "description": "Run destructive shell commands (rm -rf, dd, etc.)",
+      "blocked": true,
+      "reason": "Destructive shell commands are blocked"
+    },
+    {
+      "action": "run_real_robot_hardware",
+      "description": "Run real robot hardware commands",
+      "blocked": true,
+      "reason": "Robot hardware must have safety spine, sensors, and approval"
+    },
+    {
+      "action": "install_packages_without_approval",
+      "description": "Install packages without explicit approval",
+      "blocked": true,
+      "reason": "Package installation requires explicit approval"
+    },
+    {
+      "action": "send_data_outside_project",
+      "description": "Send data outside project without approval",
+      "blocked": true,
+      "reason": "Data export requires explicit approval"
+    }
+  ]
+}

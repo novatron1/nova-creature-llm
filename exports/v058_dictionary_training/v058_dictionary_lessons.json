@@ -1,0 +1,46 @@
+[
+  {
+    "role": "critic_conscience_transformer",
+    "prompt": "favorite color",
+    "answer": "blue",
+    "source": "v058_dictionary_export",
+    "created_at": "2026-06-18T03:16:56",
+    "tags": [
+      "dictionary_memory",
+      "v058"
+    ]
+  },
+  {
+    "role": "memory_transformer",
+    "prompt": "to who created you",
+    "answer": "Mr. Novotron",
+    "source": "v058_dictionary_export",
+    "created_at": "2026-06-18T03:16:56",
+    "tags": [
+      "dictionary_memory",
+      "v058"
+    ]
+  },
+  {
+    "role": "critic_conscience_transformer",
+    "prompt": "my favorite color",
+    "answer": "blue",
+    "source": "v058_dictionary_export",
+    "created_at": "2026-06-18T03:16:56",
+    "tags": [
+      "dictionary_memory",
+      "v058"
+    ]
+  },
+  {
+    "role": "memory_transformer",
+    "prompt": "maybe this",
+    "answer": "the right checkpoint",
+    "source": "v058_dictionary_export",
+    "created_at": "2026-06-18T03:16:56",
+    "tags": [
+      "dictionary_memory",
+      "v058"
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "version": "v184_finetune_approval_package",
+  "created_at": "2026-06-18T11:05:56.895686",
+  "approved_lessons": 10,
+  "rejected_lessons": 2,
+  "pending_lessons": 1,
+  "lessons_by_role": {
+    "planner_transformer": 1,
+    "memory_transformer": 3,
+    "critic_conscience_transformer": 4,
+    "speech_output_transformer": 1,
+    "dream_simulation_transformer": 1
+  },
+  "lessons_by_skill": {
+    "code_repair": 1,
+    "memory_recall": 1,
+    "unknown_handling": 1,
+    "robot_capability_honesty": 1,
+    "project_continuity": 1,
+    "checkpoint_priority": 1,
+    "unsafe_training_rejection": 1,
+    "speech_clarity": 1,
+    "contradiction_detection": 1,
+    "dream_replay_quality": 1
+  },
+  "risk_summary": "Low risk. All lessons are approved, memory-law compliant.",
+  "blocked_items": [
+    "Pending uncertainty cannot train",
+    "Real robot movement not enabled"
+  ],
+  "benchmark_tests_to_run_before": [
+    "v095 intelligence",
+    "v183 age-cycle"
+  ],
+  "benchmark_tests_to_run_after": [
+    "v095 intelligence",
+    "v183 age-cycle"
+  ],
+  "expected_maturity_gain": "+3 to +8 points",
+  "finetune_command": "python scripts/v055_finetune_role_brains.py --training-sets exports/v182_targeted_role_training_sets/",
+  "rollback_plan": "Restore v055 from backup. Re-run v059 promotion checker.",
+  "checkpoint_tournament_plan": "After fine-tune, run v178 growth tournament. Only promote if candidate beats v055.",
+  "owner_approval_present": false,
+  "finetune_blocked": true,
+  "block_reason_if_blocked": "Missing explicit owner approval for fine-tune"
+}

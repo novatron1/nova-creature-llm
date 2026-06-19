@@ -1,0 +1,17 @@
+{
+  "version": "v379_arena_leaderboard",
+  "created_at": "2026-06-18T13:01:32.266886",
+  "leaders": [
+    {
+      "rank": 1,
+      "name": "agent_A",
+      "score": 95
+    },
+    {
+      "rank": 2,
+      "name": "agent_B",
+      "score": 88
+    }
+  ],
+  "total_agents": 10
+}

@@ -1,0 +1,28 @@
+{
+  "report": "v581_to_v600_worker_crew_status",
+  "generated_at": "2026-06-18T13:22:20.325799",
+  "modules": [
+    "v581_manage_agents",
+    "v582_code_task",
+    "v583_research_task",
+    "v584_critic_task",
+    "v585_memory_task",
+    "v586_business_task",
+    "v587_robot_agent_task",
+    "v588_app_builder_task",
+    "v589_writer_task",
+    "v590_tester_task",
+    "v591_security_agent_task",
+    "v592_designer_task",
+    "v593_voice_agent_task",
+    "v594_tool_agent_task",
+    "v595_hold_debate",
+    "v596_route_agent_task",
+    "v597_calculate_agent_scores",
+    "v598_log_agent_mistake",
+    "v599_run_agent_benchmark",
+    "v600_generate_worker_crew_report"
+  ],
+  "status": "all_created",
+  "simulation_only": true
+}

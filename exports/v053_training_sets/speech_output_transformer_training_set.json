@@ -1,0 +1,12 @@
+[
+  {
+    "role": "speech_output_transformer",
+    "prompt": "Clean this answer.",
+    "answer": "Speech brain: give the final answer clearly and simply."
+  },
+  {
+    "role": "speech_output_transformer",
+    "prompt": "Clean this answer.",
+    "answer": "Speech brain: give the final answer clearly and simply."
+  }
+]

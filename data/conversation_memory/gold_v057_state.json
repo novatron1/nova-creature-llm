@@ -1,0 +1,233 @@
+{
+  "version": "v056_conversation_memory",
+  "thread_id": "gold_v057",
+  "created_at": "2026-06-18T02:37:27",
+  "updated_at": "2026-06-18T02:37:28",
+  "current_topic": "conversation memory loop",
+  "active_goal": "make Nova remember the thread and understand follow-ups",
+  "last_user_message": "We need conversation memory.",
+  "last_assistant_answer": "I do not know.",
+  "last_route": "unknown_fallback",
+  "turn_count": 3,
+  "recent_turns": [
+    {
+      "time": "2026-06-18T02:37:27",
+      "user": "What is the v057 system?",
+      "assistant": "Dictionary plus conversation memory.",
+      "route": "dictionary_memory_exact",
+      "topic": "",
+      "goal": "",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T02:37:27",
+            "question": "What is the v057 system?",
+            "normalized": "what is the v057 system",
+            "answer": "Dictionary plus conversation memory.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T02:37:28",
+      "user": "We need conversation memory.",
+      "assistant": "I do not know.",
+      "route": "unknown_fallback",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T02:37:28.235863",
+          "results": [
+            {
+              "question": "We need conversation memory",
+              "final_answer": "I do not know.",
+              "selected_route": "unknown_fallback",
+              "selected": null,
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.30000000000000004,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T02:37:28",
+      "user": "We need conversation memory.",
+      "assistant": "I do not know.",
+      "route": "unknown_fallback",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "version": "v056_conversation_memory_loop",
+          "thread_id": "gold_v057",
+          "message": "We need conversation memory.",
+          "resolved_message": "We need conversation memory.",
+          "answer": "I do not know.",
+          "route": "unknown_fallback",
+          "context": {
+            "thread_id": "gold_v057",
+            "message": "We need conversation memory.",
+            "resolved_message": "We need conversation memory.",
+            "is_followup": false,
+            "current_topic": "conversation memory loop",
+            "active_goal": "make Nova remember the thread and understand follow-ups",
+            "last_user_message": "What is the v057 system?",
+            "last_assistant_answer": "Dictionary plus conversation memory.",
+            "last_route": "dictionary_memory_exact",
+            "recent_turns": [
+              {
+                "time": "2026-06-18T02:37:27",
+                "user": "What is the v057 system?",
+                "assistant": "Dictionary plus conversation memory.",
+                "route": "dictionary_memory_exact",
+                "topic": "",
+                "goal": "",
+                "extra": {
+                  "v057_dictionary_router": {
+                    "dictionary_hit": {
+                      "found": true,
+                      "time": "2026-06-18T02:37:27",
+                      "question": "What is the v057 system?",
+                      "normalized": "what is the v057 system",
+                      "answer": "Dictionary plus conversation memory.",
+                      "source": "approved_dictionary_exact"
+                    }
+                  }
+                }
+              }
+            ],
+            "known_facts": {},
+            "unresolved_items": []
+          },
+          "state": {
+            "current_topic": "conversation memory loop",
+            "active_goal": "make Nova remember the thread and understand follow-ups",
+            "turn_count": 2,
+            "last_route": "unknown_fallback"
+          },
+          "router_report": {
+            "version": "codex_cloud_v052_role_brain_router",
+            "created_at": "2026-06-18T02:37:28.235863",
+            "results": [
+              {
+                "question": "We need conversation memory",
+                "final_answer": "I do not know.",
+                "selected_route": "unknown_fallback",
+                "selected": null,
+                "brain_outputs": [
+                  {
+                    "slot": "left_hemisphere",
+                    "ready": true,
+                    "role": "math, code, logic, exact tests",
+                    "confidence": 0.1,
+                    "answer": null
+                  },
+                  {
+                    "slot": "right_hemisphere",
+                    "ready": true,
+                    "role": "patterns, imagination, visual maps, creative synthesis",
+                    "confidence": 0.1,
+                    "answer": null
+                  },
+                  {
+                    "slot": "memory_transformer",
+                    "ready": true,
+                    "role": "identity, facts, names, recall",
+                    "confidence": 0.30000000000000004,
+                    "answer": null
+                  },
+                  {
+                    "slot": "planner_transformer",
+                    "ready": true,
+                    "role": "steps, next actions, build sequence",
+                    "confidence": 0.1,
+                    "answer": null
+                  },
+                  {
+                    "slot": "critic_conscience_transformer",
+                    "ready": true,
+                    "role": "truth check, unknown guard, don't guess",
+                    "confidence": 0.1,
+                    "answer": null
+                  },
+                  {
+                    "slot": "dream_simulation_transformer",
+                    "ready": true,
+                    "role": "practice scenarios, variants, replay",
+                    "confidence": 0.1,
+                    "answer": null
+                  },
+                  {
+                    "slot": "speech_output_transformer",
+                    "ready": true,
+                    "role": "clean final answer style",
+                    "confidence": 0.1,
+                    "answer": null
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "known_facts": {},
+  "unresolved_items": [
+    "We need conversation memory."
+  ]
+}

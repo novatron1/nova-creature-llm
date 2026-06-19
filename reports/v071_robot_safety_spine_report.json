@@ -1,0 +1,66 @@
+{
+  "version": "v071_robot_safety_spine",
+  "created_at": "2026-06-18T03:55:27.689007",
+  "checks": {
+    "emergency_stop_available": {
+      "status": "missing",
+      "required": true,
+      "note": "Emergency stop circuit must be installed and tested before any real movement"
+    },
+    "collision_check_available": {
+      "status": "missing",
+      "required": true,
+      "note": "Collision detection (lidar, ultrasonic, or bumper sensors) required"
+    },
+    "human_distance_check_available": {
+      "status": "missing",
+      "required": true,
+      "note": "Human proximity detection required for safe operation near people"
+    },
+    "battery_check_available": {
+      "status": "missing",
+      "required": true,
+      "note": "Battery voltage monitoring required to prevent low-power runaway"
+    },
+    "command_speed_limit": {
+      "status": "defined",
+      "required": true,
+      "note": "Speed limited to 0.5 m/s in simulation, must be enforced in real mode"
+    },
+    "movement_zone_defined": {
+      "status": "missing",
+      "required": true,
+      "note": "Physical movement boundaries must be configured"
+    },
+    "real_hardware_config_present": {
+      "status": "missing",
+      "required": true,
+      "note": "Real hardware configuration file must exist and be validated"
+    },
+    "simulation_passed": {
+      "status": "passed",
+      "required": true,
+      "note": "Simulation log exists with recorded runs",
+      "state": "v070_bridge_installed"
+    },
+    "manual_owner_approval_required": {
+      "status": "pending",
+      "required": true,
+      "note": "Human owner must explicitly approve real robot operation"
+    }
+  },
+  "physical_movement_allowed": false,
+  "simulation_allowed": true,
+  "decision": "BLOCKED \u2014 physical movement requires all safety checks to pass",
+  "unblock_requirements": [
+    "Install and test emergency stop hardware",
+    "Install collision detection sensors",
+    "Install human proximity detection",
+    "Install battery monitor",
+    "Define movement zone boundaries",
+    "Create real hardware configuration file",
+    "Pass full simulation test suite",
+    "Obtain manual owner approval"
+  ],
+  "note": "v071 defines the safety spine. Real robot movement requires all checks to pass."
+}

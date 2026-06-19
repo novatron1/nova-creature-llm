@@ -1,0 +1,11 @@
+{
+  "version": "v265_ui_state",
+  "created_at": "2026-06-18T12:49:57.362881",
+  "ui_elements": [
+    "button",
+    "text_field",
+    "report"
+  ],
+  "state": "idle",
+  "next_action": "await_input"
+}

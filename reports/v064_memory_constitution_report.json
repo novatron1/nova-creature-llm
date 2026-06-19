@@ -1,0 +1,24 @@
+{
+  "version": "v064_memory_constitution",
+  "evaluated_at": "2026-06-18T03:48:32.846814",
+  "pending_count": 2,
+  "evaluations": [
+    {
+      "id": "v060_20260618_030750_461440",
+      "message": "Maybe this is the right checkpoint",
+      "memory_type": "pending_approval_memory",
+      "can_auto_approve": false,
+      "requires_approval": true,
+      "can_train": false
+    },
+    {
+      "id": "v060_20260618_031656_800182",
+      "message": "Maybe this checkpoint is better.",
+      "memory_type": "pending_approval_memory",
+      "can_auto_approve": false,
+      "requires_approval": true,
+      "can_train": false
+    }
+  ],
+  "constitution_laws": 10
+}

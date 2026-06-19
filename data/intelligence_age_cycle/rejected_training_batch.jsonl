@@ -1,0 +1,2 @@
+{"lesson_id": "rj001", "source_system": "age_cycle", "source_text": "Train this uncertain claim", "cleaned_lesson": "", "blocked": true, "block_reason": "Pending uncertainty cannot train"}
+{"lesson_id": "rj002", "source_system": "age_cycle", "source_text": "Move real robot now", "cleaned_lesson": "", "blocked": true, "block_reason": "Real robot movement not enabled"}

@@ -1,0 +1,105 @@
+{
+  "version": "v062_to_v066_stack_status",
+  "created_at": "2026-06-18T04:08:31.655414",
+  "final_verified": true,
+  "v062_growth_engine": {
+    "status": "installed_and_passing",
+    "source_files": [
+      "src/v062_growth_streams.py",
+      "src/v062_growth_engine.py",
+      "src/v062_benchmark_gate.py"
+    ],
+    "growth_streams": 12,
+    "benchmark_tests": 10,
+    "benchmark_pass_rate": "100.0%",
+    "gate_passed": true,
+    "checker_passed": true,
+    "gold_test_passed": true
+  },
+  "v063_inner_voice_dream": {
+    "status": "installed_and_passing",
+    "source_files": [
+      "src/v063_inner_voice.py",
+      "src/v063_dream_replay.py",
+      "src/v063_dream_critic.py"
+    ],
+    "dream_critic_approved": 10,
+    "dream_critic_rejected": 2,
+    "inner_voice_reflection_steps": 4,
+    "checker_passed": true,
+    "gold_test_passed": true
+  },
+  "v064_memory_law": {
+    "status": "installed_and_passing",
+    "source_files": [
+      "src/v064_memory_law.py",
+      "src/v064_approval_constitution.py"
+    ],
+    "memory_laws": 10,
+    "approval_rules": 3,
+    "checker_passed": true,
+    "gold_test_passed": true
+  },
+  "v065_skill_hands": {
+    "status": "installed_and_passing",
+    "source_files": [
+      "src/v065_skill_hands.py",
+      "src/v065_self_test_nervous_system.py"
+    ],
+    "allowed_actions": 10,
+    "blocked_actions": 7,
+    "self_test_health": "healthy",
+    "self_test_passed": "10/10",
+    "checker_passed": true,
+    "gold_test_passed": true
+  },
+  "v066_capability_self_map": {
+    "status": "installed_and_passing",
+    "source_files": [
+      "src/v066_capability_self_map.py",
+      "src/v066_capability_answerer.py"
+    ],
+    "brain_organs_detected": 7,
+    "active_on_v055": true,
+    "real_hardware_enabled": false,
+    "checker_passed": true,
+    "print_works": true,
+    "answerer_works": true
+  },
+  "v059_regression": {
+    "router_still_selects_v055": true,
+    "all_7_roles_on_v055": true,
+    "no_fallback_active": true,
+    "checker_24_of_24_passed": true
+  },
+  "v061_regression": {
+    "learning_loop_dry_run_passed": true,
+    "can_promote": true
+  },
+  "benchmark_gate": {
+    "status": "passing",
+    "pass_rate": "100.0%"
+  },
+  "router_test": {
+    "5_questions_all_routed_correctly": true,
+    "math_routed": "left_hemisphere -> 144",
+    "identity_routed": "memory_transformer -> Mr. Novotron",
+    "plan_routed": "planner_transformer",
+    "imagination_routed": "right_hemisphere",
+    "critic_routed": "critic_conscience_transformer -> I do not know"
+  },
+  "active_capabilities": 33,
+  "inactive_capabilities": 4,
+  "missing_capabilities": 8,
+  "real_hardware_enabled": false,
+  "robot_movement_blocked": true,
+  "safety_limits": [
+    "Real robot movement is disabled by default",
+    "v064 memory constitution blocks uncertain/personal memory from training",
+    "v062 benchmark gate must pass before any promotion",
+    "v071 safety spine must pass before real robot movement"
+  ],
+  "next_recommended_upgrade": "v069 \u2014 Self-Scripting Brain (write/test scripts in sandbox)",
+  "roadmap_stubs_created": 19,
+  "promote_ready": true
+}

@@ -1,0 +1,11 @@
+{
+  "version": "v243_tokenizer_check",
+  "created_at": "2026-06-18T12:48:27.652816",
+  "model": null,
+  "tokenizer_found": false,
+  "vocab_size": 0,
+  "unknown_token_behavior": "unknown",
+  "training_compatible": false,
+  "blocker": "no_tokenizer_file",
+  "note": "No model candidate to check tokenizer against."
+}

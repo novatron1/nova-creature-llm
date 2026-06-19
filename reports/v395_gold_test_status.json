@@ -1,0 +1,7 @@
+{
+  "version": "v395_weakness_experiment_logger",
+  "created_at": "2026-06-18T13:01:54.980473",
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Weakness Detected Experiment Logger module \u2014 simulation only. No real hardware."
+}

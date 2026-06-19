@@ -1,0 +1,17 @@
+{
+  "version": "v694_next_training_target_selector",
+  "created_at": "2026-06-18T14:01:21.590724",
+  "safe": true,
+  "growth_proven": false,
+  "selection_criteria": {
+    "weakest_score": "reasoning",
+    "highest_impact": "logical_reasoning",
+    "lowest_regression_risk": "factual_recall",
+    "clean_data": "reading_comprehension",
+    "benchmark_availability": "math",
+    "tournament_readiness": "coding"
+  },
+  "recommended_target": "reasoning",
+  "reasoning": "Weakest score with highest impact potential",
+  "priority_score": 0.92
+}

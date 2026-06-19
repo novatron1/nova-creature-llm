@@ -1,0 +1,832 @@
+{
+  "version": "v070_sync_plan",
+  "created_at": "2026-06-18T03:48:34.019329",
+  "project_root": "/root/New Project (1)Nova LLM",
+  "total_groups": 10,
+  "total_files": 120,
+  "total_size_bytes": 193464077,
+  "total_size_mb": 184.5,
+  "groups": [
+    {
+      "id": "checkpoints_base",
+      "label": "Base checkpoints",
+      "essential": true,
+      "direction": "cloud_to_local",
+      "file_count": 2,
+      "total_size_bytes": 24013056,
+      "files": [
+        {
+          "path": "checkpoints/base/creature_v019_proof_fallback.pt",
+          "size_bytes": 12007973,
+          "sha256": "7ad6e2e775f035143fc9b31f5edd720410ce8f832793089f937622d3adeff050",
+          "modified": "2026-06-18T02:11:29.314752"
+        },
+        {
+          "path": "checkpoints/base/creature_v032_bigfit_twenty_plain.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        }
+      ]
+    },
+    {
+      "id": "brain_slots",
+      "label": "Role brain checkpoints",
+      "essential": true,
+      "direction": "cloud_to_local",
+      "file_count": 14,
+      "total_size_bytes": 168074378,
+      "files": [
+        {
+          "path": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_v055_finetuned.pt",
+          "size_bytes": 12006421,
+          "sha256": "f5cad64002264127ef29f01f5013740c8370d846bbff43518fc296e77d08b0c4",
+          "modified": "2026-06-18T03:18:03.119246"
+        },
+        {
+          "path": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v055_finetuned.pt",
+          "size_bytes": 12006311,
+          "sha256": "d932eb6621575ba706382aeddbadb35158f2e303d90f6d553e5648f7a4af6572",
+          "modified": "2026-06-18T03:18:06.567247"
+        },
+        {
+          "path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_finetuned.pt",
+          "size_bytes": 12004817,
+          "sha256": "511cd812682a6bd5ea9f2537f97f3f2502824e787e9edcfeb50a3ac8c9cdcf70",
+          "modified": "2026-06-18T03:17:44.499247"
+        },
+        {
+          "path": "checkpoints/brain_slots/memory_transformer/memory_transformer_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/memory_transformer/memory_transformer_v055_finetuned.pt",
+          "size_bytes": 12005147,
+          "sha256": "f9025ffc05e781e7d02fb23a0976830009c7dd97d8cbfeeea3b031ce7ad4ec28",
+          "modified": "2026-06-18T03:17:54.527246"
+        },
+        {
+          "path": "checkpoints/brain_slots/planner_transformer/planner_transformer_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/planner_transformer/planner_transformer_v055_finetuned.pt",
+          "size_bytes": 12005257,
+          "sha256": "3c555c9d1e70076852941b26b6e9527b58375eeb6782373c3db60da220a7c060",
+          "modified": "2026-06-18T03:17:58.335247"
+        },
+        {
+          "path": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_v055_finetuned.pt",
+          "size_bytes": 12004927,
+          "sha256": "4d9c862bdd6dfd887bbdf860a26228adea6bc17c8447233d9317ca216c6e39d2",
+          "modified": "2026-06-18T03:17:48.511247"
+        },
+        {
+          "path": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v054_specialized.pt",
+          "size_bytes": 12005083,
+          "sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+          "modified": "2026-06-18T02:15:49.182752"
+        },
+        {
+          "path": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v055_finetuned.pt",
+          "size_bytes": 12005917,
+          "sha256": "0ed831d4eb06c38b296817961e6527cc57b81341cecc07257e287832c43b7c5d",
+          "modified": "2026-06-18T03:18:09.951247"
+        }
+      ]
+    },
+    {
+      "id": "dictionary_memory",
+      "label": "Dictionary Q&A memory",
+      "essential": true,
+      "direction": "bidirectional",
+      "file_count": 1,
+      "total_size_bytes": 547,
+      "files": [
+        {
+          "path": "data/dictionary_memory/approved_answer_dictionary.json",
+          "size_bytes": 547,
+          "sha256": "230cfc7816457b97e9580241c9a6f6e0adea0cf61a4371593697927b84aaa803",
+          "modified": "2026-06-18T03:16:56.819247"
+        }
+      ]
+    },
+    {
+      "id": "smart_memory",
+      "label": "Smart memory stores",
+      "essential": true,
+      "direction": "bidirectional",
+      "file_count": 6,
+      "total_size_bytes": 8553,
+      "files": [
+        {
+          "path": "data/smart_memory/auto_project_memory.jsonl",
+          "size_bytes": 1032,
+          "sha256": "b860237fc132c15902075179057427a69cbc21b898aae14e028883a9925b5bd3",
+          "modified": "2026-06-18T03:07:49.819247"
+        },
+        {
+          "path": "data/smart_memory/explicit_user_memory.jsonl",
+          "size_bytes": 2293,
+          "sha256": "32a67606223979d20b38674fa10389644c97fc8dbfed9bdbd1165a541e472c6c",
+          "modified": "2026-06-18T03:17:12.067247"
+        },
+        {
+          "path": "data/smart_memory/learning_loop_history.jsonl",
+          "size_bytes": 977,
+          "sha256": "4f4cfbc84f14ba2b8472f3f6f96f1169addcd596facdefeaee5ce348e047d81e",
+          "modified": "2026-06-18T03:18:11.007246"
+        },
+        {
+          "path": "data/smart_memory/pending_approval_memory.jsonl",
+          "size_bytes": 994,
+          "sha256": "9e3c50e6325abce9470aa938f9f19d1c6e82b0c46b08832e696c2647b89eadc3",
+          "modified": "2026-06-18T03:16:56.803246"
+        },
+        {
+          "path": "data/smart_memory/temporary_conversation_context.jsonl",
+          "size_bytes": 926,
+          "sha256": "e9d4afd39d7805e3ea0acd2637c47edade9e0991a0eecb22e6944fcf3c2acc84",
+          "modified": "2026-06-18T03:16:56.811247"
+        },
+        {
+          "path": "data/smart_memory/training_candidate_memory.jsonl",
+          "size_bytes": 2331,
+          "sha256": "cdf1e705a968fc609332a27eeb977b5c7cacff08ccfdfbd0d0b1f8ed3714084e",
+          "modified": "2026-06-18T03:18:21.955247"
+        }
+      ]
+    },
+    {
+      "id": "training_sets",
+      "label": "Training sets",
+      "essential": true,
+      "direction": "cloud_to_local",
+      "file_count": 8,
+      "total_size_bytes": 6254,
+      "files": [
+        {
+          "path": "exports/v053_training_sets/critic_conscience_transformer_training_set.json",
+          "size_bytes": 761,
+          "sha256": "b11a9eb9811ee607322cc4bb9eb155b1cee9b6a5ca5386542604dc339d788829",
+          "modified": "2026-06-18T03:16:56.835247"
+        },
+        {
+          "path": "exports/v053_training_sets/dream_simulation_transformer_training_set.json",
+          "size_bytes": 334,
+          "sha256": "2a42e46b310951c40b999b08083424cbf5d0f929e5952006c3f5558e83d02db8",
+          "modified": "2026-06-18T03:16:56.835247"
+        },
+        {
+          "path": "exports/v053_training_sets/left_hemisphere_training_set.json",
+          "size_bytes": 200,
+          "sha256": "336970c23a30ba62c13df5f66ddfd379a8d71841b6f0cc3826fe35283d5bf7d9",
+          "modified": "2026-06-18T03:16:56.831247"
+        },
+        {
+          "path": "exports/v053_training_sets/memory_transformer_training_set.json",
+          "size_bytes": 3068,
+          "sha256": "5943e9bd371a0a7321b3374c2847e2b0195e15ea37ad4429454e3f7acd81f2fc",
+          "modified": "2026-06-18T03:39:52.403246"
+        },
+        {
+          "path": "exports/v053_training_sets/planner_transformer_training_set.json",
+          "size_bytes": 1034,
+          "sha256": "87c7be32ad3501491b744a8631f2a0b45cb41f77b3b0d81b08131e159f0ddf4b",
+          "modified": "2026-06-18T03:39:52.403246"
+        },
+        {
+          "path": "exports/v053_training_sets/right_hemisphere_training_set.json",
+          "size_bytes": 324,
+          "sha256": "627d3380bfd2da9810c151bedd43c4ab005864f12325fa07374ab3dec19e2899",
+          "modified": "2026-06-18T03:16:56.831247"
+        },
+        {
+          "path": "exports/v053_training_sets/speech_output_transformer_training_set.json",
+          "size_bytes": 318,
+          "sha256": "f6c5e1a8b5d0b83557a0c50f7c86fe84735dbdefc607d551fec7dbf623fbb5d4",
+          "modified": "2026-06-18T03:16:56.835247"
+        },
+        {
+          "path": "exports/v053_training_sets/summary.json",
+          "size_bytes": 215,
+          "sha256": "17da1d0d286c5e71c80eb49b1c23ebdb3ce484456f49de7c8a5050124887fb7e",
+          "modified": "2026-06-18T02:06:26.258752"
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "label": "Status reports",
+      "essential": false,
+      "direction": "cloud_to_local",
+      "file_count": 23,
+      "total_size_bytes": 640515,
+      "files": [
+        {
+          "path": "reports/cloud_v055_checkpoint_and_torch_status.json",
+          "size_bytes": 4061,
+          "sha256": "d734ec5d150c48df256fa0ec79bbe875e9e22abcc895b81a177172d74834261f",
+          "modified": "2026-06-18T03:17:22.027247"
+        },
+        {
+          "path": "reports/codex_cloud_catchup_status.json",
+          "size_bytes": 402,
+          "sha256": "8d03215fb3a49cfd61c890f644e0986ec032a85a7e5884fc80ea84741ea1f706",
+          "modified": "2026-06-18T01:54:07.534753"
+        },
+        {
+          "path": "reports/codex_v052_role_router_last_report.json",
+          "size_bytes": 1876,
+          "sha256": "5d2cb6f3d0081d050273844ac71865775f937e83a01ce363d7a590d136d74fd6",
+          "modified": "2026-06-18T03:48:31.463246"
+        },
+        {
+          "path": "reports/codex_v054_role_checkpoint_summary.json",
+          "size_bytes": 4736,
+          "sha256": "b3e306458528e423459ebe5c0c41a4193f7f8fa520aeb67d6f0d6467058d9a2e",
+          "modified": "2026-06-18T03:17:12.507246"
+        },
+        {
+          "path": "reports/codex_v055_torch_ready.json",
+          "size_bytes": 207,
+          "sha256": "aab9b11a39c43267c782d981630006e1ceeb8601260a7605b39f2c4a4a761fcb",
+          "modified": "2026-06-18T03:17:22.027247"
+        },
+        {
+          "path": "reports/v055_finetune_summary.json",
+          "size_bytes": 3466,
+          "sha256": "cd01ef482eaf601b731bf1ce83ae9c05ca3ba2c3e94896ee7866815951ca6963",
+          "modified": "2026-06-18T03:18:09.967247"
+        },
+        {
+          "path": "reports/v056_conversation_memory_install_status.json",
+          "size_bytes": 410,
+          "sha256": "ee574d9094cc7e9ac0b776b6cf54c2eb39eb35928849ab81ade9d9c112081ee7",
+          "modified": "2026-06-18T02:36:52.142752"
+        },
+        {
+          "path": "reports/v056_conversation_memory_last_report.json",
+          "size_bytes": 15036,
+          "sha256": "c2ce989820c9ce8f4b84946a86b6c9b61c8ad04e9c7e01763dbc28bf2346d31f",
+          "modified": "2026-06-18T02:37:26.890752"
+        },
+        {
+          "path": "reports/v057_dictionary_conversation_last_report.json",
+          "size_bytes": 688,
+          "sha256": "e0ca2bae348b753d2699c47eabf07ab90542688607eb949473ca7a10c8749165",
+          "modified": "2026-06-18T03:48:31.939246"
+        },
+        {
+          "path": "reports/v057_dictionary_memory_install_status.json",
+          "size_bytes": 446,
+          "sha256": "cbe1d3173dd1fb22145e24abc5e76b1a090849f224c395419e49acc7a9883faa",
+          "modified": "2026-06-18T02:37:01.482752"
+        },
+        {
+          "path": "reports/v058_dictionary_to_transformer_install_status.json",
+          "size_bytes": 131,
+          "sha256": "2b4e9bc21050df557ae009aaaccef2dc1446f83b5fdea66247443544afc189d4",
+          "modified": "2026-06-18T02:37:08.106752"
+        },
+        {
+          "path": "reports/v059_live_router_checkpoint_priority.json",
+          "size_bytes": 3178,
+          "sha256": "999de23a5610403113972f4b51bc8e89c5172bb8259dc4449129046428bdf5f2",
+          "modified": "2026-06-18T03:48:32.543246"
+        },
+        {
+          "path": "reports/v060_smart_memory_capture_status.json",
+          "size_bytes": 1273,
+          "sha256": "65aa4b971886ecac8d92edb9ecdef492032793ed26f22083a4217c01ff8336d6",
+          "modified": "2026-06-18T03:07:40.003247"
+        },
+        {
+          "path": "reports/v060_smart_memory_router_last_report.json",
+          "size_bytes": 558901,
+          "sha256": "f939394cf6ab4c4d793ace762b7734bacc171b2b58e9856c949b52092bf03691",
+          "modified": "2026-06-18T03:18:21.971246"
+        },
+        {
+          "path": "reports/v061_gold_learning_loop_test.json",
+          "size_bytes": 717,
+          "sha256": "52233ce8a5521b8d44cde3959c9025294dd00fcb0ce5ed20e41856b10b2f9881",
+          "modified": "2026-06-18T03:16:56.843247"
+        },
+        {
+          "path": "reports/v061_learning_loop_status.json",
+          "size_bytes": 3747,
+          "sha256": "6ccf4a112bab85c5251d4b345492baab201deb3c4b642208e9e3ea87d25d7eb4",
+          "modified": "2026-06-18T03:18:11.007246"
+        },
+        {
+          "path": "reports/v062_benchmark_report.json",
+          "size_bytes": 2192,
+          "sha256": "f6e46d3dafae654aa3fdc2adfc0c90797f83b93dacbaef8954cff4d7f53d6bb2",
+          "modified": "2026-06-18T03:48:32.147246"
+        },
+        {
+          "path": "reports/v062_gold_gate_test.json",
+          "size_bytes": 782,
+          "sha256": "81e153dbca61b5a345549b10c99bdaf71e6ce062e44cdbb30957411b6008f2b8",
+          "modified": "2026-06-18T03:37:44.315246"
+        },
+        {
+          "path": "reports/v062_multi_source_growth_report.json",
+          "size_bytes": 1515,
+          "sha256": "0a97862635921b939f336092ca934b042b489dd2993ed172916629fe3d81325f",
+          "modified": "2026-06-18T03:48:33.007246"
+        },
+        {
+          "path": "reports/v063_dream_replay_report.json",
+          "size_bytes": 284,
+          "sha256": "9ea2a9ae5b1d2c7d819b70ac03b6bae84ee207ac3cf57147909d39b6d6d46ab9",
+          "modified": "2026-06-18T03:39:52.415246"
+        },
+        {
+          "path": "reports/v064_memory_constitution_report.json",
+          "size_bytes": 661,
+          "sha256": "f7e744a04717cef8333e8ef9a98d4f7e360674f57a84a270322568aebe5ce2d6",
+          "modified": "2026-06-18T03:48:32.843246"
+        },
+        {
+          "path": "reports/v065_nervous_system_report.json",
+          "size_bytes": 2637,
+          "sha256": "6d2e33ea95ceea981686b6877c93ef461f76f610f6093067677578d04cf7f2c0",
+          "modified": "2026-06-18T03:48:33.015246"
+        },
+        {
+          "path": "reports/v070_sync_manifest.json",
+          "size_bytes": 33169,
+          "sha256": "86937576cff84602fb422e0f362e867b2e1fe1f1064e64560012cfbc900f4fc0",
+          "modified": "2026-06-18T03:46:33.571246"
+        }
+      ]
+    },
+    {
+      "id": "source_code",
+      "label": "Source code (src/scripts)",
+      "essential": true,
+      "direction": "cloud_to_local",
+      "file_count": 60,
+      "total_size_bytes": 229944,
+      "files": [
+        {
+          "path": "src/conversation_memory.py",
+          "size_bytes": 7301,
+          "sha256": "6bf3535a431cee8ae518bf61247631eee38cbd4598f66de34cae4d6b8b0301d5",
+          "modified": "2026-06-18T06:29:14"
+        },
+        {
+          "path": "src/dictionary_memory.py",
+          "size_bytes": 4842,
+          "sha256": "caf6ad51ad96c4f63a23124e5a22cd5931135b918322ad58ab438ffeada036e3",
+          "modified": "2026-06-18T06:31:50"
+        },
+        {
+          "path": "src/dictionary_to_training.py",
+          "size_bytes": 5287,
+          "sha256": "756f163fa716ffe09ea17160333c21ea3399a1d375e39560aeda6b5ea6e89755",
+          "modified": "2026-06-18T06:34:38"
+        },
+        {
+          "path": "src/v052_role_brain_router.py",
+          "size_bytes": 7126,
+          "sha256": "a22ce02d5ee9221d67062adbf159d3055fdaa0c9e316a947bcd6fc6a05f84c82",
+          "modified": "2026-06-18T01:54:00.606753"
+        },
+        {
+          "path": "src/v056_conversation_router.py",
+          "size_bytes": 3551,
+          "sha256": "0916ea3902e89815e293895ae03c6ba7d3ae0fb8f603476d44761284ad9c5048",
+          "modified": "2026-06-18T06:29:14"
+        },
+        {
+          "path": "src/v057_dictionary_conversation_router.py",
+          "size_bytes": 3741,
+          "sha256": "e4593cafdfbe0456d25a2b25ceb1f783669fe94a79ab382d248f7e69d76beb10",
+          "modified": "2026-06-18T06:31:50"
+        },
+        {
+          "path": "src/v059_checkpoint_resolver.py",
+          "size_bytes": 4509,
+          "sha256": "2473648357a109843acf9d24988b8b1ecfbf07ee30f0a76692b966dc57511597",
+          "modified": "2026-06-18T02:44:02.581586"
+        },
+        {
+          "path": "src/v060_memory_manager.py",
+          "size_bytes": 6020,
+          "sha256": "49019930787e869d0893b93345fe3448265ea47f93cad11b6817b95c44af29ec",
+          "modified": "2026-06-18T03:06:25.291247"
+        },
+        {
+          "path": "src/v060_smart_memory_capture.py",
+          "size_bytes": 6723,
+          "sha256": "98fee8a1fe0ec34ddaa4dc0df6ff15e5c2ddb73bf82b22f8c03e068dd7e51b5d",
+          "modified": "2026-06-18T03:05:47.847247"
+        },
+        {
+          "path": "src/v060_smart_memory_router.py",
+          "size_bytes": 3370,
+          "sha256": "a6cc17dff70da0c717c215e2167318639d803c51624c3b933bf05414e304cc01",
+          "modified": "2026-06-18T03:06:41.459247"
+        },
+        {
+          "path": "src/v061_learning_loop_manager.py",
+          "size_bytes": 9177,
+          "sha256": "8ea96acc334e5783a9dcee050b20c8705101f9578265b8c6103bbfa5d98b6648",
+          "modified": "2026-06-18T03:15:45.227247"
+        },
+        {
+          "path": "src/v061_memory_exporter.py",
+          "size_bytes": 7216,
+          "sha256": "64b6c5ab2fecf6e65bd714c863ed4a325599ae2e0a2220b6bd8f03e54a108a87",
+          "modified": "2026-06-18T03:15:19.015247"
+        },
+        {
+          "path": "src/v062_benchmark_gate.py",
+          "size_bytes": 6021,
+          "sha256": "3d1d4ea6002cbc442a5430da601277738edf42f52ae38674eddfe948d0d7984c",
+          "modified": "2026-06-18T03:37:01.763246"
+        },
+        {
+          "path": "src/v062_multi_source_growth.py",
+          "size_bytes": 3725,
+          "sha256": "e554af033354297b5ac6e3780f3d05a2f375058ef653d4a75f54f8f12baf16ab",
+          "modified": "2026-06-18T03:37:17.471246"
+        },
+        {
+          "path": "src/v063_dream_replay.py",
+          "size_bytes": 5612,
+          "sha256": "cb52e5af70e82ce0f9307d5a1a7ea0315ad1d827c062856571155fc68a66263e",
+          "modified": "2026-06-18T03:39:41.339246"
+        },
+        {
+          "path": "src/v063_inner_voice.py",
+          "size_bytes": 3370,
+          "sha256": "a53ffc3835b6c13c3211886738b2bf469e9c7322f6ebe56023eeebd236a3d38f",
+          "modified": "2026-06-18T03:38:21.899246"
+        },
+        {
+          "path": "src/v064_memory_constitution.py",
+          "size_bytes": 8029,
+          "sha256": "34b4e79e8784e503783951c42a42b5ac17a11d5199a06dc272cf4740164b65da",
+          "modified": "2026-06-18T03:41:10.763246"
+        },
+        {
+          "path": "src/v065_nervous_system.py",
+          "size_bytes": 5306,
+          "sha256": "ac5d4c2e2762d65bc0ecadf2186ee70da0f4a1dab0d17406c12dfb74f8cc6371",
+          "modified": "2026-06-18T03:42:36.443246"
+        },
+        {
+          "path": "src/v066_project_vault.py",
+          "size_bytes": 5419,
+          "sha256": "7438a25f1087f6ec1300063ad3cf62dedf7a4e12c4675407c9245f1e4f33d960",
+          "modified": "2026-06-18T03:43:37.147246"
+        },
+        {
+          "path": "src/v067_vision_stream.py",
+          "size_bytes": 5125,
+          "sha256": "2f3a483e4c43323a01288a180ca762a19a15abe870bb102651efbd31c1ea2f8d",
+          "modified": "2026-06-18T03:44:28.379246"
+        },
+        {
+          "path": "src/v068_short_conversation.py",
+          "size_bytes": 4943,
+          "sha256": "c9f1846bb35af810dbfd268983ac32304ed11b05551ae48ca90045dc1a48050a",
+          "modified": "2026-06-18T03:48:04.499246"
+        },
+        {
+          "path": "src/v069_error_bank.py",
+          "size_bytes": 5563,
+          "sha256": "8303ed7d77f45456919d2fe0d7ae1433bc8c33c2d27e00daea1e37f7cd47d51c",
+          "modified": "2026-06-18T03:45:16.303246"
+        },
+        {
+          "path": "src/v070_sync_plan.py",
+          "size_bytes": 5711,
+          "sha256": "8724e887b1deac10474633c52cfbbc3ed98945d40d6581855f774685fb7c48cd",
+          "modified": "2026-06-18T03:45:56.763246"
+        },
+        {
+          "path": "scripts/apply_codex_catchup.py",
+          "size_bytes": 3134,
+          "sha256": "c9009c90a2fc963f6bf497f74bf69e1774f293547d58e1c019e659cfced1f1a4",
+          "modified": "2026-06-18T01:54:00.606753"
+        },
+        {
+          "path": "scripts/check_codex_brain_stack.py",
+          "size_bytes": 1588,
+          "sha256": "f53778615a0835361df0928a79adcb64974c770202c27856bff29b1d67659f89",
+          "modified": "2026-06-18T01:54:00.602753"
+        },
+        {
+          "path": "scripts/check_v055_finetuned_role_brains.py",
+          "size_bytes": 5274,
+          "sha256": "2792bd542d4fd0ac9f85dfa4c2f8877d407c5eedbba1a52853a2c7ac09bf3165",
+          "modified": "2026-06-18T02:21:22.078752"
+        },
+        {
+          "path": "scripts/check_v056_conversation_memory.py",
+          "size_bytes": 899,
+          "sha256": "5a8e408e830964d7a65ce5c72c972f63ae176a995bb863e3f9a7014b40a5468c",
+          "modified": "2026-06-18T06:29:14"
+        },
+        {
+          "path": "scripts/check_v057_dictionary_memory.py",
+          "size_bytes": 970,
+          "sha256": "dc6bcf1f87e072146cdc589687d5f77d2888c0cf5d6ba89f8bfb96dcfb8d523e",
+          "modified": "2026-06-18T06:31:50"
+        },
+        {
+          "path": "scripts/check_v058_dictionary_to_transformer.py",
+          "size_bytes": 841,
+          "sha256": "afd18e346e5c7b0e8034fa24ff07093fbc826950a90869bcd3be3ae291e80ed6",
+          "modified": "2026-06-18T06:34:38"
+        },
+        {
+          "path": "scripts/check_v059_router_uses_finetuned_brains.py",
+          "size_bytes": 7546,
+          "sha256": "80e2de7d18c6c20a3ec77e8ca80707080e2f86d8fed96955160493ce37b680c2",
+          "modified": "2026-06-18T02:44:22.113586"
+        },
+        {
+          "path": "scripts/check_v060_smart_memory_capture.py",
+          "size_bytes": 3932,
+          "sha256": "65bad5e9c466e349bc3eea347685cd2fa6a348b3955c0c1930f19e2c917c0f18",
+          "modified": "2026-06-18T03:07:14.543247"
+        },
+        {
+          "path": "scripts/check_v061_learning_loop.py",
+          "size_bytes": 3540,
+          "sha256": "eccf4d63884d5429d6c4ba2b959800434f1cd58007a3cae93f86fb2ba876b1fb",
+          "modified": "2026-06-18T03:16:25.943247"
+        },
+        {
+          "path": "scripts/check_v062_benchmark_gate.py",
+          "size_bytes": 2516,
+          "sha256": "7595417a502877881b156b4976352bb468d9e34938dde45b09d58e4de9a14256",
+          "modified": "2026-06-18T03:37:37.855246"
+        },
+        {
+          "path": "scripts/check_v063_inner_voice_dream.py",
+          "size_bytes": 2564,
+          "sha256": "3d5354c1f5ee7211a83fc52b302a694e51628557b446846905e69a3d281b97d5",
+          "modified": "2026-06-18T03:38:36.031246"
+        },
+        {
+          "path": "scripts/check_v064_memory_constitution.py",
+          "size_bytes": 2457,
+          "sha256": "80db5ba091739be9b167af095fd34191454775f1148a4ed5806653032c7a1002",
+          "modified": "2026-06-18T03:40:45.043246"
+        },
+        {
+          "path": "scripts/check_v065_nervous_system.py",
+          "size_bytes": 1606,
+          "sha256": "aef71579f590e5375ab095adc9202a372e3eb50fb198a5ed83380be4f29702b9",
+          "modified": "2026-06-18T03:42:01.031246"
+        },
+        {
+          "path": "scripts/check_v066_project_vault.py",
+          "size_bytes": 1996,
+          "sha256": "7793c90ddb22d358a1df4a118f9a7eb61ae57f0d2b2edf5557e77d00545990e2",
+          "modified": "2026-06-18T03:43:37.159246"
+        },
+        {
+          "path": "scripts/check_v067_vision_stream.py",
+          "size_bytes": 1526,
+          "sha256": "febe1490d6db7435d31c508b5443bc41cb7223fc348593655d8de622d42eb13e",
+          "modified": "2026-06-18T03:44:28.383246"
+        },
+        {
+          "path": "scripts/check_v068_short_conversation.py",
+          "size_bytes": 1924,
+          "sha256": "91840a2ef59f260fb1f53deab005bece40ac79abc3f66305b8e1e71034f9e49b",
+          "modified": "2026-06-18T03:44:55.891246"
+        },
+        {
+          "path": "scripts/check_v069_error_bank.py",
+          "size_bytes": 1911,
+          "sha256": "dff9599b37c0d1fa7c39e321344e900605a95bb6da58b07ad257c8a98171c2b0",
+          "modified": "2026-06-18T03:45:16.311246"
+        },
+        {
+          "path": "scripts/check_v070_sync_plan.py",
+          "size_bytes": 1404,
+          "sha256": "e628a7f2e609ad23420701e19316518bb97948307250fbb63a3f81f1e14e56f7",
+          "modified": "2026-06-18T03:45:56.775246"
+        },
+        {
+          "path": "scripts/cloud_chat_adapter.py",
+          "size_bytes": 2631,
+          "sha256": "f944c8a34d4b562900350c7fab4455779e6ce624eadb70de921b9a253bafbeab",
+          "modified": "2026-06-18T01:54:00.602753"
+        },
+        {
+          "path": "scripts/v053_training_prep.py",
+          "size_bytes": 4725,
+          "sha256": "8bf5eb6dc0bee18973aa36d9d5bcc734b1b53a7edd267ad3bb03475a32479d09",
+          "modified": "2026-06-18T01:54:00.602753"
+        },
+        {
+          "path": "scripts/v054_role_checkpoint_builder.py",
+          "size_bytes": 4993,
+          "sha256": "b8a386cad9c2fa8780cc96a4f1b1e5baed06f54db4174a8eda5b7db7f845e417",
+          "modified": "2026-06-18T02:05:57.290752"
+        },
+        {
+          "path": "scripts/v055_cloud_finetune_ready.py",
+          "size_bytes": 7036,
+          "sha256": "37659180e48212aedd1fec2cf9239a402066fdea9255b355d724844648da9020",
+          "modified": "2026-06-18T02:06:15.622752"
+        },
+        {
+          "path": "scripts/v055_finetune_role_brains.py",
+          "size_bytes": 11571,
+          "sha256": "2a42f59df28d974a1440ed0a6044e564783f75327811764188c46db9f8122881",
+          "modified": "2026-06-18T02:21:00.482752"
+        },
+        {
+          "path": "scripts/v056_chat_once.py",
+          "size_bytes": 738,
+          "sha256": "e376451c44411e6775088588a4d3d9abf144460f9b8872c35f33d03314e109a9",
+          "modified": "2026-06-18T06:29:14"
+        },
+        {
+          "path": "scripts/v056_gold_conversation_test.py",
+          "size_bytes": 1335,
+          "sha256": "e74bc226b8ffab11efea0b885431237e3cd3f1775f13c57c7fb48f1e741d4d68",
+          "modified": "2026-06-18T06:29:14"
+        },
+        {
+          "path": "scripts/v057_add_dictionary_lesson.py",
+          "size_bytes": 827,
+          "sha256": "3f43e0dd12c90be7d12767d17e8d66c2ac34ea1573897d4a501aeb9fa6ab49cd",
+          "modified": "2026-06-18T06:31:50"
+        },
+        {
+          "path": "scripts/v057_chat_once.py",
+          "size_bytes": 677,
+          "sha256": "016b0ba8c7c547c5a91876f7845855d7d490a76963b825591ba6570ff6766102",
+          "modified": "2026-06-18T06:31:50"
+        },
+        {
+          "path": "scripts/v057_gold_dictionary_test.py",
+          "size_bytes": 1252,
+          "sha256": "8f3f1269cd55ee9130ef63e6e97aa080aecfd65f80a4ae7ace02cb922a29ddda",
+          "modified": "2026-06-18T06:31:50"
+        },
+        {
+          "path": "scripts/v058_export_dictionary_to_training.py",
+          "size_bytes": 637,
+          "sha256": "8ecb55cfc4dc207e2d9ba3f69d0e82a7c6212fb52ef14718f67627ee2aa3ce63",
+          "modified": "2026-06-18T06:34:38"
+        },
+        {
+          "path": "scripts/v058_gold_dictionary_to_transformer_test.py",
+          "size_bytes": 1622,
+          "sha256": "25f23cf52daac22389df9e323813fb7623b341213fffbe6496662f8ac2280401",
+          "modified": "2026-06-18T06:34:38"
+        },
+        {
+          "path": "scripts/v060_approve_memory.py",
+          "size_bytes": 601,
+          "sha256": "a59aa0469c0ded1421cdf8b661618958fa3443b643b8fc38af1340db97a325a6",
+          "modified": "2026-06-18T03:06:50.915247"
+        },
+        {
+          "path": "scripts/v060_gold_smart_memory_test.py",
+          "size_bytes": 4569,
+          "sha256": "a950d1d602db4705d52f2756669285f012681fdc2e96ebee9c4035f0ebb9143a",
+          "modified": "2026-06-18T03:07:14.559247"
+        },
+        {
+          "path": "scripts/v060_list_pending_memory.py",
+          "size_bytes": 1055,
+          "sha256": "aa638f1993dd5e3734eb0d6a6ede078d00b15f736b5599bf11779d9f5fc1ff28",
+          "modified": "2026-06-18T03:06:50.899247"
+        },
+        {
+          "path": "scripts/v060_reject_memory.py",
+          "size_bytes": 599,
+          "sha256": "10fbb371d6235e8b95627b67597e64c6ebd5553ac401ff911e8f3546dbd32a18",
+          "modified": "2026-06-18T03:06:50.931247"
+        },
+        {
+          "path": "scripts/v061_gold_learning_loop_test.py",
+          "size_bytes": 7018,
+          "sha256": "66112ca96bf706a13770bd9531af777615e522e6178f46a741cf611c638d5f13",
+          "modified": "2026-06-18T03:16:25.955247"
+        },
+        {
+          "path": "scripts/v061_run_learning_loop.py",
+          "size_bytes": 1214,
+          "sha256": "08b61ec336c9e9de405c26075fade648529e4c96928c703d44e7a7238edee7f8",
+          "modified": "2026-06-18T03:15:56.219247"
+        },
+        {
+          "path": "scripts/v062_gold_gate_test.py",
+          "size_bytes": 3529,
+          "sha256": "eac05bb31f0a188a30349403cf0fc69c2acb8e01b7b564d95163c4748276cd1f",
+          "modified": "2026-06-18T03:37:37.875246"
+        }
+      ]
+    },
+    {
+      "id": "conversation_logs",
+      "label": "Conversation history",
+      "essential": false,
+      "direction": "bidirectional",
+      "file_count": 4,
+      "total_size_bytes": 489317,
+      "files": [
+        {
+          "path": "data/conversation_memory/default_turns.jsonl",
+          "size_bytes": 472189,
+          "sha256": "e44676ad542b88264515536fae9b18bab12048df561043676bc9c1ca4ab38e6e",
+          "modified": "2026-06-18T03:48:31.939246"
+        },
+        {
+          "path": "data/conversation_memory/gold_v056_turns.jsonl",
+          "size_bytes": 8336,
+          "sha256": "12a0b79e418b3922dfdb8862805994d2717c6384f30b16168c62b6004b4a451d",
+          "modified": "2026-06-18T02:37:26.890752"
+        },
+        {
+          "path": "data/conversation_memory/gold_v057_turns.jsonl",
+          "size_bytes": 4781,
+          "sha256": "235a9be46eeaaa938dcfad42696c769711fcc1e1d7c30a565b5237d43190aa28",
+          "modified": "2026-06-18T02:37:28.254752"
+        },
+        {
+          "path": "data/conversation_memory/v059_test_turns.jsonl",
+          "size_bytes": 4011,
+          "sha256": "465edb7c274b3483ef9ae6b60494f802ef6e06838c995d3f0b88fd52d35c5cd5",
+          "modified": "2026-06-18T03:18:21.527246"
+        }
+      ]
+    },
+    {
+      "id": "error_bank",
+      "label": "Error bank",
+      "essential": false,
+      "direction": "bidirectional",
+      "file_count": 1,
+      "total_size_bytes": 563,
+      "files": [
+        {
+          "path": "data/error_bank/error_bank.jsonl",
+          "size_bytes": 563,
+          "sha256": "b9f0cfc3cd597b246191a658f8da2cf0f1402a8bde5e13cb3f6d6f1b0aecb704",
+          "modified": "2026-06-18T03:46:32.751246"
+        }
+      ]
+    },
+    {
+      "id": "vision_logs",
+      "label": "Vision stream logs",
+      "essential": false,
+      "direction": "bidirectional",
+      "file_count": 1,
+      "total_size_bytes": 950,
+      "files": [
+        {
+          "path": "data/vision_stream/vision_log.jsonl",
+          "size_bytes": 950,
+          "sha256": "3bdfcb3b73d3708d637933e549ff1277a5017e021f5d7b9cb3cfb71057ae90c9",
+          "modified": "2026-06-18T03:46:32.515246"
+        }
+      ]
+    }
+  ],
+  "sync_command_template": "To sync: copy the listed files from cloud to local project root.\nUse rsync, scp, or manual copy. Do NOT overwrite local dictionary memory without backup."
+}

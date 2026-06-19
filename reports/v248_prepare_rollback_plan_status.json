@@ -1,0 +1,9 @@
+{
+  "version": "v248_rollback",
+  "created_at": "2026-06-18T12:48:39.682880",
+  "rollback_ready": true,
+  "current_v055_preserved": true,
+  "route_map_preserved": true,
+  "checkpoint_hashes_saved": true,
+  "promotion_decision_saved": true
+}

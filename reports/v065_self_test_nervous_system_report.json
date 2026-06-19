@@ -1,0 +1,89 @@
+{
+  "version": "v065_self_test_nervous_system",
+  "created_at": "2026-06-18T13:28:56.261637",
+  "total_tests": 10,
+  "passed": 10,
+  "failed": 0,
+  "health": "healthy",
+  "results": [
+    {
+      "id": "st_001",
+      "name": "Router baseline",
+      "passed": true,
+      "returncode": 0,
+      "detail": "SOURCE MODE: Role-Brain Router v052 Cloud\n1. 144.\n\nRoutes:\n1. left_hemisphere\n",
+      "error": null
+    },
+    {
+      "id": "st_002",
+      "name": "Dictionary lookup",
+      "passed": true,
+      "returncode": 0,
+      "detail": "SOURCE MODE: Dictionary + Conversation Memory v057\nMr. Novotron.\n\nRoute: dictionary_memory_exact\nDic",
+      "error": null
+    },
+    {
+      "id": "st_003",
+      "name": "Benchmark gate",
+      "passed": true,
+      "returncode": 0,
+      "detail": "Nova Creature v062 \u2014 Benchmark Gate\n\n  \u2705 router_math\n     route: left_hemisphere (ok=True)\n     answ",
+      "error": null
+    },
+    {
+      "id": "st_004",
+      "name": "Memory law",
+      "passed": true,
+      "returncode": 0,
+      "detail": "Nova Creature v064 \u2014 Memory Law\n\n  law_001: Project/build facts are auto-saved\n     not trainable | ",
+      "error": null
+    },
+    {
+      "id": "st_005",
+      "name": "Approval constitution",
+      "passed": true,
+      "returncode": 0,
+      "detail": "Nova Creature v064 \u2014 Approval Constitution\n\n  auto_save_allowed:\n     Auto-saved without approval\n  ",
+      "error": null
+    },
+    {
+      "id": "st_006",
+      "name": "Skill hands",
+      "passed": true,
+      "returncode": 0,
+      "detail": "Nova Creature v065 \u2014 Skill Hands\n\nALLOWED ACTIONS:\n  \u2705 read_text_files: Read text files from the pro",
+      "error": null
+    },
+    {
+      "id": "st_007",
+      "name": "Capability self-map",
+      "passed": true,
+      "returncode": 0,
+      "detail": "Nova Creature v066 \u2014 Capability Self-Map\n\nBrain organs: 7/7 active\nMemory systems: 7/7\nLearning syst",
+      "error": null
+    },
+    {
+      "id": "st_008",
+      "name": "v061 learning loop dry-run",
+      "passed": true,
+      "returncode": 0,
+      "detail": "\n============================================================\nv061 Learning Loop \u2014 Step 1: Export Sm",
+      "error": null
+    },
+    {
+      "id": "st_009",
+      "name": "v059 router uses v055",
+      "passed": true,
+      "returncode": 0,
+      "detail": "Nova Creature v059 \u2014 Live Router Finetuned Brain Check\nProject root: /root/New Project (1)Nova LLM\n\n",
+      "error": null
+    },
+    {
+      "id": "st_010",
+      "name": "Smart memory capture available",
+      "passed": true,
+      "detail": "exists=True",
+      "error": null
+    }
+  ]
+}

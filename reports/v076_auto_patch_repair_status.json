@@ -1,0 +1,8 @@
+{
+  "version": "v076_auto_repair_demo",
+  "created_at": "2026-06-18T08:48:56.028392",
+  "broken_script": "sandbox/generated_scripts/broken_test.py",
+  "error_detected": true,
+  "repair_success": true,
+  "retest_success": true
+}

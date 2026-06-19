@@ -1,0 +1,9 @@
+{
+  "version": "v386_drill_safety_checker",
+  "created_at": "2026-06-18T13:01:33.972645",
+  "drill_id": "drill_01",
+  "safe": true,
+  "checks_passed": 5,
+  "warnings": [],
+  "critical_issues": []
+}

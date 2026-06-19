@@ -1,0 +1,24 @@
+{
+  "version": "v057_dictionary_conversation_router",
+  "created_at": "2026-06-18T13:28:53.995969",
+  "thread_id": "default",
+  "message": "Who created you?",
+  "answer": "Mr. Novotron.",
+  "route": "dictionary_memory_exact",
+  "dictionary_found": true,
+  "state": {
+    "current_topic": "conversation memory loop",
+    "active_goal": "make Nova remember the thread and understand follow-ups",
+    "turn_count": 83
+  },
+  "router_report": {
+    "dictionary_hit": {
+      "found": true,
+      "time": "2026-06-18T13:28:53",
+      "question": "Who created you?",
+      "normalized": "who created you",
+      "answer": "Mr. Novotron.",
+      "source": "approved_dictionary_exact"
+    }
+  }
+}

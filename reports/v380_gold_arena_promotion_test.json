@@ -1,0 +1,8 @@
+{
+  "version": "v380_arena_promotion_gate",
+  "created_at": "2026-06-18T13:01:32.716079",
+  "agent": "agent_A",
+  "current_division": "silver",
+  "promoted_to": "gold",
+  "threshold_met": true
+}

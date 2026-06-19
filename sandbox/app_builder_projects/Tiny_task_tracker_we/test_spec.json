@@ -1,0 +1,14 @@
+[
+  {
+    "test": "Static check",
+    "command": "python3 -m py_compile /root/New Project (1)Nova LLM/sandbox/app_builder_projects/Tiny_task_tracker_we/app.py"
+  },
+  {
+    "test": "Import test",
+    "command": "python3 -c 'import json; print(\"ok\")'"
+  },
+  {
+    "test": "Functional test",
+    "command": "python3 /root/New Project (1)Nova LLM/sandbox/app_builder_projects/Tiny_task_tracker_we/app.py"
+  }
+]

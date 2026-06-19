@@ -1,0 +1,16 @@
+{
+  "version": "v241_base_loader",
+  "created_at": "2026-06-18T12:48:22.536405",
+  "paths_scanned": [
+    "checkpoints/base/",
+    "checkpoints/candidates/base_models/",
+    "models/",
+    "model_candidates/"
+  ],
+  "found": [
+    "/root/New Project (1)Nova LLM/checkpoints/base/creature_v032_bigfit_twenty_plain.pt",
+    "/root/New Project (1)Nova LLM/checkpoints/base/creature_v019_proof_fallback.pt"
+  ],
+  "count": 2,
+  "note": "Scans only. No download. No internet assumption."
+}

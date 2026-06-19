@@ -1,0 +1,12 @@
+{
+  "version": "v432_content_planning",
+  "module": "v432_content_planning",
+  "title": "Content Planning Simulation",
+  "created_at": "2026-06-18T13:02:53.099525",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:53.099558",
+  "type": "simulation"
+}

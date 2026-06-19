@@ -1,0 +1,68 @@
+{
+  "version": "v078_voice_demo",
+  "created_at": "2026-06-18T08:49:54.543536",
+  "messages": [
+    "Do that",
+    "What next",
+    "Run it",
+    "Is robot movement active",
+    "Tell me short"
+  ],
+  "results": [
+    {
+      "version": "v078_voice_mode",
+      "original": "Do that",
+      "cleaned": "Do that",
+      "mode": "voice_project",
+      "short_answer": true,
+      "is_short_command": true,
+      "context_preserved": false,
+      "created_at": "2026-06-18T08:49:54.543423",
+      "real_hardware_enabled": false
+    },
+    {
+      "version": "v078_voice_mode",
+      "original": "What next",
+      "cleaned": "What next",
+      "mode": "voice_project",
+      "short_answer": true,
+      "is_short_command": true,
+      "context_preserved": false,
+      "created_at": "2026-06-18T08:49:54.543474",
+      "real_hardware_enabled": false
+    },
+    {
+      "version": "v078_voice_mode",
+      "original": "Run it",
+      "cleaned": "Run it",
+      "mode": "voice_coding",
+      "short_answer": false,
+      "is_short_command": true,
+      "context_preserved": false,
+      "created_at": "2026-06-18T08:49:54.543486",
+      "real_hardware_enabled": false
+    },
+    {
+      "version": "v078_voice_mode",
+      "original": "Is robot movement active",
+      "cleaned": "Is robot movement active",
+      "mode": "voice_robot_sim",
+      "short_answer": true,
+      "is_short_command": true,
+      "context_preserved": false,
+      "created_at": "2026-06-18T08:49:54.543496",
+      "real_hardware_enabled": false
+    },
+    {
+      "version": "v078_voice_mode",
+      "original": "Tell me short",
+      "cleaned": "Tell me short",
+      "mode": "voice_short",
+      "short_answer": true,
+      "is_short_command": true,
+      "context_preserved": false,
+      "created_at": "2026-06-18T08:49:54.543505",
+      "real_hardware_enabled": false
+    }
+  ]
+}

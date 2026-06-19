@@ -1,0 +1,32 @@
+{
+  "version": "v229_training_recommender",
+  "created_at": "2026-06-18T11:21:10.149676",
+  "recommendations": [
+    {
+      "skill": "code_repair",
+      "role": "planner_transformer",
+      "current_score": 70,
+      "priority": 1
+    },
+    {
+      "skill": "memory_recall",
+      "role": "memory_transformer",
+      "current_score": 72,
+      "priority": 2
+    },
+    {
+      "skill": "dream_quality",
+      "role": "dream_simulation_transformer",
+      "current_score": 75,
+      "priority": 3
+    },
+    {
+      "skill": "project_continuity",
+      "role": "memory_transformer",
+      "current_score": 82,
+      "priority": 4
+    }
+  ],
+  "next_best_role": "planner_transformer",
+  "next_best_skill": "code_repair"
+}

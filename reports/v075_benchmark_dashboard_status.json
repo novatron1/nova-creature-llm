@@ -1,0 +1,141 @@
+{
+  "version": "v075_benchmark_dashboard",
+  "created_at": "2026-06-18T08:48:20.076171",
+  "total_tests": 13,
+  "total_passed": 13,
+  "total_failed": 0,
+  "overall_percentage": 100.0,
+  "results": [
+    {
+      "name": "v052_router",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v057_dictionary",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v062_benchmark_gate",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v064_memory_law",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v064_approval_constitution",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v065_self_test",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v066_self_map",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v069_self_scripting",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v070_robot_sim",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v071_safety_spine",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v072_sensor_registry",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v073_deployment_gate",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    },
+    {
+      "name": "v074_mistake_memory",
+      "passed": true,
+      "total": 1,
+      "failed": 0,
+      "percentage": 100.0,
+      "status": "PASS",
+      "returncode": 0,
+      "blockers": []
+    }
+  ],
+  "all_passed": true
+}

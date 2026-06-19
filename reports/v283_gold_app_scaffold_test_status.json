@@ -1,0 +1,12 @@
+{
+  "version": "v283_app_scaffold",
+  "created_at": "2026-06-18T12:50:45.725441",
+  "files": [
+    "README.md",
+    "app.py",
+    "manifest.json",
+    "test_plan.md"
+  ],
+  "sandbox": true,
+  "note": "App scaffold generated in sandbox."
+}

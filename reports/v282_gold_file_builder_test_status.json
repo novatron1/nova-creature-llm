@@ -1,0 +1,9 @@
+{
+  "version": "v282_file_builder",
+  "created_at": "2026-06-18T12:50:45.304032",
+  "path": "sandbox/test.txt",
+  "content_length": 4,
+  "sandbox": true,
+  "built": true,
+  "note": "File built in sandbox only."
+}

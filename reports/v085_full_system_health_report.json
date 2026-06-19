@@ -1,0 +1,93 @@
+{
+  "version": "v085_full_system_health",
+  "created_at": "2026-06-18T09:06:11.080014",
+  "brain_organs": {
+    "left_hemisphere": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    },
+    "right_hemisphere": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    },
+    "memory_transformer": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    },
+    "planner_transformer": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    },
+    "critic_conscience_transformer": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    },
+    "dream_simulation_transformer": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    },
+    "speech_output_transformer": {
+      "exists": true,
+      "active": true,
+      "checkpoint_version": "v055_finetuned"
+    }
+  },
+  "memory_systems": {
+    "conversation_memory": {
+      "exists": true
+    },
+    "dictionary_memory": {
+      "exists": true
+    },
+    "auto_project_memory": {
+      "exists": true
+    },
+    "explicit_user_memory": {
+      "exists": true
+    },
+    "temporary_conversation_context": {
+      "exists": true
+    },
+    "pending_approval_memory": {
+      "exists": true
+    },
+    "training_candidate_memory": {
+      "exists": true
+    }
+  },
+  "key_reports": {
+    "v062_benchmark_report.json": {
+      "exists": true
+    },
+    "v066_capability_self_map_status.json": {
+      "exists": true
+    },
+    "v075_benchmark_dashboard_status.json": {
+      "exists": true
+    },
+    "v095_intelligence_benchmark_status.json": {
+      "exists": true
+    }
+  },
+  "robot_status": {
+    "simulation_only": true,
+    "real_hardware_enabled": false,
+    "deployment_ready": false,
+    "physical_movement_blocked": true
+  },
+  "missing_capabilities": [
+    "real_robot_movement",
+    "vision_system",
+    "voice_input",
+    "local_sync_access",
+    "scheduled_autonomy",
+    "physical_sensors"
+  ],
+  "next_safe_upgrade": "v086-v095 Intelligence Stack (reasoning, planning, evidence, self-correction, benchmarks)"
+}

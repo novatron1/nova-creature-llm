@@ -1,0 +1,7 @@
+{
+  "version": "v401_experiment_benchmark",
+  "created_at": "2026-06-18T13:01:56.356116",
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Experiment Benchmark module \u2014 simulation only. No real hardware."
+}

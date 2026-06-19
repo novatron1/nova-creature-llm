@@ -1,0 +1,19 @@
+Use this zip for the cloud Codex Nova Creature project only.
+
+Do not use or mention a Windows C-drive path.
+
+This is a separate cloud version of Nova Creature, not the local laptop version.
+
+Tasks:
+1. Extract and inspect this bundle.
+2. Read CODEX_CLOUD_MANIFEST.json and README_CODEX_CLOUD.md.
+3. Apply the architecture into the current cloud repo/project root.
+4. Use codex_upgrade/scripts/apply_codex_catchup.py --project-root .
+5. Preserve existing cloud project files with backups.
+6. Add/merge brain slots, router, role-brain layers, training prep, role checkpoint builder, and fine-tune trainer path.
+7. Run python scripts/check_codex_brain_stack.py.
+8. Fix any cloud-specific import/path issues.
+9. Keep this cloud project independent from any local laptop version.
+
+Goal:
+Bring the cloud Nova Creature repo up to v049-v055 architecture.

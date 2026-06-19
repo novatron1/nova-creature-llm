@@ -1,0 +1,9 @@
+{
+  "version": "v247_base_tournament",
+  "created_at": "2026-06-18T12:48:34.196307",
+  "winner": "v055",
+  "candidate_exists": false,
+  "v055_score": 85,
+  "candidate_score": 0,
+  "note": "No candidate base model exists. v055 wins by default."
+}

@@ -1,0 +1,25 @@
+{
+  "version": "v058_dictionary_to_transformer_learning",
+  "created_at": "2026-06-18T03:16:56",
+  "dictionary_entries_seen": 13,
+  "lessons_added_total": 4,
+  "lessons_added_by_role": {
+    "left_hemisphere": 0,
+    "right_hemisphere": 0,
+    "memory_transformer": 2,
+    "planner_transformer": 0,
+    "critic_conscience_transformer": 2,
+    "dream_simulation_transformer": 0,
+    "speech_output_transformer": 0
+  },
+  "training_set_counts": {
+    "left_hemisphere": 2,
+    "right_hemisphere": 2,
+    "memory_transformer": 11,
+    "planner_transformer": 2,
+    "critic_conscience_transformer": 4,
+    "dream_simulation_transformer": 2,
+    "speech_output_transformer": 2
+  },
+  "flow": "approved dictionary -> role training sets -> v054/v055 transformer learning"
+}

@@ -1,0 +1,10 @@
+{
+  "version": "v233_planner_candidate",
+  "created_at": "2026-06-18T12:47:41.856704",
+  "candidate_path": "checkpoints/candidates/v233_planner_code_repair/planner_transformer_v233_candidate.pt",
+  "built": false,
+  "blocked_by": "missing_torch",
+  "v055_preserved": true,
+  "manifest_created": true,
+  "note": "No torch available. Candidate manifest created. v055 preserved."
+}

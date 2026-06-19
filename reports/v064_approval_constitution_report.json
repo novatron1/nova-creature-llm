@@ -1,0 +1,65 @@
+{
+  "version": "v064_approval_constitution",
+  "created_at": "2026-06-18T13:28:54.642776",
+  "rules": {
+    "auto_save_allowed": {
+      "description": "Auto-saved without approval",
+      "types": [
+        "auto_project_memory",
+        "explicit_user_memory",
+        "training_candidate_memory"
+      ],
+      "rule": "Project/build facts, explicit user saves, and training candidates are auto-saved.",
+      "needs_approval": false,
+      "can_train": true,
+      "can_export_dictionary": true
+    },
+    "approval_required": {
+      "description": "Requires owner approval before storage or training",
+      "types": [
+        "pending_approval_memory"
+      ],
+      "rule": "Personal facts, identity rules, owner preferences, long-term rules, uncertain claims, dream-generated lessons, and robot action rules require approval.",
+      "needs_approval": true,
+      "can_train": false,
+      "can_export_dictionary": false
+    },
+    "never_train": {
+      "description": "Never stored or trained",
+      "types": [
+        "temporary_conversation_context",
+        "rejected"
+      ],
+      "rule": "Temporary context, rejected memory, unapproved pending memory, guesses, emotional one-off claims, hallucinated dream lessons, and unsafe robot movement commands are never trained.",
+      "needs_approval": false,
+      "can_train": false,
+      "can_export_dictionary": false
+    }
+  },
+  "memory_types_tested": {
+    "auto_project_memory": {
+      "needs_approval": false,
+      "can_train": true
+    },
+    "explicit_user_memory": {
+      "needs_approval": false,
+      "can_train": true
+    },
+    "training_candidate_memory": {
+      "needs_approval": false,
+      "can_train": true
+    },
+    "pending_approval_memory": {
+      "needs_approval": true,
+      "can_train": false
+    },
+    "temporary_conversation_context": {
+      "needs_approval": false,
+      "can_train": false
+    },
+    "rejected": {
+      "needs_approval": false,
+      "can_train": false
+    }
+  }
+}

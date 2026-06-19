@@ -1,0 +1,25 @@
+Use this v058 patch in the Nova Creature project.
+
+Goal:
+Make the transformer learn from the approved dictionary by exporting dictionary entries into role training sets.
+
+Apply:
+python scripts/apply_v058_dictionary_to_transformer.py --project-root .
+
+Then run:
+python scripts/check_v058_dictionary_to_transformer.py
+python scripts/v058_gold_dictionary_to_transformer_test.py
+python scripts/v058_export_dictionary_to_training.py
+
+Then continue the training path:
+python scripts/v054_role_checkpoint_builder.py
+python scripts/v055_cloud_finetune_ready.py
+
+If the actual v055 fine-tune runner exists:
+python scripts/v055_finetune_role_brains.py
+
+Report:
+1. How many dictionary entries were exported?
+2. Which role training sets received lessons?
+3. Did v054 rebuild role checkpoints?
+4. Is v055 still can_finetune true?

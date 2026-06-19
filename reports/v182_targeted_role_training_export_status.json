@@ -1,0 +1,23 @@
+{
+  "version": "v182_targeted_role_exporter",
+  "created_at": "2026-06-18T11:05:56.483743",
+  "role_counts": {
+    "planner_transformer": 1,
+    "memory_transformer": 3,
+    "critic_conscience_transformer": 4,
+    "dream_simulation_transformer": 1,
+    "left_hemisphere": 0,
+    "right_hemisphere": 0,
+    "speech_output_transformer": 1
+  },
+  "total_exported": 10,
+  "roles_exported": [
+    "planner_transformer",
+    "memory_transformer",
+    "critic_conscience_transformer",
+    "dream_simulation_transformer",
+    "left_hemisphere",
+    "right_hemisphere",
+    "speech_output_transformer"
+  ]
+}

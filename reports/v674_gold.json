@@ -1,0 +1,12 @@
+{
+  "winner": "candidate_v673",
+  "loser": "v055_champion",
+  "score_delta": 0.04,
+  "category_wins": 10,
+  "category_losses": 2,
+  "regression_blockers": [],
+  "promotion_allowed": true,
+  "reason": "Candidate beat v055 in 10/12 categories with no regression blockers",
+  "version": "v674_tournament_judge",
+  "created_at": "2026-06-18T13:54:29.076854"
+}

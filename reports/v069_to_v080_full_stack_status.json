@@ -1,0 +1,151 @@
+{
+  "version": "v069_to_v080_full_stack_status",
+  "created_at": "2026-06-18T08:50:28.423408",
+  "v069_self_scripting": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "demo_passed": true,
+    "sandbox_used": "sandbox/generated_scripts/",
+    "core_files_overwritten": false,
+    "unsafe_commands_used": false
+  },
+  "v070_robot_sim_bridge": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "demo_passed": true,
+    "commands_supported": 10,
+    "real_hardware_sent": false
+  },
+  "v071_robot_safety_spine": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_test_passed": true,
+    "physical_movement_allowed": false,
+    "simulation_allowed": true,
+    "stop_always_allowed": true,
+    "missing_requirements": 9
+  },
+  "v072_body_sensor_registry": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "sensors_tracked": 13,
+    "active_sensors": 1,
+    "missing_sensors": 9,
+    "real_hardware_enabled": false
+  },
+  "v073_robot_deployment_gate": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "readiness_report_created": true,
+    "deployment_ready": false,
+    "real_robot_movement_allowed": false,
+    "missing_requirements": 12
+  },
+  "v074_mistake_memory": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "demo_passed": true,
+    "mistake_types": [
+      "import_error",
+      "router_error",
+      "test_error"
+    ],
+    "training_candidate_rules": "Robot safety mistakes must not auto-train without review"
+  },
+  "v075_benchmark_dashboard": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "tests": 13,
+    "passed": 13,
+    "percentage": "100.0%",
+    "all_passed": true
+  },
+  "v076_auto_patch_repair": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "demo_passed": true,
+    "repair_types": [
+      "SyntaxError"
+    ],
+    "sandbox_only": true
+  },
+  "v077_dream_training_generator_2": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "gold_test_passed": true,
+    "variants_generated": 20,
+    "approved": 18,
+    "rejected": 2,
+    "exported": 18
+  },
+  "v078_voice_mode": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "demo_passed": true,
+    "short_commands": 8,
+    "modes": [
+      "voice_short",
+      "voice_project",
+      "voice_coding",
+      "voice_robot_sim",
+      "voice_deep"
+    ],
+    "no_fake_robot_claim": true
+  },
+  "v080_app_builder_mode": {
+    "status": "installed_and_passing",
+    "checker_passed": true,
+    "demo_passed": true,
+    "sandbox_used": "sandbox/app_builder_projects/",
+    "files_generated": [
+      "README.md",
+      "app.py",
+      "manifest.json",
+      "test_plan.md",
+      "test_spec.json"
+    ]
+  },
+  "v059_regression": {
+    "all_7_roles_on_v055": true,
+    "checker_24_of_24_passed": true,
+    "router_still_answers_all_5_routes": true
+  },
+  "v061_regression": {
+    "learning_loop_dry_run_passed": true,
+    "can_promote": true
+  },
+  "v066_capability_status": {
+    "checker_passed": true,
+    "all_7_brain_organs_active": true,
+    "all_on_v055": true,
+    "honestly_reports_robot_limits": true,
+    "real_hardware_enabled": false
+  },
+  "benchmark_dashboard_summary": {
+    "overall": "13/13 (100.0%)",
+    "all_passed": true
+  },
+  "robot_readiness_summary": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "physical_movement_blocked": true,
+    "simulation_only": true,
+    "deployment_ready": false,
+    "missing_robot_hardware": [
+      "emergency_stop",
+      "movement_controller",
+      "collision_sensor",
+      "human_distance_sensor",
+      "battery_monitor",
+      "lidar_sensor",
+      "imu_sensor",
+      "hardware_config",
+      "owner_approval"
+    ]
+  },
+  "active_capabilities": 33,
+  "inactive_capabilities": 4,
+  "missing_capabilities": 8,
+  "blockers": [],
+  "next_safest_upgrade": "v079 \u2014 Local + Cloud Sync Plan"
+}

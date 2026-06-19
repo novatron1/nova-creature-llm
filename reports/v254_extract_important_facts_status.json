@@ -1,0 +1,19 @@
+{
+  "version": "v254_fact_extractor",
+  "created_at": "2026-06-18T12:48:55.922123",
+  "facts": [
+    {
+      "fact": "Creator is Mr. Novotron.",
+      "importance": 10
+    },
+    {
+      "fact": "Real robot movement is blocked.",
+      "importance": 10
+    },
+    {
+      "fact": "v055 is the live checkpoint.",
+      "importance": 9
+    }
+  ],
+  "total": 3
+}

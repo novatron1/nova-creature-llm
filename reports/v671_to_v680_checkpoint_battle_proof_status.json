@@ -1,0 +1,71 @@
+{
+  "report": "v671_to_v680_checkpoint_battle_proof_status",
+  "created_at": "2026-06-18T13:54:12.174549",
+  "modules": [
+    {
+      "v": "v671",
+      "name": "candidate_registry",
+      "func": "register_candidate_checkpoint",
+      "status": "built"
+    },
+    {
+      "v": "v672",
+      "name": "v055_champion_profile",
+      "func": "get_v055_champion_profile",
+      "status": "built"
+    },
+    {
+      "v": "v673",
+      "name": "candidate_v055_arena",
+      "func": "run_candidate_v055_arena",
+      "status": "built"
+    },
+    {
+      "v": "v674",
+      "name": "tournament_judge",
+      "func": "judge_tournament",
+      "status": "built"
+    },
+    {
+      "v": "v675",
+      "name": "promotion_safety_lock",
+      "func": "check_promotion_safety_lock",
+      "status": "built"
+    },
+    {
+      "v": "v676",
+      "name": "router_promotion_dry_run",
+      "func": "run_router_promotion_dry_run",
+      "status": "built"
+    },
+    {
+      "v": "v677",
+      "name": "rollback_proof",
+      "func": "build_rollback_proof",
+      "status": "built"
+    },
+    {
+      "v": "v678",
+      "name": "champion_history",
+      "func": "track_champion_history",
+      "status": "built"
+    },
+    {
+      "v": "v679",
+      "name": "battle_summary",
+      "func": "generate_checkpoint_battle_summary",
+      "status": "built"
+    },
+    {
+      "v": "v680",
+      "name": "promotion_proof_report",
+      "func": "generate_checkpoint_promotion_proof_report",
+      "status": "built"
+    }
+  ],
+  "total_built": 10,
+  "checker_results": "all_passed",
+  "total_passed": 10,
+  "total_failed": 0,
+  "completed_at": "2026-06-18T13:54:34.686783"
+}

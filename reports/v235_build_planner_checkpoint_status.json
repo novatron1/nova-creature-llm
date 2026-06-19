@@ -1,0 +1,13 @@
+{
+  "version": "v235_planner_checkpoint",
+  "created_at": "2026-06-18T12:47:47.139196",
+  "checkpoint_created": false,
+  "blocked_by": "missing_torch",
+  "v055_preserved": true,
+  "manifest": {
+    "hash": "simulated",
+    "training_hash": "simulated",
+    "benchmark_plan": "v234 code repair benchmark"
+  },
+  "note": "No torch. Manifest preserved. v055 live."
+}

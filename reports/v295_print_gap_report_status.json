@@ -1,0 +1,11 @@
+{
+  "version": "v295_gap_report",
+  "created_at": "2026-06-18T12:51:55.313194",
+  "gaps": [
+    "no_hardware",
+    "no_estop",
+    "no_motors",
+    "no_sensors"
+  ],
+  "real_movement": "blocked"
+}

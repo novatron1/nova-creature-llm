@@ -1,0 +1,12 @@
+{
+  "version": "v449_benchmark_regression",
+  "module": "v449_benchmark_regression",
+  "title": "Benchmark Regression Simulation",
+  "created_at": "2026-06-18T13:02:56.445682",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:56.445733",
+  "type": "simulation"
+}

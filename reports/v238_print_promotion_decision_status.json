@@ -1,0 +1,7 @@
+{
+  "version": "v238_promotion_decision",
+  "created_at": "2026-06-18T12:47:57.243492",
+  "decision": "preserve_v055",
+  "reason": "No candidate checkpoint created.",
+  "winner": "v055"
+}

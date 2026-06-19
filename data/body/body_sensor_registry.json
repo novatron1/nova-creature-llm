@@ -1,0 +1,126 @@
+{
+  "version": "v072_body_sensor_registry",
+  "created_at": "2026-06-18T13:28:58.230682",
+  "sensors": {
+    "camera": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "not_connected",
+      "missing_reason": "No camera hardware connected",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230549"
+    },
+    "microphone": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": false,
+      "status": "not_connected",
+      "missing_reason": "No microphone hardware connected",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230608"
+    },
+    "speaker": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": false,
+      "status": "planned",
+      "missing_reason": "Speaker output not configured",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230618"
+    },
+    "movement_base": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "inactive",
+      "missing_reason": "No movement hardware",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230624"
+    },
+    "robotic_arm": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "inactive",
+      "missing_reason": "No robotic arm hardware",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230629"
+    },
+    "lidar_or_distance_sensor": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "not_installed",
+      "missing_reason": "Requires physical LIDAR sensor",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230635"
+    },
+    "imu_balance_sensor": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "not_installed",
+      "missing_reason": "Requires IMU hardware",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230641"
+    },
+    "battery_monitor": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "not_installed",
+      "missing_reason": "Requires power management hardware",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230647"
+    },
+    "emergency_stop": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "missing",
+      "missing_reason": "Emergency stop not installed",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230652"
+    },
+    "collision_sensor": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "missing",
+      "missing_reason": "Collision sensor not installed",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230658"
+    },
+    "human_distance_sensor": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "missing",
+      "missing_reason": "Human distance sensor not installed",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230663"
+    },
+    "hardware_config": {
+      "exists": false,
+      "active": false,
+      "required_for_real_movement": true,
+      "status": "missing",
+      "missing_reason": "Real hardware configuration not present",
+      "safe_to_use": false,
+      "last_checked": "2026-06-18T13:28:58.230670"
+    },
+    "simulation_world": {
+      "exists": true,
+      "active": true,
+      "required_for_real_movement": true,
+      "status": "active",
+      "missing_reason": "",
+      "safe_to_use": true,
+      "last_checked": "2026-06-18T13:28:58.230675"
+    }
+  },
+  "real_hardware_enabled": false,
+  "sensors_connected": 1,
+  "sensors_missing": 9
+}

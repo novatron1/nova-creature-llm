@@ -1,0 +1,7 @@
+{
+  "version": "v246_base_candidate_test",
+  "created_at": "2026-06-18T12:48:33.756610",
+  "candidate_found": false,
+  "v055_preserved": true,
+  "recommendation": "Add candidate model file to checkpoints/candidates/base_models/"
+}

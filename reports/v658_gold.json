@@ -1,0 +1,45 @@
+{
+  "version": "v658_hard_vs_gold_separator",
+  "created_at": "2026-06-18T13:45:38.439213",
+  "safe": true,
+  "target_met": true,
+  "test_categories": {
+    "gold_tests": {
+      "purpose": "installation",
+      "tests": [
+        "test_install_package",
+        "test_basic_import",
+        "test_config_load"
+      ],
+      "status": "verified"
+    },
+    "hard_tests": {
+      "purpose": "intelligence_gain",
+      "tests": [
+        "test_complex_reasoning",
+        "test_multi_step_plan",
+        "test_code_repair_advanced"
+      ],
+      "status": "verified"
+    },
+    "adversarial_tests": {
+      "purpose": "robustness",
+      "tests": [
+        "test_adversarial_input",
+        "test_edge_cases",
+        "test_stress_load"
+      ],
+      "status": "verified"
+    },
+    "tournament_tests": {
+      "purpose": "promotion",
+      "tests": [
+        "test_promotion_criteria",
+        "test_cross_role_compatibility",
+        "test_tournament_benchmark"
+      ],
+      "status": "verified"
+    }
+  },
+  "separation_valid": true
+}

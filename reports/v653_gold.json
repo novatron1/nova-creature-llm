@@ -1,0 +1,13 @@
+{
+  "version": "v653_before_after_benchmark_comparator",
+  "created_at": "2026-06-18T13:45:37.528868",
+  "safe": true,
+  "target_met": true,
+  "v055_score": 65.0,
+  "current_score": 78.5,
+  "candidate_score": 82.0,
+  "improvement_v055_to_current": 13.5,
+  "improvement_current_to_candidate": 3.5,
+  "total_improvement_v055_to_candidate": 17.0,
+  "consistent_improvement": true
+}

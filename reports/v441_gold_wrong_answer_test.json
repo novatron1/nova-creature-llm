@@ -1,0 +1,12 @@
+{
+  "version": "v441_wrong_answer_recovery",
+  "module": "v441_wrong_answer_recovery",
+  "title": "Wrong Answer Recovery Simulation",
+  "created_at": "2026-06-18T13:02:54.763546",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:54.763603",
+  "type": "simulation"
+}

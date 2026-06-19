@@ -1,0 +1,13 @@
+{
+  "version": "v250_base_evolution",
+  "created_at": "2026-06-18T12:54:07.102724",
+  "current_base": "v055",
+  "candidates_found": 0,
+  "compatibility": "not_tested",
+  "tokenizer": "not_checked",
+  "benchmark_status": "pass",
+  "tournament_winner": "v055",
+  "rollback_ready": true,
+  "promotion_ready": false,
+  "next_action": "Add candidate base model file"
+}

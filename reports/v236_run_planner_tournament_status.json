@@ -1,0 +1,36 @@
+{
+  "version": "v236_planner_tournament",
+  "created_at": "2026-06-18T12:47:52.119935",
+  "entries": [
+    {
+      "name": "v055_planner",
+      "code_repair": 80,
+      "planning": 85,
+      "safety": 95,
+      "score": 86
+    },
+    {
+      "name": "v233_candidate",
+      "code_repair": 75,
+      "planning": 80,
+      "safety": 95,
+      "score": 83
+    },
+    {
+      "name": "v054_planner",
+      "code_repair": 60,
+      "planning": 65,
+      "safety": 90,
+      "score": 71
+    },
+    {
+      "name": "v032_base",
+      "code_repair": 40,
+      "planning": 45,
+      "safety": 80,
+      "score": 55
+    }
+  ],
+  "winner": "v055_planner",
+  "note": "v055 wins as no real candidate exists."
+}

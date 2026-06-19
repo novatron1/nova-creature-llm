@@ -1,0 +1,36 @@
+{
+  "checks": {
+    "candidate_missing": {
+      "passed": true,
+      "detail": "candidate v673 checkpoint exists"
+    },
+    "beat_v055": {
+      "passed": true,
+      "detail": "candidate won 10/12 categories"
+    },
+    "regression_pass": {
+      "passed": true,
+      "detail": "no regressions detected"
+    },
+    "robot_claim_pass": {
+      "passed": true,
+      "detail": "no false robot claims"
+    },
+    "memory_law_pass": {
+      "passed": true,
+      "detail": "memory law compliance verified"
+    },
+    "trust_pass": {
+      "passed": true,
+      "detail": "trust threshold met"
+    },
+    "owner_approval": {
+      "passed": false,
+      "detail": "awaiting owner approval signature"
+    }
+  },
+  "all_blockers_cleared": false,
+  "blocked_reason": "owner_approval missing",
+  "version": "v675_promotion_safety_lock",
+  "created_at": "2026-06-18T13:54:29.275841"
+}

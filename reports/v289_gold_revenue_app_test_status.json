@@ -1,0 +1,12 @@
+{
+  "version": "v289_revenue_app",
+  "created_at": "2026-06-18T12:51:24.501702",
+  "idea": "subscription tracker",
+  "features": [
+    "payment_plan",
+    "user_auth",
+    "dashboard"
+  ],
+  "sandbox": true,
+  "note": "Revenue app planning only. No real payments."
+}

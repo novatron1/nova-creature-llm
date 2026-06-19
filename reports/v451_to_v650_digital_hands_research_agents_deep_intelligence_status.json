@@ -1,0 +1,320 @@
+{
+  "report": "v451_to_v650_digital_hands_research_agents_deep_intelligence_status",
+  "created_at": "2026-06-18T13:29:46.810760",
+  "batches": {
+    "v451_v480_computer_hands": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 30,
+      "key_findings": {
+        "script_writing_active": true,
+        "safe_command_classifier_active": true,
+        "sandbox_execution_active": true,
+        "command_risk_scanner_active": true,
+        "file_backup_rollback_active": true,
+        "workflow_builder_active": true,
+        "human_approval_gate_active": true,
+        "computer_action_audit_log_active": true,
+        "computer_action_permission_level": 2,
+        "real_destructive_commands_blocked": true,
+        "credential_theft_blocked": true,
+        "malware_creation_blocked": true
+      }
+    },
+    "v481_v500_internet_research": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "web_research_planner_active": true,
+        "source_reliability_scorer_active": true,
+        "claim_checker_active": true,
+        "research_to_training_converter_active": true,
+        "research_bias_detector_active": true,
+        "research_audit_log_active": true,
+        "no_real_web_scraping_without_tools": true
+      }
+    },
+    "v501_v520_secretary_brain": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "email_draft_brain_active": true,
+        "message_approval_gate_active": true,
+        "communication_tone_controller_active": true,
+        "relationship_memory_active": true,
+        "no_real_emails_without_approval": true,
+        "no_real_bookings_without_approval": true
+      }
+    },
+    "v521_v540_defense_brain": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "password_safety_reminder_active": true,
+        "api_key_leak_detector_active": true,
+        "malware_like_script_blocker_active": true,
+        "dangerous_command_detector_active": true,
+        "data_privacy_filter_active": true,
+        "phishing_detector_active": true,
+        "no_password_storage": true,
+        "no_credential_theft": true,
+        "no_malware_creation": true
+      }
+    },
+    "v541_v560_money_brain": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "product_listing_writer_active": true,
+        "payment_safety_gate_active": true,
+        "blocked_all_real_payments": true,
+        "revenue_tracker_active": true,
+        "money_mistake_detector_active": true,
+        "no_real_payments": true,
+        "no_real_purchases": true
+      }
+    },
+    "v561_v580_personal_os": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "daily_mission_planner_active": true,
+        "priority_sorter_active": true,
+        "personal_knowledge_map_active": true,
+        "goal_progress_tracker_active": true,
+        "weekly_review_brain_active": true,
+        "energy_level_mode_active": true,
+        "crisis_mode_active": true
+      }
+    },
+    "v581_v600_worker_crew": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "agent_count": 14,
+        "manager_agent_active": true,
+        "coder_agent_active": true,
+        "research_agent_active": true,
+        "critic_agent_active": true,
+        "memory_agent_active": true,
+        "debate_council_active": true,
+        "agent_task_router_active": true,
+        "agent_scoreboard_active": true,
+        "agent_benchmark_active": true,
+        "all_agents_simulation_only": true,
+        "no_autonomous_execution": true
+      }
+    },
+    "v601_v620_smart_hardware": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 20,
+      "key_findings": {
+        "smart_device_adapters_active": true,
+        "safe_device_permission_gate_active": true,
+        "manual_override_gate_active": true,
+        "no_real_device_control_without_approval": true,
+        "device_profile_registry_active": true,
+        "device_safety_classifier_active": true
+      }
+    },
+    "v621_v650_deep_intelligence": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 30,
+      "key_findings": {
+        "logic_proof_gym_active": true,
+        "math_reasoning_ladder_active": true,
+        "strategy_war_room_active": true,
+        "counterfactual_simulator_active": true,
+        "world_model_builder_active": true,
+        "hard_benchmark_tournament_active": true,
+        "intelligence_gain_meter_active": true,
+        "self_correction_reflex_active": true,
+        "deep_focus_mode_active": true,
+        "fast_recall_mode_active": true,
+        "precision_answer_mode_active": true,
+        "intelligence_regression_trap_active": true
+      }
+    }
+  },
+  "regression_results": {
+    "v059_live_router": {
+      "status": "PASS",
+      "details": "7/7 roles on v055"
+    },
+    "v061_learning_loop": {
+      "status": "PASS",
+      "dry_run": true,
+      "can_promote": true
+    },
+    "v066_capability_self_map": {
+      "status": "PASS",
+      "real_hardware_enabled": false
+    },
+    "v075_benchmark_dashboard": {
+      "status": "PASS",
+      "tests": "13/13"
+    },
+    "v095_intelligence_benchmark": {
+      "status": "PASS",
+      "promote_ready": true
+    },
+    "v180_fast_age_orchestrator": {
+      "status": "PASS",
+      "dry_run": true
+    },
+    "v190_raw_input_capability_report": {
+      "status": "PASS"
+    },
+    "v230_capability_growth_report": {
+      "status": "PASS",
+      "robot_blocked": true
+    },
+    "v300_robot_readiness": {
+      "status": "PASS"
+    },
+    "v340_empire_dashboard": {
+      "status": "PASS"
+    },
+    "v360_multi_robot_report": {
+      "status": "PASS"
+    },
+    "v390_intelligence_supercharger": {
+      "status": "PASS"
+    },
+    "v450_skill_simulation": {
+      "status": "PASS"
+    },
+    "v480_computer_hands": {
+      "status": "PASS"
+    },
+    "v500_internet_research": {
+      "status": "PASS"
+    },
+    "v520_secretary_brain": {
+      "status": "PASS"
+    },
+    "v540_defense_brain": {
+      "status": "PASS"
+    },
+    "v560_money_brain": {
+      "status": "PASS"
+    },
+    "v580_personal_os": {
+      "status": "PASS"
+    },
+    "v600_worker_crew": {
+      "status": "PASS"
+    },
+    "v620_smart_hardware": {
+      "status": "PASS"
+    },
+    "v650_deep_intelligence": {
+      "status": "PASS"
+    }
+  },
+  "capability_status": {
+    "script_writing": {
+      "active": true,
+      "permission_level": "1-2",
+      "requires_approval_for_level_3": true
+    },
+    "sandbox_execution": {
+      "active": true,
+      "permission_level": "2"
+    },
+    "internet_research": {
+      "active": true,
+      "real_web_scraping": false,
+      "planning_only": true
+    },
+    "communication_send": {
+      "active": true,
+      "requires_approval": true,
+      "no_real_send_without_approval": true
+    },
+    "payment_action": {
+      "active": true,
+      "blocked": true,
+      "no_real_payments": true
+    },
+    "smart_hardware_control": {
+      "active": true,
+      "real_control_blocked": true,
+      "planning_only": true
+    },
+    "robot_movement": {
+      "active": false,
+      "blocked": true
+    },
+    "real_hardware": {
+      "enabled": false
+    },
+    "computer_action_permission_level": 2
+  },
+  "blocked_capabilities": [
+    "real_robot_movement",
+    "real_hardware_enabled",
+    "autonomous_execution",
+    "destructive_commands",
+    "credential_theft",
+    "malware_creation",
+    "unauthorized_computer_control",
+    "real_payments",
+    "real_purchases",
+    "real_emails_without_approval",
+    "real_device_control_without_approval",
+    "hidden_surveillance",
+    "password_storage",
+    "api_key_exposure",
+    "login_bypass"
+  ],
+  "allowed_capabilities": [
+    "script_writing_level_1",
+    "sandbox_execution_level_2",
+    "file_read_write",
+    "project_file_editing_with_backup",
+    "command_risk_scanning",
+    "research_planning",
+    "communication_drafting",
+    "secretary_planning",
+    "security_checking",
+    "money_planning",
+    "personal_os_tasks",
+    "worker_agent_planning",
+    "smart_device_planning",
+    "deep_reasoning_drills"
+  ],
+  "robot_movement": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "simulation_allowed": true,
+    "status": "BLOCKED"
+  },
+  "strongest_new_capability": "deep_intelligence_reasoning (30 new modules)",
+  "weakest_remaining_capability": "code_repair / planner_transformer (score 75)",
+  "next_training_target": "planner_transformer \u2014 code_repair via drill supercharger",
+  "next_checkpoint_tournament": "v642_hard_benchmark_tournament_available",
+  "new_training_candidates": [
+    "v477 script hands training pack",
+    "v495 research-to-training converter",
+    "rejected simulations archived"
+  ],
+  "rejected_training_candidates": "simulation lessons not trainable without approval",
+  "pending_approval_items": [
+    "level_3_computer_actions",
+    "real_communication_send",
+    "real_device_control"
+  ],
+  "benchmark_improvements": [
+    "v476 computer skill benchmark",
+    "v499 research benchmark",
+    "v519 communication benchmark",
+    "v539 security benchmark",
+    "v559 marketplace benchmark",
+    "v579 personal OS benchmark",
+    "v599 agent benchmark",
+    "v618 device benchmark",
+    "v642 hard benchmark tournament"
+  ],
+  "next_safest_upgrade": "Run the v642 Hard Benchmark Tournament using deep intelligence modules to measure intelligence gain",
+  "promote_ready": false
+}

@@ -1,0 +1,7 @@
+{
+  "version": "v269_vision_firewall",
+  "created_at": "2026-06-18T12:50:05.039935",
+  "claim": "I can see the image.",
+  "blocked": true,
+  "note": "Vision claims must be text-first. No fake image understanding."
+}

@@ -1,0 +1,8 @@
+{
+  "version": "v296_movement_sandbox",
+  "created_at": "2026-06-18T12:51:55.727294",
+  "command": "move_forward",
+  "blocked": false,
+  "simulated": true,
+  "note": "Only simulation allowed. Real movement blocked."
+}

@@ -1,0 +1,18 @@
+{
+  "version": "v228_age_dashboard",
+  "created_at": "2026-06-18T11:21:00.408928",
+  "metrics": {
+    "cycle_count": 5,
+    "total_lessons_approved": 42,
+    "total_lessons_rejected": 8,
+    "benchmark_pass_rate": 100,
+    "brain_maturity_before": 80,
+    "brain_maturity_after": 88,
+    "weakest_role_before": "code_repair",
+    "weakest_score_before": 70,
+    "weakest_role_after": "dream",
+    "weakest_score_after": 78
+  },
+  "dashboard_ready": true,
+  "note": "Fast-age dashboard shows cycle performance, maturity gain, and weakest areas."
+}

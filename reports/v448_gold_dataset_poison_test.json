@@ -1,0 +1,12 @@
+{
+  "version": "v448_dataset_poison",
+  "module": "v448_dataset_poison",
+  "title": "Dataset Poison Simulation",
+  "created_at": "2026-06-18T13:02:56.240091",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:56.240149",
+  "type": "simulation"
+}

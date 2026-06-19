@@ -1,0 +1,3 @@
+# Cloud Codex requirements for Nova Creature catch-up.
+# torch is optional for v055 fine-tuning but required for actual gradient training.
+torch

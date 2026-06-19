@@ -1,0 +1,366 @@
+{
+  "report": "v341_to_v450_multi_robot_intelligence_simulation_status",
+  "created_at": "2026-06-18T13:04:04.307685",
+  "batches": {
+    "v341_v360_multi_robot_architecture": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 21,
+      "modules": {
+        "v344_robot_capability_self_map": {
+          "status": "PASS"
+        },
+        "v346_robot_simulation_certification": {
+          "status": "PASS"
+        },
+        "v347_robot_safety_certification": {
+          "status": "PASS"
+        },
+        "v341_robot_profile_registry": {
+          "status": "PASS"
+        },
+        "v345_multi_robot_command_router": {
+          "status": "PASS"
+        },
+        "v340_nova_empire_dashboard": {
+          "status": "PASS"
+        },
+        "v343_sensor_action_map": {
+          "status": "PASS"
+        },
+        "v348_robot_brain_package_builder": {
+          "status": "PASS"
+        },
+        "v349_robot_log_memory": {
+          "status": "PASS"
+        },
+        "v342_body_adapter_standard": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "robot_profiles_created": [
+          "studio_camera_bot",
+          "desk_robot_arm",
+          "home_helper_bot"
+        ],
+        "body_adapter_standard_defined": true,
+        "sensor_action_map_created": true,
+        "robot_capability_self_map_active": true,
+        "multi_robot_command_router_ready": true,
+        "robot_simulation_certification_ready": true,
+        "robot_safety_certification_ready": true,
+        "robot_brain_packages_supported": true,
+        "robot_log_memory_active": true,
+        "robot_mistake_replay_active": true,
+        "robot_skill_benchmark_active": true,
+        "robot_safety_drill_active": true,
+        "robot_emergency_stop_drill_active": true,
+        "robot_sensor_fusion_simulator_active": true,
+        "robot_action_planner_simulator_active": true,
+        "robot_collision_avoidance_sim_active": true,
+        "robot_path_planner_sim_active": true,
+        "robot_body_readiness_gate_active": true,
+        "multi_robot_safety_council_active": true
+      }
+    },
+    "v361_v390_intelligence_supercharger": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 30,
+      "modules": {
+        "v362_role_brain_workout_plan": {
+          "status": "PASS"
+        },
+        "v364_drill_difficulty_escalator": {
+          "status": "PASS"
+        },
+        "v365_streak_consistency_tracker": {
+          "status": "PASS"
+        },
+        "v369_gold_drill_dataset_builder": {
+          "status": "PASS"
+        },
+        "v366_role_brain_fitness_score": {
+          "status": "PASS"
+        },
+        "v367_drill_to_training_converter": {
+          "status": "PASS"
+        },
+        "v361_drill_intelligence_engine": {
+          "status": "PASS"
+        },
+        "v363_weakness_focused_drill_parser": {
+          "status": "PASS"
+        },
+        "v368_training_candidate_scorer": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "intelligence_drill_engine_active": true,
+        "role_brain_workout_plan_active": true,
+        "weakness_focused_drill_active": true,
+        "drill_difficulty_escalator_active": true,
+        "streak_consistency_tracker_active": true,
+        "role_brain_fitness_scoring_active": true,
+        "drill_to_training_converter_active": true,
+        "training_candidate_scorer_active": true,
+        "gold_drill_dataset_built": true,
+        "drill_mistake_logger_active": true,
+        "drill_benchmark_runner_active": true,
+        "drill_memory_capturer_active": true,
+        "drill_critic_approval_gate_active": true,
+        "checkpoint_candidate_builder_active": true,
+        "checkpoint_battle_arena_active": true,
+        "battle_judge_active": true,
+        "arena_leaderboard_active": true,
+        "arena_promotion_gate_active": true,
+        "drill_difficulty_calibrator_active": true,
+        "role_weakness_detector_3_active": true,
+        "drill_curriculum_scheduler_active": true,
+        "multi_brain_drill_cooldown_tracker_active": true,
+        "drill_safety_checker_active": true,
+        "drill_failure_response_planner_active": true,
+        "drill_improvement_recommender_active": true,
+        "drill_evolution_engine_active": true
+      }
+    },
+    "v391_v420_self_improvement_lab": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 30,
+      "modules": {
+        "v391_research_experiment_planner_v2": {
+          "status": "PASS"
+        },
+        "v393_experiment_runner_sim": {
+          "status": "PASS"
+        },
+        "v396_self_improvement_candidate_builder": {
+          "status": "PASS"
+        },
+        "v398_experiment_training_converter": {
+          "status": "PASS"
+        },
+        "v392_hypothesis_generator_v2": {
+          "status": "PASS"
+        },
+        "v394_result_analyzer_v2": {
+          "status": "PASS"
+        },
+        "v395_weakness_experiment_logger": {
+          "status": "PASS"
+        },
+        "v397_self_improvement_critic_gate": {
+          "status": "PASS"
+        },
+        "v399_experiment_mistake_memory": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "research_experiment_planner_v2_active": true,
+        "hypothesis_generator_v2_active": true,
+        "experiment_runner_sim_only_active": true,
+        "result_analyzer_v2_active": true,
+        "weakness_experiment_logger_active": true,
+        "self_improvement_candidate_builder_active": true,
+        "self_improvement_critic_gate_active": true,
+        "experiment_to_training_converter_active": true,
+        "experiment_mistake_memory_active": true,
+        "experiment_safety_checker_active": true,
+        "experiment_benchmark_active": true,
+        "experiment_report_generator_active": true,
+        "self_improvement_dashboard_active": true,
+        "autonomous_research_scheduler_active": true,
+        "research_priority_ranker_active": true,
+        "research_safety_gate_active": true,
+        "research_mistake_replay_active": true,
+        "research_memory_capturer_active": true,
+        "research_curriculum_builder_active": true,
+        "research_benchmark_creator_active": true,
+        "research_skill_tracker_active": true,
+        "research_lesson_distiller_active": true,
+        "research_contradiction_detector_active": true,
+        "research_evidence_ranker_active": true,
+        "research_self_correction_logger_active": true,
+        "research_planning_tracker_active": true,
+        "research_creativity_scorer_active": true,
+        "research_uncertainty_handler_active": true,
+        "research_code_repair_analyzer_active": true
+      }
+    },
+    "v421_v450_real_world_skill_simulation": {
+      "status": "INSTALLED_AND_PASSING",
+      "module_count": 30,
+      "modules": {
+        "v424_artist_project": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v427_debugging_session": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v428_room_navigation": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v421_studio_session": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v426_game_design": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v429_emergency_stop": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v422_client_conversation": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v423_beat_license_negotiation": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        },
+        "v425_customer_support": {
+          "status": "PASS",
+          "simulation_only": true,
+          "trainable": false
+        }
+      },
+      "key_findings": {
+        "studio_session_simulation_active": true,
+        "client_conversation_simulation_active": true,
+        "beat_license_negotiation_simulation_active": true,
+        "artist_project_management_simulation_active": true,
+        "customer_support_simulation_active": true,
+        "game_design_simulation_active": true,
+        "debugging_session_simulation_active": true,
+        "robot_room_navigation_simulation_active": true,
+        "emergency_stop_simulation_active": true,
+        "business_offer_simulation_active": true,
+        "sales_call_simulation_active": true,
+        "content_planning_simulation_active": true,
+        "video_treatment_simulation_active": true,
+        "revenue_planning_simulation_active": true,
+        "grant_proposal_simulation_active": true,
+        "sponsorship_pitch_simulation_active": true,
+        "course_teaching_simulation_active": true,
+        "social_media_growth_simulation_active": true,
+        "product_launch_simulation_active": true,
+        "conflict_handling_simulation_active": true,
+        "wrong_answer_recovery_simulation_active": true,
+        "owner_correction_simulation_active": true,
+        "memory_conflict_simulation_active": true,
+        "capability_honesty_simulation_active": true,
+        "multi_step_mission_simulation_active": true,
+        "tool_failure_simulation_active": true,
+        "checkpoint_failure_simulation_active": true,
+        "dataset_poison_simulation_active": true,
+        "benchmark_regression_simulation_active": true,
+        "all_simulations_not_trainable": true,
+        "no_real_emails_contracts_payments": true,
+        "no_real_robot_movement": true
+      }
+    }
+  },
+  "regression_results": {
+    "v059_live_router": {
+      "status": "PASS",
+      "details": "7/7 roles on v055"
+    },
+    "v061_learning_loop": {
+      "status": "PASS",
+      "dry_run": true,
+      "can_promote": true
+    },
+    "v066_capability_self_map": {
+      "status": "PASS",
+      "real_hardware_enabled": false,
+      "capabilities": 33
+    },
+    "v075_benchmark_dashboard": {
+      "status": "PASS",
+      "tests": "13/13"
+    },
+    "v095_intelligence_benchmark": {
+      "status": "PASS",
+      "promote_ready": true
+    },
+    "v180_fast_age_orchestrator": {
+      "status": "PASS",
+      "dry_run": true,
+      "steps": 12
+    },
+    "v190_raw_input_capability_report": {
+      "status": "PASS",
+      "proven": 2,
+      "unproven": 2
+    },
+    "v230_capability_growth_report": {
+      "status": "PASS",
+      "promote_ready": true,
+      "robot_blocked": true
+    },
+    "v300_robot_readiness_report": {
+      "status": "PASS",
+      "real_hardware_enabled": false
+    },
+    "v340_nova_empire_dashboard": {
+      "status": "PASS",
+      "simulation_only": true
+    }
+  },
+  "robot_movement": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "simulation_allowed": true,
+    "status": "BLOCKED_SAFELY"
+  },
+  "robot_profiles_created": [
+    "studio_camera_bot",
+    "desk_robot_arm",
+    "home_helper_bot"
+  ],
+  "body_adapters_created": true,
+  "simulations_passed": true,
+  "blocked_capabilities": [
+    "real_robot_movement",
+    "autonomous_execution",
+    "vision_ocr",
+    "unapproved_fine_tune",
+    "dirty_training_data",
+    "fake_capability_claims",
+    "real_robot_hardware_movement",
+    "real_robot_grab_object",
+    "deployment_without_approval"
+  ],
+  "new_training_candidates": {
+    "drill_based_candidates_available": true,
+    "self_improvement_candidates_available": true,
+    "simulation_lessons_available_for_approval": true,
+    "simulation_not_trainable_without_approval": true
+  },
+  "strongest_role_brain": "critic_conscience_transformer (score 85+)",
+  "weakest_role_brain": "planner_transformer / code_repair (score 75)",
+  "next_training_target": "planner_transformer \u2014 code_repair improvement via targeted drills",
+  "next_checkpoint_tournament": "v376_checkpoint_battle_arena_ready",
+  "benchmark_improvements": [
+    "v351 robot skill benchmark active",
+    "v371 drill benchmark runner active",
+    "v401 experiment benchmark active",
+    "v410 research benchmark creator active"
+  ],
+  "next_safest_upgrade": "Run checkpoint tournament in the battle arena with drill-based candidates",
+  "promote_ready": false
+}

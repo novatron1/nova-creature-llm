@@ -1,0 +1,15 @@
+{
+  "version": "v249_base_promotion_gate",
+  "created_at": "2026-06-18T12:48:40.141895",
+  "gate": {
+    "candidate_exists": false,
+    "compatible": false,
+    "benchmark_passed": true,
+    "tournament_won": false,
+    "no_regression": true,
+    "rollback_exists": true,
+    "all_pass": false
+  },
+  "promote_ready": false,
+  "note": "All gates must pass before promoting any base model swap."
+}

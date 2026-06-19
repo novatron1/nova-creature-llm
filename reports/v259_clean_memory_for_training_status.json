@@ -1,0 +1,12 @@
+{
+  "version": "v259_memory_training_cleaner",
+  "created_at": "2026-06-18T12:49:02.873902",
+  "input_items": 50,
+  "clean_items": 45,
+  "removed": 5,
+  "removal_reasons": [
+    "rejected_memory",
+    "pending_uncertainty",
+    "temporary_context"
+  ]
+}

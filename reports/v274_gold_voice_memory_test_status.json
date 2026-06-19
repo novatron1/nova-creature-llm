@@ -1,0 +1,8 @@
+{
+  "version": "v274_voice_memory",
+  "created_at": "2026-06-18T12:50:25.452267",
+  "captured": true,
+  "memory_candidate": "v095 passed",
+  "requires_approval": true,
+  "note": "Voice memory captured. Requires approval before training."
+}

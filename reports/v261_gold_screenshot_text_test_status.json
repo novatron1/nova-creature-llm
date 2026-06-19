@@ -1,0 +1,19 @@
+{
+  "version": "v261_screenshot_reader",
+  "created_at": "2026-06-18T12:49:49.498638",
+  "sections": [
+    "header",
+    "results",
+    "footer"
+  ],
+  "pass_fail_lines": [
+    "v095 passed 13/13"
+  ],
+  "version_numbers": [
+    "v095"
+  ],
+  "action_items": [
+    "Continue build"
+  ],
+  "text_first_fallback": true
+}

@@ -1,0 +1,16 @@
+{
+  "version": "v393_experiment_runner_sim",
+  "created_at": "2026-06-18T13:01:54.567299",
+  "experiment_id": "sim_exp_393",
+  "hypothesis": "Simulated hypothesis for testing",
+  "sim_results": {
+    "accuracy": 0.85,
+    "loss": 0.12,
+    "epochs": 5
+  },
+  "passed": true,
+  "blocked": false,
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Sim-only experiment runner. No real hardware involved."
+}

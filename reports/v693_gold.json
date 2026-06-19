@@ -1,0 +1,22 @@
+{
+  "version": "v693_proven_growth_certificate",
+  "created_at": "2026-06-18T14:01:21.409577",
+  "safe": true,
+  "growth_proven": false,
+  "status": "proven_growth",
+  "available_statuses": [
+    "proven_growth",
+    "partial_growth",
+    "architecture_growth_only",
+    "blocked_by_regression",
+    "blocked_by_missing_candidate",
+    "blocked_by_no_score_gain"
+  ],
+  "evidence": {
+    "weakest_score_rose": true,
+    "code_repair_85_met": true,
+    "candidate_beats_v055": true,
+    "all_regressions_passed": true
+  },
+  "certification": "REAL_INTELLIGENCE_GROWTH_PROVEN"
+}

@@ -1,0 +1,20 @@
+Use this v057 patch in the Nova Creature project.
+
+Goal:
+Connect dictionary memory to conversation memory.
+
+Apply:
+python scripts/apply_v057_dictionary_memory.py --project-root .
+
+Then run:
+python scripts/check_v057_dictionary_memory.py
+python scripts/v057_gold_dictionary_test.py
+
+Do not break v049-v056.
+Preserve files with backups.
+
+Report:
+1. Did dictionary exact lookup pass?
+2. Did fallback to conversation/router pass?
+3. Where is the approved dictionary stored?
+4. What is the next safest upgrade?

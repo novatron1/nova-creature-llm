@@ -1,0 +1,15 @@
+{
+  "version": "v669_growth_decision_gate",
+  "created_at": "2026-06-18T13:50:41.140707",
+  "safe": true,
+  "status": "blocked_by_missing_torch",
+  "current_score": 79.8,
+  "target": 85,
+  "previous_score": 72.4,
+  "improvement": 7.4,
+  "regression_detected": false,
+  "candidate_exists": true,
+  "torch_available": false,
+  "gate_passed": false,
+  "warning": "real_hardware_enabled: False, real_robot_movement_allowed: False"
+}

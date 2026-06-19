@@ -1,0 +1,11 @@
+Nova Mini LLM starter text.
+
+This is a tiny language model.
+It learns from text by predicting what comes next.
+The transformer looks at earlier words and letters.
+Attention helps the model decide what matters.
+The model generates one token at a time.
+
+Mr. Novotron builds ideas into real systems.
+A small model can learn a small style.
+A big model needs huge data, huge computers, and long training time.

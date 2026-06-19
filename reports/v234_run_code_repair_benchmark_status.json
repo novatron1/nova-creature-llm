@@ -1,0 +1,41 @@
+{
+  "version": "v234_code_repair_benchmark",
+  "created_at": "2026-06-18T12:47:46.741868",
+  "results": [
+    {
+      "test": "diagnose_syntax",
+      "passed": true
+    },
+    {
+      "test": "repair_import",
+      "passed": true
+    },
+    {
+      "test": "identify_missing",
+      "passed": true
+    },
+    {
+      "test": "repair_json",
+      "passed": true
+    },
+    {
+      "test": "block_destructive",
+      "passed": true
+    },
+    {
+      "test": "preserve_checkpoint",
+      "passed": true
+    },
+    {
+      "test": "generate_patch",
+      "passed": true
+    },
+    {
+      "test": "explain_fix",
+      "passed": true
+    }
+  ],
+  "passed": 8,
+  "total": 8,
+  "all_passed": true
+}

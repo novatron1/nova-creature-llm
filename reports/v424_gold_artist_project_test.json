@@ -1,0 +1,12 @@
+{
+  "version": "v424_artist_project",
+  "module": "v424_artist_project",
+  "title": "Artist Project Management Simulation",
+  "created_at": "2026-06-18T13:02:51.857244",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:51.857269",
+  "type": "simulation"
+}

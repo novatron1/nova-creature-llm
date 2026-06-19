@@ -1,0 +1,314 @@
+{
+  "report_title": "Batch D: v421-v450 Real-World Skill Simulation Status",
+  "generated_at": "2026-06-18T12:57:34.344628",
+  "total_modules": 30,
+  "simulations": [
+    {
+      "version": "v421",
+      "module": "v421_studio_session",
+      "title": "Studio Session Simulation Pack",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v422",
+      "module": "v422_client_conversation",
+      "title": "Client Conversation Simulation Pack",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v423",
+      "module": "v423_beat_license_negotiation",
+      "title": "Beat License Negotiation Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v424",
+      "module": "v424_artist_project",
+      "title": "Artist Project Management Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v425",
+      "module": "v425_customer_support",
+      "title": "App Customer Support Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v426",
+      "module": "v426_game_design",
+      "title": "Game Design Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v427",
+      "module": "v427_debugging_session",
+      "title": "Debugging Session Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v428",
+      "module": "v428_room_navigation",
+      "title": "Robot Room Navigation Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v429",
+      "module": "v429_emergency_stop",
+      "title": "Emergency Stop Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v430",
+      "module": "v430_business_offer",
+      "title": "Business Offer Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v431",
+      "module": "v431_sales_call",
+      "title": "Sales Call Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v432",
+      "module": "v432_content_planning",
+      "title": "Content Planning Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v433",
+      "module": "v433_video_treatment",
+      "title": "Video Treatment Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v434",
+      "module": "v434_revenue_planning",
+      "title": "Revenue Planning Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v435",
+      "module": "v435_grant_proposal",
+      "title": "Grant Proposal Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v436",
+      "module": "v436_sponsorship_pitch",
+      "title": "Sponsorship Pitch Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v437",
+      "module": "v437_course_teaching",
+      "title": "Course Teaching Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v438",
+      "module": "v438_social_media_growth",
+      "title": "Social Media Growth Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v439",
+      "module": "v439_product_launch",
+      "title": "Product Launch Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v440",
+      "module": "v440_conflict_handling",
+      "title": "Conflict Handling Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v441",
+      "module": "v441_wrong_answer_recovery",
+      "title": "Wrong Answer Recovery Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v442",
+      "module": "v442_owner_correction",
+      "title": "Owner Correction Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v443",
+      "module": "v443_memory_conflict",
+      "title": "Memory Conflict Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v444",
+      "module": "v444_capability_honesty",
+      "title": "Capability Honesty Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v445",
+      "module": "v445_multi_step_mission",
+      "title": "Multi-Step Mission Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v446",
+      "module": "v446_tool_failure",
+      "title": "Tool Failure Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v447",
+      "module": "v447_checkpoint_failure",
+      "title": "Checkpoint Failure Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v448",
+      "module": "v448_dataset_poison",
+      "title": "Dataset Poison Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v449",
+      "module": "v449_benchmark_regression",
+      "title": "Benchmark Regression Simulation",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    },
+    {
+      "version": "v450",
+      "module": "v450_skill_simulation_report",
+      "title": "Real-World Skill Simulation Report",
+      "simulation": true,
+      "trainable": false,
+      "real_hardware_enabled": false,
+      "real_robot_movement_allowed": false,
+      "status": "registered"
+    }
+  ],
+  "summary": {
+    "total": 30,
+    "simulation": 30,
+    "trainable": 0,
+    "hardware_disabled": 30,
+    "robot_movement_disabled": 30
+  }
+}

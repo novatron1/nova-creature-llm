@@ -1,0 +1,22 @@
+{
+  "package": "NovaCreature_v057_dictionary_memory_bridge_patch",
+  "version": "v057",
+  "purpose": "Connect approved dictionary memory with v056 conversation memory so exact learned answers and remembered facts can be used before/with the role-brain router.",
+  "adds": [
+    "src/dictionary_memory.py",
+    "src/v057_dictionary_conversation_router.py",
+    "scripts/apply_v057_dictionary_memory.py",
+    "scripts/check_v057_dictionary_memory.py",
+    "scripts/v057_chat_once.py",
+    "scripts/v057_add_dictionary_lesson.py",
+    "scripts/v057_gold_dictionary_test.py",
+    "docs/V057_DICTIONARY_MEMORY.md",
+    "tests/test_v057_dictionary_memory.py"
+  ],
+  "memory_files": [
+    "data/dictionary_memory/approved_answer_dictionary.json",
+    "data/dictionary_memory/pending_dictionary_lessons.jsonl",
+    "data/dictionary_memory/dictionary_hits.jsonl"
+  ],
+  "flow": "input -> dictionary memory exact lookup -> conversation memory context -> role-brain router fallback -> answer -> memory update"
+}

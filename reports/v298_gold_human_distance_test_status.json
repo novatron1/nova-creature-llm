@@ -1,0 +1,8 @@
+{
+  "version": "v298_human_distance",
+  "created_at": "2026-06-18T12:52:04.579899",
+  "distance_cm": 100,
+  "threshold": 50,
+  "safe": true,
+  "movement_blocked": false
+}

@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-06-15T06:38:01.132112+00:00",
+  "max_vocab_size": 4000,
+  "min_freq": 1,
+  "trained_at": "2026-06-15T06:38:01.132139+00:00",
+  "used_files": [
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/assistant_behavior_rules.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/basic_conversation.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/basic_language_and_reasoning.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/basic_logic.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/basic_science.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/common_objects.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/grammar_basics.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/i_do_not_know.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/instruction_following.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/language_basics.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/foundation/simple_math.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/personal/beat_license_template_knowledge.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/personal/llm_lab_design_notes.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/personal/mr_novotron_communication_style.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/personal/nova_creature_identity_and_goal.txt",
+    "/root/New Project (1)Nova LLM/nova_creature_llm_lab/data/personal/projects_and_creative_knowledge.txt"
+  ],
+  "vocab_size": 560
+}

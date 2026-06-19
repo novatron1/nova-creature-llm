@@ -1,0 +1,1 @@
+{"prompt": "Short voice: project status?", "completion": "All systems passing", "role": "speech_output_transformer", "skill_target": "speech_clarity", "source_system": "age_cycle", "difficulty": "basic", "benchmark_category": "speech_clarity", "approval_status": "approved"}

@@ -1,0 +1,24 @@
+{
+  "dry_run": true,
+  "promotion_allowed": true,
+  "owner_approval_required": true,
+  "owner_approval_granted": false,
+  "modifications_proposed": [
+    {
+      "action": "update_role_route",
+      "role": "code",
+      "from": "v055_champion.pt",
+      "to": "v673_candidate.pt"
+    },
+    {
+      "action": "update_role_route",
+      "role": "plan",
+      "from": "v055_champion.pt",
+      "to": "v673_candidate.pt"
+    }
+  ],
+  "live_router_modified": false,
+  "note": "Dry-run only. No live router changes made. Owner approval required to proceed.",
+  "version": "v676_router_promotion_dry_run",
+  "created_at": "2026-06-18T13:54:29.427356"
+}

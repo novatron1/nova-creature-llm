@@ -1,0 +1,19 @@
+{
+  "version": "v659_real_growth_evidence_folder",
+  "created_at": "2026-06-18T13:45:38.643224",
+  "safe": false,
+  "target_met": true,
+  "evidence_path": "/root/New Project (1)Nova LLM/evidence/v659_real_growth",
+  "files_created": [
+    "scoreboard.json",
+    "benchmark_comparison.json",
+    "damage_report.json",
+    "test_separation.json",
+    "weakness_chain.json",
+    "gain_meter.json",
+    "improvement_check.json",
+    "role_scores.json"
+  ],
+  "total_files": 8,
+  "warning": "real_hardware_enabled: False, real_robot_movement_allowed: False"
+}

@@ -1,0 +1,17 @@
+{
+  "version": "v382_role_brain_weakness_detector_3",
+  "created_at": "2026-06-18T13:01:33.125724",
+  "role": "analyst",
+  "weaknesses": [
+    "logic_gaps",
+    "speed_limitations"
+  ],
+  "severity": [
+    "high",
+    "medium"
+  ],
+  "recommendations": [
+    "drill_a",
+    "drill_b"
+  ]
+}

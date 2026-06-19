@@ -1,0 +1,337 @@
+{
+  "version": "v066_capability_self_map",
+  "created_at": "2026-06-18T13:28:56.661947",
+  "project_root": "/root/New Project (1)Nova LLM",
+  "brain_organs": {
+    "left_hemisphere": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "511cd812682a6bd5...",
+      "purpose": "math, code, logic, exact tests",
+      "fallback_used": false
+    },
+    "right_hemisphere": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "4d9c862bdd6dfd88...",
+      "purpose": "patterns, imagination, visual maps, creative synthesis",
+      "fallback_used": false
+    },
+    "memory_transformer": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/memory_transformer/memory_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "f9025ffc05e781e7...",
+      "purpose": "identity, facts, names, recall",
+      "fallback_used": false
+    },
+    "planner_transformer": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/planner_transformer/planner_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "3c555c9d1e700768...",
+      "purpose": "steps, next actions, build sequence",
+      "fallback_used": false
+    },
+    "critic_conscience_transformer": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "f5cad64002264127...",
+      "purpose": "truth check, unknown guard, don't guess",
+      "fallback_used": false
+    },
+    "dream_simulation_transformer": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "d932eb6621575ba7...",
+      "purpose": "practice scenarios, variants, replay",
+      "fallback_used": false
+    },
+    "speech_output_transformer": {
+      "exists": true,
+      "active": true,
+      "selected_checkpoint": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v055_finetuned.pt",
+      "checkpoint_version": "v055_finetuned",
+      "sha256": "0ed831d4eb06c38b...",
+      "purpose": "clean final answer style",
+      "fallback_used": false
+    }
+  },
+  "memory_systems": {
+    "conversation_memory": {
+      "exists": true,
+      "storage_path": "data/conversation_memory/",
+      "item_count": 124,
+      "trainable": false,
+      "requires_approval": false
+    },
+    "dictionary_memory": {
+      "exists": true,
+      "storage_path": "data/dictionary_memory/approved_answer_dictionary.json",
+      "item_count": 13,
+      "trainable": true,
+      "requires_approval": false
+    },
+    "auto_project_memory": {
+      "exists": true,
+      "storage_path": "data/smart_memory/auto_project_memory.jsonl",
+      "item_count": 2,
+      "trainable": false,
+      "requires_approval": false
+    },
+    "explicit_user_memory": {
+      "exists": true,
+      "storage_path": "data/smart_memory/explicit_user_memory.jsonl",
+      "item_count": 4,
+      "trainable": true,
+      "requires_approval": false
+    },
+    "temporary_conversation_context": {
+      "exists": true,
+      "storage_path": "data/smart_memory/temporary_conversation_context.jsonl",
+      "item_count": 2,
+      "trainable": false,
+      "requires_approval": false
+    },
+    "pending_approval_memory": {
+      "exists": true,
+      "storage_path": "data/smart_memory/pending_approval_memory.jsonl",
+      "item_count": 2,
+      "trainable": false,
+      "requires_approval": true
+    },
+    "training_candidate_memory": {
+      "exists": true,
+      "storage_path": "data/smart_memory/training_candidate_memory.jsonl",
+      "item_count": 4,
+      "trainable": true,
+      "requires_approval": false
+    }
+  },
+  "learning_systems": {
+    "v058_dictionary_to_training": {
+      "exists": true,
+      "active": true,
+      "last_report": "reports/v058_dictionary_training/"
+    },
+    "v060_smart_memory_capture": {
+      "exists": true,
+      "active": true
+    },
+    "v061_learning_loop": {
+      "exists": true,
+      "active": true,
+      "last_report": "reports/v061_learning_loop_status.json",
+      "last_status": "PASS: learning loop complete"
+    },
+    "v055_finetune_runner": {
+      "exists": true,
+      "active": true,
+      "last_report": "reports/v055_finetune_summary.json",
+      "last_can_promote": true
+    },
+    "v059_router_promotion": {
+      "exists": true,
+      "active": true,
+      "last_report": "reports/v059_live_router_checkpoint_priority.json",
+      "all_promoted_to_v055": true
+    },
+    "v062_benchmark_gate": {
+      "exists": true,
+      "active": true,
+      "last_report": "reports/v062_benchmark_report.json",
+      "last_gate_passed": true
+    },
+    "v063_dream_replay": {
+      "exists": true,
+      "active": true
+    },
+    "v064_memory_constitution": {
+      "exists": true,
+      "active": true
+    }
+  },
+  "tool_systems": {
+    "check_codex_brain_stack.py": {
+      "exists": true,
+      "type": "checker"
+    },
+    "check_v059_router_uses_finetuned_brains.py": {
+      "exists": true,
+      "type": "checker"
+    },
+    "check_v060_smart_memory_capture.py": {
+      "exists": true,
+      "type": "checker"
+    },
+    "check_v061_learning_loop.py": {
+      "exists": true,
+      "type": "checker"
+    },
+    "check_v062_benchmark_gate.py": {
+      "exists": true,
+      "type": "checker"
+    },
+    "v053_training_prep.py": {
+      "exists": true,
+      "type": "pipeline"
+    },
+    "v054_role_checkpoint_builder.py": {
+      "exists": true,
+      "type": "pipeline"
+    },
+    "v055_cloud_finetune_ready.py": {
+      "exists": true,
+      "type": "pipeline"
+    },
+    "v055_finetune_role_brains.py": {
+      "exists": true,
+      "type": "pipeline"
+    },
+    "v058_export_dictionary_to_training.py": {
+      "exists": true,
+      "type": "pipeline"
+    },
+    "v061_run_learning_loop.py": {
+      "exists": true,
+      "type": "pipeline"
+    }
+  },
+  "robot_systems": {
+    "robot_bridge": {
+      "status": "planned",
+      "active": false,
+      "simulation_only": true
+    },
+    "movement_controller": {
+      "status": "inactive",
+      "active": false,
+      "simulation_only": true
+    },
+    "vision_sensor": {
+      "status": "not_connected",
+      "active": false,
+      "note": "No camera hardware connected"
+    },
+    "microphone_sensor": {
+      "status": "not_connected",
+      "active": false,
+      "note": "No microphone hardware connected"
+    },
+    "speaker_output": {
+      "status": "not_connected",
+      "active": false,
+      "note": "No speaker hardware connected"
+    },
+    "lidar_or_distance_sensor": {
+      "status": "not_installed",
+      "active": false,
+      "note": "Requires physical sensor"
+    },
+    "battery_monitor": {
+      "status": "not_installed",
+      "active": false,
+      "note": "Requires power management hardware"
+    },
+    "imu_balance_sensor": {
+      "status": "not_installed",
+      "active": false,
+      "note": "Requires IMU hardware"
+    },
+    "emergency_stop": {
+      "status": "required",
+      "active": false,
+      "note": "Must be installed before any real movement"
+    },
+    "safety_spine": {
+      "status": "required",
+      "active": false,
+      "note": "v071 safety spine must pass before real movement"
+    },
+    "simulation_world": {
+      "status": "required",
+      "active": false,
+      "note": "Simulation world needed before real movement"
+    },
+    "real_hardware_enabled": {
+      "status": "disabled",
+      "active": false,
+      "note": "Cannot enable without safety spine, emergency stop, and hardware config"
+    }
+  },
+  "active_capabilities": [
+    "brain_organ:critic_conscience_transformer",
+    "brain_organ:dream_simulation_transformer",
+    "brain_organ:left_hemisphere",
+    "brain_organ:memory_transformer",
+    "brain_organ:planner_transformer",
+    "brain_organ:right_hemisphere",
+    "brain_organ:speech_output_transformer",
+    "learning:v055_finetune_runner",
+    "learning:v058_dictionary_to_training",
+    "learning:v059_router_promotion",
+    "learning:v060_smart_memory_capture",
+    "learning:v061_learning_loop",
+    "learning:v062_benchmark_gate",
+    "learning:v063_dream_replay",
+    "learning:v064_memory_constitution",
+    "memory:auto_project_memory",
+    "memory:conversation_memory",
+    "memory:dictionary_memory",
+    "memory:explicit_user_memory",
+    "memory:pending_approval_memory",
+    "memory:temporary_conversation_context",
+    "memory:training_candidate_memory",
+    "tool:check_codex_brain_stack.py",
+    "tool:check_v059_router_uses_finetuned_brains.py",
+    "tool:check_v060_smart_memory_capture.py",
+    "tool:check_v061_learning_loop.py",
+    "tool:check_v062_benchmark_gate.py",
+    "tool:v053_training_prep.py",
+    "tool:v054_role_checkpoint_builder.py",
+    "tool:v055_cloud_finetune_ready.py",
+    "tool:v055_finetune_role_brains.py",
+    "tool:v058_export_dictionary_to_training.py",
+    "tool:v061_run_learning_loop.py"
+  ],
+  "inactive_capabilities": [
+    "robot:emergency_stop",
+    "robot:robot_bridge",
+    "robot:safety_spine",
+    "robot:simulation_world"
+  ],
+  "missing_capabilities": [
+    "robot:battery_monitor",
+    "robot:imu_balance_sensor",
+    "robot:lidar_or_distance_sensor",
+    "robot:microphone_sensor",
+    "robot:movement_controller",
+    "robot:real_hardware_enabled",
+    "robot:speaker_output",
+    "robot:vision_sensor"
+  ],
+  "approval_required_capabilities": [
+    "memory:pending_approval_memory"
+  ],
+  "benchmark_required_capabilities": [
+    "robot:movement_controller"
+  ],
+  "safety_limits": [
+    "Real robot movement is disabled by default",
+    "v064 memory constitution blocks uncertain/personal memory from training",
+    "v062 benchmark gate must pass before any promotion",
+    "v071 safety spine must pass before real robot movement"
+  ],
+  "real_hardware_enabled": false,
+  "next_safe_upgrade": "v069 \u2014 Self-Scripting Brain (write/test scripts in sandbox)"
+}

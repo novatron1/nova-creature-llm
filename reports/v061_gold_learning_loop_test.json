@@ -1,0 +1,28 @@
+{
+  "version": "v061_gold_learning_loop_test",
+  "created_at": "2026-06-18T03:16:56.844755",
+  "tests_run": 4,
+  "tests_passed": 9,
+  "tests_failed": 0,
+  "export_result": {
+    "items_seen": 7,
+    "items_exported": 3,
+    "dictionary_entries_added": 3,
+    "training_candidates_exported": 1,
+    "explicit_memory_exported": 2,
+    "skipped_not_exportable": 0,
+    "skipped_already_exported": 4,
+    "skipped_rejected": 0,
+    "skipped_pending": 0,
+    "dry_run": false,
+    "errors": []
+  },
+  "dictionary_size": 13,
+  "storage_counts": {
+    "auto_project_memory": 2,
+    "explicit_user_memory": 4,
+    "temporary_conversation_context": 2,
+    "pending_approval_memory": 2,
+    "training_candidate_memory": 3
+  }
+}

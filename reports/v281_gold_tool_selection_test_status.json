@@ -1,0 +1,8 @@
+{
+  "version": "v281_tool_selection",
+  "created_at": "2026-06-18T12:51:09.317880",
+  "tool": "default",
+  "safe": true,
+  "blocked": false,
+  "sandbox_first": true
+}

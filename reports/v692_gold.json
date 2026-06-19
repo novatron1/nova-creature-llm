@@ -1,0 +1,17 @@
+{
+  "version": "v692_fake_intelligence_growth_detector",
+  "created_at": "2026-06-18T14:01:21.199677",
+  "safe": true,
+  "growth_proven": false,
+  "detectors": {
+    "only_module_count": false,
+    "only_easy_gold_tests": false,
+    "no_hard_score_gain": false,
+    "no_candidate": false,
+    "candidate_not_beat_v055": false,
+    "regressions_hidden": false,
+    "capability_overclaim": false
+  },
+  "all_detectors_negative": true,
+  "fake_growth_detected": false
+}

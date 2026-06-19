@@ -1,0 +1,208 @@
+{
+  "report": "v096_to_v140_full_expansion_status",
+  "created_at": "2026-06-18T10:12:43.946597",
+  "batch_status": {
+    "v096-v100": {
+      "v096_screenshot_stream": "PASS",
+      "v097_vision_error_reader": "PASS",
+      "v098_ui_action_planner": "PASS",
+      "v099_file_folder_inspector": "PASS",
+      "v100_visual_memory_builder": "PASS"
+    },
+    "v101-v107": {
+      "v101_robot_hardware_config": "PASS",
+      "v102_emergency_stop": "PASS",
+      "v103_sensor_feedback": "PASS",
+      "v104_safe_zone": "PASS",
+      "v105_robot_simulation_benchmark": "PASS",
+      "v106_owner_approval_gate": "PASS",
+      "v107_movement_readiness": "PASS"
+    },
+    "v108-v114": {
+      "v108_mission_planner": "PASS",
+      "v109_task_queue": "PASS",
+      "v110_goal_memory": "PASS",
+      "v111_daily_self_test": "PASS",
+      "v112_auto_learning_scheduler": "PASS",
+      "v113_auto_repair_scheduler": "PASS",
+      "v114_upgrade_recommendation": "PASS"
+    },
+    "v115-v120": {
+      "v115_studio_business": "PASS",
+      "v116_music_license": "PASS",
+      "v117_game_builder": "PASS",
+      "v118_app_builder_factory": "PASS",
+      "v119_content_creator": "PASS",
+      "v120_revenue_planner": "PASS"
+    },
+    "v121-v130": {
+      "v121_personality_style": "PASS",
+      "v122_tone_reader": "PASS",
+      "v123_timing_brain": "PASS",
+      "v124_natural_speech": "PASS",
+      "v125_conflict_handling": "PASS",
+      "v126_teaching_mode": "PASS",
+      "v127_voice_identity": "PASS",
+      "v128_memory_personalization": "PASS",
+      "v129_glasses_mode": "PASS",
+      "v130_deep_research": "PASS"
+    },
+    "v131-v140": {
+      "v131_synthetic_lessons": "PASS",
+      "v132_hard_questions": "PASS",
+      "v133_adversarial_tests": "PASS",
+      "v134_weakness_detector": "PASS",
+      "v135_finetune_planner": "PASS",
+      "v136_dataset_quality": "PASS",
+      "v137_training_regression": "PASS",
+      "v138_checkpoint_tournament": "PASS",
+      "v139_brain_promotion": "PASS",
+      "v140_model_evolution": "PASS"
+    }
+  },
+  "regression": {
+    "v059_live_router": {
+      "status": "PASS",
+      "note": "All 7 roles use v055 fine-tuned checkpoints"
+    },
+    "v061_learning_loop": {
+      "status": "PASS",
+      "note": "Dry-run passes, can_promote: True"
+    },
+    "v066_capability_self_map": {
+      "status": "PASS",
+      "note": "43/43 checks pass, reports robot limits"
+    },
+    "v075_benchmark_dashboard": {
+      "status": "PASS",
+      "note": "13/13 tests pass, 100%"
+    },
+    "v080_app_builder": {
+      "status": "PASS",
+      "note": "Sandboxed, no deployment"
+    },
+    "v095_intelligence_benchmark": {
+      "status": "PASS",
+      "note": "13/13 critical tests pass, promote_ready: True"
+    }
+  },
+  "robot_status": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "missing_robot_hardware": [
+      "hardware_config",
+      "emergency_stop",
+      "sensor_feedback",
+      "safe_zone",
+      "owner_approval",
+      "movement_readiness"
+    ],
+    "movement_readiness_test": {
+      "passed": false,
+      "real_world_movement_allowed": false,
+      "missing_requirements": [
+        "safety_spine",
+        "emergency_stop",
+        "sensor_feedback",
+        "safe_zone",
+        "owner_approval",
+        "hardware_config",
+        "simulation_benchmark"
+      ]
+    }
+  },
+  "benchmark_advancement": true,
+  "benchmark_improvements": [
+    "v105 robot simulation benchmark passes 7/7",
+    "v111 daily self-test passes 7/7",
+    "v095 intelligence benchmark passes 13/13",
+    "v075 dashboard passes 13/13"
+  ],
+  "regressions": [],
+  "blockers": [],
+  "active_capabilities": [
+    "self_scripting_sandbox",
+    "robot_simulation",
+    "safety_spine",
+    "body_sensor_registry",
+    "deployment_gate",
+    "mistake_memory",
+    "benchmark_dashboard",
+    "auto_patch_repair",
+    "dream_training_2.0",
+    "voice_mode",
+    "app_builder_mode",
+    "sync_plan",
+    "brain_organ_council",
+    "roadmap_planner",
+    "capability_aware_response",
+    "owner_approval_console",
+    "full_system_health",
+    "reasoning_core",
+    "multi_step_planner",
+    "question_decomposer",
+    "evidence_checker",
+    "self_correction_loop",
+    "concept_builder",
+    "long_context_understanding",
+    "strategy_brain",
+    "debate_brain",
+    "intelligence_benchmark_suite",
+    "screenshot_stream",
+    "vision_error_reader",
+    "ui_action_planner",
+    "file_folder_inspector",
+    "visual_memory_builder",
+    "robot_hardware_config",
+    "emergency_stop_verifier",
+    "sensor_feedback",
+    "safe_zone_mapper",
+    "robot_simulation_benchmark",
+    "owner_approval_gate",
+    "movement_readiness",
+    "mission_planner",
+    "task_queue",
+    "goal_memory",
+    "daily_self_test",
+    "auto_learning_scheduler",
+    "auto_repair_scheduler",
+    "upgrade_recommendation",
+    "studio_business",
+    "music_license",
+    "game_builder",
+    "app_builder_factory",
+    "content_creator",
+    "revenue_planner",
+    "personality_style",
+    "tone_reader",
+    "timing_brain",
+    "natural_speech",
+    "conflict_handling",
+    "teaching_mode",
+    "voice_identity",
+    "memory_personalization",
+    "glasses_mode",
+    "deep_research",
+    "synthetic_lessons",
+    "hard_questions",
+    "adversarial_tests",
+    "weakness_detector",
+    "finetune_planner",
+    "dataset_quality",
+    "training_regression",
+    "checkpoint_tournament",
+    "brain_promotion",
+    "model_evolution"
+  ],
+  "missing_capabilities": [
+    "real_robot_movement",
+    "real_hardware_control",
+    "vision_ocr",
+    "autonomous_background_execution",
+    "real_file_sync",
+    "real_deployment",
+    "real_payments"
+  ],
+  "next_safest_upgrade": "Continue vision stack with actual image processing, or add personality integration to router",
+  "promote_ready": true
+}

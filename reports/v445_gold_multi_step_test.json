@@ -1,0 +1,12 @@
+{
+  "version": "v445_multi_step_mission",
+  "module": "v445_multi_step_mission",
+  "title": "Multi-Step Mission Simulation",
+  "created_at": "2026-06-18T13:02:55.551303",
+  "simulation": true,
+  "trainable": false,
+  "real_hardware_enabled": false,
+  "real_robot_movement_allowed": false,
+  "timestamp": "2026-06-18T13:02:55.551366",
+  "type": "simulation"
+}

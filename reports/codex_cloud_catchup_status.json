@@ -1,0 +1,14 @@
+{
+  "version": "codex_cloud_catchup_v049_to_v055",
+  "created_at": "2026-06-18T01:54:07.538927",
+  "project_root": "/root/New Project (1)Nova LLM",
+  "installed": {
+    "v049_brain_slots": true,
+    "v050_router": true,
+    "v051_chat_adapter": true,
+    "v052_role_layers": true,
+    "v053_training_prep": true,
+    "v054_role_checkpoint_builder": true,
+    "v055_cloud_torch_ready_script": true
+  }
+}

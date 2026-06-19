@@ -1,0 +1,7 @@
+{
+  "version": "v251_memory_compressor",
+  "created_at": "2026-06-18T12:48:49.870301",
+  "original_items": 100,
+  "compressed_summaries": 15,
+  "compression_ratio": "85%"
+}

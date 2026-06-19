@@ -1,0 +1,15 @@
+{
+  "package": "NovaCreature_v058_dictionary_to_transformer_learning_patch",
+  "version": "v058",
+  "purpose": "Turn approved dictionary memory into role-brain training lessons so transformer checkpoints can learn from the dictionary during fine-tuning.",
+  "flow": "approved dictionary -> role assignment -> v053 training sets -> v054 role checkpoint builder -> v055 fine-tune",
+  "adds": [
+    "src/dictionary_to_training.py",
+    "scripts/apply_v058_dictionary_to_transformer.py",
+    "scripts/v058_export_dictionary_to_training.py",
+    "scripts/check_v058_dictionary_to_transformer.py",
+    "scripts/v058_gold_dictionary_to_transformer_test.py",
+    "docs/V058_DICTIONARY_TO_TRANSFORMER.md",
+    "tests/test_v058_dictionary_to_training.py"
+  ]
+}

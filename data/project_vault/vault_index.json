@@ -1,0 +1,58 @@
+{
+  "version": "v066_project_vault",
+  "created_at": "2026-06-18T03:43:48.924460",
+  "updated_at": "2026-06-18T03:43:48.933902",
+  "entries": [
+    {
+      "id": "vault_20260618_034348_926544",
+      "created_at": "2026-06-18T03:43:48.926590",
+      "text": "v059 passed and all live routes select v055",
+      "memory_type": "auto_project_memory",
+      "source": "v066_ingest",
+      "tags": [
+        "project",
+        "auto_capture"
+      ],
+      "route": "test_route",
+      "status": "approved"
+    },
+    {
+      "id": "vault_20260618_034348_932461",
+      "created_at": "2026-06-18T03:43:48.932508",
+      "text": "my favorite color is blue",
+      "memory_type": "explicit_user_memory",
+      "source": "v061_smart_memory_export",
+      "tags": [
+        "explicit",
+        "user_requested"
+      ],
+      "route": "test_route",
+      "status": "approved"
+    },
+    {
+      "id": "vault_20260618_034348_932565",
+      "created_at": "2026-06-18T03:43:48.932580",
+      "text": "Maybe this is the right checkpoint",
+      "memory_type": "explicit_user_memory",
+      "source": "v061_smart_memory_export",
+      "tags": [
+        "uncertain/speculative language"
+      ],
+      "route": "test_route",
+      "status": "approved"
+    },
+    {
+      "id": "vault_20260618_034348_933748",
+      "created_at": "2026-06-18T03:43:48.933782",
+      "text": "to who created you is Mr. Novotron",
+      "memory_type": "training_candidate_memory",
+      "source": "v061_smart_memory_export",
+      "tags": [
+        "training_candidate",
+        "v058_export_ready"
+      ],
+      "route": "test_route",
+      "status": "approved"
+    }
+  ]
+}

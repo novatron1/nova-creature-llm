@@ -1,0 +1,15 @@
+Use this v056 patch in the Nova Creature project.
+
+Goal:
+Add conversation memory so Nova can track ongoing topic, active goal, recent turns, and follow-up commands like "do that" and "what next".
+
+Apply:
+python scripts/apply_v056_conversation_memory.py --project-root .
+
+Then run:
+python scripts/check_v056_conversation_memory.py
+python scripts/v056_gold_conversation_test.py
+
+Do not break v049-v055.
+Preserve existing files with backups.
+Report the test output and whether conversation memory correctly resolves follow-ups.

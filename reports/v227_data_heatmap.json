@@ -1,0 +1,33 @@
+{
+  "version": "v227_data_heatmap",
+  "created_at": "2026-06-18T11:21:00.231559",
+  "heatmap": {
+    "identity_qa": [
+      "identity_recall",
+      "paraphrase"
+    ],
+    "project_report": [
+      "project_continuity",
+      "evidence"
+    ],
+    "code_error": [
+      "code_repair",
+      "debugging"
+    ],
+    "math_qa": [
+      "arithmetic",
+      "logic"
+    ],
+    "robot_qa": [
+      "safety",
+      "honesty"
+    ],
+    "business_text": [
+      "planning",
+      "studio_ops"
+    ]
+  },
+  "strongest_stream": "identity_qa",
+  "highest_skill_transfer": "identity_recall",
+  "note": "Identity QA and project reports produce the most skills per example."
+}

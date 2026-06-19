@@ -1,0 +1,116 @@
+{
+  "report": "Batch B — v661-v670 Planner Code-Repair Growth Proof Status",
+  "project": "Nova Creature LLM",
+  "batch": "B (v661–v670)",
+  "created_at": "2026-06-18T00:00:00",
+  "global_rules": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "no_windows_paths": true,
+    "no_bat_files": true,
+    "no_deleting_files": true
+  },
+  "modules": [
+    {
+      "module": "v661",
+      "name": "Planner Code-Repair Hard Benchmark 3.0",
+      "src": "v661_planner_code_repair_hard_benchmark_3.py",
+      "function": "run_planner_code_repair_hard_benchmark_3",
+      "checker": "check_v661_code_repair_hard_benchmark.py",
+      "runner": "v661_run_code_repair_hard_benchmark.py",
+      "checker_result": {"passed": 16, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v662",
+      "name": "Code-Repair Score 75-to-85 Tracker",
+      "src": "v662_code_repair_score_tracker.py",
+      "function": "track_code_repair_score",
+      "checker": "check_v662_code_repair_score_tracker.py",
+      "runner": "v662_print_code_repair_score.py",
+      "checker_result": {"passed": 7, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v663",
+      "name": "Planner Drill-to-Training Converter",
+      "src": "v663_drill_to_training_converter.py",
+      "function": "convert_drills_to_training",
+      "checker": "check_v663_drill_to_training.py",
+      "runner": "v663_convert_drills_to_training.py",
+      "data_file": "exports/v663_planner_training_candidates/planner_transformer_code_repair.jsonl",
+      "checker_result": {"passed": 7, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v664",
+      "name": "Planner Training Quality Gate",
+      "src": "v664_training_quality_gate.py",
+      "function": "gate_planner_training_quality",
+      "checker": "check_v664_training_quality_gate.py",
+      "runner": "v664_run_training_quality_gate.py",
+      "checker_result": {"passed": 6, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v665",
+      "name": "Planner Candidate Checkpoint Builder 2.0",
+      "src": "v665_candidate_checkpoint_builder_2.py",
+      "function": "build_planner_candidate_checkpoint_2",
+      "checker": "check_v665_candidate_builder_2.py",
+      "runner": "v665_build_planner_candidate_2.py",
+      "checkpoint_manifest": "checkpoints/candidates/v665_planner_code_repair/planner_transformer_v665_manifest.json",
+      "checker_result": {"passed": 6, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v666",
+      "name": "Planner Candidate Benchmark Runner",
+      "src": "v666_candidate_benchmark_runner.py",
+      "function": "run_planner_candidate_benchmark",
+      "checker": "check_v666_candidate_benchmark.py",
+      "runner": "v666_run_candidate_benchmark.py",
+      "checker_result": {"passed": 7, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v667",
+      "name": "Planner Candidate Weakness Report",
+      "src": "v667_candidate_weakness_report.py",
+      "function": "generate_candidate_weakness_report",
+      "checker": "check_v667_candidate_weakness.py",
+      "runner": "v667_print_candidate_weakness.py",
+      "checker_result": {"passed": 8, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v668",
+      "name": "Code-Repair Regression Shield",
+      "src": "v668_code_repair_regression_shield.py",
+      "function": "run_code_repair_regression_shield",
+      "checker": "check_v668_code_repair_regression_shield.py",
+      "runner": "v668_run_code_repair_regression_shield.py",
+      "checker_result": {"passed": 11, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v669",
+      "name": "Planner Growth Decision Gate",
+      "src": "v669_growth_decision_gate.py",
+      "function": "gate_planner_growth_decision",
+      "checker": "check_v669_growth_decision_gate.py",
+      "runner": "v669_print_growth_decision.py",
+      "checker_result": {"passed": 7, "failed": 0, "status": "PASS"}
+    },
+    {
+      "module": "v670",
+      "name": "Planner Code-Repair Growth Proof Report",
+      "src": "v670_growth_proof_report.py",
+      "function": "generate_planner_growth_proof_report",
+      "checker": "check_v670_growth_proof_report.py",
+      "runner": "v670_print_growth_proof_report.py",
+      "checker_result": {"passed": 9, "failed": 0, "status": "PASS"}
+    }
+  ],
+  "summary": {
+    "total_modules": 10,
+    "total_files_created": 30,
+    "checkers_passed": 10,
+    "checkers_failed": 0,
+    "total_checker_tests_passed": 84,
+    "total_checker_tests_failed": 0,
+    "batch_status": "ALL PASS"
+  }
+}

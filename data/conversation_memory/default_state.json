@@ -1,0 +1,618 @@
+{
+  "version": "v056_conversation_memory",
+  "thread_id": "default",
+  "created_at": "2026-06-18T02:38:51",
+  "updated_at": "2026-06-18T13:28:56",
+  "current_topic": "conversation memory loop",
+  "active_goal": "make Nova remember the thread and understand follow-ups",
+  "last_user_message": "Let's build the planning system.",
+  "last_assistant_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+  "last_route": "planner_transformer",
+  "turn_count": 84,
+  "recent_turns": [
+    {
+      "time": "2026-06-18T12:53:34",
+      "user": "Let's build the planning system.",
+      "assistant": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+      "route": "planner_transformer",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T12:53:34.559779",
+          "results": [
+            {
+              "question": "Let's build the planning system",
+              "final_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+              "selected_route": "planner_transformer",
+              "selected": {
+                "slot": "planner_transformer",
+                "ready": true,
+                "role": "steps, next actions, build sequence",
+                "confidence": 0.5,
+                "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+              },
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.5,
+                  "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T12:53:40",
+      "user": "Who created you?",
+      "assistant": "Mr. Novotron.",
+      "route": "dictionary_memory_exact",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T12:53:40",
+            "question": "Who created you?",
+            "normalized": "who created you",
+            "answer": "Mr. Novotron.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T12:53:41",
+      "user": "Who created you?",
+      "assistant": "Mr. Novotron.",
+      "route": "dictionary_memory_exact",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T12:53:41",
+            "question": "Who created you?",
+            "normalized": "who created you",
+            "answer": "Mr. Novotron.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T12:53:43",
+      "user": "Let's build the planning system.",
+      "assistant": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+      "route": "planner_transformer",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T12:53:43.763807",
+          "results": [
+            {
+              "question": "Let's build the planning system",
+              "final_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+              "selected_route": "planner_transformer",
+              "selected": {
+                "slot": "planner_transformer",
+                "ready": true,
+                "role": "steps, next actions, build sequence",
+                "confidence": 0.5,
+                "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+              },
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.5,
+                  "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:03:10",
+      "user": "Let's build the planning system.",
+      "assistant": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+      "route": "planner_transformer",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T13:03:10.008822",
+          "results": [
+            {
+              "question": "Let's build the planning system",
+              "final_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+              "selected_route": "planner_transformer",
+              "selected": {
+                "slot": "planner_transformer",
+                "ready": true,
+                "role": "steps, next actions, build sequence",
+                "confidence": 0.5,
+                "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+              },
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.5,
+                  "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:03:11",
+      "user": "Who created you?",
+      "assistant": "Mr. Novotron.",
+      "route": "dictionary_memory_exact",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T13:03:11",
+            "question": "Who created you?",
+            "normalized": "who created you",
+            "answer": "Mr. Novotron.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:03:13",
+      "user": "Who created you?",
+      "assistant": "Mr. Novotron.",
+      "route": "dictionary_memory_exact",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T13:03:13",
+            "question": "Who created you?",
+            "normalized": "who created you",
+            "answer": "Mr. Novotron.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:03:14",
+      "user": "Let's build the planning system.",
+      "assistant": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+      "route": "planner_transformer",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T13:03:14.949135",
+          "results": [
+            {
+              "question": "Let's build the planning system",
+              "final_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+              "selected_route": "planner_transformer",
+              "selected": {
+                "slot": "planner_transformer",
+                "ready": true,
+                "role": "steps, next actions, build sequence",
+                "confidence": 0.5,
+                "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+              },
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.5,
+                  "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:28:50",
+      "user": "Let's build the planning system.",
+      "assistant": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+      "route": "planner_transformer",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T13:28:50.455095",
+          "results": [
+            {
+              "question": "Let's build the planning system",
+              "final_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+              "selected_route": "planner_transformer",
+              "selected": {
+                "slot": "planner_transformer",
+                "ready": true,
+                "role": "steps, next actions, build sequence",
+                "confidence": 0.5,
+                "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+              },
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.5,
+                  "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:28:52",
+      "user": "Who created you?",
+      "assistant": "Mr. Novotron.",
+      "route": "dictionary_memory_exact",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T13:28:52",
+            "question": "Who created you?",
+            "normalized": "who created you",
+            "answer": "Mr. Novotron.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:28:53",
+      "user": "Who created you?",
+      "assistant": "Mr. Novotron.",
+      "route": "dictionary_memory_exact",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "v057_dictionary_router": {
+          "dictionary_hit": {
+            "found": true,
+            "time": "2026-06-18T13:28:53",
+            "question": "Who created you?",
+            "normalized": "who created you",
+            "answer": "Mr. Novotron.",
+            "source": "approved_dictionary_exact"
+          }
+        }
+      }
+    },
+    {
+      "time": "2026-06-18T13:28:56",
+      "user": "Let's build the planning system.",
+      "assistant": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+      "route": "planner_transformer",
+      "topic": "conversation memory loop",
+      "goal": "make Nova remember the thread and understand follow-ups",
+      "extra": {
+        "router_report": {
+          "version": "codex_cloud_v052_role_brain_router",
+          "created_at": "2026-06-18T13:28:56.184676",
+          "results": [
+            {
+              "question": "Let's build the planning system",
+              "final_answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes.",
+              "selected_route": "planner_transformer",
+              "selected": {
+                "slot": "planner_transformer",
+                "ready": true,
+                "role": "steps, next actions, build sequence",
+                "confidence": 0.5,
+                "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+              },
+              "brain_outputs": [
+                {
+                  "slot": "left_hemisphere",
+                  "ready": true,
+                  "role": "math, code, logic, exact tests",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "right_hemisphere",
+                  "ready": true,
+                  "role": "patterns, imagination, visual maps, creative synthesis",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "memory_transformer",
+                  "ready": true,
+                  "role": "identity, facts, names, recall",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "planner_transformer",
+                  "ready": true,
+                  "role": "steps, next actions, build sequence",
+                  "confidence": 0.5,
+                  "answer": "Planner: keep the working stack as gold, add the next module in an experiment, run checks, then promote only after it passes."
+                },
+                {
+                  "slot": "critic_conscience_transformer",
+                  "ready": true,
+                  "role": "truth check, unknown guard, don't guess",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "dream_simulation_transformer",
+                  "ready": true,
+                  "role": "practice scenarios, variants, replay",
+                  "confidence": 0.1,
+                  "answer": null
+                },
+                {
+                  "slot": "speech_output_transformer",
+                  "ready": true,
+                  "role": "clean final answer style",
+                  "confidence": 0.1,
+                  "answer": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "known_facts": {
+    "favorite_color": "blue"
+  },
+  "unresolved_items": [
+    "We need conversation memory.",
+    "v059 passed and all live routes select v055",
+    "Remember my favorite color is blue",
+    "Maybe this is the right checkpoint",
+    "The correct answer to who created you is Mr. Novotron"
+  ]
+}

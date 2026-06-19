@@ -1,0 +1,8 @@
+{
+  "version": "v268_vision_repair",
+  "created_at": "2026-06-18T12:50:04.433411",
+  "error": "ModuleNotFoundError",
+  "fix": "pip install module",
+  "sandbox_safe": true,
+  "note": "Repair plan is sandbox-only."
+}

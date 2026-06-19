@@ -1,0 +1,72 @@
+{
+  "version": "v073_deployment_gate",
+  "created_at": "2026-06-18T08:47:38.260775",
+  "requirements": {
+    "v070_simulation_bridge_passed": {
+      "met": false,
+      "reason": "v070 sim bridge not installed or not tested"
+    },
+    "v071_safety_spine_passed": {
+      "met": false,
+      "reason": "v071 safety spine not installed or not passed"
+    },
+    "v072_sensor_registry_exists": {
+      "met": false,
+      "reason": "v072 sensor registry not installed"
+    },
+    "emergency_stop_exists": {
+      "met": false,
+      "reason": "Emergency stop not installed"
+    },
+    "movement_controller_exists": {
+      "met": false,
+      "reason": "Movement controller not installed"
+    },
+    "safe_movement_zone_exists": {
+      "met": false,
+      "reason": "Safe movement zone not defined"
+    },
+    "battery_check_exists": {
+      "met": false,
+      "reason": "Battery check not installed"
+    },
+    "human_distance_check_exists": {
+      "met": false,
+      "reason": "Human distance check not installed"
+    },
+    "collision_check_exists": {
+      "met": false,
+      "reason": "Collision check not installed"
+    },
+    "owner_approval_exists": {
+      "met": false,
+      "reason": "Owner approval not given"
+    },
+    "robot_hardware_config_exists": {
+      "met": false,
+      "reason": "Robot hardware config not present"
+    },
+    "real_hardware_enabled_explicit": {
+      "met": false,
+      "reason": "real_hardware_enabled not set to True"
+    }
+  },
+  "deployment_ready": false,
+  "real_robot_movement_allowed": false,
+  "all_requirements_met": false,
+  "missing_requirements": [
+    "v070_simulation_bridge_passed",
+    "v071_safety_spine_passed",
+    "v072_sensor_registry_exists",
+    "emergency_stop_exists",
+    "movement_controller_exists",
+    "safe_movement_zone_exists",
+    "battery_check_exists",
+    "human_distance_check_exists",
+    "collision_check_exists",
+    "owner_approval_exists",
+    "robot_hardware_config_exists",
+    "real_hardware_enabled_explicit"
+  ],
+  "summary": "Deployment BLOCKED. 12 requirements missing."
+}

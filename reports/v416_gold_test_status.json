@@ -1,0 +1,7 @@
+{
+  "version": "v416_research_planning_tracker",
+  "created_at": "2026-06-18T13:02:00.153530",
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Research Planning Tracker module \u2014 simulation only. No real hardware."
+}

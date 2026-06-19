@@ -1,0 +1,6 @@
+{"id": "c1", "drill": "fix_syntax_error", "approved": true, "safe": true, "category": "code_repair", "trust_score": 85}
+{"id": "c2", "drill": "fix_import_path", "approved": true, "safe": true, "category": "code_repair", "trust_score": 92}
+{"id": "c3", "drill": "repair_assertion", "approved": true, "safe": true, "category": "code_repair", "trust_score": 78}
+{"id": "c4", "drill": "fix_return_type", "approved": true, "safe": true, "category": "code_repair", "trust_score": 88}
+{"id": "c5", "drill": "correct_checkpoint_path", "approved": true, "safe": true, "category": "code_repair", "trust_score": 81}
+{"id": "c6", "drill": "fix_execution_order", "approved": true, "safe": true, "category": "code_repair", "trust_score": 75}

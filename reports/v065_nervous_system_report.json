@@ -1,0 +1,94 @@
+{
+  "version": "v065_nervous_system",
+  "created_at": "2026-06-18T03:48:33.020186",
+  "total_tests": 10,
+  "passed": 10,
+  "failed": 0,
+  "health": "healthy",
+  "results": [
+    {
+      "id": "st_001",
+      "name": "Router baseline",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": true,
+      "detail": "SOURCE MODE: Role-Brain Router v052 Cloud\n1. 144.\n\nRoutes:\n1. left_hemisphere\n",
+      "error": null
+    },
+    {
+      "id": "st_002",
+      "name": "Dictionary lookup",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": true,
+      "detail": "SOURCE MODE: Dictionary + Conversation Memory v057\nMr. Novotron.\n\nRoute: dictionary_memory_exact\nDic",
+      "error": null
+    },
+    {
+      "id": "st_003",
+      "name": "Benchmark gate",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": "N/A",
+      "detail": "Nova Creature v062 \u2014 Benchmark Gate\n\n  \u2705 router_math\n     route: left_hemisphere (ok=True)\n     answ",
+      "error": null
+    },
+    {
+      "id": "st_004",
+      "name": "Checkpoint resolver",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": "N/A",
+      "detail": "Nova Creature v059 \u2014 Checkpoint Priority Resolver\nProject root: /root/New Project (1)Nova LLM\n\n  lef",
+      "error": null
+    },
+    {
+      "id": "st_005",
+      "name": "Inner voice",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": true,
+      "detail": "INNER VOICE v063 \u2014 Reflection on: Who created you?\n\n  [1] Identified as factual/informational questi",
+      "error": null
+    },
+    {
+      "id": "st_006",
+      "name": "Smart memory classify",
+      "passed": true,
+      "detail": "exists=True",
+      "error": null
+    },
+    {
+      "id": "st_007",
+      "name": "Memory constitution",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": "N/A",
+      "detail": "Nova Creature v064 \u2014 Memory Law / Approval Constitution\n\nLaws: 10\n\n  law_001: Explicit user memory i",
+      "error": null
+    },
+    {
+      "id": "st_008",
+      "name": "Multi-source growth",
+      "passed": true,
+      "returncode": 0,
+      "stdout_match": "N/A",
+      "detail": "Nova Creature v062 \u2014 Multi-Source Growth Engine\n\nTotal lessons: 29\nSources found: 3\n\n  manual_additi",
+      "error": null
+    },
+    {
+      "id": "st_009",
+      "name": "v054 builder available",
+      "passed": true,
+      "detail": "exists=True",
+      "error": null
+    },
+    {
+      "id": "st_010",
+      "name": "v055 finetune available",
+      "passed": true,
+      "detail": "exists=True",
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "version": "v419_research_code_repair_analyzer",
+  "created_at": "2026-06-18T13:02:00.753847",
+  "sim_only": true,
+  "real_hardware_enabled": false,
+  "note": "Research Code Repair Analyzer module \u2014 simulation only. No real hardware."
+}

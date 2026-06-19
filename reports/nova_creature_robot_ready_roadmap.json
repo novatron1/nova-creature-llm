@@ -1,0 +1,51 @@
+{
+  "version": "nova_creature_robot_ready_roadmap",
+  "created_at": "2026-06-18T03:55:45.947423",
+  "roadmap": {
+    "v066_self_map": {
+      "status": "passed",
+      "checks": 43,
+      "active_capabilities": 33,
+      "real_hardware_enabled": false,
+      "key_finding": "Nova has operational self-awareness across brain, memory, learning, and robot systems"
+    },
+    "v069_self_scripting": {
+      "status": "passed",
+      "checks": 4,
+      "scripts_written": 1,
+      "sandboxed": true,
+      "key_finding": "Nova can plan, write, test, and repair scripts in a safe sandbox"
+    },
+    "v070_robot_sim_bridge": {
+      "status": "passed",
+      "checks": 31,
+      "commands_defined": 10,
+      "real_hardware_sent": false,
+      "simulation_only": true,
+      "motor_control_disabled": true,
+      "key_finding": "Nova can plan and simulate robot commands, but no real hardware commands were sent"
+    },
+    "v071_robot_safety_spine": {
+      "status": "passed",
+      "checks": 19,
+      "physical_movement_allowed": false,
+      "simulation_allowed": true,
+      "blockers": 7,
+      "key_finding": "Safety spine blocks real movement until emergency stop, sensors, zone, config, simulation, and owner approval are all satisfied"
+    }
+  },
+  "overall_ready": false,
+  "simulation_ready": true,
+  "physical_movement_ready": false,
+  "blockers_for_physical_movement": [
+    "Emergency stop hardware not installed",
+    "Collision detection sensors not installed",
+    "Human proximity detection not installed",
+    "Battery monitor not installed",
+    "Movement zone not defined",
+    "Real hardware config file not present",
+    "Manual owner approval not yet obtained"
+  ],
+  "next_safe_upgrade": "v072 — Body Sensor Registry (define and register physical sensor interfaces)",
+  "safety_statement": "Nova Creature can plan robot commands and simulate them, but real robot movement is not active yet. The safety spine blocks physical movement until emergency stop, sensors, zone boundaries, configuration, simulation, and owner approval are all proven."
+}

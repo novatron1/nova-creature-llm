@@ -1,0 +1,11 @@
+{
+  "version": "v367_drill_to_training_converter",
+  "created_at": "2026-06-18T13:01:30.171019",
+  "drill_id": "drill_01",
+  "training_tasks": [
+    "task_a",
+    "task_b"
+  ],
+  "conversion_rate": 0.95,
+  "status": "ready"
+}

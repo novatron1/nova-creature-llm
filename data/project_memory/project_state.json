@@ -1,0 +1,15 @@
+{
+  "project": "Nova Creature",
+  "current_version": "v140",
+  "patches": [
+    {
+      "version": "v145",
+      "status": "test",
+      "note": "",
+      "date": "2026-06-18T10:14:13.815344"
+    }
+  ],
+  "blockers": [],
+  "goals": [],
+  "decisions": []
+}

@@ -1,0 +1,600 @@
+{
+  "report": "v231_to_v340_master_expansion_status",
+  "created_at": "2026-06-18T12:54:43.397043",
+  "batches": {
+    "v231_v240_planner_code_repair": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v231_planner_code_repair_training_batch": {
+          "status": "PASS",
+          "lessons": 5
+        },
+        "v232_code_repair_dataset_cleaner": {
+          "status": "PASS",
+          "cleaned": 1,
+          "removed": 2
+        },
+        "v233_planner_finetune_candidate_builder": {
+          "status": "PASS",
+          "blocked_by": "missing_torch",
+          "v055_preserved": true
+        },
+        "v234_code_repair_benchmark_2": {
+          "status": "PASS",
+          "tests_passed": "8/8"
+        },
+        "v235_planner_candidate_checkpoint_builder": {
+          "status": "PASS",
+          "blocked_by": "missing_torch",
+          "v055_preserved": true
+        },
+        "v236_planner_v055_tournament": {
+          "status": "PASS",
+          "winner": "v055_planner"
+        },
+        "v237_planner_regression_trap_test": {
+          "status": "PASS",
+          "traps_passed": "6/6"
+        },
+        "v238_planner_promotion_decision": {
+          "status": "PASS",
+          "decision": "preserve_v055"
+        },
+        "v239_live_router_planner_update": {
+          "status": "PASS",
+          "updated": false,
+          "v055_preserved": true
+        },
+        "v240_code_repair_growth_report": {
+          "status": "PASS",
+          "before_score": 70,
+          "after_score": 75
+        }
+      },
+      "key_findings": {
+        "code_repair_score": 75,
+        "planner_candidate_blocked": true,
+        "block_reason": "missing_torch_framework",
+        "tournament_winner": "v055_planner",
+        "promotion_decision": "preserve_v055",
+        "next_weakest_identified": true
+      }
+    },
+    "v241_v250_stronger_base_model_loader": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v241_stronger_base_model_loader": {
+          "status": "PASS",
+          "models_found": 2
+        },
+        "v242_model_compatibility_scanner": {
+          "status": "PASS",
+          "compatible_found": false
+        },
+        "v243_tokenizer_compatibility_check": {
+          "status": "PASS",
+          "blocker": "no_tokenizer_file"
+        },
+        "v244_base_model_benchmark_before_swap": {
+          "status": "PASS",
+          "all_tests_passed": true
+        },
+        "v245_role_brain_transfer_adapter": {
+          "status": "PASS",
+          "roles_planned": 7
+        },
+        "v246_new_base_candidate_test": {
+          "status": "PASS",
+          "candidate_found": false
+        },
+        "v247_base_vs_v055_tournament": {
+          "status": "PASS",
+          "winner": "v055"
+        },
+        "v248_model_swap_rollback": {
+          "status": "PASS",
+          "rollback_plan_ready": true
+        },
+        "v249_best_base_promotion_gate": {
+          "status": "PASS",
+          "promote_ready": false
+        },
+        "v250_base_model_evolution_report": {
+          "status": "PASS",
+          "current": "v055",
+          "ready": false
+        }
+      },
+      "key_findings": {
+        "candidate_base_model_found": false,
+        "v055_remains_current": true,
+        "no_compatible_model_for_swap": true,
+        "rollback_plan_ready": true
+      }
+    },
+    "v251_v260_memory_compression": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v251_long_term_memory_compressor": {
+          "status": "PASS"
+        },
+        "v252_project_timeline_compressor": {
+          "status": "PASS"
+        },
+        "v253_conversation_summary_memory": {
+          "status": "PASS"
+        },
+        "v254_important_fact_extractor": {
+          "status": "PASS"
+        },
+        "v255_memory_conflict_resolver": {
+          "status": "PASS"
+        },
+        "v256_memory_priority_system": {
+          "status": "PASS"
+        },
+        "v257_recall_speed_optimizer": {
+          "status": "PASS"
+        },
+        "v258_long_context_benchmark": {
+          "status": "PASS"
+        },
+        "v259_memory_to_training_cleaner": {
+          "status": "PASS"
+        },
+        "v260_memory_growth_report": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "memory_compression_active": true,
+        "long_context_benchmark_passed": true,
+        "memory_priority_system_active": true,
+        "conflict_resolver_active": true
+      }
+    },
+    "v261_v270_screenshot_intelligence": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v261_screenshot_text_reader": {
+          "status": "PASS"
+        },
+        "v262_codex_report_screenshot_parser": {
+          "status": "PASS"
+        },
+        "v263_error_screenshot_detector": {
+          "status": "PASS"
+        },
+        "v264_file_tree_screenshot_reader": {
+          "status": "PASS"
+        },
+        "v265_ui_state_detector": {
+          "status": "PASS"
+        },
+        "v266_screenshot_to_memory_converter": {
+          "status": "PASS"
+        },
+        "v267_visual_report_benchmark": {
+          "status": "PASS"
+        },
+        "v268_vision_error_repair_planner": {
+          "status": "PASS"
+        },
+        "v269_vision_claim_firewall": {
+          "status": "PASS"
+        },
+        "v270_visual_intelligence_report": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "screenshot_reading_active": true,
+        "codex_report_parsing_active": true,
+        "vision_claim_firewall_active": true,
+        "vision_not_using_real_ocr": true
+      }
+    },
+    "v271_v280_voice_glasses_mode": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v271_voice_command_resolver": {
+          "status": "PASS"
+        },
+        "v272_short_answer_controller": {
+          "status": "PASS"
+        },
+        "v273_do_that_context_resolver": {
+          "status": "PASS"
+        },
+        "v274_voice_memory_capture": {
+          "status": "PASS"
+        },
+        "v275_voice_safety_confirmation": {
+          "status": "PASS"
+        },
+        "v276_glasses_mode_response_filter": {
+          "status": "PASS"
+        },
+        "v277_hands_free_project_mode": {
+          "status": "PASS"
+        },
+        "v278_voice_to_codex_prompt_builder": {
+          "status": "PASS"
+        },
+        "v279_voice_mistake_memory": {
+          "status": "PASS"
+        },
+        "v280_voice_operating_report": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "voice_command_resolution_active": true,
+        "short_answer_ready": true,
+        "glasses_mode_ready": true,
+        "voice_safety_active": true,
+        "no_fake_robot_voice_claims": true
+      }
+    },
+    "v281_v290_app_factory": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v281_tool_selection_brain": {
+          "status": "PASS"
+        },
+        "v282_sandbox_file_builder": {
+          "status": "PASS"
+        },
+        "v283_app_scaffold_generator_2": {
+          "status": "PASS"
+        },
+        "v284_test_generator": {
+          "status": "PASS"
+        },
+        "v285_auto_debug_planner": {
+          "status": "PASS"
+        },
+        "v286_patch_packager": {
+          "status": "PASS"
+        },
+        "v287_app_upgrade_planner": {
+          "status": "PASS"
+        },
+        "v288_game_app_asset_planner": {
+          "status": "PASS"
+        },
+        "v289_revenue_app_builder_mode": {
+          "status": "PASS"
+        },
+        "v290_app_factory_report": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "tool_selection_active": true,
+        "sandbox_builder_active": true,
+        "app_scaffolding_active": true,
+        "revenue_planning_available": true,
+        "all_sandbox_safe": true
+      }
+    },
+    "v291_v300_robot_readiness_2": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v291_robot_body_requirement_map": {
+          "status": "PASS"
+        },
+        "v292_motor_controller_interface_plan": {
+          "status": "PASS"
+        },
+        "v293_sensor_requirement_plan": {
+          "status": "PASS"
+        },
+        "v294_emergency_stop_hardware_checklist": {
+          "status": "PASS"
+        },
+        "v295_sim_to_hardware_gap_report": {
+          "status": "PASS"
+        },
+        "v296_safe_movement_sandbox": {
+          "status": "PASS"
+        },
+        "v297_robot_command_risk_classifier": {
+          "status": "PASS"
+        },
+        "v298_human_distance_safety_rule": {
+          "status": "PASS"
+        },
+        "v299_owner_manual_control_gate": {
+          "status": "PASS"
+        },
+        "v300_robot_readiness_report": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "real_hardware_enabled": false,
+        "physical_movement_allowed": false,
+        "simulation_allowed": true,
+        "robot_readiness_map_ready": true,
+        "robot_movement_blocked": true
+      }
+    },
+    "v301_v320_research_lab": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v301_research_question_generator": {
+          "status": "PASS"
+        },
+        "v302_hypothesis_builder": {
+          "status": "PASS"
+        },
+        "v303_experiment_planner": {
+          "status": "PASS"
+        },
+        "v304_result_analyzer": {
+          "status": "PASS"
+        },
+        "v305_weakness_detector_2": {
+          "status": "PASS"
+        },
+        "v306_training_experiment_tracker": {
+          "status": "PASS"
+        },
+        "v307_benchmark_creator": {
+          "status": "PASS"
+        },
+        "v308_dataset_tournament": {
+          "status": "PASS"
+        },
+        "v309_checkpoint_tournament_2": {
+          "status": "PASS"
+        },
+        "v310_best_brain_evolution_gate": {
+          "status": "PASS"
+        },
+        "v311_dream_research_loop": {
+          "status": "PASS"
+        },
+        "v312_mistake_mining_engine": {
+          "status": "PASS"
+        },
+        "v313_self_questioning_brain": {
+          "status": "PASS"
+        },
+        "v314_counterexample_generator": {
+          "status": "PASS"
+        },
+        "v315_proof_requirement_engine": {
+          "status": "PASS"
+        },
+        "v316_capability_discovery_2": {
+          "status": "PASS"
+        },
+        "v317_meta_learning_planner": {
+          "status": "PASS"
+        },
+        "v318_research_memory": {
+          "status": "PASS"
+        },
+        "v319_evolution_strategy_brain": {
+          "status": "PASS"
+        },
+        "v320_research_lab_report": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "research_questions": 2,
+        "experiments_planned": 1,
+        "all_dry_run_default": true,
+        "no_live_promotion_without_benchmark": true
+      }
+    },
+    "v321_v340_business_empire": {
+      "status": "INSTALLED_AND_PASSING",
+      "modules": {
+        "v321_studio_operations_brain": {
+          "status": "PASS"
+        },
+        "v322_artist_project_manager": {
+          "status": "PASS"
+        },
+        "v323_beat_license_contract_brain": {
+          "status": "PASS"
+        },
+        "v324_music_release_planner": {
+          "status": "PASS"
+        },
+        "v325_content_calendar_brain": {
+          "status": "PASS"
+        },
+        "v326_video_treatment_writer": {
+          "status": "PASS"
+        },
+        "v327_game_business_planner": {
+          "status": "PASS"
+        },
+        "v328_app_revenue_planner": {
+          "status": "PASS"
+        },
+        "v329_client_follow_up_brain": {
+          "status": "PASS"
+        },
+        "v330_sales_offer_builder": {
+          "status": "PASS"
+        },
+        "v331_pricing_strategy_brain": {
+          "status": "PASS"
+        },
+        "v332_grant_proposal_brain": {
+          "status": "PASS"
+        },
+        "v333_course_builder_brain": {
+          "status": "PASS"
+        },
+        "v334_sponsorship_pitch_brain": {
+          "status": "PASS"
+        },
+        "v335_brand_builder_brain": {
+          "status": "PASS"
+        },
+        "v336_social_media_factory": {
+          "status": "PASS"
+        },
+        "v337_product_launch_planner": {
+          "status": "PASS"
+        },
+        "v338_revenue_forecast_simulator": {
+          "status": "PASS"
+        },
+        "v339_business_risk_checker": {
+          "status": "PASS"
+        },
+        "v340_nova_empire_dashboard": {
+          "status": "PASS"
+        }
+      },
+      "key_findings": {
+        "total_business_brains": 20,
+        "simulation_only": true,
+        "no_fake_money_claims": true,
+        "no_real_deployment": true,
+        "planning_only": true
+      }
+    }
+  },
+  "regression_results": {
+    "v059_live_router": {
+      "status": "PASS",
+      "details": "7/7 roles on v055"
+    },
+    "v061_learning_loop": {
+      "status": "PASS",
+      "dry_run": true,
+      "can_promote": true
+    },
+    "v066_capability_self_map": {
+      "status": "PASS",
+      "real_hardware_enabled": false
+    },
+    "v075_benchmark_dashboard": {
+      "status": "PASS",
+      "tests": "13/13"
+    },
+    "v095_intelligence_benchmark": {
+      "status": "PASS",
+      "promote_ready": true
+    },
+    "v180_fast_age_orchestrator": {
+      "status": "PASS",
+      "all_steps": 12,
+      "dry_run": true
+    },
+    "v190_raw_input_capability_report": {
+      "status": "PASS",
+      "proven_capabilities": 2
+    },
+    "v230_full_capability_growth_report": {
+      "status": "PASS",
+      "promote_ready": true
+    }
+  },
+  "checkpoint_tournament_status": {
+    "v055_remains_live": true,
+    "no_candidate_beat_v055": true,
+    "reason": "planner_candidate_blocked_missing_torch",
+    "v178_tournament_recommended": true,
+    "next_tournament_ready": true
+  },
+  "live_router_status": {
+    "v055_active": true,
+    "all_roles_on_v055": true,
+    "no_unsafe_update": true
+  },
+  "stronger_base_model_status": {
+    "candidate_found": false,
+    "v055_remains_current": true,
+    "compatible_model_needed": true,
+    "rollback_plan_ready": true
+  },
+  "memory_compression_status": {
+    "active": true,
+    "all_compressors_passing": true,
+    "long_context_benchmark_passed": true
+  },
+  "screenshot_intelligence_status": {
+    "active": true,
+    "text_first_approach": true,
+    "no_external_ocr_required": true,
+    "vision_claim_firewall_active": true
+  },
+  "voice_glasses_status": {
+    "active": true,
+    "short_answer_ready": true,
+    "glasses_mode_ready": true,
+    "voice_safety_active": true
+  },
+  "app_factory_status": {
+    "active": true,
+    "sandbox_only": true,
+    "tool_selection_active": true
+  },
+  "robot_readiness_status": {
+    "real_hardware_enabled": false,
+    "real_robot_movement_allowed": false,
+    "simulation_allowed": true,
+    "requirements_mapped": true,
+    "emergency_stop_planned": true,
+    "owner_control_gate_planned": true
+  },
+  "research_lab_status": {
+    "active": true,
+    "experiments_dry_run_only": true,
+    "no_live_promotion_without_benchmark": true
+  },
+  "business_empire_status": {
+    "active": true,
+    "brains_count": 20,
+    "planning_only": true,
+    "no_fake_money_claims": true,
+    "no_real_deployment": true,
+    "no_legal_claims": true
+  },
+  "blocked_capabilities": [
+    "real_robot_movement",
+    "autonomous_execution",
+    "vision_ocr",
+    "unapproved_fine_tune",
+    "dirty_training_data",
+    "fake_capability_claims"
+  ],
+  "robot_movement": {
+    "real_hardware_enabled": false,
+    "physical_movement_allowed": false,
+    "simulation_enabled": true,
+    "blocked_capability": "real_robot_movement"
+  },
+  "proven_capabilities": [
+    "arithmetic",
+    "identity_memory_recall",
+    "code_repair",
+    "project_continuity",
+    "uncertainty_handling",
+    "capability_honesty",
+    "robot_safety_block",
+    "paraphrase_identity_generalization",
+    "studio_business_planning",
+    "memory_recall"
+  ],
+  "still_unproven_capabilities": [
+    "vision_ocr",
+    "autonomous_execution"
+  ],
+  "strongest_brain": "critic_conscience_transformer (score 85+)",
+  "weakest_brain": "planner_transformer (code_repair score 75)",
+  "next_role_to_train": "planner_transformer (code_repair)",
+  "next_checkpoint_tournament": "v178_ready",
+  "next_safest_upgrade": "add a compatible base model to checkpoints/candidates/base_models/ for model swap testing",
+  "promote_ready": false
+}

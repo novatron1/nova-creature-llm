@@ -1,0 +1,7 @@
+{
+  "version": "v299_owner_control",
+  "created_at": "2026-06-18T12:52:04.979528",
+  "manual_control_active": false,
+  "owner_override": false,
+  "note": "Owner manual control gate blocks movement until activated."
+}

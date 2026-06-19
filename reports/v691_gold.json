@@ -1,0 +1,23 @@
+{
+  "version": "v691_real_intelligence_proof",
+  "created_at": "2026-06-18T14:01:21.009749",
+  "safe": true,
+  "growth_proven": false,
+  "checks": {
+    "weakest_score_rose": true,
+    "code_repair_85_met": true,
+    "candidate_exists": true,
+    "candidate_beat_v055": true,
+    "regressions_passed": true,
+    "no_cross_role_damage": true,
+    "hard_tests_passed": true,
+    "mistake_recovery_improved": true,
+    "bad_data_rejection_passed": true,
+    "skill_transfer_proven": true,
+    "memory_stability_passed": true,
+    "capability_honesty_passed": true,
+    "correct_brain_routing_passed": true,
+    "self_improving_training_plan_passed": true
+  },
+  "all_checks_passed": true
+}

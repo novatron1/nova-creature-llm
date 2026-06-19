@@ -1,0 +1,28 @@
+{
+  "report": "v561_to_v580_personal_os_status",
+  "generated_at": "2026-06-18T13:22:20.325711",
+  "modules": [
+    "v561_plan_daily_missions",
+    "v562_sort_priorities",
+    "v563_remember_tasks",
+    "v564_set_reminder",
+    "v565_track_habits",
+    "v566_track_health_routine",
+    "v567_plan_grocery",
+    "v568_plan_studio_day",
+    "v569_plan_money_day",
+    "v570_generate_project_dashboard",
+    "v571_suggest_next_action",
+    "v572_set_energy_mode",
+    "v573_activate_crisis_mode",
+    "v574_quick_capture",
+    "v575_generate_life_admin_checklist",
+    "v576_generate_knowledge_map",
+    "v577_track_goal_progress",
+    "v578_run_weekly_review",
+    "v579_run_personal_os_benchmark",
+    "v580_generate_personal_os_report"
+  ],
+  "status": "all_created",
+  "simulation_only": true
+}

@@ -1,0 +1,24 @@
+{
+  "version": "v080_app_builder_demo",
+  "created_at": "2026-06-18T08:49:54.572078",
+  "plan": {
+    "app_idea": "Make a tiny task tracker web app",
+    "project_name": "Make_a_tiny_task_tra",
+    "project_path": "sandbox/app_builder_projects/Make_a_tiny_task_tra",
+    "suggested_files": [
+      "README.md",
+      "app.py",
+      "requirements.txt",
+      "test_plan.md",
+      "manifest.json"
+    ],
+    "use_sandbox": true
+  },
+  "files": [
+    "sandbox/app_builder_projects/Make_a_tiny_task_tra/README.md",
+    "sandbox/app_builder_projects/Make_a_tiny_task_tra/app.py",
+    "sandbox/app_builder_projects/Make_a_tiny_task_tra/manifest.json",
+    "sandbox/app_builder_projects/Make_a_tiny_task_tra/test_plan.md",
+    "sandbox/app_builder_projects/Make_a_tiny_task_tra/test_spec.json"
+  ]
+}

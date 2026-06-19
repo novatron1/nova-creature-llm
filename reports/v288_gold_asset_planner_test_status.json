@@ -1,0 +1,11 @@
+{
+  "version": "v288_asset_planner",
+  "created_at": "2026-06-18T12:51:24.127519",
+  "assets": [
+    "sprites",
+    "tiles",
+    "sounds",
+    "levels"
+  ],
+  "plan_ready": true
+}

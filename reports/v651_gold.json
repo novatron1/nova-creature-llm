@@ -1,0 +1,10 @@
+{
+  "version": "v651_weakest_score_tracker",
+  "created_at": "2026-06-18T13:45:37.100950",
+  "safe": true,
+  "target_met": false,
+  "weakest_role": "planner_transformer",
+  "weakest_skill": "code_repair",
+  "score_before": 75,
+  "target_score": 85
+}

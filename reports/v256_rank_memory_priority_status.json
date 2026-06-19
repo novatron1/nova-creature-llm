@@ -1,0 +1,14 @@
+{
+  "version": "v256_memory_priority",
+  "created_at": "2026-06-18T12:48:56.584699",
+  "priority_order": [
+    "benchmark_reports",
+    "system_reports",
+    "approved_dictionary",
+    "approved_project",
+    "approved_user",
+    "conversation_summary",
+    "inference",
+    "speculation"
+  ]
+}

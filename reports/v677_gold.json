@@ -1,0 +1,12 @@
+{
+  "old_route_exists": true,
+  "old_checkpoint_exists": true,
+  "old_hashes_saved": true,
+  "rollback_command_documented": true,
+  "promotion_reversible": true,
+  "rollback_command": "python src/v677_rollback.py --restore /checkpoints/backup/v055_champion.pt",
+  "hash_backup_path": "/data/checkpoints/hashes/v055_champion.sha256",
+  "proof_valid": true,
+  "version": "v677_rollback_proof",
+  "created_at": "2026-06-18T13:54:29.650196"
+}

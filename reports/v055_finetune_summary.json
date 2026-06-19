@@ -1,0 +1,82 @@
+{
+  "version": "codex_cloud_v055",
+  "created_at": "2026-06-18T03:18:09.969206",
+  "torch_version": "2.7.0+cpu",
+  "device": "cpu",
+  "cuda_available": false,
+  "roles_processed": 7,
+  "roles_total": 7,
+  "can_promote": true,
+  "results": [
+    {
+      "role": "left_hemisphere",
+      "checkpoint_path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_finetuned.pt",
+      "lesson_count": 2,
+      "start_loss": 16.254118,
+      "final_loss": 4.682805,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "511cd812682a6bd5ea9f2537f97f3f2502824e787e9edcfeb50a3ac8c9cdcf70",
+      "weights_changed": true
+    },
+    {
+      "role": "right_hemisphere",
+      "checkpoint_path": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_v055_finetuned.pt",
+      "lesson_count": 2,
+      "start_loss": 17.978289,
+      "final_loss": 8.893206,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "4d9c862bdd6dfd887bbdf860a26228adea6bc17c8447233d9317ca216c6e39d2",
+      "weights_changed": true
+    },
+    {
+      "role": "memory_transformer",
+      "checkpoint_path": "checkpoints/brain_slots/memory_transformer/memory_transformer_v055_finetuned.pt",
+      "lesson_count": 11,
+      "start_loss": 16.72636,
+      "final_loss": 10.573786,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "f9025ffc05e781e7d02fb23a0976830009c7dd97d8cbfeeea3b031ce7ad4ec28",
+      "weights_changed": true
+    },
+    {
+      "role": "planner_transformer",
+      "checkpoint_path": "checkpoints/brain_slots/planner_transformer/planner_transformer_v055_finetuned.pt",
+      "lesson_count": 2,
+      "start_loss": 18.16214,
+      "final_loss": 8.848189,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "3c555c9d1e70076852941b26b6e9527b58375eeb6782373c3db60da220a7c060",
+      "weights_changed": true
+    },
+    {
+      "role": "critic_conscience_transformer",
+      "checkpoint_path": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_v055_finetuned.pt",
+      "lesson_count": 4,
+      "start_loss": 17.857798,
+      "final_loss": 9.033457,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "f5cad64002264127ef29f01f5013740c8370d846bbff43518fc296e77d08b0c4",
+      "weights_changed": true
+    },
+    {
+      "role": "dream_simulation_transformer",
+      "checkpoint_path": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v055_finetuned.pt",
+      "lesson_count": 2,
+      "start_loss": 16.95776,
+      "final_loss": 7.000829,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "d932eb6621575ba706382aeddbadb35158f2e303d90f6d553e5648f7a4af6572",
+      "weights_changed": true
+    },
+    {
+      "role": "speech_output_transformer",
+      "checkpoint_path": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v055_finetuned.pt",
+      "lesson_count": 2,
+      "start_loss": 18.691748,
+      "final_loss": 9.235528,
+      "before_hash": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+      "after_hash": "0ed831d4eb06c38b296817961e6527cc57b81341cecc07257e287832c43b7c5d",
+      "weights_changed": true
+    }
+  ]
+}

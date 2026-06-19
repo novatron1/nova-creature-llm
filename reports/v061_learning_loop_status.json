@@ -1,0 +1,49 @@
+{
+  "version": "v061_learning_loop",
+  "created_at": "2026-06-18T13:28:55.660818",
+  "completed_at": "2026-06-18T13:28:55.667711",
+  "dry_run": true,
+  "approve_all": false,
+  "max_items": null,
+  "skip_finetune": false,
+  "skip_promote": false,
+  "smart_memory_export": {
+    "items_seen": 8,
+    "items_exported": 0,
+    "dictionary_entries_added": 0,
+    "training_candidates_exported": 0,
+    "explicit_memory_exported": 0,
+    "skipped_not_exportable": 0,
+    "skipped_already_exported": 8,
+    "skipped_rejected": 0,
+    "skipped_pending": 0,
+    "dry_run": true,
+    "errors": []
+  },
+  "v058_export_result": {
+    "ok": true,
+    "skipped": true
+  },
+  "v054_rebuild_result": {
+    "ok": true,
+    "skipped": true
+  },
+  "v055_readiness_result": {
+    "ok": true,
+    "skipped": true
+  },
+  "v055_finetune_result": {
+    "ok": true,
+    "skipped": true
+  },
+  "v059_promote_result": {
+    "ok": true,
+    "skipped": true
+  },
+  "commands_run": [
+    "export_smart_memory_to_dictionary"
+  ],
+  "blockers": [],
+  "can_promote": true,
+  "final_status": "PASS: learning loop complete"
+}

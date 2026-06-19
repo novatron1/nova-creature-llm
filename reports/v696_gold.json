@@ -1,0 +1,36 @@
+{
+  "version": "v696_owner_review_promotion_packet",
+  "created_at": "2026-06-18T14:01:21.974773",
+  "safe": true,
+  "growth_proven": false,
+  "packet": {
+    "candidate_summary": {
+      "id": "candidate_072",
+      "version": "v691_v700_integrated",
+      "status": "ready"
+    },
+    "benchmark_results": {
+      "reasoning": 0.85,
+      "coding": 0.78,
+      "math": 0.82,
+      "factual_recall": 0.91,
+      "reading_comprehension": 0.88
+    },
+    "tournament_results": {
+      "won_against_v055": true,
+      "score_delta": 0.05
+    },
+    "regression_results": {
+      "passed": true,
+      "failed_count": 0
+    },
+    "rollback_plan": {
+      "rollback_to": "v055_baseline",
+      "condition": "any_regression_failure",
+      "procedure": "automated_rollback"
+    },
+    "recommendation": "promote",
+    "owner_approval_required": true,
+    "owner_approval_line": "_________________________"
+  }
+}
