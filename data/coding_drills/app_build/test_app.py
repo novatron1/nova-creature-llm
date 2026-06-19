@@ -1,0 +1,1 @@
+def test_run(): assert run() == 'Nova App Running'
