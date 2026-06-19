@@ -1,0 +1,359 @@
+{
+  "version": "v951_to_v1000_overdrive",
+  "created_at": "2026-06-19T00:37:43.310711",
+  "batch": "L",
+  "modules": [
+    {
+      "v951": {
+        "name": "Whole Brain Jump Manifest",
+        "function": "whole_brain_jump_manifest",
+        "status": "created"
+      }
+    },
+    {
+      "v952": {
+        "name": "Role Target Dataset Builder",
+        "function": "role_target_dataset_builder",
+        "status": "created"
+      }
+    },
+    {
+      "v953": {
+        "name": "Whole Brain Jump Round 1",
+        "function": "whole_brain_jump_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v954": {
+        "name": "Role Separate Test Round 1",
+        "function": "role_separate_test_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v955": {
+        "name": "Full System Task Test Round 1",
+        "function": "full_system_task_test_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v956": {
+        "name": "Weakness Detector Round 1",
+        "function": "weakness_detector_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v957": {
+        "name": "Correction Training Round 1",
+        "function": "correction_training_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v958": {
+        "name": "Retention Test Round 1",
+        "function": "retention_test_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v959": {
+        "name": "Regression Guard Round 1",
+        "function": "regression_guard_round_1",
+        "status": "created"
+      }
+    },
+    {
+      "v960": {
+        "name": "Whole Brain Jump Round 2",
+        "function": "whole_brain_jump_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v961": {
+        "name": "Role Separate Test Round 2",
+        "function": "role_separate_test_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v962": {
+        "name": "Full System Task Test Round 2",
+        "function": "full_system_task_test_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v963": {
+        "name": "Weakness Detector Round 2",
+        "function": "weakness_detector_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v964": {
+        "name": "Correction Training Round 2",
+        "function": "correction_training_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v965": {
+        "name": "Retention Test Round 2",
+        "function": "retention_test_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v966": {
+        "name": "Regression Guard Round 2",
+        "function": "regression_guard_round_2",
+        "status": "created"
+      }
+    },
+    {
+      "v967": {
+        "name": "Whole Brain Jump Round 3",
+        "function": "whole_brain_jump_round_3",
+        "status": "created"
+      }
+    },
+    {
+      "v968": {
+        "name": "Role Separate Test Round 3",
+        "function": "role_separate_test_round_3",
+        "status": "created"
+      }
+    },
+    {
+      "v969": {
+        "name": "Full System Task Test Round 3",
+        "function": "full_system_task_test_round_3",
+        "status": "created"
+      }
+    },
+    {
+      "v970": {
+        "name": "Whole Brain Gain Scorecard",
+        "function": "whole_brain_gain_scorecard",
+        "status": "created"
+      }
+    },
+    {
+      "v971": {
+        "name": "Coding Master Jump Test",
+        "function": "coding_master_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v972": {
+        "name": "People Memory Jump Test",
+        "function": "people_memory_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v973": {
+        "name": "Sensory Body Jump Test",
+        "function": "sensory_body_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v974": {
+        "name": "Rapid Learning Jump Test",
+        "function": "rapid_learning_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v975": {
+        "name": "Critic Truth Jump Test",
+        "function": "critic_truth_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v976": {
+        "name": "Planner Jump Test",
+        "function": "planner_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v977": {
+        "name": "Speech Output Jump Test",
+        "function": "speech_output_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v978": {
+        "name": "Dream Simulation Jump Test",
+        "function": "dream_simulation_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v979": {
+        "name": "Memory Lock After Jump",
+        "function": "memory_lock_after_jump",
+        "status": "created"
+      }
+    },
+    {
+      "v980": {
+        "name": "Failed Lesson Quarantine After Jump",
+        "function": "failed_lesson_quarantine_after_jump",
+        "status": "created"
+      }
+    },
+    {
+      "v981": {
+        "name": "Best Jump Training Export",
+        "function": "best_jump_training_export",
+        "status": "created"
+      }
+    },
+    {
+      "v982": {
+        "name": "Next Weakness Training Plan",
+        "function": "next_weakness_training_plan",
+        "status": "created"
+      }
+    },
+    {
+      "v983": {
+        "name": "Whole Brain Jump Dashboard",
+        "function": "whole_brain_jump_dashboard",
+        "status": "created"
+      }
+    },
+    {
+      "v984": {
+        "name": "Training Method Confirmation",
+        "function": "training_method_confirmation",
+        "status": "created"
+      }
+    },
+    {
+      "v985": {
+        "name": "Whole Brain Jump Integration Test",
+        "function": "whole_brain_jump_integration_test",
+        "status": "created"
+      }
+    },
+    {
+      "v986": {
+        "name": "Long Session Learning Test",
+        "function": "long_session_learning_test",
+        "status": "created"
+      }
+    },
+    {
+      "v987": {
+        "name": "Reload Retention After Jump",
+        "function": "reload_retention_after_jump",
+        "status": "created"
+      }
+    },
+    {
+      "v988": {
+        "name": "Conflict After Jump Test",
+        "function": "conflict_after_jump_test",
+        "status": "created"
+      }
+    },
+    {
+      "v989": {
+        "name": "Mastery Threshold Update",
+        "function": "mastery_threshold_update",
+        "status": "created"
+      }
+    },
+    {
+      "v990": {
+        "name": "Overdrive Benchmark",
+        "function": "overdrive_benchmark",
+        "status": "created"
+      }
+    },
+    {
+      "v991": {
+        "name": "Overdrive Regression Report",
+        "function": "overdrive_regression_report",
+        "status": "created"
+      }
+    },
+    {
+      "v992": {
+        "name": "Overdrive Retention Report",
+        "function": "overdrive_retention_report",
+        "status": "created"
+      }
+    },
+    {
+      "v993": {
+        "name": "Overdrive Coding Report",
+        "function": "overdrive_coding_report",
+        "status": "created"
+      }
+    },
+    {
+      "v994": {
+        "name": "Overdrive Memory Report",
+        "function": "overdrive_memory_report",
+        "status": "created"
+      }
+    },
+    {
+      "v995": {
+        "name": "Overdrive Truth Guard Report",
+        "function": "overdrive_truth_guard_report",
+        "status": "created"
+      }
+    },
+    {
+      "v996": {
+        "name": "Overdrive Training Scorecard",
+        "function": "overdrive_training_scorecard",
+        "status": "created"
+      }
+    },
+    {
+      "v997": {
+        "name": "Overdrive Best Training Set Export",
+        "function": "overdrive_best_training_set_export",
+        "status": "created"
+      }
+    },
+    {
+      "v998": {
+        "name": "Final Download Readiness After Overdrive",
+        "function": "final_download_readiness_after_overdrive",
+        "status": "created"
+      }
+    },
+    {
+      "v999": {
+        "name": "Overdrive Package Manifest Update",
+        "function": "overdrive_package_manifest_update",
+        "status": "created"
+      }
+    },
+    {
+      "v1000": {
+        "name": "Whole Brain Jump Overdrive Final Report",
+        "function": "whole_brain_jump_overdrive_final_report",
+        "status": "created"
+      }
+    }
+  ],
+  "total_modules": 50,
+  "all_created": true
+}

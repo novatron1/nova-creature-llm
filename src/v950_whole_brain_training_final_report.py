@@ -68,7 +68,8 @@ def whole_brain_training_final_report():
     for check, flag in sorted(checks.items()):
         md_lines.append(f"- {'✅' if flag else '❌'} {check.replace('_', ' ').title()}")
     md_lines.extend(["", "## Conclusion", f"", report.get("conclusion", ""), "", "## Next Step", "", "```bash", "python src/v824_final_zip_builder.py --build", "```", ""])
-    report_dir.joinpath("v950_whole_brain_training_final_report.md").write_text("\n".join(md_lines))
+    report_dir.joinpath("v950_whole_brain_training_final_report.md").write_text("
+".join(md_lines))
     return report
 
 
