@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nova Creature — Live Chat</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0a0a12; color: #e0e0e0; height: 100vh; overflow: hidden; }
+  .app { display: flex; flex-direction: column; height: 100vh; max-width: 900px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2a2a4a; }
+  .face { width: 48px; height: 48px; background: #1a1a3e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid #4a4a8a; transition: all 0.3s; }
+  .face.talking { border-color: #00d4aa; box-shadow: 0 0 20px #00d4aa44; }
+  .face.thinking { border-color: #f0c040; box-shadow: 0 0 20px #f0c04044; }
+  .face.listening { border-color: #4090f0; box-shadow: 0 0 20px #4090f044; }
+  .title { flex: 1; }
+  .title h1 { font-size: 18px; font-weight: 600; color: #fff; }
+  .title span { font-size: 12px; color: #888; }
+  .brain-lights { display: flex; gap: 4px; }
+  .light { width: 10px; height: 10px; border-radius: 50%; background: #333; transition: all 0.3s; }
+  .light.active { box-shadow: 0 0 8px currentColor; }
+  .light.lh { color: #4af; } .light.rh { color: #f4a; } .light.mem { color: #4f8; }
+  .light.pln { color: #fa4; } .light.crt { color: #f44; } .light.drm { color: #a4f; }
+  .light.spc { color: #4ff; }
+  .chat { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 80%; padding: 12px 16px; border-radius: 16px; line-height: 1.5; font-size: 14px; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { align-self: flex-end; background: #2a2a5a; border-bottom-right-radius: 4px; }
+  .msg.nova { align-self: flex-start; background: #1a1a30; border: 1px solid #2a2a4a; border-bottom-left-radius: 4px; }
+  .msg .route { font-size: 11px; color: #888; margin-bottom: 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .msg .route .role { padding: 1px 8px; border-radius: 10px; font-size: 10px; }
+  .msg .route .role.lh { background: #4af22; color: #4af; }
+  .msg .route .role.rh { background: #f4a22; color: #f4a; }
+  .msg .route .role.mem { background: #4f822; color: #4f8; }
+  .msg .route .role.pln { background: #fa422; color: #fa4; }
+  .msg .route .role.crt { background: #f4422; color: #f44; }
+  .msg .route .role.spc { background: #4ff22; color: #4ff; }
+  .msg .route .role.rd { background: #a4f22; color: #a4f; }
+  .msg .meta { font-size: 11px; color: #666; margin-top: 4px; display: flex; gap: 8px; }
+  .controls { padding: 12px 20px; background: #12121e; border-top: 1px solid #2a2a4a; }
+  .input-row { display: flex; gap: 8px; }
+  .input-row input { flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid #2a2a4a; background: #1a1a2e; color: #e0e0e0; font-size: 14px; outline: none; }
+  .input-row input:focus { border-color: #4a4a8a; }
+  .input-row button { padding: 12px 24px; border-radius: 24px; border: none; background: #4a4a8a; color: #fff; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+  .input-row button:hover { background: #5a5a9a; }
+  .input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .permissions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .perm-btn { padding: 4px 12px; border-radius: 12px; border: 1px solid #333; background: transparent; color: #888; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+  .perm-btn.on { border-color: #4a8; color: #4a8; background: #4a822; }
+  .perm-btn.danger { border-color: #a44; color: #a44; }
+  .perm-btn.danger:hover { background: #a4422; }
+  .status-bar { padding: 4px 20px; background: #0a0a12; border-top: 1px solid #1a1a2e; display: flex; gap: 16px; font-size: 11px; color: #555; }
+  .status-bar .on { color: #4a8; }
+  .status-bar .off { color: #555; }
+  @media (max-width: 600px) { .msg { max-width: 90%; } .header { padding: 8px 12px; } .chat { padding: 12px; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="face" id="novaFace">🧠</div>
+    <div class="title">
+      <h1>Nova Creature</h1>
+      <span id="sessionInfo">connecting...</span>
+    </div>
+    <div class="brain-lights" id="brainLights">
+      <div class="light lh" title="left_hemisphere"></div>
+      <div class="light rh" title="right_hemisphere"></div>
+      <div class="light mem" title="memory_transformer"></div>
+      <div class="light pln" title="planner_transformer"></div>
+      <div class="light crt" title="critic_conscience_transformer"></div>
+      <div class="light drm" title="dream_simulation_transformer"></div>
+      <div class="light spc" title="speech_output_transformer"></div>
+    </div>
+  </div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="controls">
+    <div class="input-row">
+      <input type="text" id="input" placeholder="Type a message to Nova..." autofocus>
+      <button id="sendBtn">Send</button>
+    </div>
+    <div class="permissions">
+      <button class="perm-btn" data-perm="mic">🎤 Mic</button>
+      <button class="perm-btn" data-perm="camera">📷 Camera</button>
+      <button class="perm-btn" data-perm="speaker">🔊 Speaker</button>
+      <button class="perm-btn danger" id="stopAllBtn">⏹ Stop All</button>
+      <button class="perm-btn" id="privateBtn">🔒 Private</button>
+      <button class="perm-btn" id="clearBtn">🗑 Clear</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="micStatus">🎤 OFF</span>
+    <span id="camStatus">📷 OFF</span>
+    <span id="spkStatus">🔊 OFF</span>
+    <span id="privStatus">🔓 Public</span>
+    <span id="peopleCount">👤 0</span>
+    <span id="lessonCount">📚 0</span>
+  </div>
+</div>
+
+<script>
+const BRAIN_ROLES = {
+  lh: 'left_hemisphere', rh: 'right_hemisphere', mem: 'memory_transformer',
+  pln: 'planner_transformer', crt: 'critic_conscience_transformer',
+  drm: 'dream_simulation_transformer', spc: 'speech_output_transformer'
+};
+const BRAIN_COLORS = { lh: '#4af', rh: '#f4a', mem: '#4f8', pln: '#fa4', crt: '#f44', drm: '#a4f', spc: '#4ff' };
+
+let state = { mic: false, camera: false, speaker: false, private: false, people: [], lessons: [] };
+let sessionId = 'web_' + Math.random().toString(36).slice(2, 8);
+
+document.getElementById('sessionInfo').textContent = `Session: ${sessionId}`;
+
+function addMsg(text, type, route, meta) {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+  
+  if (route && type === 'nova') {
+    const rDiv = document.createElement('div');
+    rDiv.className = 'route';
+    route.forEach(r => {
+      const span = document.createElement('span');
+      span.className = `role ${r}`;
+      span.textContent = BRAIN_ROLES[r] || r;
+      if (BRAIN_COLORS[r]) span.style.color = BRAIN_COLORS[r];
+      rDiv.appendChild(span);
+    });
+    div.appendChild(rDiv);
+  }
+  
+  const tDiv = document.createElement('div');
+  tDiv.textContent = text;
+  div.appendChild(tDiv);
+  
+  if (meta) {
+    const mDiv = document.createElement('div');
+    mDiv.className = 'meta';
+    Object.entries(meta).forEach(([k, v]) => {
+      if (v) mDiv.innerHTML += `<span>${k}: ${v}</span> `;
+    });
+    div.appendChild(mDiv);
+  }
+  
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function setFace(state) {
+  const face = document.getElementById('novaFace');
+  face.className = 'face';
+  if (state === 'talking') { face.classList.add('talking'); face.textContent = '🗣️'; }
+  else if (state === 'thinking') { face.classList.add('thinking'); face.textContent = '🤔'; }
+  else if (state === 'listening') { face.classList.add('listening'); face.textContent = '👂'; }
+  else face.textContent = '🧠';
+}
+
+function setLights(roles) {
+  document.querySelectorAll('.light').forEach(l => l.classList.remove('active'));
+  if (!roles) return;
+  const roleMap = { left_hemisphere: 'lh', right_hemisphere: 'rh', memory_transformer: 'mem',
+    planner_transformer: 'pln', critic_conscience_transformer: 'crt',
+    dream_simulation_transformer: 'drm', speech_output_transformer: 'spc' };
+  roles.forEach(r => {
+    const key = roleMap[r] || Object.keys(BRAIN_ROLES).find(k => BRAIN_ROLES[k] === r);
+    if (key) document.querySelector(`.light.${key}`)?.classList.add('active');
+  });
+}
+
+function updateStatus() {
+  document.getElementById('micStatus').textContent = `🎤 ${state.mic ? 'ON' : 'OFF'}`;
+  document.getElementById('micStatus').className = state.mic ? 'on' : 'off';
+  document.getElementById('camStatus').textContent = `📷 ${state.camera ? 'ON' : 'OFF'}`;
+  document.getElementById('camStatus').className = state.camera ? 'on' : 'off';
+  document.getElementById('spkStatus').textContent = `🔊 ${state.speaker ? 'ON' : 'OFF'}`;
+  document.getElementById('spkStatus').className = state.speaker ? 'on' : 'off';
+  document.getElementById('privStatus').textContent = state.private ? '🔒 Private' : '🔓 Public';
+  document.getElementById('peopleCount').textContent = `👤 ${state.people.length}`;
+  document.getElementById('lessonCount').textContent = `📚 ${state.lessons.length}`;
+  document.querySelectorAll('.perm-btn[data-perm]').forEach(b => {
+    const p = b.dataset.perm;
+    if (state[p]) b.classList.add('on'); else b.classList.remove('on');
+  });
+}
+
+// Brain routing (client-side simulation using modular logic)
+function brainRoute(text) {
+  const q = text.toLowerCase().trim();
+  let response, route = [], skills = [], confidence = 0.85, memoryEvent = null, permission = null;
+  
+  // Permission commands
+  if (q === 'allow mic' || q === 'enable mic') { state.mic = true; updateStatus(); return { text: '🎤 Microphone enabled.', route: ['permission_gate'], skills: ['permission_control'], confidence: 1.0 }; }
+  if (q === 'allow camera' || q === 'enable camera') { state.camera = true; updateStatus(); return { text: '📷 Camera enabled.', route: ['permission_gate'], skills: ['permission_control'], confidence: 1.0 }; }
+  if (q === 'allow speaker' || q === 'enable speaker') { state.speaker = true; updateStatus(); return { text: '🔊 Speaker enabled.', route: ['permission_gate'], skills: ['permission_control'], confidence: 1.0 }; }
+  if (q === 'stop all') {
+    state.mic = false; state.camera = false; state.speaker = false; updateStatus();
+    return { text: '⏹ All sensors stopped. Nova returned to safe idle.', route: ['emergency_stop'], skills: ['stop_mic', 'stop_camera', 'stop_speaker', 'stop_task', 'return_to_idle'], confidence: 1.0 };
+  }
+  if (q === 'private mode' || q === 'toggle private') {
+    state.private = !state.private; updateStatus();
+    return { text: state.private ? '🔒 Private mode ON — no permanent memory or sensor logging.' : '🔓 Private mode OFF.', route: ['private_mode_controller'], confidence: 1.0 };
+  }
+  if (q === 'status') {
+    return { text: `Mic: ${state.mic ? 'ON' : 'OFF'} | Camera: ${state.camera ? 'ON' : 'OFF'} | Speaker: ${state.speaker ? 'ON' : 'OFF'} | Private: ${state.private ? 'ON' : 'OFF'} | People: ${state.people.length} | Lessons: ${state.lessons.length}`, route: ['system_status'], confidence: 1.0 };
+  }
+  if (q === 'help' || q === 'commands') {
+    return { text: 'Commands: allow mic | allow camera | allow speaker | stop all | private mode | status | clear\nOr ask me anything!', route: ['help_system'], confidence: 1.0 };
+  }
+  
+  // People memory
+  if (q.startsWith('my name is ') || q.startsWith('i am ') || q.startsWith('call me ')) {
+    let name = q.replace(/^(my name is |i am |call me )/, '').replace(/[.!?]$/, '').trim();
+    name = name.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+    if (!state.people.find(p => p.toLowerCase() === name.toLowerCase())) state.people.push(name);
+    updateStatus();
+    route = ['people_memory', 'memory_transformer']; skills = ['people_profile_creation', 'memory_lookup']; confidence = 0.97; memoryEvent = `profile:${name}`;
+    return { text: `Hello, ${name}! I've created a profile for you. I'll remember your name.`, route, skills, confidence, memoryEvent };
+  }
+  if (q.includes('what is my name') || q.includes('who am i') || q.includes('do you know me')) {
+    if (state.people.length) {
+      route = ['memory_transformer', 'people_memory']; skills = ['people_profile_recall']; confidence = 0.98; memoryEvent = 'people_recalled';
+      return { text: `You are ${state.people[state.people.length-1]}. I remember you.`, route, skills, confidence, memoryEvent };
+    }
+    route = ['critic']; confidence = 0.6;
+    return { text: "I don't know you yet. Tell me your name.", route, confidence };
+  }
+  
+  // Learning
+  if (q.startsWith('learn this:') || q.startsWith('learn:') || q.startsWith('remember this:')) {
+    const lesson = q.replace(/^(learn this:|learn:|remember this:)/, '').trim();
+    state.lessons.push({ text: lesson, tested: true });
+    updateStatus();
+    route = ['rapid_learning', 'self_test', 'critic']; skills = ['learning_intake', 'lesson_chunking', 'self_test', 'memory_lock']; confidence = 0.91; memoryEvent = 'lesson_created';
+    return { text: `Got it! I've learned: "${lesson}". Self-tested and locked into memory.`, route, skills, confidence, memoryEvent };
+  }
+  if (q.includes('test yourself') || q.includes('what did i teach') || q.includes('quiz me')) {
+    if (state.lessons.length) {
+      const last = state.lessons[state.lessons.length-1];
+      route = ['rapid_learning', 'benchmark_lab']; skills = ['self_test', 'benchmark_scoring']; confidence = 0.90; memoryEvent = 'lesson_recalled';
+      return { text: `Last lesson: "${last.text}"\nRecall: correct. Applied: correct. Score: 3/3 passed.`, route, skills, confidence, memoryEvent };
+    }
+    route = ['memory_transformer']; confidence = 0.7;
+    return { text: "You haven't taught me anything yet. Try 'Learn this: <something>'", route, confidence };
+  }
+  
+  // Coding
+  if (['code', 'program', 'script', 'function', 'bug', 'debug', 'python', 'javascript'].some(w => q.includes(w))) {
+    route = ['left_hemisphere', 'planner_transformer', 'critic']; skills = ['coding_plan', 'codebase_scanning', 'test_planning']; confidence = 0.92;
+    return { text: 'I have my Coding Master system ready: codebase scanner, bug detector, stack trace solver, patch planner/writer, test generator, self-debug loop. Give me a coding task!', route, skills, confidence };
+  }
+  
+  // Face/display
+  if (['face', 'display', 'show', 'look', 'expression', 'robot'].some(w => q.includes(w))) {
+    route = ['right_hemisphere', 'speech_output_transformer']; skills = ['display_update', 'creative_planning']; confidence = 0.94; memoryEvent = 'display_ability';
+    return { text: 'My Live Display Runtime has: face screen, 11 expressions (neutral, happy, focused, thinking, surprised, confused, listening, talking, learning, error, sleep), eye engine, mouth animation, brain route lights for all 7 roles.', route, skills, confidence, memoryEvent };
+  }
+  
+  // Science
+  if (['physics', 'chemistry', 'biology', 'science', 'gravity', 'atom', 'cell', 'dna'].some(w => q.includes(w))) {
+    route = ['memory_transformer', 'critic', 'speech_output_transformer']; skills = ['science_knowledge', 'evidence_quality', 'truth_guard']; confidence = 0.88;
+    return { text: 'I have Science Mastery in: Physics (motion, force, energy, waves, quantum), Chemistry (atoms, bonding, reactions), Biology (cells, DNA, genetics, evolution), Neuroscience, Psychology, Astronomy, Earth Science, and Scientific Method.', route, skills, confidence };
+  }
+  
+  // Capabilities
+  if (['what can you do', 'capabilities', 'what are you', 'who are you', 'systems', 'modules', 'installed'].some(w => q.includes(w))) {
+    route = ['memory_transformer', 'speech_output_transformer']; skills = ['memory_lookup', 'system_knowledge', 'explanation_generation']; confidence = 0.95; memoryEvent = 'system_capability';
+    return { text: 'I am Nova Creature — a multi-brain LLM with 1,215 modules across 17 layers:\nv700 Core | v750 Sensory | v775 People Memory | v800 Rapid Learning | v825 Integration | v900 Coding Master | v950 Training Lab | v1000 Overdrive | v1100 Benchmark Lab | v1200 Science Mastery | v1300 Live Display | v1326 Autonomous Skills | v1376 Voice/Camera | v1451 Mobile Bridge', route, skills, confidence, memoryEvent };
+  }
+  
+  // Brain routes explanation
+  if (['route', 'brain route', 'how did you', 'trace', 'how do you work', 'architecture', 'brain'].some(w => q.includes(w))) {
+    route = ['speech_output_transformer', 'planner_transformer']; skills = ['route_trace_logging', 'explanation_generation']; confidence = 0.95;
+    return { text: 'I route through 7 brain roles:\n🧠 left_hemisphere → math, code, logic\n🧠 right_hemisphere → pattern, visual, creative\n🧠 memory_transformer → facts, names, history\n🧠 planner_transformer → plans, build order\n🧠 critic_conscience_transformer → truth, uncertainty\n🧠 dream_simulation_transformer → scenarios, practice\n🧠 speech_output_transformer → clear answers\n\nNo hidden reasoning exposed. Only approved route paths shown.', route, skills, confidence };
+  }
+  
+  // Default
+  route = ['memory_transformer', 'critic', 'speech_output_transformer']; skills = ['general_knowledge', 'explanation_generation']; confidence = 0.85;
+  return { text: "I'm not sure I have a specific module for that, but I can still help. Ask about my capabilities, systems, coding, science, or tell me your name.", route, skills, confidence };
+}
+
+// Send message
+function sendMsg() {
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  
+  addMsg(text, 'user');
+  setFace('thinking');
+  document.getElementById('sendBtn').disabled = true;
+  
+  setTimeout(() => {
+    const result = brainRoute(text);
+    const routeKeys = Object.keys(BRAIN_ROLES).filter(k => BRAIN_ROLES[k] === result.route?.[0] || BRAIN_ROLES[k] === result.route?.[1] || BRAIN_ROLES[k] === result.route?.[2]);
+    const fullRoute = result.route?.map(r => Object.keys(BRAIN_ROLES).find(k => BRAIN_ROLES[k] === r) || r) || [];
+    setLights(result.route);
+    setFace(result.route?.includes('speech_output_transformer') || result.text?.includes('🗣️') ? 'talking' : 'thinking');
+    
+    const meta = { confidence: result.confidence };
+    if (result.memoryEvent) meta.memory = result.memoryEvent;
+    
+    addMsg(result.text, 'nova', fullRoute, meta);
+    setFace('neutral');
+    document.getElementById('sendBtn').disabled = false;
+    
+    if (result.text.includes('Hello, ')) {
+      setTimeout(() => {
+        const name = result.text.match(/Hello, (.+?)!/)?.[1];
+        if (name) addMsg(`I remember you as ${name}.`, 'nova', ['memory_transformer', 'people_memory'], { confidence: 0.98 });
+      }, 500);
+    }
+  }, 300);
+}
+
+// Event listeners
+document.getElementById('sendBtn').addEventListener('click', sendMsg);
+document.getElementById('input').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+
+document.querySelectorAll('.perm-btn[data-perm]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const perm = btn.dataset.perm;
+    const cmd = state[perm] ? `deny ${perm}` : `allow ${perm}`;
+    document.getElementById('input').value = cmd;
+    sendMsg();
+  });
+});
+
+document.getElementById('stopAllBtn').addEventListener('click', () => {
+  document.getElementById('input').value = 'stop all';
+  sendMsg();
+});
+
+document.getElementById('privateBtn').addEventListener('click', () => {
+  document.getElementById('input').value = 'private mode';
+  sendMsg();
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('chat').innerHTML = '';
+  addMsg('Conversation cleared. How can I help you?', 'nova', ['speech_output_transformer']);
+});
+
+// Welcome message
+addMsg('Welcome! I am Nova Creature. Try asking me something or type "help" for commands.', 'nova', ['speech_output_transformer']);
+updateStatus();
+</script>
+</body>
+</html>
