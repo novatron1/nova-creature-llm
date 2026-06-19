@@ -1,0 +1,52 @@
+{
+  "version": "v1251_face_display_manifest",
+  "created_at": "2026-06-19T01:22:05.945182",
+  "module": "Create the manifest, folders, reports, UI registry, and test registry for the live display runtime",
+  "display_modes": [
+    "face",
+    "chat",
+    "sensory",
+    "learning",
+    "coding",
+    "creative",
+    "private",
+    "standby"
+  ],
+  "expressions": [
+    "neutral",
+    "happy",
+    "focused",
+    "thinking",
+    "surprised",
+    "confused",
+    "listening",
+    "talking",
+    "learning",
+    "error",
+    "sleep"
+  ],
+  "brain_roles": [
+    "left_hemisphere",
+    "right_hemisphere",
+    "memory_transformer",
+    "planner_transformer",
+    "critic_conscience_transformer",
+    "dream_simulation_transformer",
+    "speech_output_transformer"
+  ],
+  "panels": [
+    "sensory",
+    "learning_memory",
+    "chat_command",
+    "creative_preview",
+    "route_trace_overlay",
+    "performance_monitor"
+  ],
+  "folders": [
+    "themes",
+    "expressions",
+    "assets",
+    "reports"
+  ],
+  "status": "ok"
+}
