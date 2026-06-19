@@ -1,0 +1,25 @@
+{
+  "version": "v1451_mobile_bridge_manifest",
+  "created_at": "2026-06-19T02:09:59.524108",
+  "module": "Create manifest, folders, reports, tests, and mobile bridge registry",
+  "features": [
+    "text_chat",
+    "mic_bridge",
+    "camera_bridge",
+    "speaker_output",
+    "display_sync",
+    "remote_control",
+    "pairing",
+    "qr_launch",
+    "pwa",
+    "stop_all",
+    "private_mode",
+    "permission_gates"
+  ],
+  "folders": [
+    "webapp",
+    "pwa",
+    "reports"
+  ],
+  "status": "ok"
+}

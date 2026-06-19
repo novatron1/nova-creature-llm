@@ -1,0 +1,11 @@
+QUICK START: Connect Phone to Nova
+
+1. Run Nova on computer.
+2. Click 'Phone Connect' or run the network server.
+3. Scan QR code with phone camera.
+4. Pair phone.
+5. Type or talk to Nova.
+6. Enable camera only if you want.
+7. Press Stop All anytime.
+
+Same Wi-Fi required. Browser permissions required for mic/camera.
