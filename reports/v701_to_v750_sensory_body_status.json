@@ -1,0 +1,359 @@
+{
+  "version": "v701_to_v750_sensory_body",
+  "created_at": "2026-06-18T23:16:30.938682",
+  "batch": "F",
+  "modules": [
+    {
+      "v701": {
+        "name": "Device Scanner",
+        "function": "device_scanner",
+        "status": "created"
+      }
+    },
+    {
+      "v702": {
+        "name": "Device Selector",
+        "function": "device_selector",
+        "status": "created"
+      }
+    },
+    {
+      "v703": {
+        "name": "Device Saver",
+        "function": "device_saver",
+        "status": "created"
+      }
+    },
+    {
+      "v704": {
+        "name": "Permission Gate",
+        "function": "permission_gate",
+        "status": "created"
+      }
+    },
+    {
+      "v705": {
+        "name": "Device Registry",
+        "function": "device_registry",
+        "status": "created"
+      }
+    },
+    {
+      "v706": {
+        "name": "Sensory Event",
+        "function": "sensory_event",
+        "status": "created"
+      }
+    },
+    {
+      "v707": {
+        "name": "Sensory Memory",
+        "function": "sensory_memory",
+        "status": "created"
+      }
+    },
+    {
+      "v708": {
+        "name": "Multimodal Router",
+        "function": "multimodal_router",
+        "status": "created"
+      }
+    },
+    {
+      "v709": {
+        "name": "Sensory Config",
+        "function": "sensory_config",
+        "status": "created"
+      }
+    },
+    {
+      "v710": {
+        "name": "Sensory Body Manager",
+        "function": "sensory_body_manager",
+        "status": "created"
+      }
+    },
+    {
+      "v711": {
+        "name": "Camera Discovery",
+        "function": "camera_discovery",
+        "status": "created"
+      }
+    },
+    {
+      "v712": {
+        "name": "Camera Preview",
+        "function": "camera_preview",
+        "status": "created"
+      }
+    },
+    {
+      "v713": {
+        "name": "Face Detector",
+        "function": "face_detector",
+        "status": "created"
+      }
+    },
+    {
+      "v714": {
+        "name": "Face Tracker",
+        "function": "face_tracker",
+        "status": "created"
+      }
+    },
+    {
+      "v715": {
+        "name": "Head Pose Estimator",
+        "function": "head_pose_estimator",
+        "status": "created"
+      }
+    },
+    {
+      "v716": {
+        "name": "Eye Gaze Estimator",
+        "function": "eye_gaze_estimator",
+        "status": "created"
+      }
+    },
+    {
+      "v717": {
+        "name": "Mouth Detector",
+        "function": "mouth_detector",
+        "status": "created"
+      }
+    },
+    {
+      "v718": {
+        "name": "Hand Tracker",
+        "function": "hand_tracker",
+        "status": "created"
+      }
+    },
+    {
+      "v719": {
+        "name": "Body Pose Tracker",
+        "function": "body_pose_tracker",
+        "status": "created"
+      }
+    },
+    {
+      "v720": {
+        "name": "Object Detector Placeholder",
+        "function": "object_detector_placeholder",
+        "status": "created"
+      }
+    },
+    {
+      "v721": {
+        "name": "Mic Discovery",
+        "function": "mic_discovery",
+        "status": "created"
+      }
+    },
+    {
+      "v722": {
+        "name": "Mic Level Meter",
+        "function": "mic_level_meter",
+        "status": "created"
+      }
+    },
+    {
+      "v723": {
+        "name": "Voice Activity Detector",
+        "function": "voice_activity_detector",
+        "status": "created"
+      }
+    },
+    {
+      "v724": {
+        "name": "Speech To Text Adapter",
+        "function": "speech_to_text_adapter",
+        "status": "created"
+      }
+    },
+    {
+      "v725": {
+        "name": "Audio Event Logger",
+        "function": "audio_event_logger",
+        "status": "created"
+      }
+    },
+    {
+      "v726": {
+        "name": "Speaker Discovery",
+        "function": "speaker_discovery",
+        "status": "created"
+      }
+    },
+    {
+      "v727": {
+        "name": "Text To Speech Adapter",
+        "function": "text_to_speech_adapter",
+        "status": "created"
+      }
+    },
+    {
+      "v728": {
+        "name": "Speaker Output Router",
+        "function": "speaker_output_router",
+        "status": "created"
+      }
+    },
+    {
+      "v729": {
+        "name": "Mock Speaker Test",
+        "function": "mock_speaker_test",
+        "status": "created"
+      }
+    },
+    {
+      "v730": {
+        "name": "Test Phrase Engine",
+        "function": "test_phrase_engine",
+        "status": "created"
+      }
+    },
+    {
+      "v731": {
+        "name": "Screen Capture Discovery",
+        "function": "screen_capture_discovery",
+        "status": "created"
+      }
+    },
+    {
+      "v732": {
+        "name": "Screenshot Adapter",
+        "function": "screenshot_adapter",
+        "status": "created"
+      }
+    },
+    {
+      "v733": {
+        "name": "Mock Screenshot Test",
+        "function": "mock_screenshot_test",
+        "status": "created"
+      }
+    },
+    {
+      "v734": {
+        "name": "Screen Capture Bridge",
+        "function": "screen_capture_bridge",
+        "status": "created"
+      }
+    },
+    {
+      "v735": {
+        "name": "Screen Observation Memory",
+        "function": "screen_observation_memory",
+        "status": "created"
+      }
+    },
+    {
+      "v736": {
+        "name": "Sensory Memory Store",
+        "function": "sensory_memory_store",
+        "status": "created"
+      }
+    },
+    {
+      "v737": {
+        "name": "Sensory Memory Query",
+        "function": "sensory_memory_query",
+        "status": "created"
+      }
+    },
+    {
+      "v738": {
+        "name": "Multimodal Router V2",
+        "function": "multimodal_router_v2",
+        "status": "created"
+      }
+    },
+    {
+      "v739": {
+        "name": "Sensory Confidence Scorer",
+        "function": "sensory_confidence_scorer",
+        "status": "created"
+      }
+    },
+    {
+      "v740": {
+        "name": "Sensory Permission Manager",
+        "function": "sensory_permission_manager",
+        "status": "created"
+      }
+    },
+    {
+      "v741": {
+        "name": "Dashboard Sensor Status",
+        "function": "dashboard_sensor_status",
+        "status": "created"
+      }
+    },
+    {
+      "v742": {
+        "name": "Dashboard Permission Panel",
+        "function": "dashboard_permission_panel",
+        "status": "created"
+      }
+    },
+    {
+      "v743": {
+        "name": "Dashboard Signal Display",
+        "function": "dashboard_signal_display",
+        "status": "created"
+      }
+    },
+    {
+      "v744": {
+        "name": "Dashboard Memory Feed",
+        "function": "dashboard_memory_feed",
+        "status": "created"
+      }
+    },
+    {
+      "v745": {
+        "name": "Dashboard Brain Route Display",
+        "function": "dashboard_brain_route_display",
+        "status": "created"
+      }
+    },
+    {
+      "v746": {
+        "name": "Dashboard Control Panel",
+        "function": "dashboard_control_panel",
+        "status": "created"
+      }
+    },
+    {
+      "v747": {
+        "name": "Sensory Body Dashboard",
+        "function": "sensory_body_dashboard",
+        "status": "created"
+      }
+    },
+    {
+      "v748": {
+        "name": "Mock Test Suite",
+        "function": "mock_test_suite",
+        "status": "created"
+      }
+    },
+    {
+      "v749": {
+        "name": "Sensory Integration Test",
+        "function": "sensory_integration_test",
+        "status": "created"
+      }
+    },
+    {
+      "v750": {
+        "name": "Readiness Report",
+        "function": "readiness_report",
+        "status": "created"
+      }
+    }
+  ],
+  "total_modules": 50,
+  "all_created": true
+}
