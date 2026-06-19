@@ -1,0 +1,184 @@
+{
+  "version": "v776_to_v800_rapid_education",
+  "created_at": "2026-06-18T23:26:59.233605",
+  "batch": "H",
+  "modules": [
+    {
+      "v776": {
+        "name": "Learning Intake",
+        "function": "learning_intake",
+        "status": "created"
+      }
+    },
+    {
+      "v777": {
+        "name": "Lesson Chunker",
+        "function": "lesson_chunker",
+        "status": "created"
+      }
+    },
+    {
+      "v778": {
+        "name": "Question Generator",
+        "function": "question_generator",
+        "status": "created"
+      }
+    },
+    {
+      "v779": {
+        "name": "Self Test Engine",
+        "function": "self_test_engine",
+        "status": "created"
+      }
+    },
+    {
+      "v780": {
+        "name": "Rapid Learning Memory Lock",
+        "function": "rapid_learning_memory_lock",
+        "status": "created"
+      }
+    },
+    {
+      "v781": {
+        "name": "Correction Loop",
+        "function": "correction_loop",
+        "status": "created"
+      }
+    },
+    {
+      "v782": {
+        "name": "Spaced Recall Scheduler",
+        "function": "spaced_recall_scheduler",
+        "status": "created"
+      }
+    },
+    {
+      "v783": {
+        "name": "Cross Brain Learning Router",
+        "function": "cross_brain_learning_router",
+        "status": "created"
+      }
+    },
+    {
+      "v784": {
+        "name": "Learning From Correction",
+        "function": "learning_from_correction",
+        "status": "created"
+      }
+    },
+    {
+      "v785": {
+        "name": "Teach Back Mode",
+        "function": "teach_back_mode",
+        "status": "created"
+      }
+    },
+    {
+      "v786": {
+        "name": "Rapid Absorption Test",
+        "function": "rapid_absorption_test",
+        "status": "created"
+      }
+    },
+    {
+      "v787": {
+        "name": "Retention Test",
+        "function": "retention_test",
+        "status": "created"
+      }
+    },
+    {
+      "v788": {
+        "name": "Conflict Detection",
+        "function": "conflict_detection",
+        "status": "created"
+      }
+    },
+    {
+      "v789": {
+        "name": "Learning Exporter",
+        "function": "learning_exporter",
+        "status": "created"
+      }
+    },
+    {
+      "v790": {
+        "name": "Education Dashboard",
+        "function": "education_dashboard",
+        "status": "created"
+      }
+    },
+    {
+      "v791": {
+        "name": "Lesson Prioritizer",
+        "function": "lesson_prioritizer",
+        "status": "created"
+      }
+    },
+    {
+      "v792": {
+        "name": "Knowledge Graph Builder",
+        "function": "knowledge_graph_builder",
+        "status": "created"
+      }
+    },
+    {
+      "v793": {
+        "name": "Weak Spot Analyzer",
+        "function": "weak_spot_analyzer",
+        "status": "created"
+      }
+    },
+    {
+      "v794": {
+        "name": "Learning Streak Tracker",
+        "function": "learning_streak_tracker",
+        "status": "created"
+      }
+    },
+    {
+      "v795": {
+        "name": "Rapid Learning Test Suite",
+        "function": "rapid_learning_test_suite",
+        "status": "created"
+      }
+    },
+    {
+      "v796": {
+        "name": "Teach Speed Optimizer",
+        "function": "teach_speed_optimizer",
+        "status": "created"
+      }
+    },
+    {
+      "v797": {
+        "name": "Auto Curriculum Builder",
+        "function": "auto_curriculum_builder",
+        "status": "created"
+      }
+    },
+    {
+      "v798": {
+        "name": "Learning Progress Viewer",
+        "function": "learning_progress_viewer",
+        "status": "created"
+      }
+    },
+    {
+      "v799": {
+        "name": "Mastery Checker",
+        "function": "mastery_checker",
+        "status": "created"
+      }
+    },
+    {
+      "v800": {
+        "name": "Rapid Learning Final Report",
+        "function": "rapid_learning_final_report",
+        "status": "created"
+      }
+    }
+  ],
+  "total_modules": 25,
+  "all_created": true
+}
