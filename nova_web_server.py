@@ -192,11 +192,11 @@ def brain_route(text, context=None):
             lines.append("Lessons I have learned:")
             for lid, ldata in lesson_items[:5]:
                 text = ldata.get('text', '')[:80]
-                lines.append(f"  \xe2\x80\xa2 {text}")
+                lines.append(f"  • {text}")
         if people_names:
             lines.append("People I remember:")
             for pdata in people_names[:5]:
-                lines.append(f"  \xe2\x80\xa2 {pdata.get('name', 'unknown')}")
+                lines.append(f"  • {pdata.get('name', 'unknown')}")
         lines.append("")
         lines.append("I am always learning. Try: 'Learn this: [fact]' to teach me something new.")
         return ("\n".join(lines)), trace
@@ -385,6 +385,75 @@ def brain_route(text, context=None):
                 "I can discuss general science topics related to biology and the human body, "
                 "but I will not make diagnoses or treatment recommendations."), trace
     
+
+    # Math / formula question (responds to direct math queries)
+    if any(w in q for w in ["formula", "equation", "algebra", "calculus", "derivative", "integral", 
+                             "quadratic", "pythagorean", "theorem", "slope", "geometry",
+                             "calculate", "solve for", "math", "trigonometry",
+                             "area of", "circle", "triangle", "square", "radius",
+                             "probability", "statistics", "percentage", "fraction",
+                             "function", "variable", "graph", "angle", "degree"]):
+        trace["roles"] = ["left_hemisphere", "memory_transformer", "speech_output_transformer"]
+        trace["skills"] = ["math_knowledge", "formula_recall"]
+        trace["confidence"] = 0.88
+        # Check if we have stored lessons that match (using significant words only)
+        stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+                       "have", "has", "had", "do", "does", "did", "will", "would", "could",
+                       "should", "may", "might", "can", "shall", "to", "of", "in", "for",
+                       "on", "with", "at", "by", "from", "as", "into", "through", "during",
+                       "before", "after", "above", "below", "between", "what", "which",
+                       "who", "whom", "this", "that", "these", "those", "it", "its",
+                       "you", "your", "i", "me", "my", "we", "our", "they", "them",
+                       "not", "no", "nor", "so", "but", "if", "or", "and", "about",
+                       "how", "why", "when", "where", "please", "help", "need"}
+        query_words = [w for w in q.split() if w not in stop_words and len(w) > 2]
+        stored_matches = []
+        for lid, ldata in MEMORY.get("lessons", {}).items():
+            text = ldata.get("text", "").lower()
+            match_count = sum(1 for w in query_words if w in text)
+            if match_count > 0:
+                stored_matches.append((match_count, ldata["text"]))
+        if stored_matches:
+            stored_matches.sort(key=lambda x: -x[0])
+            base = "From my stored lessons, I recall:\n"
+            for mc, s in stored_matches[:3]:
+                base += f"  \u2022 {s}\n"
+            base += "\nI also have general math knowledge from my training. Ask me a specific question!"
+            return base, trace
+        else:
+            return ("I recognize this as a math-related question. From my training I have:\n"
+                    "  \u2022 Physics equations (motion, force, energy, waves)\n"
+                    "  \u2022 Coding logic (boolean algebra, algorithms)\n"
+                    "  \u2022 Science formulas (chemistry, biology models)\n\n"
+                    "You can teach me new formulas with 'Learn this: [formula]'\n"
+                    "Then ask 'Test yourself' to see what I've stored."), trace
+
+
+    # Memory search — check stored lessons before falling back
+    # Search MEMORY["lessons"] for text matching the query
+    lessons_found = []
+    for lid, ldata in MEMORY.get("lessons", {}).items():
+        text = ldata.get("text", "").lower()
+        # Check if any significant word from the query appears in the lesson
+        query_words = [w for w in q.split() if len(w) > 2]
+        matches = sum(1 for w in query_words if w in text)
+        if matches >= 1:
+            lessons_found.append((matches, ldata["text"]))
+    # Sort by most matches, take top 3
+    if lessons_found:
+        lessons_found.sort(key=lambda x: -x[0])
+        # Only return if we have at least a decent match
+        best_matches = lessons_found[0][0]
+        trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
+        trace["skills"] = ["memory_search", "lesson_recall"]
+        trace["confidence"] = 0.80
+        trace["memory_event"] = "memory_search_match"
+        base = "I found related knowledge in my stored lessons:\n"
+        for s in lessons_found[:3]:
+            base += f"  \u2022 {s}\n"
+        base += "\nIs this what you were asking about?"
+        return base, trace
+
     # Default response
     trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
     trace["skills"] = ["general_knowledge", "explanation_generation"]
