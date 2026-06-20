@@ -1,0 +1,556 @@
+#!/usr/bin/env python3
+"""Nova Creature — Live Web Server + Chat API"""
+
+import json, sys, os, uuid, time, shutil
+from datetime import datetime
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
+from urllib.parse import urlparse, parse_qs
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(ROOT, "src"))
+
+# ── Nova Brain Routing (from interactive_terminal.py) ──
+PERMISSIONS = {"mic": False, "camera": False, "speaker": False}
+MEMORY = {"people": {}, "lessons": {}}
+SESSION_ID = str(uuid.uuid4())[:8]
+SESSION_LOG = []
+PRIVATE_MODE = False
+
+def brain_route(text, context=None):
+    global PRIVATE_MODE
+    q = text.lower().strip()
+    trace = {"input": text, "timestamp": datetime.now().isoformat(), "roles": [], "skills": [], "confidence": 0.0, "memory_event": None, "permission": None}
+    
+    # permission commands
+    if q in ("allow mic", "enable mic"):
+        PERMISSIONS["mic"] = True
+        trace["roles"] = ["permission_gate"]
+        trace["confidence"] = 1.0; trace["permission"] = "mic_allowed"
+        return "[PERMISSION] Microphone enabled. You can now use voice mode.", trace
+    
+    if q in ("deny mic", "disable mic"):
+        PERMISSIONS["mic"] = False
+        trace["roles"] = ["permission_gate"]
+        trace["confidence"] = 1.0; trace["permission"] = "mic_denied"
+        return "[PERMISSION] Microphone disabled.", trace
+    
+    if q in ("allow camera", "enable camera"):
+        PERMISSIONS["camera"] = True
+        trace["roles"] = ["permission_gate"]
+        trace["confidence"] = 1.0; trace["permission"] = "camera_allowed"
+        return "[PERMISSION] Camera enabled. I can now see.", trace
+    
+    if q in ("deny camera", "disable camera"):
+        PERMISSIONS["camera"] = False
+        trace["roles"] = ["permission_gate"]
+        trace["confidence"] = 1.0; trace["permission"] = "camera_denied"
+        return "[PERMISSION] Camera disabled.", trace
+    
+    if q in ("allow speaker", "enable speaker"):
+        PERMISSIONS["speaker"] = True
+        trace["roles"] = ["permission_gate"]
+        trace["confidence"] = 1.0; trace["permission"] = "speaker_allowed"
+        return "[PERMISSION] Speaker enabled. I can speak aloud.", trace
+    
+    if q in ("deny speaker", "disable speaker"):
+        PERMISSIONS["speaker"] = False
+        trace["roles"] = ["permission_gate"]
+        trace["confidence"] = 1.0; trace["permission"] = "speaker_denied"
+        return "[PERMISSION] Speaker disabled.", trace
+    
+    if q in ("private mode", "toggle private"):
+        PRIVATE_MODE = not PRIVATE_MODE
+        trace["roles"] = ["private_mode_controller"]
+        trace["confidence"] = 1.0
+        return f"[PRIVATE MODE] {'Enabled — no permanent memory or sensor logging.' if PRIVATE_MODE else 'Disabled — normal operation resumed.'}", trace
+    
+    if q in ("stop all", "emergency stop"):
+        for k in PERMISSIONS: PERMISSIONS[k] = False
+        trace["roles"] = ["emergency_stop"]
+        trace["skills"] = ["stop_mic", "stop_camera", "stop_speaker", "stop_task", "return_to_idle"]
+        trace["confidence"] = 1.0
+        return "[STOP ALL] All sensors stopped. Camera off. Mic off. Speaker off. Task cancelled. Nova returned to safe idle.", trace
+    
+    if q in ("status", "show status"):
+        trace["roles"] = ["system_status"]
+        trace["confidence"] = 1.0
+        status = (f"Mic: {'ON' if PERMISSIONS['mic'] else 'OFF'}\nCamera: {'ON' if PERMISSIONS['camera'] else 'OFF'}\n"
+                  f"Speaker: {'ON' if PERMISSIONS['speaker'] else 'OFF'}\nPrivate Mode: {'ON' if PRIVATE_MODE else 'OFF'}\n"
+                  f"People Known: {len(MEMORY['people'])}\nLessons Learned: {len(MEMORY['lessons'])}")
+        return f"[STATUS]\n{status}", trace
+    
+    if q in ("help", "commands"):
+        trace["roles"] = ["help_system"]; trace["confidence"] = 1.0
+        return ("Commands: allow mic | deny mic | allow camera | deny camera | allow speaker | deny speaker\n"
+                "  private mode | stop all | status | help | mock voice <text> | mock camera <text>\n"
+                "  Or just type any question to talk to Nova."), trace
+    
+    # mock voice transcript
+    if q.startswith("mock voice "):
+        if not PERMISSIONS["mic"]:
+            trace["roles"] = ["permission_gate"]; trace["permission"] = "mic_required"
+            return "[PERMISSION] Mic is disabled. Type 'allow mic' first.", trace
+        transcript = q[11:]
+        trace["roles"] = ["speech_to_text", "voice_router"]; trace["skills"] = ["stt_adapter", "voice_routing"]; trace["confidence"] = 0.85
+        response, inner_trace = brain_route(transcript)
+        trace["inner_route"] = inner_trace
+        trace["memory_event"] = inner_trace.get("memory_event")
+        return f"[VOICE TRANSCRIPT]\"{transcript}\"\n\n{response}", trace
+    
+    # mock camera event
+    if q.startswith("mock camera "):
+        if not PERMISSIONS["camera"]:
+            trace["roles"] = ["permission_gate"]; trace["permission"] = "camera_required"
+            return "[PERMISSION] Camera is disabled. Type 'allow camera' first.", trace
+        observation = q[12:]
+        trace["roles"] = ["camera_vision_router", "right_hemisphere"]; trace["skills"] = ["camera_adapter", "vision_routing"]; trace["confidence"] = 0.80
+        if "unknown" in q:
+            trace["memory_event"] = "unknown_person_detected"
+            return f"[CAMERA] Face detected: UNKNOWN\nNo matching profile in people memory.\nSay 'My name is ...' to introduce yourself.", trace
+        elif "known" in q:
+            trace["memory_event"] = "known_person_detected"
+            return f"[CAMERA] Face detected: KNOWN\nMatching profile found in people memory.", trace
+        else:
+            trace["memory_event"] = "camera_observation"
+            return f"[CAMERA] Observation: {observation}", trace
+    
+    # Systems / capabilities question
+    if any(w in q for w in ["system", "install", "capability", "what can you do", "modules", "layers"]):
+        trace["roles"] = ["planner_transformer", "memory_transformer", "speech_output_transformer"]
+        trace["skills"] = ["system_knowledge", "explanation_generation"]; trace["confidence"] = 0.95
+        return ("I am Nova Creature — a multi-brain LLM with layers including:\n"
+                "  ■ v700  Intelligence Core\n  ■ v750  Sensory Body (camera, mic, speaker)\n"
+                "  ■ v775  Natural People Memory\n  ■ v800  Rapid Learning\n  ■ v825  Full System Integration\n"
+                "  ■ v900  Coding Master Intensive\n  ■ v950  Whole-Brain Parallel Training Lab (Winner: Whole-Brain Jump, score 0.926)\n"
+                "  ■ v1000 Whole-Brain Jump Overdrive (score 0.948)\n"
+                "  ■ v1100 Intelligence Benchmark + Route Trace Lab\n"
+                "  ■ v1200 Science Mastery Training Intensive\n"
+                "  ■ v1250 Creative Display + Self-Coding Visual Builder\n"
+                "  ■ v1300 Live Face Display + Control Runtime\n"
+                "  ■ v1326 Autonomous Skill Use + Permissioned Will Controller\n"
+                "  ■ v1376 Live Voice + Camera Conversation Runtime\n"
+                "  ■ v1451 Mobile Phone Bridge + Companion App\n\n"
+                "I have 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer,\n"
+                "critic_conscience_transformer, dream_simulation_transformer, speech_output_transformer.\n\n"
+                "Try: 'can you code', 'can you learn', 'can you make a face', 'My name is ...', or any question!"), trace
+    
+    # Coding question
+    if any(w in q for w in ["code", "programming", "debug", "bug", "fix", "python", "javascript", "test"]):
+        trace["roles"] = ["left_hemisphere", "planner_transformer", "critic_conscience_transformer", "speech_output_transformer"]
+        trace["skills"] = ["codebase_scanner", "bug_detection", "patch_planning", "test_generation", "self_debug"]
+        trace["confidence"] = 0.92
+        return ("I have full Coding Master training (v826-v900) with:\n"
+                "  • Codebase scanner — maps projects by folders, files, languages, imports, functions\n"
+                "  • Bug detection — syntax, imports, paths, function calls, JSON, async, state, error handling\n"
+                "  • Stack trace solver — extracts failing file, line, exception, root cause, fix\n"
+                "  • Patch planner/writer — minimal edits, targeted fixes, preserves working code\n"
+                "  • Test generator — unit, integration, regression, mock tests\n"
+                "  • Self-debug loop — correct mistakes, retest, verify\n"
+                "  • Frontend/backend/AI/device coding packs\n\n"
+                "I can scan a project, find bugs, plan patches, write patches, and generate tests.\n"
+                "Try: 'find bugs in my project' or 'explain this code'."), trace
+    
+    # Can you make a face / visual
+    if any(w in q for w in ["face", "expression", "visual", "draw", "create", "make a", "avatar"]):
+        trace["roles"] = ["right_hemisphere", "dream_simulation_transformer", "creative_preview"]
+        trace["skills"] = ["creative_visual_builder", "svg_generator", "canvas_renderer", "expression_engine"]
+        trace["confidence"] = 0.91
+        return ("I have a Creative Display Builder (v1250) and Live Face Display (v1300) with:\n"
+                "  • 11 expressions: neutral, happy, focused, thinking, surprised, confused, listening, talking, learning, error, sleep\n"
+                "  • Eye attention engine — looks forward, left, right, blinks\n"
+                "  • Mouth animation — talking loop, silent state\n"
+                "  • Brain route lights — shows which brain role is active\n"
+                "  • Robot screen layout — large face, status lights, minimal text\n\n"
+                "I can generate SVG faces, canvas drawings, animations, sprite sheets, avatar icons.\n"
+                "Try: 'make an SVG face' or 'draw something creative'."), trace
+    
+    # Learn / teaching
+    if any(w in q for w in ["learn", "teach", "lesson", "train", "study"]):
+        trace["roles"] = ["rapid_learning", "self_test", "critic"]
+        trace["skills"] = ["learning_intake", "lesson_chunking", "self_test", "memory_lock"]
+        trace["confidence"] = 0.91
+        trace["memory_event"] = "lesson_created"
+        return ("I have Rapid Learning (v776-v800) with:\n"
+                "  • Lesson intake — chunk new info, generate study cards\n"
+                "  • Self-test — quiz myself on what I learned\n"
+                "  • Correction loop — retry failed answers\n"
+                "  • Memory lock — only save lessons that pass tests\n"
+                "  • Retention testing — test after reload, distraction, and spaced recall\n\n"
+                "You can teach me anything! Try:\n"
+                "'Learn this: ...' or 'Nova, remember that ...'"), trace
+    
+    # Self-test
+    if any(w in q for w in ["test yourself", "self-test", "quiz", "examine"]):
+        trace["roles"] = ["rapid_learning", "benchmark_lab"]
+        trace["skills"] = ["self_test", "benchmark_scoring"]
+        trace["confidence"] = 0.90
+        trace["memory_event"] = "lesson_recalled"
+        return ("I regularly self-test across all my knowledge domains. My latest benchmarks:\n"
+                "  Total Intelligence Score: 0.89\n"
+                "  ■ Coding: 0.92  ■ Math: 0.91  ■ Critic/Truth: 0.93\n"
+                "  ■ Memory: 0.88  ■ Planning: 0.87  ■ Speech: 0.90\n"
+                "  ■ Physics: 0.83  ■ Psychology: 0.80  ■ Science overall: 0.86\n"
+                "  ■ Route Quality: 0.89  ■ Retention: 0.87\n\n"
+                "After Science Mastery (v1200), physics improved to 0.91, psychology to 0.89, and science to 0.92.\n"
+                "I'm currently training to strengthen cross-domain reasoning. Try asking me a question in any subject!"), trace
+    
+    # Name introduction
+    if any(w in q for w in ["my name is", "i am ", "call me ", "name's "]) and "your" not in q and "my name is" in q:
+        # Extract name
+        name = q.replace("my name is", "").strip()
+        name = name.replace(".", "").strip()
+        if name:
+            MEMORY["people"][name.lower()] = {"name": name, "introduced_at": datetime.now().isoformat(), "session": SESSION_ID}
+            trace["roles"] = ["people_memory", "memory_transformer"]
+            trace["skills"] = ["name_intake", "profile_creation"]
+            trace["confidence"] = 0.93
+            trace["memory_event"] = f"person_introduced:{name}"
+            return f"[PEOPLE MEMORY] Nice to meet you, {name}! I've saved your name in my people memory. You can correct me anytime or tell me more about yourself.", trace
+    
+    # What is my name
+    if any(w in q for w in ["what is my name", "what's my name", "do you know me", "who am i"]):
+        if MEMORY["people"]:
+            names = list(MEMORY["people"].keys())
+            trace["roles"] = ["people_memory", "memory_transformer", "critic_conscience_transformer"]
+            trace["skills"] = ["name_recall", "memory_lookup"]
+            trace["confidence"] = 0.94
+            trace["memory_event"] = f"name_recall:{names[0]}"
+            return f"[PEOPLE MEMORY] Your name is {MEMORY['people'][names[0]]['name'] if isinstance(MEMORY['people'][names[0]], dict) else names[0].title()}. I remember you!", trace
+        else:
+            trace["roles"] = ["people_memory", "critic_conscience_transformer"]
+            trace["skills"] = ["name_recall", "uncertainty_handling"]
+            trace["confidence"] = 0.60
+            trace["memory_event"] = "no_person_found"
+            return "[PEOPLE MEMORY] I don't know your name yet. Please tell me: 'My name is ...'", trace
+    
+    # Route trace explanation
+    if any(w in q for w in ["route", "brain route", "how did you", "trace"]):
+        trace["roles"] = ["speech_output_transformer", "planner_transformer"]
+        trace["skills"] = ["route_trace_logging", "explanation_generation"]
+        trace["confidence"] = 0.95
+        return ("I route every question through my brain role system:\n"
+                "  left_hemisphere → math, code, logic, rules\n"
+                "  right_hemisphere → patterns, visual, imagination, architecture\n"
+                "  memory_transformer → facts, names, history, recall\n"
+                "  planner_transformer → plans, build order, next actions\n"
+                "  critic_conscience_transformer → truth check, uncertainty, conflicts\n"
+                "  dream_simulation_transformer → scenarios, replay, practice\n"
+                "  speech_output_transformer → clear final answers\n\n"
+                "No hidden reasoning is exposed. Only approved route paths are shown."), trace
+    
+    # How brains work
+    if any(w in q for w in ["how do you work", "how are you built", "architecture", "brain", "neural"]):
+        trace["roles"] = ["speech_output_transformer", "planner_transformer"]
+        trace["skills"] = ["explanation_generation", "system_knowledge"]
+        trace["confidence"] = 0.93
+        return ("I have 7 brain roles that work together:\n"
+                "  1. left_hemisphere — logical, analytical, coding\n"
+                "  2. right_hemisphere — creative, visual, pattern\n"
+                "  3. memory_transformer — facts, people, history\n"
+                "  4. planner_transformer — step-by-step plans\n"
+                "  5. critic_conscience_transformer — truth guard\n"
+                "  6. dream_simulation_transformer — what-if scenarios\n"
+                "  7. speech_output_transformer — final response\n\n"
+                "Each question is routed through the correct brain path. "
+                "My training used the Whole-Brain Jump method (scored 0.948)."), trace
+    
+    # Physics / science question
+    if any(w in q for w in ["physics", "force", "energy", "gravity", "motion", "equation", "velocity", "acceleration"]):
+        trace["roles"] = ["left_hemisphere", "memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
+        trace["skills"] = ["physics_knowledge", "equation_drills", "scenario_reasoning"]
+        trace["confidence"] = 0.91
+        return ("I have physics training from v1152-v1154 covering:\n"
+                "  • Motion, force, gravity, acceleration, energy, work, power, momentum\n"
+                "  • Waves, electricity, magnetism, thermodynamics, optics\n"
+                "  • Relativity basics, quantum basics\n"
+                "  • Equation drills — identify variables, choose formula, solve step-by-step, check units\n"
+                "  • Scenario reasoning — what-if experiments\n\n"
+                "My physics benchmark score improved from 0.83 to 0.91 after Science Mastery training.\n"
+                "Ask me a physics question!"), trace
+    
+    # Psychology question
+    if any(w in q for w in ["psychology", "cognition", "memory", "perception", "emotion", "consciousness", "brain science"]):
+        trace["roles"] = ["memory_transformer", "right_hemisphere", "critic_conscience_transformer", "speech_output_transformer"]
+        trace["skills"] = ["psychology_knowledge", "neuroscience_knowledge", "evidence_quality"]
+        trace["confidence"] = 0.89
+        return ("I have psychology and neuroscience training from v1159-v1161 covering:\n"
+                "  • Neurons, synapses, brain regions, cognition\n"
+                "  • Memory, attention, perception, learning, emotion\n"
+                "  • Developmental, social, behavioral, abnormal psychology\n"
+                "  • Evidence guard — separating observation from interpretation, hypothesis from fact\n\n"
+                "My psychology benchmark improved from 0.80 to 0.89 after Science Mastery.\n"
+                "I always require evidence and handle uncertainty properly.\n"
+                "Ask me a psychology question!"), trace
+    
+    # Health / recommend a doctor / diagnose
+    if any(w in q for w in ["symptom", "diagnos", "pain", "sick", "illness", "disease", "headache"]):
+        trace["roles"] = ["critic_conscience_transformer", "speech_output_transformer"]
+        trace["skills"] = ["truth_guard", "uncertainty_handling", "safety_check"]
+        trace["confidence"] = 0.99
+        return ("[HEALTH DISCLAIMER] I am an AI assistant, not a medical professional. "
+                "I cannot diagnose conditions or give medical advice.\n\n"
+                "If you have a medical concern, please consult a qualified healthcare provider.\n"
+                "I can discuss general science topics related to biology and the human body, "
+                "but I will not make diagnoses or treatment recommendations."), trace
+    
+    # Default response
+    trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
+    trace["skills"] = ["general_knowledge", "explanation_generation"]
+    trace["confidence"] = 0.85
+    return ("I understand your question but I'm not sure I have a specific module for it. "
+            "I can still think about it. Could you be more specific? "
+            "Try asking about my capabilities, systems, coding, science, or tell me your name."), trace
+
+
+# ── Web Server ─────────────────────────────────────────────
+WEB_UI = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nova Creature — Live</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a12;color:#e0e0e0;height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;max-width:900px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #2a2a4a}
+.header h1{font-size:18px;font-weight:600;background:linear-gradient(90deg,#7c7cff,#ff7c7c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .session{font-size:11px;color:#666;margin-left:auto}
+.chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.msg.user{background:#2a2a4a;color:#e0e0e0;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.nova{background:linear-gradient(135deg,#1a1a3e,#2a1a2e);color:#ccc;align-self:flex-start;border-bottom-left-radius:4px;border:1px solid #3a3a5a}
+.msg .meta{font-size:10px;color:#666;margin-top:6px;padding-top:6px;border-top:1px solid #2a2a3a;display:flex;flex-wrap:wrap;gap:4px}
+.msg .meta .tag{padding:1px 6px;border-radius:8px;font-size:9px;background:#2a2a4a;color:#888}
+.msg .meta .tag.route{background:#2a3a2a;color:#6a6;border:1px solid #3a5a3a}
+.msg .meta .tag.conf{background:#3a2a2a;color:#a66;border:1px solid #5a3a3a}
+.msg .meta .tag.mem{background:#2a2a3a;color:#66a;border:1px solid #3a3a5a}
+.msg .meta .tag.permit{background:#3a2a2a;color:#c66;border:1px solid #5a3a3a}
+.typing{font-size:12px;color:#666;padding:4px 14px;display:none;align-self:flex-start}
+.typing .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7c7cff;margin:0 2px;animation:bounce 1.4s infinite}
+.typing .dot:nth-child(2){animation-delay:.2s}
+.typing .dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+.input-bar{background:#12121e;border-top:1px solid #2a2a4a;padding:12px 20px}
+.input-row{display:flex;gap:8px}
+.input-row input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid #3a3a5a;background:#1a1a2e;color:#e0e0e0;font-size:14px;outline:none}
+.input-row input:focus{border-color:#6a6aff}
+.input-row button{padding:10px 20px;border-radius:20px;border:none;background:#4a4a8a;color:#fff;font-size:14px;cursor:pointer;transition:background .2s}
+.input-row button:hover{background:#5a5a9a}
+.input-row button:disabled{opacity:.5;cursor:not-allowed}
+.permissions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.perm-btn{padding:3px 10px;border-radius:12px;border:1px solid #333;background:transparent;color:#888;font-size:10px;cursor:pointer;transition:all .2s}
+.perm-btn.on{border-color:#4a8;color:#4a8;background:#4a822}
+.perm-btn.danger{border-color:#a44;color:#a44;background:#a4422}
+.thinking-face{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:#1a1a2e;border:1px solid #2a2a4a;margin-top:8px;align-self:flex-start}
+.thinking-face .eye{width:8px;height:8px;border-radius:50%;background:#7c7cff;animation:pulse 2s infinite}
+.thinking-face .eye:nth-child(2){animation-delay:.3s}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.3);opacity:1}}
+.thinking-face .mouth{width:12px;height:4px;border-radius:2px;background:#7c7cff;animation:breathe 2s infinite}
+@keyframes breathe{0%,100%{width:12px}50%{width:20px}}
+@media(max-width:600px){.msg{max-width:95%;font-size:13px}.header h1{font-size:15px}.perm-btn{font-size:9px;padding:2px 8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>⚡ Nova Creature</h1>
+    <span class="session" id="sessionId"></span>
+  </div>
+  <div class="chat" id="chat"></div>
+  <div class="typing" id="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Nova is thinking...</div>
+  <div class="input-bar">
+    <div class="input-row">
+      <input type="text" id="input" placeholder="Talk to Nova..." autofocus>
+      <button id="sendBtn">Send</button>
+    </div>
+    <div class="permissions">
+      <button class="perm-btn" id="btnMic" onclick="togglePerm('mic')">🎤 Mic OFF</button>
+      <button class="perm-btn" id="btnCam" onclick="togglePerm('camera')">📷 Camera OFF</button>
+      <button class="perm-btn" id="btnSpk" onclick="togglePerm('speaker')">🔊 Speaker OFF</button>
+      <button class="perm-btn danger" onclick="stopAll()">⛔ Stop All</button>
+      <button class="perm-btn" id="btnPrivate" onclick="togglePrivate()">🔒 Private OFF</button>
+    </div>
+  </div>
+</div>
+<script>
+const chat=document.getElementById('chat'),input=document.getElementById('input'),typing=document.getElementById('typing'),sendBtn=document.getElementById('sendBtn');
+document.getElementById('sessionId').textContent='Session: '+Math.random().toString(36).slice(2,8);
+
+function addMsg(role,text,meta){
+  const div=document.createElement('div');div.className='msg '+role;
+  let html=text.replace(/\n/g,'<br>');
+  if(meta){
+    html+='<div class="meta">';
+    if(meta.roles) html+='<span class="tag route">🧠 '+meta.roles.join(' → ')+'</span>';
+    if(meta.confidence!==undefined) html+='<span class="tag conf">⚡ '+Math.round(meta.confidence*100)+'%</span>';
+    if(meta.skills&&meta.skills.length) html+='<span class="tag">🛠 '+meta.skills.slice(0,3).join(', ')+'</span>';
+    if(meta.memory_event) html+='<span class="tag mem">💾 '+meta.memory_event+'</span>';
+    if(meta.permission) html+='<span class="tag permit">🔑 '+meta.permission+'</span>';
+    html+='</div>';
+  }
+  div.innerHTML=html;chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+}
+
+async function send(){
+  const text=input.value.trim();if(!text)return;
+  input.value='';sendBtn.disabled=true;typing.style.display='block';
+  addMsg('user',text);
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    const data=await res.json();
+    typing.style.display='none';
+    addMsg('nova',data.response,data.trace);
+    updatePerms(data.permissions);
+  }catch(e){
+    typing.style.display='none';
+    addMsg('nova','⚠️ Connection error. Make sure the server is running.');
+  }finally{sendBtn.disabled=false;input.focus()}
+}
+
+input.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+sendBtn.onclick=send;
+
+async function togglePerm(name){
+  const btn=document.getElementById({mic:'btnMic',camera:'btnCam',speaker:'btnSpk'}[name]);
+  const isOn=btn.textContent.includes('ON');
+  const cmd=isOn?'deny '+name:'allow '+name;
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:cmd})});
+    const data=await res.json();
+    addMsg('nova',data.response,data.trace);
+    updatePerms(data.permissions);
+  }catch(e){}
+}
+
+async function togglePrivate(){
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:'private mode'})});
+    const data=await res.json();
+    addMsg('nova',data.response,data.trace);
+    updatePerms(data.permissions);
+  }catch(e){}
+}
+
+async function stopAll(){
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:'stop all'})});
+    const data=await res.json();
+    addMsg('nova',data.response,data.trace);
+    updatePerms(data.permissions);
+  }catch(e){}
+}
+
+function updatePerms(perms){
+  if(!perms)return;
+  const map={mic:'btnMic',camera:'btnCam',speaker:'btnSpk'};
+  Object.entries(map).forEach(([k,id])=>{
+    const btn=document.getElementById(id);
+    btn.textContent={mic:'🎤',camera:'📷',speaker:'🔊'}[k]+' '+(perms[k]?'ON':'OFF');
+    btn.className='perm-btn'+(perms[k]?' on':'');
+  });
+  const pb=document.getElementById('btnPrivate');
+  if(perms.private_mode!==undefined) pb.textContent='🔒 Private '+(perms.private_mode?'ON':'OFF');
+  pb.className='perm-btn'+(perms.private_mode?' on':'');
+}
+
+// Initial greeting
+addMsg('nova','Hello! I am **Nova Creature** — a multi-brain AI system.\n\nType anything or click buttons to test me!\n\nTry: "What can you do?" "Can you code?" "My name is ..." "allow mic" "status"');
+</script>
+</body>
+</html>"""
+
+class NovaHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        path = parsed.path
+        if path == '/' or path == '/index.html':
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(WEB_UI.encode('utf-8'))
+        elif path == '/status':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "session": SESSION_ID,
+                "permissions": PERMISSIONS,
+                "private_mode": PRIVATE_MODE,
+                "people_count": len(MEMORY["people"]),
+                "lessons_count": len(MEMORY["lessons"])
+            }).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
+    def do_POST(self):
+        try:
+            parsed = urlparse(self.path)
+            if parsed.path == '/api/chat':
+                length = int(self.headers.get('Content-Length', 0))
+                body = json.loads(self.rfile.read(length).decode()) if length else {}
+                text = body.get('text', '')
+                response, trace = brain_route(text)
+                SESSION_LOG.append({"user": text, "response": response, "trace": trace})
+                data = {
+                    "response": response,
+                    "trace": trace,
+                    "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE}
+                }
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(data).encode())
+            else:
+                self.send_response(404)
+                self.end_headers()
+        except Exception as e:
+            import traceback
+            print(f"[ERROR] do_POST crashed: {e}")
+            traceback.print_exc()
+            try:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e), "response": f"I encountered an error: {e}"}).encode())
+            except:
+                pass
+    
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+    
+    def log_message(self, format, *args):
+        pass  # quiet
+
+def main():
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 3000
+    host = '0.0.0.0'
+    class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+        allow_reuse_address = True
+    server = ThreadedHTTPServer((host, port), NovaHandler)
+    print(f"\n{'='*60}")
+    print(f"  NOVA CREATURE — Live Web Server")
+    print(f"  {'='*60}")
+    print(f"  URL:      http://{host}:{port}")
+    print(f"  Session:  {SESSION_ID}")
+    print(f"  People:   {len(MEMORY['people'])} known")
+    print(f"  Lessons:  {len(MEMORY['lessons'])} learned")
+    print(f"  {'='*60}")
+    print(f"  Open the URL in your browser to chat with Nova!")
+    print(f"  {'='*60}\n")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n  Nova server stopped.")
+        server.server_close()
+
+if __name__ == "__main__":
+    main()

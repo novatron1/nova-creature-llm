@@ -1,6 +1,6 @@
 {
   "version": "v1376_voice_camera_manifest",
-  "created_at": "2026-06-19T01:53:29.038398",
+  "created_at": "2026-06-19T02:13:24.041654",
   "module": "Create manifest, folders, tests, reports, and runtime registry for live mic/camera conversation",
   "devices": [
     "microphone",

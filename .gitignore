@@ -33,3 +33,10 @@ checkpoints/
 
 # Pytest cache
 .pytest_cache/
+# Large build artifacts (exceed GitHub 100MB limit)
+*.zip
+*.tar.gz
+exports/NovaCreature_Laptop_Full_Version.zip
+exports/NovaCreature_Laptop_Full_Version.tar.gz
+nova_creature_android_full.zip
+nova_creature_llm_lab_complete.zip

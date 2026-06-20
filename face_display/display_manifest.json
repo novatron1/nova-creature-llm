@@ -1,6 +1,6 @@
 {
   "version": "v1251_face_display_manifest",
-  "created_at": "2026-06-19T01:22:05.945182",
+  "created_at": "2026-06-19T02:13:20.379380",
   "module": "Create the manifest, folders, reports, UI registry, and test registry for the live display runtime",
   "display_modes": [
     "face",

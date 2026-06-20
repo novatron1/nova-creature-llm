@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#1a1a2e"/>
+  <circle cx="96" cy="80" r="40" fill="none" stroke="#7c7cff" stroke-width="4"/>
+  <circle cx="76" cy="70" r="4" fill="#7c7cff"/>
+  <circle cx="116" cy="70" r="4" fill="#7c7cff"/>
+  <path d="M76 90 Q96 110 116 90" fill="none" stroke="#7c7cff" stroke-width="3" stroke-linecap="round"/>
+  <text x="96" y="155" font-family="sans-serif" font-size="28" fill="#7c7cff" text-anchor="middle" font-weight="bold">NOVA</text>
+</svg>

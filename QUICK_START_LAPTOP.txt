@@ -1,0 +1,37 @@
+╔══════════════════════════════════════════════════════════╗
+║        NOVA CREATURE — Laptop Full Version              ║
+║        Quick Start                                      ║
+╚══════════════════════════════════════════════════════════╝
+
+STEP 1: Open Terminal (Mac/Linux) or Command Prompt (Windows)
+STEP 2: Navigate to this folder
+STEP 3: Run the server
+
+  Windows:
+    Double-click START_NOVA_WINDOWS.bat
+
+  Mac/Linux:
+    bash START_NOVA_MAC_LINUX.sh
+
+  Or manually:
+    python3 nova_web_server.py 3000
+
+STEP 4: Open http://127.0.0.1:3000 in Chrome/Firefox
+
+STEP 5: Start chatting!
+
+Try these:
+  "What can you do?"
+  "My name is [your name]"
+  "Can you code?"
+  "Explain physics"
+  "Learn this: ..."
+  "Test yourself"
+
+The full README is at README_LAPTOP_INSTALL.md
+
+============================================================
+  Nova Creature — Trained v900+ | Score: 0.89
+  7 Brain Roles | Whole-Brain Jump Method
+  Coding Master | Science Mastery | People Memory
+============================================================
