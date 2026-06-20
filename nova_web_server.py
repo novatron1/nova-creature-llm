@@ -16,6 +16,14 @@ except Exception as e:
     ASSISTED_LEARNING_AVAILABLE = False
     ASSISTED_LEARNING_ERR = str(e)
 
+# Structured Lesson Decomposer — breaks natural language into role-specific components
+try:
+    from v055_structured_lesson_decomposer import decompose_and_train, detect_components
+    DECOMPOSER_AVAILABLE = True
+except Exception as e:
+    DECOMPOSER_AVAILABLE = False
+    DECOMPOSER_ERR = str(e)
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
@@ -167,12 +175,55 @@ def brain_route(text, context=None):
                 except Exception as e:
                     tuning_msg = f"\n[BRAIN TUNE] Note: assisted learning bridge error: {e}"
             
+            # Auto-decompose the lesson into role-specific components
+            decom_msg = ""
+            if DECOMPOSER_AVAILABLE:
+                try:
+                    decom_report, decom_comps, decom_stats = decompose_and_train(lesson_text, SESSION_ID)
+                    if decom_comps:
+                        total_decomp = sum(len(v) for v in decom_comps.values())
+                        decom_roles = list(decom_comps.keys())
+                        decom_msg = f"\n[DECOMPOSED] Broke down lesson into {total_decomp} sub-lessons across {len(decom_roles)} roles: {', '.join(r.replace('_',' ') for r in decom_roles)}"
+                except Exception as e:
+                    decom_msg = f"\n[DECOMPOSE] Note: auto-decomposition skipped ({e})"
+            else:
+                decom_msg = ""
+            
             trace["roles"] = ["rapid_learning", "self_test", "critic"]
             trace["skills"] = ["learning_intake", "memory_lock"]
             trace["confidence"] = 0.91
             trace["memory_event"] = f"lesson_created:{lesson_id}"
-            return f"[LEARNING] Lesson stored! I learned: '{lesson_text}'{tuning_msg}\nAsk me 'Test yourself' to see my benchmarks.", trace
+            return f"[LEARNING] Lesson stored! I learned: '{lesson_text}'{tuning_msg}{decom_msg}\nAsk me 'Test yourself' to see my benchmarks.", trace
     
+
+    # Decompose / break down — shows how teaching breaks across brain roles
+    if any(w in q for w in ["break down", "decompose", "parse this", "analyze this", "break this"]):
+        if not DECOMPOSER_AVAILABLE:
+            trace["roles"] = ["planner_transformer"]
+            trace["confidence"] = 0.70
+            return "[DECOMPOSE] Decomposer not available.", trace
+        
+        # Extract the text to decompose (after the command word)
+        decom_text = text
+        for cmd_word in ["break down", "decompose", "parse this", "analyze this", "break this"]:
+            if cmd_word in decom_text:
+                decom_text = decom_text.replace(cmd_word, "", 1)
+                break
+        decom_text = decom_text.strip().lstrip(":,;.!? ").strip()
+        
+        if not decom_text or len(decom_text) < 5:
+            trace["roles"] = ["planner_transformer", "speech_output_transformer"]
+            trace["confidence"] = 0.85
+            return ("[DECOMPOSE] Tell me what to break down.\n"
+                    "Example: 'break down: Python uses indentation. Functions use def. Test edge cases.'", trace)
+        
+        trace["roles"] = ["planner_transformer", "memory_transformer", "speech_output_transformer"]
+        trace["skills"] = ["decomposition", "role_mapping", "knowledge_routing"]
+        trace["confidence"] = 0.90
+        
+        report, comps, stats = decompose_and_train(decom_text, SESSION_ID)
+        trace["memory_event"] = f"decomposed:{sum(len(v) for v in comps.values())}_lessons"
+        return report, trace
 
     # Deep learn / train transformers — triggers actual weight fine-tuning
     if any(w in q for w in ["deep learn", "train brain", "update weights", "train transformers", "finetune"]):
@@ -304,6 +355,104 @@ def brain_route(text, context=None):
         lines.append("")
         lines.append("I am always learning. Try: 'Learn this: [fact]' to teach me something new.")
         return ("\n".join(lines)), trace
+    # Name introduction with multiple patterns
+    is_intro = False
+    extracted_name = None
+    
+    # Use text (original case) and re.IGNORECASE for case-preserving extraction
+    t_lower = text.lower().strip()
+    import re as _name_re
+    if "my name is" in t_lower and "your" not in t_lower:
+        m = _name_re.search(r'my name is\s+(.+)', text, _name_re.IGNORECASE)
+        if m:
+            extracted_name = m.group(1).rstrip('.!? ').strip()
+            is_intro = True
+    
+    if not is_intro and t_lower.startswith("i am "):
+        # Use original text with same length skip
+        extracted_name = text[5:].rstrip('.!? ').strip()
+        if len(extracted_name) > 0 and extracted_name[0].isalpha(): 
+            is_intro = True
+    
+    if not is_intro and t_lower.startswith("i'm "):
+        extracted_name = text[4:].rstrip('.!? ').strip()
+        if len(extracted_name) > 0 and extracted_name[0].isalpha():
+            is_intro = True
+    
+    if not is_intro and t_lower.startswith("call me "):
+        extracted_name = text[8:].rstrip('.!? ').strip()
+        if extracted_name: is_intro = True
+    
+    if not is_intro and "name's " in t_lower:
+        m = _name_re.search(r"name's\s+(.+)", text, _name_re.IGNORECASE)
+        if m:
+            extracted_name = m.group(1).rstrip('.!? ').strip()
+            if extracted_name: is_intro = True
+    
+    if is_intro and extracted_name:
+        name = extracted_name
+        key = name.lower()
+        MEMORY["people"][key] = {"name": name, "introduced_at": datetime.now().isoformat(), "session": SESSION_ID}
+        MEMORY["last_person"] = key
+        _save_memory()
+        trace["roles"] = ["people_memory", "memory_transformer"]
+        trace["skills"] = ["name_intake", "profile_creation"]
+        trace["confidence"] = 0.93
+        trace["memory_event"] = f"person_introduced:{name}"
+        return f"[PEOPLE MEMORY] Nice to meet you, {name}! I've saved your name in my people memory. You can correct me anytime or tell me more about yourself.", trace
+    
+    # What is my name
+    if any(w in q for w in ["what is my name", "what's my name", "do you know me", "do you know who", "who am i"]):
+        if MEMORY.get("people"):
+            last_key = MEMORY.get("last_person")
+            if last_key and last_key in MEMORY["people"]:
+                recall_name = MEMORY["people"][last_key]["name"]
+            else:
+                first_key = list(MEMORY["people"].keys())[0]
+                recall_name = MEMORY["people"][first_key]["name"]
+            trace["roles"] = ["people_memory", "memory_transformer", "critic_conscience_transformer"]
+            trace["skills"] = ["name_recall", "memory_lookup"]
+            trace["confidence"] = 0.94
+            trace["memory_event"] = f"name_recall:{recall_name}"
+            return f"[PEOPLE MEMORY] Your name is {recall_name}. I remember you!", trace
+        else:
+            trace["roles"] = ["people_memory", "critic_conscience_transformer"]
+            trace["skills"] = ["name_recall", "uncertainty_handling"]
+            trace["confidence"] = 0.60
+            trace["memory_event"] = "no_person_found"
+            return "[PEOPLE MEMORY] I don't know your name yet. Please tell me: 'My name is ...'", trace
+    
+    # Route trace explanation
+    if any(w in q for w in ["route", "brain route", "how did you", "trace"]):
+        trace["roles"] = ["speech_output_transformer", "planner_transformer"]
+        trace["skills"] = ["route_trace_logging", "explanation_generation"]
+        trace["confidence"] = 0.95
+        return ("I route every question through my brain role system:\n"
+                "  left_hemisphere → math, code, logic, rules\n"
+                "  right_hemisphere → patterns, visual, imagination, architecture\n"
+                "  memory_transformer → facts, names, history, recall\n"
+                "  planner_transformer → plans, build order, next actions\n"
+                "  critic_conscience_transformer → truth check, uncertainty, conflicts\n"
+                "  dream_simulation_transformer → scenarios, replay, practice\n"
+                "  speech_output_transformer → clear final answers\n\n"
+                "No hidden reasoning is exposed. Only approved route paths are shown."), trace
+    
+    # How brains work
+    if any(w in q for w in ["how do you work", "how are you built", "architecture", "brain", "neural"]):
+        trace["roles"] = ["speech_output_transformer", "planner_transformer"]
+        trace["skills"] = ["explanation_generation", "system_knowledge"]
+        trace["confidence"] = 0.93
+        return ("I have 7 brain roles that work together:\n"
+                "  1. left_hemisphere — logical, analytical, coding\n"
+                "  2. right_hemisphere — creative, visual, pattern\n"
+                "  3. memory_transformer — facts, people, history\n"
+                "  4. planner_transformer — step-by-step plans\n"
+                "  5. critic_conscience_transformer — truth guard\n"
+                "  6. dream_simulation_transformer — what-if scenarios\n"
+                "  7. speech_output_transformer — final response\n\n"
+                "Each question is routed through the correct brain path. "
+                "My training used the Whole-Brain Jump method (scored 0.948)."), trace
+    
     
     # Memory search — check stored lessons before falling back to handlers
     # This runs early to catch queries about previously taught content
@@ -393,100 +542,6 @@ def brain_route(text, context=None):
                 "  • Robot screen layout — large face, status lights, minimal text\n\n"
                 "I can generate SVG faces, canvas drawings, animations, sprite sheets, avatar icons.\n"
                 "Try: 'make an SVG face' or 'draw something creative'."), trace
-    
-    # Name introduction with multiple patterns
-    is_intro = False
-    extracted_name = None
-    
-    if "my name is" in q and "your" not in q:
-        import re
-        m = re.search(r'my name is\s+(.+)', q)
-        if m:
-            extracted_name = m.group(1).rstrip('.!? ').strip()
-            is_intro = True
-    
-    if not is_intro and q.startswith("i am "):
-        extracted_name = q[5:].rstrip('.!? ').strip()
-        if extracted_name: is_intro = True
-    
-    if not is_intro and q.startswith("i'm "):
-        extracted_name = q[4:].rstrip('.!? ').strip()
-        if extracted_name: is_intro = True
-    
-    if not is_intro and q.startswith("call me "):
-        extracted_name = q[8:].rstrip('.!? ').strip()
-        if extracted_name: is_intro = True
-    
-    if not is_intro and "name's " in q:
-        import re
-        m = re.search(r"name's\s+(.+)", q)
-        if m:
-            extracted_name = m.group(1).rstrip('.!? ').strip()
-            if extracted_name: is_intro = True
-    
-    if is_intro and extracted_name:
-        name = extracted_name
-        key = name.lower()
-        MEMORY["people"][key] = {"name": name, "introduced_at": datetime.now().isoformat(), "session": SESSION_ID}
-        MEMORY["last_person"] = key
-        _save_memory()
-        trace["roles"] = ["people_memory", "memory_transformer"]
-        trace["skills"] = ["name_intake", "profile_creation"]
-        trace["confidence"] = 0.93
-        trace["memory_event"] = f"person_introduced:{name}"
-        return f"[PEOPLE MEMORY] Nice to meet you, {name}! I've saved your name in my people memory. You can correct me anytime or tell me more about yourself.", trace
-    
-    # What is my name
-    if any(w in q for w in ["what is my name", "what's my name", "do you know me", "do you know who", "who am i"]):
-        if MEMORY.get("people"):
-            last_key = MEMORY.get("last_person")
-            if last_key and last_key in MEMORY["people"]:
-                recall_name = MEMORY["people"][last_key]["name"]
-            else:
-                first_key = list(MEMORY["people"].keys())[0]
-                recall_name = MEMORY["people"][first_key]["name"]
-            trace["roles"] = ["people_memory", "memory_transformer", "critic_conscience_transformer"]
-            trace["skills"] = ["name_recall", "memory_lookup"]
-            trace["confidence"] = 0.94
-            trace["memory_event"] = f"name_recall:{recall_name}"
-            return f"[PEOPLE MEMORY] Your name is {recall_name}. I remember you!", trace
-        else:
-            trace["roles"] = ["people_memory", "critic_conscience_transformer"]
-            trace["skills"] = ["name_recall", "uncertainty_handling"]
-            trace["confidence"] = 0.60
-            trace["memory_event"] = "no_person_found"
-            return "[PEOPLE MEMORY] I don't know your name yet. Please tell me: 'My name is ...'", trace
-    
-    # Route trace explanation
-    if any(w in q for w in ["route", "brain route", "how did you", "trace"]):
-        trace["roles"] = ["speech_output_transformer", "planner_transformer"]
-        trace["skills"] = ["route_trace_logging", "explanation_generation"]
-        trace["confidence"] = 0.95
-        return ("I route every question through my brain role system:\n"
-                "  left_hemisphere → math, code, logic, rules\n"
-                "  right_hemisphere → patterns, visual, imagination, architecture\n"
-                "  memory_transformer → facts, names, history, recall\n"
-                "  planner_transformer → plans, build order, next actions\n"
-                "  critic_conscience_transformer → truth check, uncertainty, conflicts\n"
-                "  dream_simulation_transformer → scenarios, replay, practice\n"
-                "  speech_output_transformer → clear final answers\n\n"
-                "No hidden reasoning is exposed. Only approved route paths are shown."), trace
-    
-    # How brains work
-    if any(w in q for w in ["how do you work", "how are you built", "architecture", "brain", "neural"]):
-        trace["roles"] = ["speech_output_transformer", "planner_transformer"]
-        trace["skills"] = ["explanation_generation", "system_knowledge"]
-        trace["confidence"] = 0.93
-        return ("I have 7 brain roles that work together:\n"
-                "  1. left_hemisphere — logical, analytical, coding\n"
-                "  2. right_hemisphere — creative, visual, pattern\n"
-                "  3. memory_transformer — facts, people, history\n"
-                "  4. planner_transformer — step-by-step plans\n"
-                "  5. critic_conscience_transformer — truth guard\n"
-                "  6. dream_simulation_transformer — what-if scenarios\n"
-                "  7. speech_output_transformer — final response\n\n"
-                "Each question is routed through the correct brain path. "
-                "My training used the Whole-Brain Jump method (scored 0.948)."), trace
     
     # Physics / science question
     if any(w in q for w in ["physics", "force", "energy", "gravity", "motion", "equation", "velocity", "acceleration"]):

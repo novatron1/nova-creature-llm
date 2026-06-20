@@ -1,10 +1,30 @@
 #!/usr/bin/env python3
 """Nova Creature — Android Live Server (reads standalone HTML from file)"""
-import json, sys, os, time, threading, uuid
+import json, sys, os, time, threading, uuid, hashlib
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse
+
+# Assisted Learning Bridge
+ROOT_ANDROID = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(ROOT_ANDROID, "src"))
+ASSISTED_LEARNING_AVAILABLE = False
+ASSISTED_LEARNING_ERR = None
+try:
+    from v055_assisted_learning_bridge import queue_lesson, get_queue_size, get_checkpoint_hashes, get_training_stats
+    ASSISTED_LEARNING_AVAILABLE = True
+except Exception as e:
+    ASSISTED_LEARNING_ERR = str(e)
+
+# Structured Lesson Decomposer
+DECOMPOSER_AVAILABLE = False
+DECOMPOSER_ERR = None
+try:
+    from v055_structured_lesson_decomposer import decompose_and_train, detect_components
+    DECOMPOSER_AVAILABLE = True
+except Exception as e:
+    DECOMPOSER_ERR = str(e)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 HTML_PATH = os.path.join(ROOT, "nova_mobile_app.html")
@@ -61,26 +81,31 @@ def route(text):
                 "7 brain roles: left, right, memory, planner, critic, dream, speech. Trained via Whole-Brain Jump (0.948)."),t
     
     # People memory (must be before coding to avoid 'test' in names matching)
-    if 'my name is' in q or q.startswith('i am ') or q.startswith("i'm ") or q.startswith('call me ') or "name's " in q:
-        import re
-        name = None
-        if 'my name is' in q:
-            m = re.search(r'my name is\s+(.+)', q)
-            if m: name = m.group(1).rstrip('.').strip()
-        elif q.startswith('i am '):
-            name = q[5:].rstrip('.!? ').strip()
-        elif q.startswith("i'm "):
-            name = q[4:].rstrip('.!? ').strip()
-        elif q.startswith('call me '):
-            name = q[8:].rstrip('.!? ').strip()
-        elif "name's " in q:
-            m = re.search(r"name's\s+(.+)", q)
-            if m: name = m.group(1).rstrip('.!? ').strip()
-        if name:
-            name = name.replace('.','').strip()
-            MEMORY['people'][name.lower()] = {'name': name, 'introduced_at': datetime.now().isoformat()}
-            t.update({'roles':['people_memory','memory_transformer'],'skills':['name_intake'],'confidence':0.93,'memory_event':f'person:{name}'})
-            return f'Nice to meet you, {name}! I have saved your name in my people memory.',t
+    # People memory with case-preserving extraction
+    import re as _nre
+    t_lower = text.lower().strip()
+    name = None
+    if 'my name is' in t_lower and 'your' not in t_lower:
+        m = _nre.search(r'my name is\s+(.+)', text, _nre.IGNORECASE)
+        if m: name = m.group(1).rstrip('.!? ').strip()
+    elif t_lower.startswith('i am ') and not t_lower.startswith('i am a') and len(t_lower) > 5:
+        # Extract from original text preserving case
+        idx = text.lower().find('i am ')
+        if idx >= 0: name = text[idx+5:].rstrip('.!? ').strip()
+    elif t_lower.startswith("i'm ") and len(t_lower) > 4:
+        idx = text.lower().find("i'm ")
+        if idx >= 0: name = text[idx+4:].rstrip('.!? ').strip()
+    elif t_lower.startswith('call me ') and len(t_lower) > 8:
+        idx = text.lower().find('call me ')
+        if idx >= 0: name = text[idx+8:].rstrip('.!? ').strip()
+    elif "name's " in t_lower:
+        m = _nre.search(r"name's\s+(.+)", text, _nre.IGNORECASE)
+        if m: name = m.group(1).rstrip('.!? ').strip()
+    if name:
+        MEMORY['people'][name.lower()] = {'name': name, 'introduced_at': datetime.now().isoformat()}
+        MEMORY['last_person'] = name.lower()
+        t.update({'roles':['people_memory','memory_transformer'],'skills':['name_intake'],'confidence':0.93,'memory_event':f'person_introduced:{name}'})
+        return f'[PEOPLE MEMORY] Nice to meet you, {name}! I have saved your name in my people memory. You can correct me anytime.',t
     
     if any(w in q for w in ["what is my name","what's my name","do you know me","do you know who","who am i"]):
         if MEMORY['people']:
@@ -121,42 +146,100 @@ def route(text):
         if lesson:
             LESSON_COUNT += 1
             MEMORY["lessons"][f"lesson_{LESSON_COUNT}"] = {"text": lesson, "learned_at": datetime.now().isoformat()}
+            MEMORY["last_lesson"] = f"lesson_{LESSON_COUNT}"
+            
+            # Queue for assisted learning
+            tuning_msg = ""
+            if ASSISTED_LEARNING_AVAILABLE:
+                try:
+                    result = queue_lesson(lesson, SESSION)
+                    qsize = result.get("queue_size", 0)
+                    role = result.get("role", "memory_transformer")
+                    tuning_msg = f"\n[BRAIN] Queued for {role} fine-tuning ({qsize} total)"
+                except:
+                    tuning_msg = ""
+            
+            # Auto-decompose
+            decom_msg = ""
+            if DECOMPOSER_AVAILABLE:
+                try:
+                    decom_report, decom_comps, decom_stats = decompose_and_train(lesson, SESSION)
+                    if decom_comps:
+                        total_decomp = sum(len(v) for v in decom_comps.values())
+                        decom_roles = list(decom_comps.keys())
+                        decom_msg = f"\n[DECOMPOSED] {total_decomp} sub-lessons across {len(decom_roles)} roles: {', '.join(r.replace('_',' ') for r in decom_roles)}"
+                except Exception as e:
+                    decom_msg = f"\n[DECOMPOSE] Note: {e}"
+            
             t.update({"roles":["rapid_learning","self_test","critic"],"skills":["intake","chunk","self_test","memory_lock"],
                       "confidence":0.91,"memory_event":"lesson_created"})
-            return f'**Learned!** I have stored: "{lesson}" (Lesson #{LESSON_COUNT})',t
+            return f'[LEARNING] Lesson stored! I learned: "{lesson}" (Lesson #{LESSON_COUNT}){tuning_msg}{decom_msg}',t
     
-    if any(w in q for w in ["learn","teach","lesson","train","study"]):
-        t.update({"roles":["rapid_learning","self_test","critic"],"skills":["intake","chunk","self_test","memory_lock"],"confidence":0.91,"memory_event":"lesson_created"})
-        return ("I have Rapid Learning v800: lesson intake, chunking, self-test, correction loop, memory lock, retention testing. "
-                "Teach me anything with 'Learn this: ...'"),t
+    # Deep learn / train brain
+    if any(w in q for w in ["deep learn", "train brain", "update weights", "finetune"]):
+        if not ASSISTED_LEARNING_AVAILABLE:
+            t.update({"roles":["planner_transformer","critic_conscience_transformer"],"confidence":0.70})
+            return "[BRAIN] Assisted learning not available. Install PyTorch: pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu",t
+        qsize = get_queue_size()
+        if qsize == 0:
+            t.update({"roles":["planner_transformer","critic_conscience_transformer"],"confidence":0.85})
+            return "[BRAIN] No lessons queued. Teach me with 'Learn this: ...' first.",t
+        t.update({"roles":["planner_transformer","rapid_learning","critic_conscience_transformer"],"skills":["deep_learning","weight_update"],"confidence":0.88})
+        try:
+            before_hashes = get_checkpoint_hashes()
+            # Check if training set files exist
+            training_dir = os.path.join(ROOT_ANDROID, "exports", "v053_training_sets")
+            files = os.listdir(training_dir) if os.path.isdir(training_dir) else []
+            t["memory_event"] = f"deep_learn:{qsize}_queued"
+            return f"[BRAIN TUNE] {qsize} lessons queued for transformer fine-tuning.\nTo run actual training, run on a machine with PyTorch: python3 -c 'from v055_assisted_learning_bridge import run_finetune; print(run_finetune())'\nTraining sets ready: {len(files)} role files.",t
+        except Exception as e:
+            return f"[BRAIN TUNE] Error: {e}",t
     
-    # Test yourself
-    if any(w in q for w in ["test yourself","self-test","quiz","examine","benchmark"]):
-        t.update({"roles":["rapid_learning","benchmark_lab"],"skills":["self_test","benchmark"],"confidence":0.90,"memory_event":"recalled"})
-        lc = len(MEMORY["lessons"])
-        r = "Latest benchmarks: Total Intelligence 0.89, Coding 0.92, Math 0.91, Critic/Truth 0.93, Memory 0.88, Planning 0.87, Speech 0.90, Physics 0.91, Psychology 0.89, Science 0.92."
-        if lc > 0:
-            r += f' Lessons stored: {lc}.'
-            t["memory_event"] = "recalled"
-        return r, t
+    # Learning status / brain status
+    if any(w in q for w in ["learning status", "brain status", "training status", "queue status"]):
+        t.update({"roles":["planner_transformer","memory_transformer"],"skills":["status_report"],"confidence":0.90})
+        lines = [f"[STATUS] Lessons stored: {len(MEMORY['lessons'])}"]
+        lines.append(f"[STATUS] People remembered: {len(MEMORY['people'])}")
+        if ASSISTED_LEARNING_AVAILABLE:
+            qsize = get_queue_size()
+            lines.append(f"[STATUS] Lessons queued for transformer fine-tuning: {qsize}")
+            try:
+                stats = get_training_stats()
+                for role, info in stats.get("checkpoints", {}).items():
+                    if info:
+                        versions = ", ".join(k for k in info.keys() if k != "lessons_queued")
+                        if versions:
+                            lines.append(f"[STATUS]   {role}: {versions}")
+            except:
+                pass
+        return "\n".join(lines),t
     
-    # People memory
-    if "my name is" in q:
-        import re
-        match = re.search(r'my name is\s+(.+)', q)
-        if match:
-            name = match.group(1).rstrip(".!").strip()
-            MEMORY["people"][name.lower()] = {"name": name, "introduced_at": datetime.now().isoformat()}
-            t.update({"roles":["people_memory","memory_transformer"],"skills":["name_intake"],"confidence":0.93,"memory_event":f"person:{name}"})
-            return f"Nice to meet you, {name}! I have saved your name in my people memory.",t
-    
-    if any(w in q for w in ["what is my name","what's my name","do you know me","do you know who","who am i"]):
-        if MEMORY["people"]:
-            n = list(MEMORY["people"].keys())[0]
-            t.update({"roles":["people_memory","memory_transformer"],"skills":["name_recall"],"confidence":0.94,"memory_event":f"recall:{n}"})
-            return f'Your name is {MEMORY["people"][n]["name"]}. I remember you!',t
-        t.update({"roles":["people_memory","critic_conscience_transformer"],"confidence":0.60,"memory_event":"no_person"})
-        return "I don't know your name yet. Say 'My name is ...'",t
+    # Memory search - check stored lessons
+    if any(w not in q for w in ["learn", "teach", "test yourself", "deep learn"]):
+        import re as _sr
+        stop_words = {"the","a","an","is","are","was","were","be","been","have","has","had","do","does","did",
+                       "will","would","could","should","may","might","can","shall","to","of","in","for","on",
+                       "with","at","by","from","as","into","through","what","which","who","whom","this","that",
+                       "these","those","it","its","you","your","i","me","my","we","our","not","no","nor",
+                       "so","but","if","or","and","about","how","why","when","where","please","help"}
+        clean_words = [w for w in _sr.sub(r'[^a-z0-9\s]', ' ', q).split() if w not in stop_words and len(w) > 1]
+        lessons_found = []
+        for lid, ldata in MEMORY.get("lessons", {}).items():
+            text_lower = ldata.get("text", "").lower()
+            matches = sum(1 for w in clean_words if w in text_lower)
+            has_long = any(len(w) >= 2 for w in clean_words)
+            few_words = len(clean_words) <= 2
+            if matches >= 2 or (matches >= 1 and (has_long or few_words)):
+                lessons_found.append((matches, ldata["text"]))
+        if lessons_found:
+            lessons_found.sort(key=lambda x: -x[0])
+            t.update({"roles":["memory_transformer","critic_conscience_transformer","speech_output_transformer"],
+                      "skills":["memory_search","lesson_recall"],"confidence":0.80,
+                      "memory_event":f"memory_search:{lessons_found[0][0]}_matches"})
+            lines = ["I found related knowledge in my stored lessons:"]
+            for mc, txt in lessons_found[:3]:
+                lines.append(f"  \u2022 {txt[:80]}")
+            return "\n".join(lines),t
     
     # Brain routes
     if any(w in q for w in ["route","brain route","how did you","trace"]):
