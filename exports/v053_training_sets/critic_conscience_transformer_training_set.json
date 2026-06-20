@@ -30,5 +30,483 @@
       "dictionary_memory",
       "v058"
     ]
+  },
+  {
+    "id": "lesson_1781962933",
+    "prompt": "Lesson: always check for hallucinations before presenting facts as truth",
+    "answer": "Remembered: always check for hallucinations before presenting facts as truth",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:42:13.894785",
+    "session": "34679e5d"
+  },
+  {
+    "id": "lesson_1781962965",
+    "prompt": "Lesson: always check for hallucinations before presenting facts",
+    "answer": "Remembered: always check for hallucinations before presenting facts",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:42:45.775732",
+    "session": "ba3834ad"
+  },
+  {
+    "id": "lesson_1781962995",
+    "prompt": "Lesson: always check for hallucinations before presenting facts as truth",
+    "answer": "Remembered: always check for hallucinations before presenting facts as truth",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:43:15.048127",
+    "session": "9b53ea66"
+  },
+  {
+    "prompt": "CRITIC: Python uses indentation for code blocks",
+    "answer": "Processed: Python uses indentation for code blocks",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "verify"
+    ],
+    "id": "decomp_1781967116_7",
+    "timestamp": "2026-06-20T10:51:56.755656",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Functions are defined with def",
+    "answer": "Processed: Functions are defined with def",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "verify"
+    ],
+    "id": "decomp_1781967116_8",
+    "timestamp": "2026-06-20T10:51:56.755662",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Good UI uses consistent spacing",
+    "answer": "Processed: Good UI uses consistent spacing",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "verify"
+    ],
+    "id": "decomp_1781967116_9",
+    "timestamp": "2026-06-20T10:51:56.755665",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Verify: Always verify edge cases before deploying",
+    "answer": "Checked: Always verify edge cases before deploying",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "verify"
+    ],
+    "id": "decomp_1781967116_10",
+    "timestamp": "2026-06-20T10:51:56.755667",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Functions are defined with def Processed: Functions are defined with def",
+    "answer": "Remembered: CRITIC: Functions are defined with def Processed: Functions are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.786864",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Verify: Always verify edge cases before deploying Checked: Always verify edge cases before deploying",
+    "answer": "Remembered: CRITIC: Verify: Always verify edge cases before deploying Checked: Always verify edge cases before deploying",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.788348",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: The quadratic formula solves for x in ax\u00b2+bx+c=0",
+    "answer": "Processed: The quadratic formula solves for x in ax\u00b2+bx+c=0",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_13",
+    "timestamp": "2026-06-20T10:51:56.789784",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: The formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a",
+    "answer": "Processed: The formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_14",
+    "timestamp": "2026-06-20T10:51:56.789790",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Verify: You should check the discriminant first to see if solutions are real",
+    "answer": "Checked: You should check the discriminant first to see if solutions are real",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_15",
+    "timestamp": "2026-06-20T10:51:56.789793",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Verify: You should check the discriminant first to see if solutions are real Checked: You should check the discriminant first to see if solutions are real",
+    "answer": "Remembered: CRITIC: Verify: You should check the discriminant first to see if solutions are real Checked: You should check the discriminant first to see if solutions are real",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.791830",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Nova was created by Mr",
+    "answer": "Processed: Nova was created by Mr",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_17",
+    "timestamp": "2026-06-20T10:51:56.795409",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Novotron",
+    "answer": "Processed: Novotron",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_18",
+    "timestamp": "2026-06-20T10:51:56.795415",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: The brain has 7 roles that work together",
+    "answer": "Processed: The brain has 7 roles that work together",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_19",
+    "timestamp": "2026-06-20T10:51:56.795417",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Planning should happen before coding",
+    "answer": "Processed: Planning should happen before coding",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_20",
+    "timestamp": "2026-06-20T10:51:56.795419",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Verify: Always check for hallucinations in the output",
+    "answer": "Checked: Always check for hallucinations in the output",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967116_21",
+    "timestamp": "2026-06-20T10:51:56.795421",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Nova was created by Mr Processed: Nova was created by Mr",
+    "answer": "Remembered: CRITIC: Nova was created by Mr Processed: Nova was created by Mr",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.800499",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Novotron Processed: Novotron",
+    "answer": "Remembered: CRITIC: Novotron Processed: Novotron",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.801416",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: The brain has 7 roles that work together Processed: The brain has 7 roles that work together",
+    "answer": "Remembered: CRITIC: The brain has 7 roles that work together Processed: The brain has 7 roles that work together",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.802254",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Verify: Always check for hallucinations in the output Checked: Always check for hallucinations in the output",
+    "answer": "Remembered: CRITIC: Verify: Always check for hallucinations in the output Checked: Always check for hallucinations in the output",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.803912",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Verify: Always check for hallucinations in AI output",
+    "answer": "Checked: Always check for hallucinations in AI output",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967167_26",
+    "timestamp": "2026-06-20T10:52:47.368125",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967167",
+    "prompt": "Lesson: CRITIC: Verify: Always check for hallucinations in AI output Checked: Always check for hallucinations in AI output",
+    "answer": "Remembered: CRITIC: Verify: Always check for hallucinations in AI output Checked: Always check for hallucinations in AI output",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:52:47.377624",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Verify: Check the discriminant first to determine if solutions are real",
+    "answer": "Checked: Check the discriminant first to determine if solutions are real",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781967167_28",
+    "timestamp": "2026-06-20T10:52:47.395520",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967167",
+    "prompt": "Lesson: CRITIC: Verify: Check the discriminant first to determine if solutions are real Checked: Check the discriminant first to determine if solutions are real",
+    "answer": "Remembered: CRITIC: Verify: Check the discriminant first to determine if solutions are real Checked: Check the discriminant first to determine if solutions are real",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:52:47.399932",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CRITIC: Verify: always verify the output is truthful",
+    "answer": "Checked: always verify the output is truthful",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "truth",
+      "verify"
+    ],
+    "id": "decomp_1781967259_30",
+    "timestamp": "2026-06-20T10:54:19.163620",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967259",
+    "prompt": "Lesson: CRITIC: Verify: always verify the output is truthful Checked: always verify the output is truthful",
+    "answer": "Remembered: CRITIC: Verify: always verify the output is truthful Checked: always verify the output is truthful",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:54:19.182057",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: maybe this: the right checkpoint",
+    "answer": "Remembered: maybe this: the right checkpoint",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.154295",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CRITIC: Verify: maybe this: the right checkpoint",
+    "answer": "Checked: maybe this: the right checkpoint",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781970205_33",
+    "timestamp": "2026-06-20T11:43:25.181981",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: CRITIC: Verify: maybe this: the right checkpoint Checked: maybe this: the right checkpoint",
+    "answer": "Remembered: CRITIC: Verify: maybe this: the right checkpoint Checked: maybe this: the right checkpoint",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.255780",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CRITIC: Verify: maybe this: the right checkpoint",
+    "answer": "Checked: maybe this: the right checkpoint",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781970325_35",
+    "timestamp": "2026-06-20T11:45:25.059407",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: CRITIC: Verify: maybe this: the right checkpoint Checked: maybe this: the right checkpoint",
+    "answer": "Remembered: CRITIC: Verify: maybe this: the right checkpoint Checked: maybe this: the right checkpoint",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.202744",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: maybe this: the right checkpoint",
+    "answer": "Remembered: maybe this: the right checkpoint",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.247267",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Approved answers are the ground truth for common questions.",
+    "answer": "Remembered: Approved answers are the ground truth for common questions.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.549563",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Truth checking: verify claims against known facts and evidence sources.",
+    "answer": "Remembered: Truth checking: verify claims against known facts and evidence sources.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.603380",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: maybe this: the right checkpoint",
+    "answer": "Remembered: maybe this: the right checkpoint",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.695470",
+    "session": "rapid-dict-jump"
+  },
+  {
+    "prompt": "CRITIC: Verify: maybe this: the right checkpoint",
+    "answer": "Checked: maybe this: the right checkpoint",
+    "type": "verification",
+    "source": "decomposed",
+    "matched_keywords": [
+      "check"
+    ],
+    "id": "decomp_1781970688_41",
+    "timestamp": "2026-06-20T11:51:28.755134",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CRITIC: Truth checking: verify claims against known facts and evidence sources.",
+    "answer": "Applied: Truth checking: verify claims against known facts and evidence sources.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_42",
+    "timestamp": "2026-06-20T11:51:28.755141",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CRITIC: Uncertainty handling: when unsure, say 'I don't know' rather than guessing.",
+    "answer": "Applied: Uncertainty handling: when unsure, say 'I don't know' rather than guessing.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_43",
+    "timestamp": "2026-06-20T11:51:28.755144",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CRITIC: Contradiction detection: identify when new info conflicts with stored facts.",
+    "answer": "Applied: Contradiction detection: identify when new info conflicts with stored facts.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_44",
+    "timestamp": "2026-06-20T11:51:28.755147",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CRITIC: Evidence quality: anecdote is weaker than observation which is weaker than controlled study.",
+    "answer": "Applied: Evidence quality: anecdote is weaker than observation which is weaker than controlled study.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_45",
+    "timestamp": "2026-06-20T11:51:28.755151",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CRITIC: Safety guard: block harmful instructions, medical diagnosis, or dangerous outputs.",
+    "answer": "Applied: Safety guard: block harmful instructions, medical diagnosis, or dangerous outputs.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_46",
+    "timestamp": "2026-06-20T11:51:28.755153",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: FACT: Approved answers are the ground truth for common questions. Applied: Approved answers are the ground truth for common questions.",
+    "answer": "Remembered: FACT: Approved answers are the ground truth for common questions. Applied: Approved answers are the ground truth for common questions.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.861195",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CRITIC: Verify: maybe this: the right checkpoint Checked: maybe this: the right checkpoint",
+    "answer": "Remembered: CRITIC: Verify: maybe this: the right checkpoint Checked: maybe this: the right checkpoint",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.890363",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CRITIC: Truth checking: verify claims against known facts and evidence sources. Applied: Truth checking: verify claims against known facts and evidence sources.",
+    "answer": "Remembered: CRITIC: Truth checking: verify claims against known facts and evidence sources. Applied: Truth checking: verify claims against known facts and evidence sources.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.891396",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CRITIC: Uncertainty handling: when unsure, say 'I don't know' rather than guessing. Applied: Uncertainty handling: when unsure, say 'I don't know' rather than guessing.",
+    "answer": "Remembered: CRITIC: Uncertainty handling: when unsure, say 'I don't know' rather than guessing. Applied: Uncertainty handling: when unsure, say 'I don't know' rather than guessing.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.892431",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CRITIC: Contradiction detection: identify when new info conflicts with stored facts. Applied: Contradiction detection: identify when new info conflicts with stored facts.",
+    "answer": "Remembered: CRITIC: Contradiction detection: identify when new info conflicts with stored facts. Applied: Contradiction detection: identify when new info conflicts with stored facts.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.893479",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CRITIC: Evidence quality: anecdote is weaker than observation which is weaker than controlled study. Applied: Evidence quality: anecdote is weaker than observation which is weaker than controlled study.",
+    "answer": "Remembered: CRITIC: Evidence quality: anecdote is weaker than observation which is weaker than controlled study. Applied: Evidence quality: anecdote is weaker than observation which is weaker than controlled study.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.894526",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CRITIC: Safety guard: block harmful instructions, medical diagnosis, or dangerous outputs. Applied: Safety guard: block harmful instructions, medical diagnosis, or dangerous outputs.",
+    "answer": "Remembered: CRITIC: Safety guard: block harmful instructions, medical diagnosis, or dangerous outputs. Applied: Safety guard: block harmful instructions, medical diagnosis, or dangerous outputs.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.895579",
+    "session": "rapid-dict-vocab-jump"
   }
 ]

@@ -24,5 +24,611 @@
     "source": "v063_dream_replay",
     "dream_type": "conversation_replay",
     "created_at": "2026-06-18T03:39:52.402039"
+  },
+  {
+    "id": "lesson_1781962933",
+    "prompt": "Lesson: clear explanation style: state answer first, then give reasoning, then example",
+    "answer": "Remembered: clear explanation style: state answer first, then give reasoning, then example",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:42:13.909458",
+    "session": "34679e5d"
+  },
+  {
+    "id": "lesson_1781962965",
+    "prompt": "Lesson: clear explanation: answer first, then reasoning, then example",
+    "answer": "Remembered: clear explanation: answer first, then reasoning, then example",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:42:45.779678",
+    "session": "ba3834ad"
+  },
+  {
+    "id": "lesson_1781962995",
+    "prompt": "Lesson: clear explanation style: state answer first then reasoning then example",
+    "answer": "Remembered: clear explanation style: state answer first then reasoning then example",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:43:15.056963",
+    "session": "9b53ea66"
+  },
+  {
+    "prompt": "PLAN: Nova was created by Mr",
+    "answer": "Processed: Nova was created by Mr",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967116_7",
+    "timestamp": "2026-06-20T10:51:56.794605",
+    "session": "unknown"
+  },
+  {
+    "prompt": "PLAN: Novotron",
+    "answer": "Processed: Novotron",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967116_8",
+    "timestamp": "2026-06-20T10:51:56.794611",
+    "session": "unknown"
+  },
+  {
+    "prompt": "PLAN: The brain has 7 roles that work together",
+    "answer": "Processed: The brain has 7 roles that work together",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967116_9",
+    "timestamp": "2026-06-20T10:51:56.794614",
+    "session": "unknown"
+  },
+  {
+    "prompt": "PLAN: Sequence: Planning should happen before coding",
+    "answer": "Executed: Planning should happen before coding",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967116_10",
+    "timestamp": "2026-06-20T10:51:56.794616",
+    "session": "unknown"
+  },
+  {
+    "prompt": "PLAN: Always check for hallucinations in the output",
+    "answer": "Processed: Always check for hallucinations in the output",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967116_11",
+    "timestamp": "2026-06-20T10:51:56.794618",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: PLAN: Nova was created by Mr Processed: Nova was created by Mr",
+    "answer": "Remembered: PLAN: Nova was created by Mr Processed: Nova was created by Mr",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.796605",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: PLAN: Novotron Processed: Novotron",
+    "answer": "Remembered: PLAN: Novotron Processed: Novotron",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.797366",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: PLAN: The brain has 7 roles that work together Processed: The brain has 7 roles that work together",
+    "answer": "Remembered: PLAN: The brain has 7 roles that work together Processed: The brain has 7 roles that work together",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.798108",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: PLAN: Sequence: Planning should happen before coding Executed: Planning should happen before coding",
+    "answer": "Remembered: PLAN: Sequence: Planning should happen before coding Executed: Planning should happen before coding",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.798982",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: PLAN: Always check for hallucinations in the output Processed: Always check for hallucinations in the output",
+    "answer": "Remembered: PLAN: Always check for hallucinations in the output Processed: Always check for hallucinations in the output",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.799740",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Planning should happen before coding Processed: Planning should happen before coding",
+    "answer": "Remembered: CRITIC: Planning should happen before coding Processed: Planning should happen before coding",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.803144",
+    "session": "unknown"
+  },
+  {
+    "prompt": "PLAN: Sequence: Planning should happen before coding to avoid rework",
+    "answer": "Executed: Planning should happen before coding to avoid rework",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967167_18",
+    "timestamp": "2026-06-20T10:52:47.366705",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967167",
+    "prompt": "Lesson: PLAN: Sequence: Planning should happen before coding to avoid rework Executed: Planning should happen before coding to avoid rework",
+    "answer": "Remembered: PLAN: Sequence: Planning should happen before coding to avoid rework Executed: Planning should happen before coding to avoid rework",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:52:47.376343",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967234",
+    "prompt": "Lesson: nova was created by mr. novotron. the brain has 7 roles. planning comes before coding. always verify the output is truthful.",
+    "answer": "Remembered: nova was created by mr. novotron. the brain has 7 roles. planning comes before coding. always verify the output is truthful.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:53:54.634694",
+    "session": "c80a2913"
+  },
+  {
+    "prompt": "PLAN: Sequence: planning comes before coding",
+    "answer": "Executed: planning comes before coding",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967259_21",
+    "timestamp": "2026-06-20T10:54:19.162252",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967259",
+    "prompt": "Lesson: PLAN: Sequence: planning comes before coding Executed: planning comes before coding",
+    "answer": "Remembered: PLAN: Sequence: planning comes before coding Executed: planning comes before coding",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:54:19.181149",
+    "session": "unknown"
+  },
+  {
+    "prompt": "PLAN: Sequence: nova creature has 7 brain roles: left, right, memory, planner, critic, dream, speech",
+    "answer": "Executed: nova creature has 7 brain roles: left, right, memory, planner, critic, dream, speech",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781967863_23",
+    "timestamp": "2026-06-20T11:04:23.373371",
+    "session": "11142f1f"
+  },
+  {
+    "prompt": "PLAN: in python, the len() function returns the length of a sequence",
+    "answer": "Applied: in python, the len() function returns the length of a sequence",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "sequence"
+    ],
+    "id": "decomp_1781967904_24",
+    "timestamp": "2026-06-20T11:05:04.716931",
+    "session": "5db8c129"
+  },
+  {
+    "prompt": "PLAN: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "answer": "Applied: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "sequence"
+    ],
+    "id": "decomp_1781968619_25",
+    "timestamp": "2026-06-20T11:16:59.850629",
+    "session": "f57b5c5c"
+  },
+  {
+    "prompt": "PLAN: nova creature has 7 brain roles that work together as a coordinated whole-brain system",
+    "answer": "Applied: nova creature has 7 brain roles that work together as a coordinated whole-brain system",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system",
+      "coordinate"
+    ],
+    "id": "decomp_1781968888_26",
+    "timestamp": "2026-06-20T11:21:28.955000",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968888",
+    "prompt": "Lesson: PLAN: nova creature has 7 brain roles that work together as a coordinated whole-brain system Applied: nova creature has 7 brain roles that work together as a coordinated whole-brain system",
+    "answer": "Remembered: PLAN: nova creature has 7 brain roles that work together as a coordinated whole-brain system Applied: nova creature has 7 brain roles that work together as a coordinated whole-brain system",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:28.956606",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "PLAN: in python, len() returns length and range() generates sequences of numbers",
+    "answer": "Applied: in python, len() returns length and range() generates sequences of numbers",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "sequence"
+    ],
+    "id": "decomp_1781968888_28",
+    "timestamp": "2026-06-20T11:21:28.962222",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "PLAN: Sequence: nova creature has 7 brain roles: left, right, memory, planner, critic, dream, speech",
+    "answer": "Executed: nova creature has 7 brain roles: left, right, memory, planner, critic, dream, speech",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781969742_29",
+    "timestamp": "2026-06-20T11:35:42.482744",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "PLAN: in python, the len() function returns the length of a sequence",
+    "answer": "Applied: in python, the len() function returns the length of a sequence",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "sequence"
+    ],
+    "id": "decomp_1781969742_30",
+    "timestamp": "2026-06-20T11:35:42.502043",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "PLAN: what is the v057 system: Dictionary plus conversation memory",
+    "answer": "Applied: what is the v057 system: Dictionary plus conversation memory",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system"
+    ],
+    "id": "decomp_1781970205_31",
+    "timestamp": "2026-06-20T11:43:25.180459",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "answer": "Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system"
+    ],
+    "id": "decomp_1781970205_32",
+    "timestamp": "2026-06-20T11:43:25.180466",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "coordinate"
+    ],
+    "id": "decomp_1781970205_33",
+    "timestamp": "2026-06-20T11:43:25.180469",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: Sequence: how many brain roles do you have: 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer, critic_conscience_transformer, dream_simulation_transformer, and speech_output_transformer",
+    "answer": "Executed: how many brain roles do you have: 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer, critic_conscience_transformer, dream_simulation_transformer, and speech_output_transformer",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781970205_34",
+    "timestamp": "2026-06-20T11:43:25.180471",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "answer": "Remembered: PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.251599",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Remembered: PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.252627",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: what is the v057 system: Dictionary plus conversation memory",
+    "answer": "Applied: what is the v057 system: Dictionary plus conversation memory",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system"
+    ],
+    "id": "decomp_1781970325_37",
+    "timestamp": "2026-06-20T11:45:25.056608",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "answer": "Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system"
+    ],
+    "id": "decomp_1781970325_38",
+    "timestamp": "2026-06-20T11:45:25.056626",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "coordinate"
+    ],
+    "id": "decomp_1781970325_39",
+    "timestamp": "2026-06-20T11:45:25.056633",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "PLAN: Sequence: how many brain roles do you have: 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer, critic_conscience_transformer, dream_simulation_transformer, and speech_output_transformer",
+    "answer": "Executed: how many brain roles do you have: 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer, critic_conscience_transformer, dream_simulation_transformer, and speech_output_transformer",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781970325_40",
+    "timestamp": "2026-06-20T11:45:25.056640",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "answer": "Remembered: PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.197465",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Remembered: PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.198728",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Task planning: identify goal, break into steps, order dependencies.",
+    "answer": "Remembered: Task planning: identify goal, break into steps, order dependencies.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.594496",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Build planning: scaffold foundation first, then layers, then polish.",
+    "answer": "Remembered: Build planning: scaffold foundation first, then layers, then polish.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.596281",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Recovery planning: detect failure, assess damage, create correction plan.",
+    "answer": "Remembered: Recovery planning: detect failure, assess damage, create correction plan.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.598047",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Training planning: identify weak areas, create drills, test improvement.",
+    "answer": "Remembered: Training planning: identify weak areas, create drills, test improvement.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.599859",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Project planning: scope, phases, milestones, deliverables, review milestones.",
+    "answer": "Remembered: Project planning: scope, phases, milestones, deliverables, review milestones.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.601707",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Failure simulation: what could go wrong and what is the recovery plan for each failure?",
+    "answer": "Remembered: Failure simulation: what could go wrong and what is the recovery plan for each failure?",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.626576",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: what is the v057 system: Dictionary plus conversation memory",
+    "answer": "Applied: what is the v057 system: Dictionary plus conversation memory",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system"
+    ],
+    "id": "decomp_1781970688_49",
+    "timestamp": "2026-06-20T11:51:28.753868",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "answer": "Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "system"
+    ],
+    "id": "decomp_1781970688_50",
+    "timestamp": "2026-06-20T11:51:28.753876",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "coordinate"
+    ],
+    "id": "decomp_1781970688_51",
+    "timestamp": "2026-06-20T11:51:28.753879",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: Sequence: how many brain roles do you have: 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer, critic_conscience_transformer, dream_simulation_transformer, and speech_output_transformer",
+    "answer": "Executed: how many brain roles do you have: 7 brain roles: left_hemisphere, right_hemisphere, memory_transformer, planner_transformer, critic_conscience_transformer, dream_simulation_transformer, and speech_output_transformer",
+    "type": "procedural",
+    "source": "decomposed",
+    "matched_keywords": [
+      "plan"
+    ],
+    "id": "decomp_1781970688_52",
+    "timestamp": "2026-06-20T11:51:28.753882",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: Task planning: identify goal, break into steps, order dependencies.",
+    "answer": "Applied: Task planning: identify goal, break into steps, order dependencies.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_53",
+    "timestamp": "2026-06-20T11:51:28.753885",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: Build planning: scaffold foundation first, then layers, then polish.",
+    "answer": "Applied: Build planning: scaffold foundation first, then layers, then polish.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_54",
+    "timestamp": "2026-06-20T11:51:28.753887",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: Recovery planning: detect failure, assess damage, create correction plan.",
+    "answer": "Applied: Recovery planning: detect failure, assess damage, create correction plan.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_55",
+    "timestamp": "2026-06-20T11:51:28.753890",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: Training planning: identify weak areas, create drills, test improvement.",
+    "answer": "Applied: Training planning: identify weak areas, create drills, test improvement.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_56",
+    "timestamp": "2026-06-20T11:51:28.753893",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "PLAN: Project planning: scope, phases, milestones, deliverables, review milestones.",
+    "answer": "Applied: Project planning: scope, phases, milestones, deliverables, review milestones.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_57",
+    "timestamp": "2026-06-20T11:51:28.753895",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "answer": "Remembered: PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets Applied: what is the v058 system: Dictionary lessons exported into transformer training sets",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.878894",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Remembered: PLAN: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.880052",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: Task planning: identify goal, break into steps, order dependencies. Applied: Task planning: identify goal, break into steps, order dependencies.",
+    "answer": "Remembered: PLAN: Task planning: identify goal, break into steps, order dependencies. Applied: Task planning: identify goal, break into steps, order dependencies.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.884479",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: Build planning: scaffold foundation first, then layers, then polish. Applied: Build planning: scaffold foundation first, then layers, then polish.",
+    "answer": "Remembered: PLAN: Build planning: scaffold foundation first, then layers, then polish. Applied: Build planning: scaffold foundation first, then layers, then polish.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.885696",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: Recovery planning: detect failure, assess damage, create correction plan. Applied: Recovery planning: detect failure, assess damage, create correction plan.",
+    "answer": "Remembered: PLAN: Recovery planning: detect failure, assess damage, create correction plan. Applied: Recovery planning: detect failure, assess damage, create correction plan.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.886851",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: Training planning: identify weak areas, create drills, test improvement. Applied: Training planning: identify weak areas, create drills, test improvement.",
+    "answer": "Remembered: PLAN: Training planning: identify weak areas, create drills, test improvement. Applied: Training planning: identify weak areas, create drills, test improvement.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.888006",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: PLAN: Project planning: scope, phases, milestones, deliverables, review milestones. Applied: Project planning: scope, phases, milestones, deliverables, review milestones.",
+    "answer": "Remembered: PLAN: Project planning: scope, phases, milestones, deliverables, review milestones. Applied: Project planning: scope, phases, milestones, deliverables, review milestones.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.889165",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: DREAM: Failure simulation: what could go wrong and what is the recovery plan for each failure? Applied: Failure simulation: what could go wrong and what is the recovery plan for each failure?",
+    "answer": "Remembered: DREAM: Failure simulation: what could go wrong and what is the recovery plan for each failure? Applied: Failure simulation: what could go wrong and what is the recovery plan for each failure?",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.924796",
+    "session": "rapid-dict-vocab-jump"
   }
 ]

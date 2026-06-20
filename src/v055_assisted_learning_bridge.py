@@ -182,7 +182,7 @@ def run_finetune(role=None):
     if not TORCH_AVAILABLE:
         return {"error": True, "message": "PyTorch is not installed. Install it with: pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"}
     
-    sys.path.insert(0, str(ROOT / "nova_creature_llm_lab" / "src"))
+    sys.path.insert(0, str(ROOT))
     from scripts.v055_finetune_role_brains import finetune_role
     
     before_hashes = get_checkpoint_hashes()

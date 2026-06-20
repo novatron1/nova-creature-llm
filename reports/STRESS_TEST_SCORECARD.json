@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-06-20T11:35:43.143598",
+  "total_tests": 74,
+  "passed": 69,
+  "failed": 5,
+  "pass_rate": 93.2,
+  "overall_intelligence_score": 0.9104,
+  "domain_scores": {
+    "Dictionary Knowledge": 1.0,
+    "Systems Knowledge": 0.4,
+    "People Memory": 1.0,
+    "Learning Intake": 1.0,
+    "Status & Self-test": 1.0,
+    "Memory Recall": 1.0,
+    "Decomposition": 1.0,
+    "Permission Gates": 1.0,
+    "Voice Routing": 1.0,
+    "Camera Routing": 1.0,
+    "Brain Routes": 1.0,
+    "Coding Knowledge": 0.5,
+    "Science Knowledge": 1.0,
+    "Math Knowledge": 0.6667,
+    "Safety Guard": 1.0,
+    "Stop Control": 1.0
+  },
+  "weak_areas": {
+    "Systems Knowledge": 0.4,
+    "Coding Knowledge": 0.5,
+    "Math Knowledge": 0.6666666666666666
+  },
+  "strong_areas": {
+    "Dictionary Knowledge": 1.0,
+    "People Memory": 1.0,
+    "Learning Intake": 1.0,
+    "Status & Self-test": 1.0,
+    "Memory Recall": 1.0,
+    "Decomposition": 1.0,
+    "Permission Gates": 1.0,
+    "Voice Routing": 1.0,
+    "Camera Routing": 1.0,
+    "Brain Routes": 1.0,
+    "Science Knowledge": 1.0,
+    "Safety Guard": 1.0,
+    "Stop Control": 1.0
+  },
+  "failures": [
+    "[systems] Coding systems: missing: bug, missing: patch",
+    "[systems] Science systems: missing: physics",
+    "[systems] Capabilities long: missing: v700, missing: brain",
+    "[coding] Programming: missing: Python",
+    "[math] Formula query: missing: energy"
+  ]
+}

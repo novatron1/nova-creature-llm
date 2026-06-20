@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-06-20T11:38:04.834082",
+  "total_tests": 67,
+  "passed": 65,
+  "failed": 2,
+  "pass_rate": 97.0,
+  "intelligence_score": 0.937,
+  "domain_scores": {
+    "dict": 0.9286,
+    "systems": 1.0,
+    "people": 1.0,
+    "learn": 1.0,
+    "status": 1.0,
+    "memory": 1.0,
+    "decompose": 1.0,
+    "perm": 1.0,
+    "voice": 1.0,
+    "camera": 1.0,
+    "routes": 1.0,
+    "coding": 1.0,
+    "science": 1.0,
+    "math": 1.0,
+    "safety": 1.0,
+    "stop": 1.0,
+    "persist": 0.0
+  }
+}

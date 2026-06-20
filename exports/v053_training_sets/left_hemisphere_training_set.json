@@ -8,5 +8,1840 @@
     "role": "left_hemisphere",
     "prompt": "What is 12 times 12?",
     "answer": "144."
+  },
+  {
+    "id": "lesson_1781962545",
+    "prompt": "Lesson: the quadratic formula is x = (-b \u00b1 sqrt(b\u00b2 - 4ac)) / 2a",
+    "answer": "Remembered: the quadratic formula is x = (-b \u00b1 sqrt(b\u00b2 - 4ac)) / 2a",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:35:45.372614",
+    "session": "3e705af4"
+  },
+  {
+    "id": "lesson_1781962545",
+    "prompt": "Lesson: python uses indentation for code blocks, not braces",
+    "answer": "Remembered: python uses indentation for code blocks, not braces",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:35:45.380556",
+    "session": "3e705af4"
+  },
+  {
+    "id": "lesson_1781962593",
+    "prompt": "Lesson: python lists are mutable, tuples are immutable",
+    "answer": "Remembered: python lists are mutable, tuples are immutable",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:36:33.820074",
+    "session": "b421381b"
+  },
+  {
+    "id": "lesson_1781962610",
+    "prompt": "Lesson: python lists are mutable, tuples are immutable",
+    "answer": "Remembered: python lists are mutable, tuples are immutable",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:36:50.253554",
+    "session": "2d63c62d"
+  },
+  {
+    "id": "lesson_1781962650",
+    "prompt": "Lesson: Python lists are mutable, tuples are immutable",
+    "answer": "Remembered: Python lists are mutable, tuples are immutable",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:37:30.119218",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781962857",
+    "prompt": "Lesson: e = mc\u00b2 is the mass-energy equivalence formula",
+    "answer": "Remembered: e = mc\u00b2 is the mass-energy equivalence formula",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:40:57.076799",
+    "session": "34679e5d"
+  },
+  {
+    "id": "lesson_1781962902",
+    "prompt": "Lesson: e = mc\u00b2 is the mass-energy equivalence formula",
+    "answer": "Remembered: e = mc\u00b2 is the mass-energy equivalence formula",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:41:42.136817",
+    "session": "ba3834ad"
+  },
+  {
+    "id": "lesson_1781962933",
+    "prompt": "Lesson: in python, 'is' compares identity, '==' compares equality",
+    "answer": "Remembered: in python, 'is' compares identity, '==' compares equality",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:42:13.872604",
+    "session": "34679e5d"
+  },
+  {
+    "id": "lesson_1781962965",
+    "prompt": "Lesson: in python, 'is' compares identity, '==' compares equality",
+    "answer": "Remembered: in python, 'is' compares identity, '==' compares equality",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:42:45.767231",
+    "session": "ba3834ad"
+  },
+  {
+    "id": "lesson_1781962995",
+    "prompt": "Lesson: in python 'is' compares identity, '==' compares equality",
+    "answer": "Remembered: in python 'is' compares identity, '==' compares equality",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:43:15.031371",
+    "session": "9b53ea66"
+  },
+  {
+    "id": "lesson_1781963426",
+    "prompt": "Lesson: e = mc\u00b2 is the mass-energy equivalence formula by einstein",
+    "answer": "Remembered: e = mc\u00b2 is the mass-energy equivalence formula by einstein",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:50:26.491544",
+    "session": "ef8ca57d"
+  },
+  {
+    "id": "lesson_1781963426",
+    "prompt": "Lesson: in python, is compares identity, == compares equality",
+    "answer": "Remembered: in python, is compares identity, == compares equality",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T09:50:26.494761",
+    "session": "ef8ca57d"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses indentation for code blocks",
+    "answer": "Applied: Python uses indentation for code blocks",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967116_14",
+    "timestamp": "2026-06-20T10:51:56.752728",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CODE/MATH: Functions are defined with def",
+    "answer": "Applied: Functions are defined with def",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967116_15",
+    "timestamp": "2026-06-20T10:51:56.753098",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CODE/MATH: Good UI uses consistent spacing",
+    "answer": "Processed: Good UI uses consistent spacing",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967116_16",
+    "timestamp": "2026-06-20T10:51:56.753106",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CODE/MATH: Always verify edge cases before deploying",
+    "answer": "Processed: Always verify edge cases before deploying",
+    "type": "general",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967116_17",
+    "timestamp": "2026-06-20T10:51:56.753110",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CODE/MATH: Python uses indentation for code blocks Applied: Python uses indentation for code blocks",
+    "answer": "Remembered: CODE/MATH: Python uses indentation for code blocks Applied: Python uses indentation for code blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.761607",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CODE/MATH: Functions are defined with def Applied: Functions are defined with def",
+    "answer": "Remembered: CODE/MATH: Functions are defined with def Applied: Functions are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.768799",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CODE/MATH: Good UI uses consistent spacing Processed: Good UI uses consistent spacing",
+    "answer": "Remembered: CODE/MATH: Good UI uses consistent spacing Processed: Good UI uses consistent spacing",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.781286",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CODE/MATH: Always verify edge cases before deploying Processed: Always verify edge cases before deploying",
+    "answer": "Remembered: CODE/MATH: Always verify edge cases before deploying Processed: Always verify edge cases before deploying",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.782312",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: DESIGN/VISUAL: Python uses indentation for code blocks Processed: Python uses indentation for code blocks",
+    "answer": "Remembered: DESIGN/VISUAL: Python uses indentation for code blocks Processed: Python uses indentation for code blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.783136",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: Python uses indentation for code blocks Processed: Python uses indentation for code blocks",
+    "answer": "Remembered: CRITIC: Python uses indentation for code blocks Processed: Python uses indentation for code blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.786063",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: The quadratic formula solves for x in ax\u00b2+bx+c=0 Processed: The quadratic formula solves for x in ax\u00b2+bx+c=0",
+    "answer": "Remembered: CRITIC: The quadratic formula solves for x in ax\u00b2+bx+c=0 Processed: The quadratic formula solves for x in ax\u00b2+bx+c=0",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.790158",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967116",
+    "prompt": "Lesson: CRITIC: The formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a Processed: The formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a",
+    "answer": "Remembered: CRITIC: The formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a Processed: The formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:51:56.791008",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CODE/MATH: Python functions are defined with def",
+    "answer": "Applied: Python functions are defined with def",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967167_26",
+    "timestamp": "2026-06-20T10:52:47.380138",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CODE/MATH: Indentation matters for code blocks",
+    "answer": "Applied: Indentation matters for code blocks",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967167_27",
+    "timestamp": "2026-06-20T10:52:47.380146",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967167",
+    "prompt": "Lesson: CODE/MATH: Python functions are defined with def Applied: Python functions are defined with def",
+    "answer": "Remembered: CODE/MATH: Python functions are defined with def Applied: Python functions are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:52:47.381776",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967167",
+    "prompt": "Lesson: CODE/MATH: Indentation matters for code blocks Applied: Indentation matters for code blocks",
+    "answer": "Remembered: CODE/MATH: Indentation matters for code blocks Applied: Indentation matters for code blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:52:47.382965",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967167",
+    "prompt": "Lesson: FACT: Remember: The quadratic formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a Stored fact: The quadratic formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a",
+    "answer": "Remembered: FACT: Remember: The quadratic formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a Stored fact: The quadratic formula is x = (-b \u00b1 sqrt(b\u00b2-4ac))/2a",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:52:47.396882",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967567",
+    "prompt": "Lesson: python uses indentation for blocks and functions use def keyword",
+    "answer": "Remembered: python uses indentation for blocks and functions use def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:59:27.753524",
+    "session": "35ecc847"
+  },
+  {
+    "prompt": "CODE/MATH: Functions are defined with the def keyword in Python",
+    "answer": "Applied: Functions are defined with the def keyword in Python",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967580_32",
+    "timestamp": "2026-06-20T10:59:40.386862",
+    "session": "unknown"
+  },
+  {
+    "prompt": "CODE/MATH: Code blocks use indentation",
+    "answer": "Applied: Code blocks use indentation",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1781967580_33",
+    "timestamp": "2026-06-20T10:59:40.386935",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967580",
+    "prompt": "Lesson: CODE/MATH: Functions are defined with the def keyword in Python Applied: Functions are defined with the def keyword in Python",
+    "answer": "Remembered: CODE/MATH: Functions are defined with the def keyword in Python Applied: Functions are defined with the def keyword in Python",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:59:40.388762",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967580",
+    "prompt": "Lesson: CODE/MATH: Code blocks use indentation Applied: Code blocks use indentation",
+    "answer": "Remembered: CODE/MATH: Code blocks use indentation Applied: Code blocks use indentation",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T10:59:40.392124",
+    "session": "unknown"
+  },
+  {
+    "id": "lesson_1781967820",
+    "prompt": "Lesson: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:03:40.730515",
+    "session": "e9f07e35"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Applied: python uses indentation for blocks and functions use the def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781967820_37",
+    "timestamp": "2026-06-20T11:03:40.732823",
+    "session": "e9f07e35"
+  },
+  {
+    "id": "lesson_1781967820",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:03:40.733452",
+    "session": "e9f07e35"
+  },
+  {
+    "id": "lesson_1781967863",
+    "prompt": "Lesson: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:04:23.365852",
+    "session": "11142f1f"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Applied: python uses indentation for blocks and functions use the def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781967863_40",
+    "timestamp": "2026-06-20T11:04:23.368435",
+    "session": "11142f1f"
+  },
+  {
+    "id": "lesson_1781967863",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:04:23.369144",
+    "session": "11142f1f"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "class"
+    ],
+    "id": "decomp_1781967863_42",
+    "timestamp": "2026-06-20T11:04:23.376346",
+    "session": "11142f1f"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "def",
+      "method"
+    ],
+    "id": "decomp_1781967863_43",
+    "timestamp": "2026-06-20T11:04:23.376355",
+    "session": "11142f1f"
+  },
+  {
+    "id": "lesson_1781967863",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:04:23.377091",
+    "session": "11142f1f"
+  },
+  {
+    "id": "lesson_1781967863",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:04:23.378518",
+    "session": "11142f1f"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: in python, the len() function returns the length of a sequence. the range() function generates numbers.",
+    "answer": "Remembered: in python, the len() function returns the length of a sequence. the range() function generates numbers.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.712903",
+    "session": "5db8c129"
+  },
+  {
+    "prompt": "CODE/MATH: in python, the len() function returns the length of a sequence",
+    "answer": "Applied: in python, the len() function returns the length of a sequence",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "python",
+      "return"
+    ],
+    "id": "decomp_1781967904_47",
+    "timestamp": "2026-06-20T11:05:04.715554",
+    "session": "5db8c129"
+  },
+  {
+    "prompt": "CODE/MATH: the range() function generates numbers",
+    "answer": "Applied: the range() function generates numbers",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "python",
+      "return"
+    ],
+    "id": "decomp_1781967904_48",
+    "timestamp": "2026-06-20T11:05:04.715567",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: CODE/MATH: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "answer": "Remembered: CODE/MATH: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.717512",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: CODE/MATH: the range() function generates numbers Applied: the range() function generates numbers",
+    "answer": "Remembered: CODE/MATH: the range() function generates numbers Applied: the range() function generates numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.719057",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: PLAN: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "answer": "Remembered: PLAN: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.720607",
+    "session": "5db8c129"
+  },
+  {
+    "prompt": "CODE/MATH: Functions use the def keyword",
+    "answer": "Applied: Functions use the def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "class",
+      "def",
+      "indentation"
+    ],
+    "id": "decomp_1781967904_52",
+    "timestamp": "2026-06-20T11:05:04.723683",
+    "session": "5db8c129"
+  },
+  {
+    "prompt": "CODE/MATH: Classes use the class keyword",
+    "answer": "Applied: Classes use the class keyword",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "class"
+    ],
+    "id": "decomp_1781967904_53",
+    "timestamp": "2026-06-20T11:05:04.723694",
+    "session": "5db8c129"
+  },
+  {
+    "prompt": "CODE/MATH: Indentation defines blocks",
+    "answer": "Applied: Indentation defines blocks",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "def",
+      "indentation"
+    ],
+    "id": "decomp_1781967904_54",
+    "timestamp": "2026-06-20T11:05:04.723697",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: CODE/MATH: Functions use the def keyword Applied: Functions use the def keyword",
+    "answer": "Remembered: CODE/MATH: Functions use the def keyword Applied: Functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.724581",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: CODE/MATH: Classes use the class keyword Applied: Classes use the class keyword",
+    "answer": "Remembered: CODE/MATH: Classes use the class keyword Applied: Classes use the class keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.726202",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781967904",
+    "prompt": "Lesson: CODE/MATH: Indentation defines blocks Applied: Indentation defines blocks",
+    "answer": "Remembered: CODE/MATH: Indentation defines blocks Applied: Indentation defines blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:05:04.727934",
+    "session": "5db8c129"
+  },
+  {
+    "id": "lesson_1781968515",
+    "prompt": "Lesson: python uses indentation for blocks",
+    "answer": "Remembered: python uses indentation for blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:15:15.565445",
+    "session": "285a67a5"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks",
+    "answer": "Applied: python uses indentation for blocks",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781968515_59",
+    "timestamp": "2026-06-20T11:15:15.569375",
+    "session": "285a67a5"
+  },
+  {
+    "id": "lesson_1781968515",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:15:15.570457",
+    "session": "285a67a5"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "class"
+    ],
+    "id": "decomp_1781968515_61",
+    "timestamp": "2026-06-20T11:15:15.574675",
+    "session": "285a67a5"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method",
+      "def"
+    ],
+    "id": "decomp_1781968515_62",
+    "timestamp": "2026-06-20T11:15:15.574685",
+    "session": "285a67a5"
+  },
+  {
+    "id": "lesson_1781968515",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:15:15.575817",
+    "session": "285a67a5"
+  },
+  {
+    "id": "lesson_1781968515",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:15:15.577864",
+    "session": "285a67a5"
+  },
+  {
+    "id": "lesson_1781968619",
+    "prompt": "Lesson: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:16:59.803751",
+    "session": "f57b5c5c"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Applied: python uses indentation for blocks and functions use the def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781968619_66",
+    "timestamp": "2026-06-20T11:16:59.810773",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968619",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:16:59.813052",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968619",
+    "prompt": "Lesson: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "answer": "Remembered: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:16:59.839950",
+    "session": "f57b5c5c"
+  },
+  {
+    "prompt": "CODE/MATH: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "answer": "Applied: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "python",
+      "return"
+    ],
+    "id": "decomp_1781968619_69",
+    "timestamp": "2026-06-20T11:16:59.846794",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968619",
+    "prompt": "Lesson: CODE/MATH: in python, the len() function returns the length of a sequence and range() generates numbers Applied: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "answer": "Remembered: CODE/MATH: in python, the len() function returns the length of a sequence and range() generates numbers Applied: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:16:59.852055",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968619",
+    "prompt": "Lesson: PLAN: in python, the len() function returns the length of a sequence and range() generates numbers Applied: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "answer": "Remembered: PLAN: in python, the len() function returns the length of a sequence and range() generates numbers Applied: in python, the len() function returns the length of a sequence and range() generates numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:16:59.856104",
+    "session": "f57b5c5c"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "class",
+      "python"
+    ],
+    "id": "decomp_1781968620_72",
+    "timestamp": "2026-06-20T11:17:00.574263",
+    "session": "f57b5c5c"
+  },
+  {
+    "prompt": "CODE/MATH: Methods are defined with def",
+    "answer": "Applied: Methods are defined with def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method",
+      "def"
+    ],
+    "id": "decomp_1781968620_73",
+    "timestamp": "2026-06-20T11:17:00.574270",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968620",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:17:00.575066",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968620",
+    "prompt": "Lesson: CODE/MATH: Methods are defined with def Applied: Methods are defined with def",
+    "answer": "Remembered: CODE/MATH: Methods are defined with def Applied: Methods are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:17:00.576321",
+    "session": "f57b5c5c"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: python uses indentation for blocks. functions use def.",
+    "answer": "Remembered: python uses indentation for blocks. functions use def.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.167401",
+    "session": "6b388b64"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks",
+    "answer": "Applied: python uses indentation for blocks",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "indentation",
+      "python"
+    ],
+    "id": "decomp_1781968750_77",
+    "timestamp": "2026-06-20T11:19:10.172799",
+    "session": "6b388b64"
+  },
+  {
+    "prompt": "CODE/MATH: functions use def",
+    "answer": "Applied: functions use def",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781968750_78",
+    "timestamp": "2026-06-20T11:19:10.172821",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.174618",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: CODE/MATH: functions use def Applied: functions use def",
+    "answer": "Remembered: CODE/MATH: functions use def Applied: functions use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.177864",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: in python, len() returns length and range() generates numbers.",
+    "answer": "Remembered: in python, len() returns length and range() generates numbers.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.191580",
+    "session": "6b388b64"
+  },
+  {
+    "prompt": "CODE/MATH: in python, len() returns length and range() generates numbers",
+    "answer": "Applied: in python, len() returns length and range() generates numbers",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "return",
+      "python"
+    ],
+    "id": "decomp_1781968750_82",
+    "timestamp": "2026-06-20T11:19:10.196929",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: CODE/MATH: in python, len() returns length and range() generates numbers Applied: in python, len() returns length and range() generates numbers",
+    "answer": "Remembered: CODE/MATH: in python, len() returns length and range() generates numbers Applied: in python, len() returns length and range() generates numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.199053",
+    "session": "6b388b64"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "class"
+    ],
+    "id": "decomp_1781968750_84",
+    "timestamp": "2026-06-20T11:19:10.428356",
+    "session": "6b388b64"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method",
+      "def"
+    ],
+    "id": "decomp_1781968750_85",
+    "timestamp": "2026-06-20T11:19:10.428363",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.429247",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968750",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:19:10.430579",
+    "session": "6b388b64"
+  },
+  {
+    "id": "lesson_1781968888",
+    "prompt": "Lesson: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:28.941808",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Applied: python uses indentation for blocks and functions use the def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781968888_89",
+    "timestamp": "2026-06-20T11:21:28.944466",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968888",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:28.945439",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968888",
+    "prompt": "Lesson: in python, len() returns length and range() generates sequences of numbers",
+    "answer": "Remembered: in python, len() returns length and range() generates sequences of numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:28.958267",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "CODE/MATH: in python, len() returns length and range() generates sequences of numbers",
+    "answer": "Applied: in python, len() returns length and range() generates sequences of numbers",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "return",
+      "python"
+    ],
+    "id": "decomp_1781968888_92",
+    "timestamp": "2026-06-20T11:21:28.960828",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968888",
+    "prompt": "Lesson: CODE/MATH: in python, len() returns length and range() generates sequences of numbers Applied: in python, len() returns length and range() generates sequences of numbers",
+    "answer": "Remembered: CODE/MATH: in python, len() returns length and range() generates sequences of numbers Applied: in python, len() returns length and range() generates sequences of numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:28.962718",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968888",
+    "prompt": "Lesson: PLAN: in python, len() returns length and range() generates sequences of numbers Applied: in python, len() returns length and range() generates sequences of numbers",
+    "answer": "Remembered: PLAN: in python, len() returns length and range() generates sequences of numbers Applied: in python, len() returns length and range() generates sequences of numbers",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:28.964233",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "class",
+      "python"
+    ],
+    "id": "decomp_1781968889_95",
+    "timestamp": "2026-06-20T11:21:29.310280",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "CODE/MATH: Methods are defined with def",
+    "answer": "Applied: Methods are defined with def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "def",
+      "method"
+    ],
+    "id": "decomp_1781968889_96",
+    "timestamp": "2026-06-20T11:21:29.310285",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968889",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:29.311630",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968889",
+    "prompt": "Lesson: CODE/MATH: Methods are defined with def Applied: Methods are defined with def",
+    "answer": "Remembered: CODE/MATH: Methods are defined with def Applied: Methods are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:29.312742",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781969332",
+    "prompt": "Lesson: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:28:52.215361",
+    "session": "6037736d"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Applied: python uses indentation for blocks and functions use the def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781969332_100",
+    "timestamp": "2026-06-20T11:28:52.223130",
+    "session": "6037736d"
+  },
+  {
+    "id": "lesson_1781969332",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks and functions use the def keyword Applied: python uses indentation for blocks and functions use the def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:28:52.226050",
+    "session": "6037736d"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "class",
+      "python"
+    ],
+    "id": "decomp_1781969332_102",
+    "timestamp": "2026-06-20T11:28:52.245400",
+    "session": "6037736d"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method",
+      "def"
+    ],
+    "id": "decomp_1781969332_103",
+    "timestamp": "2026-06-20T11:28:52.245421",
+    "session": "6037736d"
+  },
+  {
+    "id": "lesson_1781969332",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:28:52.248389",
+    "session": "6037736d"
+  },
+  {
+    "id": "lesson_1781969332",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:28:52.253653",
+    "session": "6037736d"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: python uses indentation for blocks. functions use def keyword.",
+    "answer": "Remembered: python uses indentation for blocks. functions use def keyword.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.433232",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks",
+    "answer": "Applied: python uses indentation for blocks",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "indentation",
+      "python"
+    ],
+    "id": "decomp_1781969742_107",
+    "timestamp": "2026-06-20T11:35:42.444349",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "CODE/MATH: functions use def keyword",
+    "answer": "Applied: functions use def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781969742_108",
+    "timestamp": "2026-06-20T11:35:42.444379",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.447413",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: CODE/MATH: functions use def keyword Applied: functions use def keyword",
+    "answer": "Remembered: CODE/MATH: functions use def keyword Applied: functions use def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.452908",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: in python, the len() function returns the length of a sequence. range() generates numbers.",
+    "answer": "Remembered: in python, the len() function returns the length of a sequence. range() generates numbers.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.491960",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "CODE/MATH: in python, the len() function returns the length of a sequence",
+    "answer": "Applied: in python, the len() function returns the length of a sequence",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "python",
+      "return"
+    ],
+    "id": "decomp_1781969742_112",
+    "timestamp": "2026-06-20T11:35:42.498328",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: CODE/MATH: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "answer": "Remembered: CODE/MATH: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.503259",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: PLAN: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "answer": "Remembered: PLAN: in python, the len() function returns the length of a sequence Applied: in python, the len() function returns the length of a sequence",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.507531",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: e=mc\u00b2 means energy equals mass times the speed of light squared. this is einstein's famous equation.",
+    "answer": "Remembered: e=mc\u00b2 means energy equals mass times the speed of light squared. this is einstein's famous equation.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.513497",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969742",
+    "prompt": "Lesson: FACT: this is einstein's famous equation Stored: this is einstein's famous equation",
+    "answer": "Remembered: FACT: this is einstein's famous equation Stored: this is einstein's famous equation",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:42.527259",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "class"
+    ],
+    "id": "decomp_1781969743_117",
+    "timestamp": "2026-06-20T11:35:43.135673",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "CODE/MATH: Methods are defined with def",
+    "answer": "Applied: Methods are defined with def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method",
+      "def"
+    ],
+    "id": "decomp_1781969743_118",
+    "timestamp": "2026-06-20T11:35:43.135678",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969743",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:43.137026",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969743",
+    "prompt": "Lesson: CODE/MATH: Methods are defined with def Applied: Methods are defined with def",
+    "answer": "Remembered: CODE/MATH: Methods are defined with def Applied: Methods are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:43.138204",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969776",
+    "prompt": "Lesson: python uses indentation",
+    "answer": "Remembered: python uses indentation",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:36:16.616424",
+    "session": "eb94a479"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation",
+    "answer": "Applied: python uses indentation",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "indentation",
+      "python"
+    ],
+    "id": "decomp_1781969776_122",
+    "timestamp": "2026-06-20T11:36:16.622273",
+    "session": "eb94a479"
+  },
+  {
+    "id": "lesson_1781969776",
+    "prompt": "Lesson: CODE/MATH: python uses indentation Applied: python uses indentation",
+    "answer": "Remembered: CODE/MATH: python uses indentation Applied: python uses indentation",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:36:16.624033",
+    "session": "eb94a479"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "class",
+      "python"
+    ],
+    "id": "decomp_1781969776_124",
+    "timestamp": "2026-06-20T11:36:16.628949",
+    "session": "eb94a479"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "def",
+      "method"
+    ],
+    "id": "decomp_1781969776_125",
+    "timestamp": "2026-06-20T11:36:16.628962",
+    "session": "eb94a479"
+  },
+  {
+    "id": "lesson_1781969776",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:36:16.630738",
+    "session": "eb94a479"
+  },
+  {
+    "id": "lesson_1781969776",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:36:16.633615",
+    "session": "eb94a479"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: python uses indentation for blocks. functions use def keyword.",
+    "answer": "Remembered: python uses indentation for blocks. functions use def keyword.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.539413",
+    "session": "3d98e7d3"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for blocks",
+    "answer": "Applied: python uses indentation for blocks",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781969884_129",
+    "timestamp": "2026-06-20T11:38:04.547397",
+    "session": "3d98e7d3"
+  },
+  {
+    "prompt": "CODE/MATH: functions use def keyword",
+    "answer": "Applied: functions use def keyword",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "function",
+      "def",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781969884_130",
+    "timestamp": "2026-06-20T11:38:04.547421",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "answer": "Remembered: CODE/MATH: python uses indentation for blocks Applied: python uses indentation for blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.550708",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: CODE/MATH: functions use def keyword Applied: functions use def keyword",
+    "answer": "Remembered: CODE/MATH: functions use def keyword Applied: functions use def keyword",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.555969",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: in python, len() returns length. range() generates numbers.",
+    "answer": "Remembered: in python, len() returns length. range() generates numbers.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.579019",
+    "session": "3d98e7d3"
+  },
+  {
+    "prompt": "CODE/MATH: in python, len() returns length",
+    "answer": "Applied: in python, len() returns length",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "return"
+    ],
+    "id": "decomp_1781969884_134",
+    "timestamp": "2026-06-20T11:38:04.584093",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: CODE/MATH: in python, len() returns length Applied: in python, len() returns length",
+    "answer": "Remembered: CODE/MATH: in python, len() returns length Applied: in python, len() returns length",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.586300",
+    "session": "3d98e7d3"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "class",
+      "python"
+    ],
+    "id": "decomp_1781969884_136",
+    "timestamp": "2026-06-20T11:38:04.824823",
+    "session": "3d98e7d3"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "def",
+      "method"
+    ],
+    "id": "decomp_1781969884_137",
+    "timestamp": "2026-06-20T11:38:04.824831",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.826415",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969884",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:38:04.828160",
+    "session": "3d98e7d3"
+  },
+  {
+    "id": "lesson_1781969953",
+    "prompt": "Lesson: python uses indentation for code blocks.",
+    "answer": "Remembered: python uses indentation for code blocks.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:39:13.926656",
+    "session": "686099f1"
+  },
+  {
+    "prompt": "CODE/MATH: python uses indentation for code blocks",
+    "answer": "Applied: python uses indentation for code blocks",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code",
+      "python",
+      "indentation"
+    ],
+    "id": "decomp_1781969953_141",
+    "timestamp": "2026-06-20T11:39:13.929599",
+    "session": "686099f1"
+  },
+  {
+    "id": "lesson_1781969953",
+    "prompt": "Lesson: CODE/MATH: python uses indentation for code blocks Applied: python uses indentation for code blocks",
+    "answer": "Remembered: CODE/MATH: python uses indentation for code blocks Applied: python uses indentation for code blocks",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:39:13.930800",
+    "session": "686099f1"
+  },
+  {
+    "prompt": "CODE/MATH: Python uses classes",
+    "answer": "Applied: Python uses classes",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "python",
+      "class"
+    ],
+    "id": "decomp_1781969953_143",
+    "timestamp": "2026-06-20T11:39:13.934377",
+    "session": "686099f1"
+  },
+  {
+    "prompt": "CODE/MATH: Methods use def",
+    "answer": "Applied: Methods use def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method",
+      "def"
+    ],
+    "id": "decomp_1781969953_144",
+    "timestamp": "2026-06-20T11:39:13.934386",
+    "session": "686099f1"
+  },
+  {
+    "id": "lesson_1781969953",
+    "prompt": "Lesson: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "answer": "Remembered: CODE/MATH: Python uses classes Applied: Python uses classes",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:39:13.935965",
+    "session": "686099f1"
+  },
+  {
+    "id": "lesson_1781969953",
+    "prompt": "Lesson: CODE/MATH: Methods use def Applied: Methods use def",
+    "answer": "Remembered: CODE/MATH: Methods use def Applied: Methods use def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:39:13.938413",
+    "session": "686099f1"
+  },
+  {
+    "prompt": "CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970205_147",
+    "timestamp": "2026-06-20T11:43:25.183209",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970205_148",
+    "timestamp": "2026-06-20T11:43:25.183216",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what training method won: Whole-Brain Jump with a score of 0",
+    "answer": "Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970205_149",
+    "timestamp": "2026-06-20T11:43:25.183220",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "answer": "Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "loop"
+    ],
+    "id": "decomp_1781970205_150",
+    "timestamp": "2026-06-20T11:43:25.183223",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970205_151",
+    "timestamp": "2026-06-20T11:43:25.183226",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Remembered: CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.256795",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Remembered: CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.258827",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: CODE/MATH: what training method won: Whole-Brain Jump with a score of 0 Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "answer": "Remembered: CODE/MATH: what training method won: Whole-Brain Jump with a score of 0 Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.261042",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "answer": "Remembered: CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.263276",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Remembered: CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.265509",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970325_157",
+    "timestamp": "2026-06-20T11:45:25.062651",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970325_158",
+    "timestamp": "2026-06-20T11:45:25.062671",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what training method won: Whole-Brain Jump with a score of 0",
+    "answer": "Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970325_159",
+    "timestamp": "2026-06-20T11:45:25.062679",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "answer": "Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "loop"
+    ],
+    "id": "decomp_1781970325_160",
+    "timestamp": "2026-06-20T11:45:25.062685",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970325_161",
+    "timestamp": "2026-06-20T11:45:25.062691",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Remembered: CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.203890",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Remembered: CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.206222",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: CODE/MATH: what training method won: Whole-Brain Jump with a score of 0 Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "answer": "Remembered: CODE/MATH: what training method won: Whole-Brain Jump with a score of 0 Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.208573",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "answer": "Remembered: CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.210908",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Remembered: CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.213232",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+    "answer": "Remembered: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.558471",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Debugging strategy: isolate the failing file, trace the call stack, identify root cause.",
+    "answer": "Remembered: Debugging strategy: isolate the failing file, trace the call stack, identify root cause.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.563655",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970688_169",
+    "timestamp": "2026-06-20T11:51:28.756567",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970688_170",
+    "timestamp": "2026-06-20T11:51:28.756577",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: what training method won: Whole-Brain Jump with a score of 0",
+    "answer": "Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970688_171",
+    "timestamp": "2026-06-20T11:51:28.756581",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "answer": "Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "loop"
+    ],
+    "id": "decomp_1781970688_172",
+    "timestamp": "2026-06-20T11:51:28.756585",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "method"
+    ],
+    "id": "decomp_1781970688_173",
+    "timestamp": "2026-06-20T11:51:28.756588",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: Functions encapsulate logic and return values. Classes define objects with methods.",
+    "answer": "Applied: Functions encapsulate logic and return values. Classes define objects with methods.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_174",
+    "timestamp": "2026-06-20T11:51:28.756591",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+    "answer": "Applied: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_175",
+    "timestamp": "2026-06-20T11:51:28.756594",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: Debugging strategy: isolate the failing file, trace the call stack, identify root cause.",
+    "answer": "Applied: Debugging strategy: isolate the failing file, trace the call stack, identify root cause.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_176",
+    "timestamp": "2026-06-20T11:51:28.756596",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: Logical reasoning: if premise A is true and B follows from A, then B is true.",
+    "answer": "Applied: Logical reasoning: if premise A is true and B follows from A, then B is true.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_177",
+    "timestamp": "2026-06-20T11:51:28.756599",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "CODE/MATH: Algorithm design: break problems into small steps, solve each one sequentially.",
+    "answer": "Applied: Algorithm design: break problems into small steps, solve each one sequentially.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_178",
+    "timestamp": "2026-06-20T11:51:28.756602",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Remembered: CODE/MATH: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: what is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.896643",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "answer": "Remembered: CODE/MATH: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles Applied: what is the whole brain jump: The Whole-Brain Jump is the winning training method that trains all 7 brain roles simultaneously in coordinated cycles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.898791",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: what training method won: Whole-Brain Jump with a score of 0 Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "answer": "Remembered: CODE/MATH: what training method won: Whole-Brain Jump with a score of 0 Applied: what training method won: Whole-Brain Jump with a score of 0",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.900863",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "answer": "Remembered: CODE/MATH: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing Applied: can you learn: Yes, I have Rapid Learning v800 with lesson intake, chunking, self-test, correction loop, memory lock, and retention testing",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.903035",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "answer": "Remembered: CODE/MATH: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method Applied: who is nova creature: Nova Creature is a multi-brain LLM with 7 brain roles trained via Whole-Brain Jump method",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.905211",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: Functions encapsulate logic and return values. Classes define objects with methods. Applied: Functions encapsulate logic and return values. Classes define objects with methods.",
+    "answer": "Remembered: CODE/MATH: Functions encapsulate logic and return values. Classes define objects with methods. Applied: Functions encapsulate logic and return values. Classes define objects with methods.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.907499",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: Mathematical thinking: identify variables, choose formulas, solve step by step. Applied: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+    "answer": "Remembered: CODE/MATH: Mathematical thinking: identify variables, choose formulas, solve step by step. Applied: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.909660",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: Debugging strategy: isolate the failing file, trace the call stack, identify root cause. Applied: Debugging strategy: isolate the failing file, trace the call stack, identify root cause.",
+    "answer": "Remembered: CODE/MATH: Debugging strategy: isolate the failing file, trace the call stack, identify root cause. Applied: Debugging strategy: isolate the failing file, trace the call stack, identify root cause.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.911810",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: Logical reasoning: if premise A is true and B follows from A, then B is true. Applied: Logical reasoning: if premise A is true and B follows from A, then B is true.",
+    "answer": "Remembered: CODE/MATH: Logical reasoning: if premise A is true and B follows from A, then B is true. Applied: Logical reasoning: if premise A is true and B follows from A, then B is true.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.914022",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: CODE/MATH: Algorithm design: break problems into small steps, solve each one sequentially. Applied: Algorithm design: break problems into small steps, solve each one sequentially.",
+    "answer": "Remembered: CODE/MATH: Algorithm design: break problems into small steps, solve each one sequentially. Applied: Algorithm design: break problems into small steps, solve each one sequentially.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.916191",
+    "session": "rapid-dict-vocab-jump"
   }
 ]

@@ -1,0 +1,26 @@
+{
+  "people": {
+    "john": {
+      "name": "john",
+      "introduced_at": "2026-06-20T08:48:25.173649",
+      "session": "e1cbf682"
+    },
+    "sarah": {
+      "name": "sarah",
+      "introduced_at": "2026-06-20T08:48:25.174819",
+      "session": "e1cbf682"
+    },
+    "bob": {
+      "name": "bob",
+      "introduced_at": "2026-06-20T08:48:25.175650",
+      "session": "e1cbf682"
+    },
+    "mr novotron": {
+      "name": "mr novotron",
+      "introduced_at": "2026-06-20T08:52:13.781892",
+      "session": "a47249de"
+    }
+  },
+  "lessons": {},
+  "last_person": "mr novotron"
+}

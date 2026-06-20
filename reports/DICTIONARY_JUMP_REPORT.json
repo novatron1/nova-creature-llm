@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-06-20T15:45:32Z",
+  "pipeline": "whole-brain-dictionary-jump",
+  "dictionary_entries": 29,
+  "role_components_created": 45,
+  "roles_activated": 6,
+  "lessons_queued": 29,
+  "torch_available": false,
+  "training_sets_saved": {
+    "memory_transformer": 190,
+    "right_hemisphere": 54,
+    "planner_transformer": 41,
+    "critic_conscience_transformer": 36,
+    "left_hemisphere": 162,
+    "speech_output_transformer": 9,
+    "dream_simulation_transformer": 5
+  },
+  "benchmark": {
+    "total": 11,
+    "passed": 11,
+    "pass_rate": 100.0
+  },
+  "checkpoints_before": {
+    "left_hemisphere_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "left_hemisphere_v055_finetuned": "82a39d8ca3155d420d470ac2bcef159303ac930296e756e68790c5597aea05e0",
+    "right_hemisphere_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "right_hemisphere_v055_finetuned": "93c9a8d91d37e91bd32bc97df9bd773785fefff488895c00106c291c40417de8",
+    "memory_transformer_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "memory_transformer_v055_finetuned": "242cfb140bfb6c94cf159080b5396516d398e84cc7a3dc088e20d5fb97d30bbe",
+    "planner_transformer_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "planner_transformer_v055_finetuned": "4c126e1f22bc1a115732127eab9aea154422ea86068d0dd96ad58ce80ffb14a2",
+    "critic_conscience_transformer_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "critic_conscience_transformer_v055_finetuned": "2b6079d0bc5dcd6fd0f5038bed76db9762ee04b0816aeaf72ab9fb57d8b25734",
+    "dream_simulation_transformer_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "dream_simulation_transformer_v055_finetuned": "67b585b0bb796fb3e9c0b15bab8adecc6f667dcc381052ecea2daa858545ccc3",
+    "speech_output_transformer_v054_specialized": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+    "speech_output_transformer_v055_finetuned": "443a5c06c227b84029e2cf9b1cb31cbd3702c1402a5a97a9c4cec68b3f6c3aaa"
+  }
+}

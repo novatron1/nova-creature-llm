@@ -8,5 +8,206 @@
     "role": "speech_output_transformer",
     "prompt": "Clean this answer.",
     "answer": "Speech brain: give the final answer clearly and simply."
+  },
+  {
+    "prompt": "SPEECH: Methods are defined with def",
+    "answer": "Applied: Methods are defined with def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "define"
+    ],
+    "id": "decomp_1781968889_2",
+    "timestamp": "2026-06-20T11:21:29.311376",
+    "session": "e26a3786"
+  },
+  {
+    "id": "lesson_1781968889",
+    "prompt": "Lesson: SPEECH: Methods are defined with def Applied: Methods are defined with def",
+    "answer": "Remembered: SPEECH: Methods are defined with def Applied: Methods are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:21:29.313855",
+    "session": "e26a3786"
+  },
+  {
+    "prompt": "SPEECH: Methods are defined with def",
+    "answer": "Applied: Methods are defined with def",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "define"
+    ],
+    "id": "decomp_1781969743_4",
+    "timestamp": "2026-06-20T11:35:43.136785",
+    "session": "e76698b1"
+  },
+  {
+    "id": "lesson_1781969743",
+    "prompt": "Lesson: SPEECH: Methods are defined with def Applied: Methods are defined with def",
+    "answer": "Remembered: SPEECH: Methods are defined with def Applied: Methods are defined with def",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:35:43.139380",
+    "session": "e76698b1"
+  },
+  {
+    "prompt": "SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "answer": "Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "answer"
+    ],
+    "id": "decomp_1781970205_6",
+    "timestamp": "2026-06-20T11:43:25.185138",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970205",
+    "prompt": "Lesson: SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "answer": "Remembered: SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:43:25.267751",
+    "session": "dictionary-jump"
+  },
+  {
+    "prompt": "SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "answer": "Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "answer"
+    ],
+    "id": "decomp_1781970325_8",
+    "timestamp": "2026-06-20T11:45:25.067328",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970325",
+    "prompt": "Lesson: SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "answer": "Remembered: SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:45:25.215583",
+    "session": "dictionary-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: Clear answers: start with the direct answer to the question, then explain context.",
+    "answer": "Remembered: Clear answers: start with the direct answer to the question, then explain context.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.636478",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: User-friendly wording: use simple language to explain complex topics clearly.",
+    "answer": "Remembered: User-friendly wording: use simple language to explain complex topics clearly.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.642089",
+    "session": "rapid-vocab-jump"
+  },
+  {
+    "prompt": "SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "answer": "Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "answer"
+    ],
+    "id": "decomp_1781970688_12",
+    "timestamp": "2026-06-20T11:51:28.758623",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "SPEECH: Clear answers: start with the direct answer to the question, then explain context.",
+    "answer": "Applied: Clear answers: start with the direct answer to the question, then explain context.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_13",
+    "timestamp": "2026-06-20T11:51:28.758630",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "SPEECH: Concise responses: say only what is needed. No filler words or unnecessary disclaimers.",
+    "answer": "Applied: Concise responses: say only what is needed. No filler words or unnecessary disclaimers.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_14",
+    "timestamp": "2026-06-20T11:51:28.758633",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "SPEECH: User-friendly wording: use simple language to explain complex topics clearly.",
+    "answer": "Applied: User-friendly wording: use simple language to explain complex topics clearly.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_15",
+    "timestamp": "2026-06-20T11:51:28.758636",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "SPEECH: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence.",
+    "answer": "Applied: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_16",
+    "timestamp": "2026-06-20T11:51:28.758639",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "SPEECH: Structured output: use bullet points for lists, sections for organization, examples for clarity.",
+    "answer": "Applied: Structured output: use bullet points for lists, sections for organization, examples for clarity.",
+    "type": "vocabulary",
+    "source": "rapid-vocab-jump",
+    "id": "decomp_1781970688_17",
+    "timestamp": "2026-06-20T11:51:28.758641",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "answer": "Remembered: SPEECH: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory Applied: do you have memory: Yes, I have Natural People Memory (v775), Rapid Learning (v800), and approved answer dictionary memory",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.918370",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: SPEECH: Clear answers: start with the direct answer to the question, then explain context. Applied: Clear answers: start with the direct answer to the question, then explain context.",
+    "answer": "Remembered: SPEECH: Clear answers: start with the direct answer to the question, then explain context. Applied: Clear answers: start with the direct answer to the question, then explain context.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.919175",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: SPEECH: Concise responses: say only what is needed. No filler words or unnecessary disclaimers. Applied: Concise responses: say only what is needed. No filler words or unnecessary disclaimers.",
+    "answer": "Remembered: SPEECH: Concise responses: say only what is needed. No filler words or unnecessary disclaimers. Applied: Concise responses: say only what is needed. No filler words or unnecessary disclaimers.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.919973",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: SPEECH: User-friendly wording: use simple language to explain complex topics clearly. Applied: User-friendly wording: use simple language to explain complex topics clearly.",
+    "answer": "Remembered: SPEECH: User-friendly wording: use simple language to explain complex topics clearly. Applied: User-friendly wording: use simple language to explain complex topics clearly.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.920773",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: SPEECH: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence. Applied: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence.",
+    "answer": "Remembered: SPEECH: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence. Applied: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.921625",
+    "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1781970688",
+    "prompt": "Lesson: SPEECH: Structured output: use bullet points for lists, sections for organization, examples for clarity. Applied: Structured output: use bullet points for lists, sections for organization, examples for clarity.",
+    "answer": "Remembered: SPEECH: Structured output: use bullet points for lists, sections for organization, examples for clarity. Applied: Structured output: use bullet points for lists, sections for organization, examples for clarity.",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T11:51:28.922453",
+    "session": "rapid-dict-vocab-jump"
   }
 ]
