@@ -61,18 +61,30 @@ def route(text):
                 "7 brain roles: left, right, memory, planner, critic, dream, speech. Trained via Whole-Brain Jump (0.948)."),t
     
     # People memory (must be before coding to avoid 'test' in names matching)
-    if 'my name is' in q:
+    if 'my name is' in q or q.startswith('i am ') or q.startswith("i'm ") or q.startswith('call me ') or "name's " in q:
         import re
-        match = re.search(r'my name is\s+(.+)', q)
-        if match:
-            name = match.group(1).rstrip('.').strip()
+        name = None
+        if 'my name is' in q:
+            m = re.search(r'my name is\s+(.+)', q)
+            if m: name = m.group(1).rstrip('.').strip()
+        elif q.startswith('i am '):
+            name = q[5:].rstrip('.!? ').strip()
+        elif q.startswith("i'm "):
+            name = q[4:].rstrip('.!? ').strip()
+        elif q.startswith('call me '):
+            name = q[8:].rstrip('.!? ').strip()
+        elif "name's " in q:
+            m = re.search(r"name's\s+(.+)", q)
+            if m: name = m.group(1).rstrip('.!? ').strip()
+        if name:
+            name = name.replace('.','').strip()
             MEMORY['people'][name.lower()] = {'name': name, 'introduced_at': datetime.now().isoformat()}
             t.update({'roles':['people_memory','memory_transformer'],'skills':['name_intake'],'confidence':0.93,'memory_event':f'person:{name}'})
             return f'Nice to meet you, {name}! I have saved your name in my people memory.',t
     
-    if any(w in q for w in ["what is my name","what's my name","do you know me","who am i"]):
+    if any(w in q for w in ["what is my name","what's my name","do you know me","do you know who","who am i"]):
         if MEMORY['people']:
-            n = list(MEMORY['people'].keys())[0]
+            n = list(MEMORY['people'].keys())[-1]
             t.update({'roles':['people_memory','memory_transformer'],'skills':['name_recall'],'confidence':0.94,'memory_event':f'recall:{n}'})
             return f'Your name is {MEMORY["people"][n]["name"]}. I remember you!',t
         t.update({'roles':['people_memory','critic_conscience_transformer'],'confidence':0.60,'memory_event':'no_person'})
@@ -89,7 +101,7 @@ def route(text):
         return r, t
     
     # Coding
-    if any(w in q for w in ["code","programming","debug","bug","fix","python","javascript","test"]):
+    if any(w in q for w in ["code","programming","debug","bug","fix","python","javascript"]):
         t.update({"roles":["left_hemisphere","planner_transformer","critic_conscience_transformer","speech_output_transformer"],
                   "skills":["scanner","bug_detection","patch_planning","test_gen"],"confidence":0.92})
         return ("I have Coding Master v900: codebase scanner, bug detection (syntax, imports, paths, JSON, async, state), "
@@ -138,7 +150,7 @@ def route(text):
             t.update({"roles":["people_memory","memory_transformer"],"skills":["name_intake"],"confidence":0.93,"memory_event":f"person:{name}"})
             return f"Nice to meet you, {name}! I have saved your name in my people memory.",t
     
-    if any(w in q for w in ["what is my name","what's my name","do you know me","who am i"]):
+    if any(w in q for w in ["what is my name","what's my name","do you know me","do you know who","who am i"]):
         if MEMORY["people"]:
             n = list(MEMORY["people"].keys())[0]
             t.update({"roles":["people_memory","memory_transformer"],"skills":["name_recall"],"confidence":0.94,"memory_event":f"recall:{n}"})
