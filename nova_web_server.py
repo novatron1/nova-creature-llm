@@ -181,6 +181,7 @@ def brain_route(text, context=None):
         return f"[DICT] {dict_answer}", trace
     
     # mock voice transcript
+    if q.startswith("mock voice "):
         if not PERMISSIONS["mic"]:
             trace["roles"] = ["permission_gate"]; trace["permission"] = "mic_required"
             return "[PERMISSION] Mic is disabled. Type 'allow mic' first.", trace
