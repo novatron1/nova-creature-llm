@@ -26,6 +26,48 @@ try:
 except Exception as e:
     DECOMPOSER_ERR = str(e)
 
+# Dictionary Memory — approved QA lookup
+DICT_PATH = os.path.join(ROOT_ANDROID, "data", "dictionary_memory", "approved_answer_dictionary.json")
+DICT_INDEX = {}
+DICT_HITS = os.path.join(ROOT_ANDROID, "data", "dictionary_memory", "dictionary_hits.jsonl")
+
+import re as _dr
+def _dict_key(text):
+    v = " ".join(str(text or "").replace("\\n", " ").split()).strip()
+    v = _dr.sub(r"\\s+([?.!,])", r"\\1", v)
+    v = v.lower().strip(" ?!.")
+    v = v.replace("what's", "what is").replace("who's", "who is")
+    return _dr.sub(r"[^a-z0-9]+", " ", v).strip()
+
+def _load_dict():
+    global DICT_INDEX
+    try:
+        if os.path.exists(DICT_PATH):
+            with open(DICT_PATH, 'r') as f:
+                raw = json.load(f)
+            DICT_INDEX = {}
+            for q, a in raw.items():
+                k = _dict_key(q)
+                if k: DICT_INDEX[k] = {"question": q, "answer": a}
+            return len(DICT_INDEX)
+    except: pass
+    return 0
+
+def _dict_lookup(text):
+    k = _dict_key(text)
+    if k in DICT_INDEX:
+        e = DICT_INDEX[k]
+        try:
+            hit = json.dumps({"time": datetime.now().isoformat(), "question": text, "normalized": k, "answer": e["answer"], "source": "approved_dictionary"})
+            with open(DICT_HITS, 'a') as f:
+                f.write(hit + "\n")
+        except: pass
+        return e["answer"]
+    return None
+
+_dict_count = _load_dict()
+print(f"[DICT] Loaded {_dict_count} dictionary entries")
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 HTML_PATH = os.path.join(ROOT, "nova_mobile_app.html")
 WEB_HTML = None
@@ -58,6 +100,12 @@ def route(text):
         t.update({"roles":["system_status"],"confidence":1.0})
         return f'Mic:{PERMS['mic']} Camera:{PERMS['camera']} Speaker:{PERMS['speaker']} Private:{PRIVATE} People:{len(MEMORY['people'])} Lessons:{len(MEMORY['lessons'])}',t
     
+    
+    # Dictionary lookup (exact QA matches)
+    dict_ans = _dict_lookup(text)
+    if dict_ans:
+        t.update({"roles":["memory_transformer","dictionary_system"], "skills":["dictionary_lookup","exact_match"], "confidence":0.98, "memory_event":"dictionary_hit"})
+        return f"[DICT] {dict_ans}", t
     # Mock voice
     if q.startswith("mock voice "):
         if not PERMS["mic"]: t.update({"roles":["permission_gate"],"permission":"mic_required"});return "[NEED] Enable mic first",t

@@ -24,6 +24,53 @@ except Exception as e:
     DECOMPOSER_AVAILABLE = False
     DECOMPOSER_ERR = str(e)
 
+# Dictionary Memory — approved QA lookup table
+import re as _dict_re
+DICTIONARY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "dictionary_memory", "approved_answer_dictionary.json")
+DICTIONARY_HITS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "dictionary_memory", "dictionary_hits.jsonl")
+DICTIONARY_INDEX = {}
+
+def _canonical_key(text):
+    v = " ".join(str(text or "").replace("\\n", " ").split()).strip()
+    v = _dict_re.sub(r"\s+([?.!,])", r"\1", v)
+    v = v.lower().strip(" ?!.")
+    v = v.replace("what's", "what is").replace("who's", "who is")
+    return _dict_re.sub(r"[^a-z0-9]+", " ", v).strip()
+
+def _load_dictionary():
+    global DICTIONARY_INDEX
+    try:
+        if os.path.exists(DICTIONARY_PATH):
+            with open(DICTIONARY_PATH, 'r') as f:
+                raw = json.load(f)
+            DICTIONARY_INDEX = {}
+            for question, answer in raw.items():
+                key = _canonical_key(question)
+                if key:
+                    DICTIONARY_INDEX[key] = {"question": question, "answer": answer}
+            return len(DICTIONARY_INDEX)
+    except Exception as e:
+        print(f"[DICT] Load error: {e}")
+    return 0
+
+def _dictionary_lookup(text):
+    key = _canonical_key(text)
+    if key in DICTIONARY_INDEX:
+        entry = DICTIONARY_INDEX[key]
+        # Log hit
+        try:
+            hit = json.dumps({"time": datetime.now().isoformat(), "question": text, "normalized": key, "answer": entry["answer"], "source": "approved_dictionary"})
+            with open(DICTIONARY_HITS_PATH, 'a') as f:
+                f.write(hit + "\n")
+        except:
+            pass
+        return entry["answer"]
+    return None
+
+# Load dictionary on startup
+_dict_count = _load_dictionary()
+print(f"[DICT] Loaded {_dict_count} dictionary entries from {DICTIONARY_PATH}")
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
@@ -123,8 +170,17 @@ def brain_route(text, context=None):
                 "  private mode | stop all | status | help | mock voice <text> | mock camera <text>\n"
                 "  Or just type any question to talk to Nova."), trace
     
+    # ===== DICTIONARY LOOKUP =====
+    # Check the approved answer dictionary before routing to handlers
+    dict_answer = _dictionary_lookup(text)
+    if dict_answer:
+        trace["roles"] = ["memory_transformer", "dictionary_system"]
+        trace["skills"] = ["dictionary_lookup", "exact_match"]
+        trace["confidence"] = 0.98
+        trace["memory_event"] = "dictionary_hit"
+        return f"[DICT] {dict_answer}", trace
+    
     # mock voice transcript
-    if q.startswith("mock voice "):
         if not PERMISSIONS["mic"]:
             trace["roles"] = ["permission_gate"]; trace["permission"] = "mic_required"
             return "[PERMISSION] Mic is disabled. Type 'allow mic' first.", trace
