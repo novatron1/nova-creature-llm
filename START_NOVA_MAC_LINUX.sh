@@ -25,14 +25,26 @@ $PYTHON --version
 
 # Check for required packages
 echo "[CHECK] Verifying required packages..."
-$PYTHON -c "import json, http.server, socketserver, uuid" 2>/dev/null
+
+# Check PyTorch (needed for assisted learning / transformer fine-tuning)
+$PYTHON -c "import torch" 2>/dev/null
 if [ $? -ne 0 ]; then
-    echo "[INSTALL] Installing required packages..."
-    pip3 install --upgrade pip 2>/dev/null || true
-    if [ -f requirements-codex.txt ]; then
-        pip3 install -r requirements-codex.txt 2>/dev/null || true
-    fi
+    echo ""
+    echo "⚠️  PyTorch is not installed."
+    echo "   Assisted learning ('deep learn') requires PyTorch for transformer fine-tuning."
+    echo "   Install with: bash SETUP_INSTALL_DEPENDENCIES.sh"
+    echo "   The chat and memory system still work without it."
+    echo ""
 fi
+
+# Check numpy
+$PYTHON -c "import numpy" 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo "   NumPy not found (optional, improves PyTorch speed)"
+fi
+
+echo ""
+echo "[OK] Python environment checked."
 
 echo ""
 echo "[START] Launching Nova Server on http://127.0.0.1:3000"

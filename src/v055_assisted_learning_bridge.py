@@ -10,7 +10,15 @@ from pathlib import Path
 from datetime import datetime
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "nova_creature_llm_lab" / "src"))
+
+# Check if PyTorch is available (required for actual fine-tuning)
+TORCH_AVAILABLE = False
+TORCH_ERROR = None
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError as e:
+    TORCH_ERROR = str(e)
 
 ROLES = [
     "left_hemisphere",
@@ -169,7 +177,12 @@ def run_finetune(role=None):
     """Run actual transformer fine-tuning. This DOES take time (30-60 seconds).
     
     Returns proof of weight changes via SHA256 comparison.
+    Requires PyTorch to be installed.
     """
+    if not TORCH_AVAILABLE:
+        return {"error": True, "message": "PyTorch is not installed. Install it with: pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"}
+    
+    sys.path.insert(0, str(ROOT / "nova_creature_llm_lab" / "src"))
     from scripts.v055_finetune_role_brains import finetune_role
     
     before_hashes = get_checkpoint_hashes()
