@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Nova must recognize game-building requests as creation tasks instead of answering with loosely related memory. It will research the user's idea, improve it, present an editable plan, wait for the explicit command `GO`, build a playable game, test it in a real browser, repair failures, save the project, show its source, and provide an Open Game link.
+Nova must recognize game-building requests as creation tasks instead of answering with loosely related memory. It will research the user's idea, improve it, present an editable plan, wait for the explicit command `GO`, build a playable game, test it in a real browser, repair failures, save the project, show its source, provide an Open Game link, and let the user edit code beside a protected live preview.
 
 The first release prioritizes reliable browser games that run locally without a paid service. It uses modular, tested game systems and may use optional external AI providers later, but core operation must not require an API key.
 
@@ -42,6 +42,8 @@ The first release prioritizes reliable browser games that run locally without a 
 - Small changes, such as colors, speed, jump height, text, controls, obstacle frequency, or a sound toggle, are applied immediately and sent through the full test loop.
 - Major changes, such as a new genre, multiplayer, a new level system, a different rendering engine, persistent accounts, or a structural redesign, produce an impact plan and return to `WAITING_FOR_GO`.
 - The user may explicitly request planning for any change, even if Nova classifies it as small.
+- The user may edit the active game's HTML, CSS, JavaScript, and configuration files in Nova's built-in code workspace while playing a live preview.
+- Every manual save creates a checkpoint and triggers the test loop. If the edit breaks the game, Nova repairs it automatically, shows the repair diff, and retests until the preview is playable.
 
 ## Conversation Commands
 
@@ -50,6 +52,7 @@ The first release prioritizes reliable browser games that run locally without a 
 - `CANCEL` — abandon the pending build without creating files.
 - `OPEN GAME` — reopen the most recent successful build.
 - `SHOW CODE` — show the generated source files in chat.
+- `EDIT CODE` — open the active project in Nova's code and preview sandbox.
 - `MOD ...` — modify the active project using the small/major change policy.
 - `GAME STATUS` — show the active state, last test result, project path, and blocker if any.
 
@@ -68,9 +71,10 @@ IDLE
   -> READY
 
 Any active state -> CANCELLED
-RESEARCHING / BUILDING / TESTING / REPAIRING -> BLOCKED
+RESEARCHING / BUILDING / EDITING / TESTING / REPAIRING -> BLOCKED
 READY + major modification -> WAITING_FOR_GO
 READY + small modification -> BUILDING
+READY + manual code save -> EDITING -> TESTING
 ```
 
 State is persisted as JSON so restarting Nova does not silently lose a pending plan or active project.
@@ -156,6 +160,7 @@ research.json
 plan.json
 test-report.json
 repair-log.jsonl
+checkpoints/
 ```
 
 Games use HTML, CSS, JavaScript, Canvas, and `requestAnimationFrame` by default. The generator composes tested modules for input, physics, collision, scoring, game states, restart behavior, responsive sizing, touch controls, and deterministic testing. Game-specific values live in `game.config.json` wherever practical so common modifications do not require rewriting engine code.
@@ -179,6 +184,31 @@ After a successful build, chat shows:
 - the build and test summary.
 
 For larger projects, Nova shows the main file first and supports `SHOW CODE <filename>` or `SHOW ALL CODE` to avoid an unreadable single response.
+
+### 8. Code and preview sandbox
+
+The active game includes an in-browser workspace with:
+
+- a file tree confined to the selected game project;
+- syntax-highlighted editors for HTML, CSS, JavaScript, JSON, and Markdown;
+- **Run**, **Save**, **Test**, **Undo**, and **Restore Working Version** controls;
+- a live playable preview;
+- browser console output;
+- static, browser, and gameplay test results;
+- a repair-diff panel explaining Nova's automatic fixes.
+
+The preview runs in an isolated browser frame and may load only the current project's served files. Editing cannot access files outside `sandbox/game_builder_projects/<project-slug>/`.
+
+Each save creates an immutable checkpoint before changing the working files. Nova keeps:
+
+- the exact user-edited version;
+- the last verified working version;
+- every automatic repair patch;
+- the current candidate under test.
+
+After **Save** or **Run**, Nova immediately executes the relevant static and browser gates. A failure starts the repair loop without waiting for further approval. Repairs must be minimal and preserve the apparent purpose of the user's edit. Nova displays the resulting diff and the evidence that caused each repair.
+
+If the candidate still cannot pass after three evidence-equivalent repair cycles, Nova preserves the broken draft for inspection, restores the last verified version to the playable preview, enters `BLOCKED`, and explains what prevented a safe automatic repair. **Undo** returns to the previous checkpoint; **Restore Working Version** returns to the latest fully tested checkpoint.
 
 ## Play-Until-Passing Debug Loop
 
@@ -235,6 +265,8 @@ Nova continues while tests are failing and new repair progress is possible. To p
 
 `BLOCKED` is not presented as success. Nova explains the exact blocker, preserves the project and logs, and proposes the smallest user action needed to continue.
 
+The same loop applies to generated code, Nova-requested modifications, and manual code-workspace edits.
+
 ## Research and Technical Basis
 
 The design uses browser-native technology because Canvas supports game graphics and animation, and `requestAnimationFrame` is broadly available for browser animation:
@@ -283,7 +315,9 @@ The research layer uses documented public APIs where possible:
 - small and major modifications classify correctly;
 - project paths cannot escape the sandbox;
 - generated config remains valid;
-- repair categories map to permitted repair actions.
+- repair categories map to permitted repair actions;
+- manual saves create checkpoints before changing working files;
+- editor paths cannot access files outside the active game project.
 
 ### Integration tests
 
@@ -291,6 +325,9 @@ The research layer uses documented public APIs where possible:
 - no source project exists before `GO`;
 - `GO` -> generated project -> served Open Game route;
 - `SHOW CODE` returns actual generated files;
+- `EDIT CODE` opens the active project with a playable preview;
+- a manual breaking edit triggers automatic repair and a visible diff;
+- an unrepairable draft is preserved while the last working preview is restored;
 - small modification rebuilds immediately;
 - major modification waits for a new `GO`;
 - restart restores pending and ready project state;
@@ -309,7 +346,7 @@ For the block-jumping runner reference case:
 - touch controls work in a mobile viewport;
 - a deterministic smoke run completes without freezing.
 
-The repair-loop test intentionally generates one known defect, verifies that the browser test fails, confirms the repair is applied, and verifies that the same test then passes.
+The repair-loop tests intentionally generate one known build defect and one known manual-editor defect, verify that browser tests fail, confirm repairs are applied, and verify that the same tests then pass.
 
 ## Acceptance Criteria
 
@@ -325,6 +362,9 @@ The feature is complete when:
 8. Small modifications apply and retest immediately.
 9. Major modifications return to the approval gate.
 10. External or stagnant blockers are reported honestly with preserved evidence.
+11. The user can edit code beside a live playable preview.
+12. Manual saves create checkpoints and automatically repair regressions.
+13. Undo and Restore Working Version recover verified project states.
 
 ## Out of Scope for the First Release
 
