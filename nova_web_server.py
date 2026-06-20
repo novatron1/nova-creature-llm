@@ -305,6 +305,45 @@ def brain_route(text, context=None):
         lines.append("I am always learning. Try: 'Learn this: [fact]' to teach me something new.")
         return ("\n".join(lines)), trace
     
+    # Memory search — check stored lessons before falling back to handlers
+    # This runs early to catch queries about previously taught content
+    import re as _re
+    stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
+                   "have", "has", "had", "do", "does", "did", "will", "would", "could",
+                   "should", "may", "might", "can", "shall", "to", "of", "in", "for",
+                   "on", "with", "at", "by", "from", "as", "into", "through", "during",
+                   "what", "which", "who", "whom", "this", "that", "these", "those",
+                   "it", "its", "you", "your", "i", "me", "my", "we", "our",
+                   "not", "no", "nor", "so", "but", "if", "or", "and", "about",
+                   "how", "why", "when", "where", "please", "help", "need", "does"}
+    lessons_found = []
+    # Clean query: strip punctuation from each word, split on spaces
+    clean_words = _re.sub(r'[^a-z0-9\s]', ' ', q.lower()).split()
+    query_words = [w for w in clean_words if w not in stop_words and len(w) > 1]
+    for lid, ldata in MEMORY.get("lessons", {}).items():
+        text = ldata.get("text", "").lower()
+        matches = sum(1 for w in query_words if w in text)
+        # Require 2+ matches, OR 1 match if the matching word is very significant (len > 5)
+        # Accept match if: 2+ matches, OR 1 match with a long word, OR 1 match with <=2 query words total
+        has_long = any(len(w) >= 2 for w in query_words)
+        few_words = len(query_words) <= 2
+        if matches >= 2 or (matches >= 1 and (has_long or few_words)):
+            lessons_found.append((matches, ldata["text"]))
+    if lessons_found:
+        lessons_found.sort(key=lambda x: -x[0])
+        best_matches = lessons_found[0][0]
+        if best_matches >= 2 or (best_matches >= 1 and (any(len(w) >= 2 for w in query_words) or len(query_words) <= 2)):
+            trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
+            trace["skills"] = ["memory_search", "lesson_recall"]
+            trace["confidence"] = 0.80
+            trace["memory_event"] = f"memory_search:{best_matches}_matches"
+            base = "I found related knowledge in my stored lessons:\n"
+            for mc, txt in lessons_found[:3]:
+                base += f"  \u2022 {txt[:80]}\n"
+            base += "\nIs this what you were asking about?"
+            return base, trace
+
+
     # Systems / capabilities question
     if any(w in q for w in ["system", "install", "capability", "what can you do", "modules", "layers"]):
         trace["roles"] = ["planner_transformer", "memory_transformer", "speech_output_transformer"]
@@ -355,7 +394,6 @@ def brain_route(text, context=None):
                 "I can generate SVG faces, canvas drawings, animations, sprite sheets, avatar icons.\n"
                 "Try: 'make an SVG face' or 'draw something creative'."), trace
     
-    # Name introduction
     # Name introduction with multiple patterns
     is_intro = False
     extracted_name = None
@@ -533,32 +571,7 @@ def brain_route(text, context=None):
                     "Then ask 'Test yourself' to see what I've stored."), trace
 
 
-    # Memory search — check stored lessons before falling back
-    # Search MEMORY["lessons"] for text matching the query
-    lessons_found = []
-    for lid, ldata in MEMORY.get("lessons", {}).items():
-        text = ldata.get("text", "").lower()
-        # Check if any significant word from the query appears in the lesson
-        query_words = [w for w in q.split() if len(w) > 2]
-        matches = sum(1 for w in query_words if w in text)
-        if matches >= 1:
-            lessons_found.append((matches, ldata["text"]))
-    # Sort by most matches, take top 3
-    if lessons_found:
-        lessons_found.sort(key=lambda x: -x[0])
-        # Only return if we have at least a decent match
-        best_matches = lessons_found[0][0]
-        trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
-        trace["skills"] = ["memory_search", "lesson_recall"]
-        trace["confidence"] = 0.80
-        trace["memory_event"] = "memory_search_match"
-        base = "I found related knowledge in my stored lessons:\n"
-        for s in lessons_found[:3]:
-            base += f"  \u2022 {s}\n"
-        base += "\nIs this what you were asking about?"
-        return base, trace
-
-    # Default response    # Default response
+    # Default response
     trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
     trace["skills"] = ["general_knowledge", "explanation_generation"]
     trace["confidence"] = 0.85
