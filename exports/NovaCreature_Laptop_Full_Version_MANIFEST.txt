@@ -1,454 +1,62 @@
-NovaCreature Laptop Full Version — Package Manifest
-======================================================
-Date: 2026-06-19 19:46:16
+NovaCreature_Laptop_Full_Version_MANIFEST.txt
+Date: 2026-06-20
 Package: NovaCreature_Laptop_Full_Version.zip
-Size: 183.0 MB
-Total Files: 482
+Size: 183.9 MB
+Total files: 335+ (compressed)
 
-TOP-LEVEL FILES:
-  - ANDROID_INSTALL_GUIDE.md
-  - CODEX_CLOUD_MANIFEST.json
-  - QUICK_START_LAPTOP.txt
-  - README_CODEX_CLOUD.md
-  - README_LAPTOP_INSTALL.md
-  - START_NOVA_MAC_LINUX.sh
-  - START_NOVA_WINDOWS.bat
-  - nova_chat_web.html
-  - nova_mobile_app.html
-  - nova_server_android.py
-  - nova_standalone.html
-  - nova_web_server.py
-  - requirements-codex.txt
-  - run_nova_live.sh
-  - termux_run_nova.sh
+CONTENTS:
+========
+Root launcher files:
+  START_NOVA_WINDOWS.bat
+  START_NOVA_MAC_LINUX.sh
+  README_LAPTOP_INSTALL.md
+  QUICK_START_LAPTOP.txt
+  nova_web_server.py (main server with inline web UI)
+  nova_server_android.py (Android-compatible server)
+  nova_chat_web.html (standalone chat UI)
 
-FOLDERS:
+Brain modules (src/):
+  200+ Python modules including:
+  - Full brain routing system
+  - 7 role brains (left, right, memory, planner, critic, dream, speech)
+  - Rapid learning system
+  - People memory system
+  - Coding master system
+  - Science mastery system
+  - Creative display builder
+  - Live face display runtime
+  - Autonomous skill controller
+  - Voice/camera runtime
+  - Mobile phone bridge
+  - Benchmark/route trace lab
 
-ANDROID_INSTALL_GUIDE.md/ (1 files)
+Checkpoints (trained brain data):
+  checkpoints/base/ - Core trained model
+  checkpoints/brain_slots/ - 7 role-specific trained brains:
+    left_hemisphere, right_hemisphere, memory_transformer,
+    planner_transformer, critic_conscience_transformer,
+    dream_simulation_transformer, speech_output_transformer
 
-CODEX_CLOUD_MANIFEST.json/ (1 files)
+Training data:
+  training_data/ - Lesson datasets for all roles
 
-QUICK_START_LAPTOP.txt/ (1 files)
+Memory persistence:
+  data/nova_memory.json - Disk-persistent people memory and lessons
 
-README_CODEX_CLOUD.md/ (1 files)
+Reports:
+  All final reports (v1000, v1150, v1200, v1350, v1400, v1500)
+  Scorecards, benchmarks, retention reports
 
-README_LAPTOP_INSTALL.md/ (1 files)
+Training exports:
+  Best training lesson sets in JSONL format
 
-START_NOVA_MAC_LINUX.sh/ (1 files)
-
-START_NOVA_WINDOWS.bat/ (1 files)
-
-autonomous_skills/ (1 files)
-  └─ autonomous_skill_manifest.json/
-
-benchmark_lab/ (18 files)
-  └─ benchmark_manifest.json/
-  └─ exports/
-  └─ route_traces/
-  └─ test_banks/
-
-checkpoints/ (49 files)
-  └─ base/
-  └─ brain_slots/
-  └─ candidates/
-  └─ experimental/
-
-data/ (50 files)
-  └─ conversation_memory/
-  └─ dictionary_memory/
-  └─ error_bank/
-  └─ growth_streams/
-  └─ project_vault/
-  └─ robot_sim/
-  └─ short_conversation/
-  └─ smart_memory/
-  └─ teacher_generated/
-  └─ vision_stream/
-
-docs/ (20 files)
-  └─ ROADMAP_v067_project_memory_vault.md/
-  └─ ROADMAP_v068_vision_screenshot_stream.md/
-  └─ ROADMAP_v069_self_scripting_brain.md/
-  └─ ROADMAP_v070_robot_command_bridge_sim_only.md/
-  └─ ROADMAP_v071_robot_safety_spine.md/
-  └─ ROADMAP_v072_body_sensor_registry.md/
-  └─ ROADMAP_v073_robot_deployment_readiness_gate.md/
-  └─ ROADMAP_v074_mistake_memory_error_bank.md/
-  └─ ROADMAP_v075_benchmark_dashboard.md/
-  └─ ROADMAP_v076_auto_patch_repair_loop.md/
-  └─ ROADMAP_v077_dream_training_generator_2.md/
-  └─ ROADMAP_v078_voice_short_conversation_mode.md/
-  └─ ROADMAP_v079_local_cloud_sync_plan.md/
-  └─ ROADMAP_v080_app_builder_mode.md/
-  └─ ROADMAP_v081_agent_crew_brain_council.md/
-  └─ ROADMAP_v082_long_term_project_planner.md/
-  └─ ROADMAP_v083_capability_aware_response_mode.md/
-  └─ V056_CONVERSATION_MEMORY.md/
-  └─ V057_DICTIONARY_MEMORY.md/
-  └─ V058_DICTIONARY_TO_TRANSFORMER.md/
-
-exports/ (36 files)
-  └─ rapid_learning_training_set/
-  └─ v053_training_sets/
-  └─ v058_dictionary_training/
-  └─ v1142_benchmark_results.json/
-  └─ v1142_capability_scorecard.json/
-  └─ v1142_retention_scores.json/
-  └─ v1142_route_traces.jsonl/
-  └─ v1142_speed_metrics.json/
-  └─ v1191_biology_lessons.jsonl/
-  └─ v1191_chemistry_lessons.jsonl/
-  └─ v1191_cross_domain_science_lessons.jsonl/
-  └─ v1191_neuroscience_lessons.jsonl/
-  └─ v1191_physics_lessons.jsonl/
-  └─ v1191_psychology_lessons.jsonl/
-  └─ v1191_scientific_method_lessons.jsonl/
-  └─ v1281_display_manifest.json/
-  └─ v1281_face_state_config.json/
-  └─ v1281_robot_screen_config.json/
-  └─ v1281_route_light_config.json/
-  └─ v1281_theme_config.json/
-  └─ v182_targeted_role_training_sets/
-  └─ v663_planner_training_candidates/
-
-face_display/ (1 files)
-  └─ display_manifest.json/
-
-mobile_bridge/ (6 files)
-  └─ mobile_bridge_manifest.json/
-  └─ pwa/
-  └─ webapp/
-
-nova_chat_web.html/ (1 files)
-
-nova_mobile_app.html/ (1 files)
-
-nova_server_android.py/ (1 files)
-
-nova_standalone.html/ (1 files)
-
-nova_web_server.py/ (1 files)
-
-reports/ (49 files)
-  └─ ANDROID_TEXT_CHAT_REPAIR_REPORT.md/
-  └─ OWNER_LIVE_TEST_SESSION.md/
-  └─ v1000_whole_brain_jump_overdrive_final_report.md/
-  └─ v1150_intelligence_benchmark_final_report.md/
-  └─ v1193_physics_training_report.md/
-  └─ v1194_psychology_neuroscience_training_report.md/
-  └─ v1195_biology_chemistry_training_report.md/
-  └─ v1196_scientific_method_evidence_report.md/
-  └─ v1197_cross_domain_science_report.md/
-  └─ v1198_science_retention_route_report.md/
-  └─ v1199_science_download_readiness.md/
-  └─ v1200_science_mastery_final_report.md/
-  └─ v1288_display_dashboard_report.md/
-  └─ v1289_face_runtime_report.md/
-  └─ v1290_route_lights_report.md/
-  └─ v1291_sensory_display_report.md/
-  └─ v1292_people_learning_display_report.md/
-  └─ v1293_creative_preview_display_report.md/
-  └─ v1294_robot_screen_report.md/
-  └─ v1295_display_benchmark_report.md/
-  └─ v1296_display_test_report.md/
-  └─ v1299_display_final_scorecard.md/
-  └─ v1300_live_display_runtime_final_report.md/
-  └─ v1348_autonomous_skill_use_report.md/
-  └─ v1350_autonomous_skill_use_final_report.md/
-  └─ v1399_voice_camera_run_guide.md/
-  └─ v1400_live_voice_camera_final_report.md/
-  └─ v1479_mobile_phone_run_guide.md/
-  └─ v1480_mobile_security_report.md/
-  └─ v1481_mobile_runtime_report.md/
-  └─ v1482_mobile_display_report.md/
-  └─ v1483_mobile_voice_report.md/
-  └─ v1484_mobile_camera_report.md/
-  └─ v1485_mobile_tests_report.md/
-  └─ v1495_mobile_final_scorecard.md/
-  └─ v1497_mobile_zip_readiness_report.md/
-  └─ v1498_mobile_final_owner_message.md/
-  └─ v1499_mobile_package_manifest.md/
-  └─ v1500_mobile_phone_bridge_final_report.md/
-  └─ v184_owner_review_training_summary.md/
-  └─ v696_owner_review_promotion_packet.md/
-  └─ v750_sensory_body_readiness_report.md/
-  └─ v775_natural_people_memory_report.md/
-  └─ v800_rapid_learning_final_report.md/
-  └─ v821_full_system_integration_report.md/
-  └─ v825_final_integration_readiness_report.md/
-  └─ v875_coding_master_readiness_report.md/
-  └─ v900_coding_master_final_report.md/
-  └─ v950_whole_brain_training_final_report.md/
-
-requirements-codex.txt/ (1 files)
-
-run_nova_live.sh/ (1 files)
-
-science_mastery/ (1 files)
-  └─ science_mastery_manifest.json/
-
-scripts/ (20 files)
-  └─ apply_codex_catchup.py/
-  └─ check_codex_brain_stack.py/
-  └─ check_v055_finetuned_role_brains.py/
-  └─ check_v056_conversation_memory.py/
-  └─ check_v057_dictionary_memory.py/
-  └─ check_v058_dictionary_to_transformer.py/
-  └─ check_v059_router_uses_finetuned_brains.py/
-  └─ cloud_chat_adapter.py/
-  └─ v053_training_prep.py/
-  └─ v054_role_checkpoint_builder.py/
-  └─ v055_cloud_finetune_ready.py/
-  └─ v055_finetune_role_brains.py/
-  └─ v056_chat_once.py/
-  └─ v056_gold_conversation_test.py/
-  └─ v057_add_dictionary_lesson.py/
-  └─ v057_chat_once.py/
-  └─ v057_gold_dictionary_test.py/
-  └─ v058_export_dictionary_to_training.py/
-  └─ v058_gold_dictionary_to_transformer_test.py/
-  └─ v060_list_pending_memory.py/
-
-src/ (200 files)
-  └─ conversation_memory.py/
-  └─ dictionary_memory.py/
-  └─ dictionary_to_training.py/
-  └─ v052_role_brain_router.py/
-  └─ v056_conversation_router.py/
-  └─ v057_dictionary_conversation_router.py/
-  └─ v059_checkpoint_resolver.py/
-  └─ v060_memory_manager.py/
-  └─ v060_smart_memory_capture.py/
-  └─ v060_smart_memory_router.py/
-  └─ v061_learning_loop_manager.py/
-  └─ v061_memory_exporter.py/
-  └─ v062_benchmark_gate.py/
-  └─ v062_growth_engine.py/
-  └─ v062_growth_streams.py/
-  └─ v062_multi_source_growth.py/
-  └─ v063_dream_critic.py/
-  └─ v063_dream_replay.py/
-  └─ v063_inner_voice.py/
-  └─ v064_approval_constitution.py/
-  └─ v064_memory_constitution.py/
-  └─ v064_memory_law.py/
-  └─ v065_nervous_system.py/
-  └─ v065_self_test_nervous_system.py/
-  └─ v065_skill_hands.py/
-  └─ v066_capability_answerer.py/
-  └─ v066_capability_self_map.py/
-  └─ v066_project_vault.py/
-  └─ v067_vision_stream.py/
-  └─ v068_short_conversation.py/
-  └─ v069_error_bank.py/
-  └─ v069_self_scripting_brain.py/
-  └─ v070_robot_command_schema.py/
-  └─ v070_robot_sim_bridge.py/
-  └─ v070_sync_plan.py/
-  └─ v071_robot_safety_spine.py/
-  └─ v072_body_sensor_registry.py/
-  └─ v073_robot_deployment_gate.py/
-  └─ v074_mistake_memory.py/
-  └─ v075_benchmark_dashboard.py/
-  └─ v076_auto_patch_repair.py/
-  └─ v077_dream_training_generator.py/
-  └─ v078_voice_mode.py/
-  └─ v079_local_cloud_sync_plan.py/
-  └─ v080_app_builder_mode.py/
-  └─ v081_brain_organ_council.py/
-  └─ v082_long_term_roadmap_planner.py/
-  └─ v083_capability_aware_response.py/
-  └─ v084_owner_approval_console.py/
-  └─ v085_full_system_health.py/
-  └─ v086_reasoning_core.py/
-  └─ v087_multistep_planner.py/
-  └─ v088_question_decomposer.py/
-  └─ v089_evidence_checker.py/
-  └─ v090_self_correction_loop.py/
-  └─ v091_concept_builder.py/
-  └─ v092_long_context_understanding.py/
-  └─ v093_strategy_brain.py/
-  └─ v094_debate_brain.py/
-  └─ v095_intelligence_benchmark_suite.py/
-  └─ v095_intelligence_router.py/
-  └─ v096_screenshot_understanding_stream.py/
-  └─ v097_vision_error_reader.py/
-  └─ v098_ui_action_planner.py/
-  └─ v099_file_folder_visual_inspector.py/
-  └─ v100_visual_memory_builder.py/
-  └─ v101_robot_hardware_config.py/
-  └─ v102_emergency_stop.py/
-  └─ v103_sensor_feedback.py/
-  └─ v104_safe_zone.py/
-  └─ v105_robot_simulation_benchmark.py/
-  └─ v106_owner_approval_gate.py/
-  └─ v107_movement_readiness.py/
-  └─ v108_mission_planner.py/
-  └─ v109_task_queue.py/
-  └─ v110_goal_memory.py/
-  └─ v111_daily_self_test.py/
-  └─ v112_auto_learning_scheduler.py/
-  └─ v113_auto_repair_scheduler.py/
-  └─ v114_upgrade_recommendation_engine.py/
-  └─ v115_studio_business_assistant.py/
-  └─ v116_music_beat_license_brain.py/
-  └─ v117_game_builder_brain.py/
-  └─ v118_app_builder_factory.py/
-  └─ v119_content_creator_brain.py/
-  └─ v120_project_revenue_planner.py/
-  └─ v121_personality_style_brain.py/
-  └─ v122_emotion_tone_reader.py/
-  └─ v123_conversation_timing_brain.py/
-  └─ v124_natural_speech_layer.py/
-  └─ v125_conflict_debate_handling.py/
-  └─ v126_teaching_mode.py/
-  └─ v127_voice_identity_mode.py/
-  └─ v128_memory_personalization.py/
-  └─ v129_short_answer_glasses_mode.py/
-  └─ v130_deep_research_mode.py/
-  └─ v131_synthetic_lesson_generator.py/
-  └─ v132_hard_question_generator.py/
-  └─ v133_adversarial_critic_tests.py/
-  └─ v134_weakness_detector.py/
-  └─ v135_targeted_finetune_planner.py/
-  └─ v136_dataset_quality_scorer.py/
-  └─ v137_training_regression_detector.py/
-  └─ v138_checkpoint_tournament.py/
-  └─ v139_best_brain_promotion.py/
-  └─ v140_model_evolution_report.py/
-  └─ v142_dataset_growth_engine.py/
-  └─ v143_benchmark_history_tracker.py/
-  └─ v144_voice_first_intelligence.py/
-  └─ v145_long_term_project_memory.py/
-  └─ v146_hard_reasoning_benchmark.py/
-  └─ v147_checkpoint_tournament.py/
-  └─ v148_tool_execution_readiness.py/
-  └─ v150_creation_speed_engine.py/
-  └─ v152_intelligence_growth_simulator.py/
-  └─ v153_brain_maturity_index.py/
-  └─ v154_curriculum_engine.py/
-  └─ v155_hard_problem_gym.py/
-  └─ v156_weakness_targeted_lessons.py/
-  └─ v157_mistake_replay_trainer.py/
-  └─ v158_dream_replay_accelerator.py/
-  └─ v159_role_brain_sparring.py/
-  └─ v160_council_tournament.py/
-  └─ v161_benchmark_difficulty_escalator.py/
-  └─ v162_adversarial_question_lab.py/
-  └─ v163_unknown_handling_trainer.py/
-  └─ v164_code_repair_gym.py/
-  └─ v168_concept_compression.py/
-  └─ v169_lesson_distillation.py/
-  └─ v170_contradiction_hunter.py/
-  └─ v171_evidence_ranking_trainer.py/
-  └─ v173_long_context_challenge_builder.py/
-  └─ v174_creativity_pattern_trainer.py/
-  └─ v177_speech_clarity_trainer.py/
-  └─ v180_fast_age_training_orchestrator.py/
-  └─ v181_age_cycle_training_batch_builder.py/
-  └─ v182_latent_skill_detector.py/
-  └─ v182_targeted_role_training_exporter.py/
-  └─ v184_finetune_approval_package.py/
-  └─ v184_input_pattern_miner.py/
-  └─ v185_age_cycle_promotion_decision.py/
-  └─ v186_input_to_brain_role_mapper.py/
-  └─ v188_capability_proof_lab.py/
-  └─ v189_capability_training_planner.py/
-  └─ v190_raw_input_capability_report.py/
-  └─ v196_safety_blocking_amplifier.py/
-  └─ v199_cross_domain_transfer_lab.py/
-  └─ v200_emergent_skill_watchtower.py/
-  └─ v202_capability_to_benchmark_auto_builder.py/
-  └─ v204_critic_vs_dream_arena.py/
-  └─ v206_dataset_poison_scanner.py/
-  └─ v207_training_item_trust_score.py/
-  └─ v210_capability_promotion_council.py/
-  └─ v211_intelligence_pressure_cooker.py/
-  └─ v212_harder_code_repair_gym_v2.py/
-  └─ v214_long_memory_recall_ladder.py/
-  └─ v217_benchmark_advancement_law_trainer.py/
-  └─ v218_reasoning_step_quality_scorer.py/
-  └─ v219_self_explanation_trainer.py/
-  └─ v221_working_memory_scratchpad.py/
-  └─ v223_goal_state_tracker.py/
-  └─ v224_failure_prediction_brain.py/
-  └─ v227_data_to_skill_heatmap.py/
-  └─ v231_planner_code_repair_training_batch.py/
-  └─ v232_code_repair_dataset_cleaner.py/
-  └─ v233_planner_finetune_candidate_builder.py/
-  └─ v234_code_repair_benchmark_2.py/
-  └─ v236_planner_v055_tournament.py/
-  └─ v237_planner_regression_trap_test.py/
-  └─ v240_code_repair_growth_report.py/
-  └─ v241_stronger_base_model_loader.py/
-  └─ v242_model_compatibility_scanner.py/
-  └─ v245_role_brain_transfer_adapter.py/
-  └─ v246_new_base_candidate_test.py/
-  └─ v252_project_timeline_compressor.py/
-  └─ v253_conversation_summary_memory.py/
-  └─ v254_important_fact_extractor.py/
-  └─ v260_memory_growth_report.py/
-  └─ v261_screenshot_text_reader.py/
-  └─ v264_file_tree_screenshot_reader.py/
-  └─ v266_screenshot_to_memory_converter.py/
-  └─ v268_vision_error_repair_planner.py/
-  └─ v270_visual_intelligence_report.py/
-  └─ v271_voice_command_resolver.py/
-  └─ v272_short_answer_controller.py/
-  └─ v275_voice_safety_confirmation.py/
-  └─ v281_tool_selection_brain.py/
-  └─ v283_app_scaffold_generator_2.py/
-  └─ v284_test_generator.py/
-  └─ v285_auto_debug_planner.py/
-  └─ v288_game_app_asset_planner.py/
-  └─ v289_revenue_app_builder_mode.py/
-  └─ v290_app_factory_report.py/
-  └─ v291_robot_body_requirement_map.py/
-  └─ v294_emergency_stop_hardware_checklist.py/
-  └─ v296_safe_movement_sandbox.py/
-  └─ v297_robot_command_risk_classifier.py/
-  └─ v302_hypothesis_builder.py/
-  └─ v305_weakness_detector_2.py/
-  └─ v307_benchmark_creator.py/
-
-termux_run_nova.sh/ (1 files)
-
-training_data/ (15 files)
-  └─ rapid_learning/
-  └─ role_brains/
-
-voice_camera_runtime/ (1 files)
-  └─ voice_camera_manifest.json/
-
-
-KEY BRAIN FILES INCLUDED:
-  - checkpoints/base/creature_v032_bigfit_twenty_plain.pt (trained base)
-  - checkpoints/brain_slots/left_hemisphere/ (v054, v055)
-  - checkpoints/brain_slots/right_hemisphere/ (v054, v055)  
-  - checkpoints/brain_slots/memory_transformer/ (v054, v055)
-  - checkpoints/brain_slots/planner_transformer/ (v054, v055)
-  - checkpoints/brain_slots/critic_conscience_transformer/ (v054, v055)
-  - checkpoints/brain_slots/dream_simulation_transformer/ (v054, v055)
-  - checkpoints/brain_slots/speech_output_transformer/ (v054, v055)
-  - checkpoints/experimental/creature_v032_bigfit_twenty_plain.pt
-  - training_data/role_brains/ (7 roles, approved + pending lessons)
-  - training_data/rapid_learning/approved_lessons.jsonl
-
-SERVER FILES:
-  - nova_web_server.py (main laptop server, port 3000)
-  - nova_server_android.py (Termux/Android server)
-  - nova_mobile_app.html (mobile frontend)
-  - nova_standalone.html (standalone frontend)
-  - nova_chat_web.html (chat frontend)
-
-LAUNCHERS:
-  - START_NOVA_WINDOWS.bat
-  - START_NOVA_MAC_LINUX.sh
-  - README_LAPTOP_INSTALL.md
-  - QUICK_START_LAPTOP.txt
-
-BRAIN ROUTING:
-  - src/v052_role_brain_router.py
-  - src/v056_conversation_router.py
-  - src/v060_memory_manager.py
-  - +197 more src modules
+FIXES INCLUDED:
+  - Memory now persists to disk (names, lessons survive restarts)
+  - 'Learn this:' handler works correctly before broad keyword handlers
+  - 'Test yourself' routes to self-test (not coding)
+  - Name recall uses most recent person (not first)
+  - Multiple name patterns: 'my name is', 'i am', 'i'm', 'call me', 'name's'
+  - 'Do you know who I am?' triggers name recall
+  - Psychology questions route correctly (not to learning handler)
+  - Self-test shows actual stored people/lessons counts
+  - Disk persistence verified end-to-end
