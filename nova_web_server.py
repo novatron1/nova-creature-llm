@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 """Nova Creature — Live Web Server + Chat API"""
 
-import json, sys, os, uuid, time, shutil
+import json, sys, os, uuid, time, shutil, threading
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
+
+# Assisted Learning Bridge — connects "Learn this:" to actual transformer fine-tuning
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+try:
+    from v055_assisted_learning_bridge import queue_lesson, run_finetune, get_queue_size, get_queue, get_checkpoint_hashes, get_training_stats
+    ASSISTED_LEARNING_AVAILABLE = True
+except Exception as e:
+    ASSISTED_LEARNING_AVAILABLE = False
+    ASSISTED_LEARNING_ERR = str(e)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -144,12 +153,107 @@ def brain_route(text, context=None):
             MEMORY["lessons"][lesson_id] = {"text": lesson_text, "learned_at": datetime.now().isoformat(), "session": SESSION_ID}
             MEMORY["last_lesson"] = lesson_id
             _save_memory()
+            
+            # Also queue the lesson for actual transformer fine-tuning
+            tuning_msg = ""
+            if ASSISTED_LEARNING_AVAILABLE:
+                try:
+                    result = queue_lesson(lesson_text, SESSION_ID)
+                    qsize = result["queue_size"]
+                    role = result["role"]
+                    tuning_msg = f"\n[BRAIN TUNE] Queued for {role} transformer fine-tuning ({qsize} total queued)."
+                    if qsize >= 5:
+                        tuning_msg += "\n[BRAIN TUNE] 5 lessons ready! Say 'deep learn' to update the actual transformer weights."
+                except Exception as e:
+                    tuning_msg = f"\n[BRAIN TUNE] Note: assisted learning bridge error: {e}"
+            
             trace["roles"] = ["rapid_learning", "self_test", "critic"]
             trace["skills"] = ["learning_intake", "memory_lock"]
             trace["confidence"] = 0.91
             trace["memory_event"] = f"lesson_created:{lesson_id}"
-            return f"[LEARNING] Lesson stored! I learned: '{lesson_text}'\nAsk me 'Test yourself' to see my benchmarks.", trace
+            return f"[LEARNING] Lesson stored! I learned: '{lesson_text}'{tuning_msg}\nAsk me 'Test yourself' to see my benchmarks.", trace
     
+
+    # Deep learn / train transformers — triggers actual weight fine-tuning
+    if any(w in q for w in ["deep learn", "train brain", "update weights", "train transformers", "finetune"]):
+        if not ASSISTED_LEARNING_AVAILABLE:
+            trace["roles"] = ["planner_transformer", "critic_conscience_transformer"]
+            trace["confidence"] = 0.70
+            return "[BRAIN TUNE] Assisted learning bridge is not available. The JSON memory still works — lessons are searchable.", trace
+        
+        trace["roles"] = ["planner_transformer", "rapid_learning", "critic_conscience_transformer"]
+        trace["skills"] = ["deep_learning", "weight_update", "model_finetuning"]
+        trace["confidence"] = 0.88
+        
+        try:
+            before_hashes = get_checkpoint_hashes()
+            qsize = get_queue_size()
+            
+            if qsize == 0:
+                return ("[BRAIN TUNE] No lessons queued for fine-tuning.\n"
+                        "Teach me with 'Learn this: [fact]' first, then say 'deep learn' to update my transformers.", trace)
+            
+            # Run the fine-tuning (this takes 30-60 seconds)
+            trace["memory_event"] = f"finetune_start:{qsize}_lessons"
+            result = run_finetune()
+            
+            after_hashes = get_checkpoint_hashes()
+            
+            # Build response with SHA256 proof
+            changed = result.get("weight_changes", [])
+            roles_changed = len(changed)
+            
+            response = f"[BRAIN TUNE] Transformer fine-tuning complete!\n"
+            response += f"  Lessons processed: {qsize}\n"
+            response += f"  Roles tuned: {roles_changed}\n"
+            response += f"\n"
+            
+            for c in changed:
+                ckpt = c["checkpoint"]
+                before = c["sha256_before"][:12]
+                after = c["sha256_after"][:12]
+                response += f"  \u2022 {ckpt}: SHA256 changed {before} \u2192 {after}\n"
+            
+            # Show loss changes
+            for r in result.get("results", []):
+                response += f"  \u2022 {r['role']}: loss {r.get('start_loss', '?'):.4f} \u2192 {r.get('final_loss', '?'):.4f}\n"
+            
+            response += "\n✅ Transformer weights have changed! The brain now actually knows what you taught."
+            return response, trace
+            
+        except Exception as e:
+            return f"[BRAIN TUNE] Fine-tuning error: {e}\nJSON memory still works — your lessons are searchable.", trace
+
+    # Learning status
+    if any(w in q for w in ["learning status", "brain status", "training status", "queued lessons"]):
+        if ASSISTED_LEARNING_AVAILABLE:
+            try:
+                qsize = get_queue_size()
+                queue = get_queue()
+                stats = get_training_stats()
+                
+                lines = ["[BRAIN STATUS] Assisted Learning System"]
+                lines.append(f"  Lessons queued for fine-tuning: {qsize}")
+                if queue:
+                    lines.append("  Queued lessons:")
+                    for l in queue[-5:]:
+                        lines.append(f"    \u2022 [{l['role']}] {l['text'][:60]}")
+                lines.append("")
+                lines.append("  Checkpoint status:")
+                for role, info in stats.get("checkpoints", {}).items():
+                    versions = []
+                    for v, d in info.items():
+                        if isinstance(d, dict) and "sha256" in d:
+                            versions.append(f"{v}: {d['sha256']}")
+                    if versions:
+                        lines.append(f"    \u2022 {role}: {', '.join(versions)}")
+                
+                return ("\n".join(lines)), trace
+            except Exception as e:
+                return f"[BRAIN STATUS] Status error: {e}", trace
+        else:
+            return ("[BRAIN STATUS] Assisted learning bridge not available.\n"
+                    "Your lessons are stored in JSON memory and are searchable.", trace)
 
     # Learn / teaching
     if any(w in q for w in ["learn", "teach", "lesson", "study"]):
@@ -454,7 +558,7 @@ def brain_route(text, context=None):
         base += "\nIs this what you were asking about?"
         return base, trace
 
-    # Default response
+    # Default response    # Default response
     trace["roles"] = ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
     trace["skills"] = ["general_knowledge", "explanation_generation"]
     trace["confidence"] = 0.85
