@@ -558,7 +558,7 @@ def brain_route(text, context=None):
 
 
     # Systems / capabilities question
-    if any(w in q for w in ["system", "install", "capability", "what can you do", "modules", "layers"]):
+    if any(w in q for w in ["system", "install", "capability", "capabilities", "what can you do", "modules", "layers", "what coding", "what science", "all your"]):
         trace["roles"] = ["planner_transformer", "memory_transformer", "speech_output_transformer"]
         trace["skills"] = ["system_knowledge", "explanation_generation"]; trace["confidence"] = 0.95
         return ("I am Nova Creature — a multi-brain LLM with layers including:\n"
@@ -578,11 +578,11 @@ def brain_route(text, context=None):
                 "Try: 'can you code', 'can you learn', 'can you make a face', 'My name is ...', or any question!"), trace
     
     # Coding question
-    if any(w in q for w in ["code", "programming", "debug", "bug", "fix", "python", "javascript"]):
+    if any(w in q for w in ["code", "programming", "debug", "bug", "fix", "python", "javascript", "what programming"]):
         trace["roles"] = ["left_hemisphere", "planner_transformer", "critic_conscience_transformer", "speech_output_transformer"]
         trace["skills"] = ["codebase_scanner", "bug_detection", "patch_planning", "test_generation", "self_debug"]
         trace["confidence"] = 0.92
-        return ("I have full Coding Master training (v826-v900) with:\n"
+        return ("I have full Coding Master training (v826-v900) with Python, JavaScript, and more:\n"
                 "  • Codebase scanner — maps projects by folders, files, languages, imports, functions\n"
                 "  • Bug detection — syntax, imports, paths, function calls, JSON, async, state, error handling\n"
                 "  • Stack trace solver — extracts failing file, line, exception, root cause, fix\n"
@@ -653,7 +653,8 @@ def brain_route(text, context=None):
                              "calculate", "solve for", "math", "trigonometry",
                              "area of", "circle", "triangle", "square", "radius",
                              "probability", "statistics", "percentage", "fraction",
-                             "function", "variable", "graph", "angle", "degree"]):
+                             "function", "variable", "graph", "angle", "degree",
+                             "e=mc", "e=mc2", "e=mc^2", "speed of light"]):
         trace["roles"] = ["left_hemisphere", "memory_transformer", "speech_output_transformer"]
         trace["skills"] = ["math_knowledge", "formula_recall"]
         trace["confidence"] = 0.88
