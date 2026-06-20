@@ -25,12 +25,12 @@ ROLES = {
     },
     "memory_transformer": {
         "name": "Memory Transformer",
-        "specialty": ["fact", "name", "date", "event", "definition", "term", "history", "person", "relationship", "rule", "remember", "store", "recall", "knowledge", "information", "biology", "cell", "science", "dna", "protein", "theory", "principle", "law"],
+        "specialty": ["fact", "name", "date", "event", "definition", "term", "history", "person", "relationship", "rule", "remember", "store", "recall", "knowledge", "information", "biology", "cell", "science", "dna", "protein", "theory", "principle", "law", "brain", "neural", "neuron", "synapse", "organism", "species", "organ", "tissue"],
         "prompt_prefix": "FACT: ",
     },
     "planner_transformer": {
         "name": "Planner Transformer",
-        "specialty": ["plan", "step", "order", "sequence", "procedure", "workflow", "pipeline", "strategy", "timeline"],
+        "specialty": ["plan", "step", "order", "sequence", "procedure", "workflow", "pipeline", "strategy", "timeline", "system", "coordinate", "integrate", "architecture", "framework", "process"],
         "prompt_prefix": "PLAN: ",
     },
     "critic_conscience_transformer": {
@@ -45,7 +45,7 @@ ROLES = {
     },
     "speech_output_transformer": {
         "name": "Speech Output Transformer",
-        "specialty": ["explain", "describe", "summarize", "clarify", "wording", "style", "tone", "format", "presentation"],
+        "specialty": ["explain", "describe", "summarize", "clarify", "wording", "style", "tone", "format", "presentation", "answer", "response", "define", "elaborate", "introduce"],
         "prompt_prefix": "SPEECH: ",
     },
 }
@@ -168,9 +168,44 @@ def detect_components(text):
                         "matched_keywords": sentence_matches,
                     })
     
-    # Step 4: If no role was specifically detected, find the best matching roles
-    # by doing a global keyword match across all roles for each sentence
+    # Step 4: If no role was specifically detected, apply broader matching
+    # This catches teaching that doesn't use direct specialty keywords
     if not any(components.values()):
+        # Assign to memory_transformer for factual storage
+        for sentence in sentences:
+            if len(sentence) < 5:
+                continue
+            components["memory_transformer"].append({
+                "prompt": f"{ROLES['memory_transformer']['prompt_prefix']}{sentence}",
+                "answer": f"Stored: {sentence}",
+                "type": "general_knowledge",
+                "source": "decomposed_fallback",
+                "matched_keywords": ["general"],
+            })
+            # Also try planner for process/coordination statements
+            if any(w in sentence.lower() for w in ["work", "together", "system", "process", "step", "order", "coordinate", "build", "plan"]):
+                components["planner_transformer"].append({
+                    "prompt": f"{ROLES['planner_transformer']['prompt_prefix']}{sentence}",
+                    "answer": f"Planned: {sentence}",
+                    "type": "process",
+                    "source": "decomposed_fallback",
+                    "matched_keywords": ["process"],
+                })
+            # Try speech for explanation/wording statements
+            if any(w in sentence.lower() for w in ["explain", "describe", "summarize", "wording", "phrase", "talk", "say", "answer"]):
+                components["speech_output_transformer"].append({
+                    "prompt": f"{ROLES['speech_output_transformer']['prompt_prefix']}{sentence}",
+                    "answer": f"Explained: {sentence}",
+                    "type": "explanation",
+                    "source": "decomposed_fallback",
+                    "matched_keywords": ["explanation"],
+                })
+    
+    # Step 5: Retry with broader matching for any remaining unmatched sentences
+    if not any(components.values()):
+        for sentence in sentences:
+            if len(sentence) < 5:
+                continue
         for sentence in sentences:
             if len(sentence) < 5:
                 continue

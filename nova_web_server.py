@@ -248,6 +248,10 @@ def brain_route(text, context=None):
             trace["memory_event"] = f"finetune_start:{qsize}_lessons"
             result = run_finetune()
             
+            # Check if the result contains an error (e.g. PyTorch not installed)
+            if result.get("error"):
+                return f"[BRAIN TUNE] {result['message']}\nLessons are queued in JSON memory and can still be searched.", trace
+            
             after_hashes = get_checkpoint_hashes()
             
             # Build response with SHA256 proof
@@ -277,6 +281,9 @@ def brain_route(text, context=None):
 
     # Learning status
     if any(w in q for w in ["learning status", "brain status", "training status", "queued lessons"]):
+        trace["roles"] = ["planner_transformer", "memory_transformer", "speech_output_transformer"]
+        trace["skills"] = ["status_report", "system_knowledge"]
+        trace["confidence"] = 0.90
         if ASSISTED_LEARNING_AVAILABLE:
             try:
                 qsize = get_queue_size()
