@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import dataclasses as _dataclasses
 from dataclasses import asdict, dataclass, field
 import math
-from types import GeneratorType
+from types import MappingProxyType
 from typing import Any, Literal
 
 ExecutionTier = Literal["avatar", "simulation", "shadow", "physical"]
@@ -20,51 +19,27 @@ MOTION_NUMERIC_ABS_LIMIT = 1_000_000
 MAX_DURATION_MS = 2**31 - 1
 
 
-class _AsdictEntry(tuple):
-    __slots__ = ()
+class FrozenMapping(Mapping[str, Any]):
+    __slots__ = ("__data",)
 
-    def __new__(cls, key: str, value: Any) -> _AsdictEntry:
-        return tuple.__new__(cls, (key, value))
-
-
-class _FrozenKey(str):
-    __slots__ = ("_value",)
-
-    def __new__(cls, key: str, value: Any) -> _FrozenKey:
-        instance = str.__new__(cls, key)
-        instance._value = value
-        return instance
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> _AsdictEntry:
-        # Python 3.11 dataclasses.asdict treats tuple subclasses as
-        # sequences before consulting the mapping's __deepcopy__ method.
-        detached = _AsdictEntry(str(self), thaw_value(self._value))
-        memo[id(self)] = detached
-        return detached
-
-
-class FrozenMapping(tuple, Mapping[str, Any]):
-    __slots__ = ()
-
-    def __new__(
-        cls,
-        values: Any = None,
+    def __init__(
+        self,
+        values: Mapping[str, Any] | None = None,
         *,
         _path: str = "value",
         _active: set[int] | None = None,
         _depth: int = 0,
-    ) -> FrozenMapping:
+    ) -> None:
         if values is None:
             source: Mapping[Any, Any] = {}
+        elif isinstance(values, FrozenMapping):
+            source = values.to_dict()
         elif isinstance(values, Mapping):
             source = values
         else:
-            asdict_result = _consume_asdict_entries(values)
-            if asdict_result is not None:
-                return asdict_result
             raise TypeError(f"{_path} must be a mapping")
 
-        _validate_container_limits(len(source), _path, _depth)
+        _validate_nesting_depth(_path, _depth)
 
         active = set() if _active is None else _active
         identity = id(source)
@@ -72,7 +47,8 @@ class FrozenMapping(tuple, Mapping[str, Any]):
             raise ValueError(f"Reference cycle detected at {_path}")
         active.add(identity)
         try:
-            frozen: list[tuple[str, Any]] = []
+            frozen: dict[str, Any] = {}
+            seen: set[str] = set()
             for index, (key, value) in enumerate(source.items()):
                 if index >= MAX_CONTAINER_ITEMS:
                     raise ValueError(
@@ -83,59 +59,55 @@ class FrozenMapping(tuple, Mapping[str, Any]):
                     raise TypeError(
                         f"{_path} mappings require string keys; got {key!r}"
                     )
-                frozen.append(
-                    (
-                        key,
-                        freeze_value(
-                            value,
-                            path=f"{_path}.{key}",
-                            _active=active,
-                            _depth=_depth + 1,
-                        ),
+                if key in seen:
+                    raise ValueError(
+                        f"{_path} mappings require unique keys; "
+                        f"duplicate key {key!r}"
                     )
+                seen.add(key)
+                frozen[key] = freeze_value(
+                    value,
+                    path=f"{_path}.{key}",
+                    _active=active,
+                    _depth=_depth + 1,
                 )
         finally:
             active.remove(identity)
-        frozen.sort(key=lambda item: item[0])
-        return tuple.__new__(cls, frozen)
-
-    def __init__(
-        self,
-        values: Mapping[str, Any] | None = None,
-        *,
-        _path: str = "value",
-        _active: set[int] | None = None,
-        _depth: int = 0,
-    ) -> None:
-        pass
+        ordered = {key: frozen[key] for key in sorted(frozen)}
+        object.__setattr__(
+            self,
+            "_FrozenMapping__data",
+            MappingProxyType(ordered),
+        )
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         raise TypeError("FrozenMapping cannot be subclassed")
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        raise TypeError("FrozenMapping is immutable")
+
+    def __delattr__(self, name: str) -> None:
+        raise TypeError("FrozenMapping is immutable")
+
     def __getitem__(self, key: str) -> Any:
-        for candidate, value in tuple.__iter__(self):
-            if candidate == key:
-                return value
-        raise KeyError(key)
+        return self.__data[key]
 
     def __iter__(self):
-        for key, value in tuple.__iter__(self):
-            yield _FrozenKey(key, value)
+        return iter(self.__data)
 
     def __len__(self) -> int:
-        return tuple.__len__(self)
+        return len(self.__data)
+
+    def __contains__(self, key: object) -> bool:
+        return key in self.__data
 
     def __repr__(self) -> str:
-        values = {
-            key: value
-            for key, value in tuple.__iter__(self)
-        }
-        return f"{type(self).__name__}({values!r})"
+        return f"{type(self).__name__}({dict(self.__data)!r})"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Mapping):
             return NotImplemented
-        return self.to_dict() == thaw_value(other)
+        return dict(self.__data) == dict(other)
 
     def __ne__(self, other: object) -> bool:
         equal = self.__eq__(other)
@@ -144,7 +116,10 @@ class FrozenMapping(tuple, Mapping[str, Any]):
         return not equal
 
     def __hash__(self) -> int:
-        return tuple.__hash__(self)
+        return hash(tuple(self.__data.items()))
+
+    def __copy__(self) -> FrozenMapping:
+        return self
 
     def __deepcopy__(self, memo: dict[int, Any]) -> dict[str, Any]:
         detached = thaw_value(self)
@@ -154,62 +129,49 @@ class FrozenMapping(tuple, Mapping[str, Any]):
     def to_dict(self) -> dict[str, Any]:
         return thaw_value(self)
 
+    def __reduce__(self):
+        return (type(self), (self.to_dict(),))
+
 
 FrozenDict = FrozenMapping
 
 
-def _consume_asdict_entries(values: Any) -> dict[str, Any] | None:
-    if (
-        not isinstance(values, GeneratorType)
-        or values.gi_code.co_filename != _dataclasses.__file__
-    ):
-        return None
-
-    result: dict[str, Any] = {}
-    for index, entry in enumerate(values):
-        if index >= MAX_CONTAINER_ITEMS:
-            return None
-        if not isinstance(entry, _AsdictEntry):
-            return None
-        key, value = entry
-        result[key] = value
-    return result
-
-
-def _validate_container_limits(size: int, path: str, depth: int) -> None:
+def _validate_nesting_depth(path: str, depth: int) -> None:
     if depth > MAX_NESTING_DEPTH:
         raise ValueError(
             f"{path} exceeds the maximum nesting depth "
             f"of {MAX_NESTING_DEPTH}"
         )
-    if size > MAX_CONTAINER_ITEMS:
-        raise ValueError(
-            f"{path} exceeds the maximum container size "
-            f"of {MAX_CONTAINER_ITEMS}"
-        )
 
 
 def _freeze_sequence(
-    value: list[Any] | tuple[Any, ...],
+    value: list[Any],
     path: str,
     active: set[int],
     depth: int,
 ) -> tuple[Any, ...]:
-    _validate_container_limits(len(value), path, depth)
+    _validate_nesting_depth(path, depth)
     identity = id(value)
     if identity in active:
         raise ValueError(f"Reference cycle detected at {path}")
     active.add(identity)
     try:
-        return tuple(
-            freeze_value(
-                item,
-                path=f"{path}[{index}]",
-                _active=active,
-                _depth=depth + 1,
+        frozen: list[Any] = []
+        for index, item in enumerate(value):
+            if index >= MAX_CONTAINER_ITEMS:
+                raise ValueError(
+                    f"{path} exceeds the maximum container size "
+                    f"of {MAX_CONTAINER_ITEMS}"
+                )
+            frozen.append(
+                freeze_value(
+                    item,
+                    path=f"{path}[{index}]",
+                    _active=active,
+                    _depth=depth + 1,
+                )
             )
-            for index, item in enumerate(value)
-        )
+        return tuple(frozen)
     finally:
         active.remove(identity)
 
@@ -241,7 +203,7 @@ def freeze_value(
             _active=active,
             _depth=_depth,
         )
-    if isinstance(value, (list, tuple)):
+    if type(value) is list:
         return _freeze_sequence(value, path, active, _depth)
     raise TypeError(
         f"{path} has unsupported value type {type(value).__name__}"

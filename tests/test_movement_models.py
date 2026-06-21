@@ -1,7 +1,9 @@
+import copy
 import dataclasses
 import json
 import math
 import os
+import pickle
 from collections.abc import Mapping
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -34,8 +36,9 @@ class MutableBox:
 
 
 class ExternalMapping(Mapping):
-    def __init__(self, data):
+    def __init__(self, data, reported_length=None):
         self.data = data
+        self.reported_length = reported_length
 
     def __getitem__(self, key):
         return self.data[key]
@@ -44,7 +47,30 @@ class ExternalMapping(Mapping):
         return iter(self.data)
 
     def __len__(self):
+        if self.reported_length is not None:
+            return self.reported_length
         return len(self.data)
+
+
+class DuplicateKeyMapping(Mapping):
+    def __getitem__(self, key):
+        if key == "duplicate":
+            return 2
+        raise KeyError(key)
+
+    def __iter__(self):
+        return iter(("duplicate",))
+
+    def __len__(self):
+        return 1
+
+    def items(self):
+        return iter((("duplicate", 1), ("duplicate", 2)))
+
+
+class LyingLengthList(list):
+    def __len__(self):
+        return 0
 
 
 class MovementModelTests(unittest.TestCase):
@@ -152,7 +178,7 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(intent.parameters["count"], 1)
         self.assertEqual(result.evidence["checks"], 1)
 
-    def test_frozen_mapping_is_tuple_backed_and_sealed(self):
+    def test_frozen_mapping_has_conventional_mapping_semantics(self):
         intent = MovementIntent(
             action="wave",
             parameters=FrozenMapping({"nested": {"values": [1, 2]}}),
@@ -167,46 +193,43 @@ class MovementModelTests(unittest.TestCase):
 
         self.assertIsInstance(intent.parameters, Mapping)
         self.assertIsInstance(intent.parameters, FrozenMapping)
-        self.assertIsInstance(intent.parameters, tuple)
+        self.assertNotIsInstance(intent.parameters, tuple)
         self.assertNotIsInstance(intent.parameters, dict)
-        self.assertEqual(FrozenMapping.__slots__, ())
+        self.assertEqual(FrozenMapping.__slots__, ("__data",))
+        self.assertIn("nested", intent.parameters)
+        self.assertNotIn("missing", intent.parameters)
+        self.assertEqual(
+            dict(intent.parameters),
+            {"nested": {"values": (1, 2)}},
+        )
         self.assertEqual(intent.parameters.get("nested")["values"], (1, 2))
         self.assertEqual(
             intent.parameters,
             {"nested": {"values": (1, 2)}},
         )
         self.assertIn("FrozenMapping", repr(intent.parameters))
-        self.assertEqual(
-            hash(FrozenMapping({"b": 2, "a": 1})),
-            hash(FrozenMapping({"a": 1, "b": 2})),
-        )
+        same_a = FrozenMapping({"b": 2, "a": 1})
+        same_b = FrozenMapping({"a": 1, "b": 2})
+        self.assertEqual(same_a, same_b)
+        self.assertEqual(hash(same_a), hash(same_b))
+        self.assertEqual(hash(same_a), hash(same_a))
+        self.assertIs(copy.copy(same_a), same_a)
+        self.assertEqual(copy.deepcopy(same_a), {"a": 1, "b": 2})
+
+        restored = pickle.loads(pickle.dumps(same_a))
+        self.assertIsInstance(restored, FrozenMapping)
+        self.assertEqual(restored, same_a)
+        self.assertEqual(hash(restored), hash(same_a))
+
         json.dumps(dataclasses.asdict(intent))
         json.dumps(dataclasses.asdict(result))
 
-        sealed = FrozenMapping({"stable": {"value": 1}})
-        original_hash = hash(sealed)
-        original_value = sealed.to_dict()
-        with self.assertRaises((AttributeError, TypeError)):
-            object.__setattr__(
-                FrozenMapping({"value": 1}),
-                "_FrozenMapping__data",
-                {"changed": True},
-            )
-        with self.assertRaises((AttributeError, TypeError)):
-            object.__delattr__(
-                FrozenMapping({"value": 1}),
-                "_FrozenMapping__data",
-            )
         with self.assertRaises(TypeError):
-            dict.__setitem__(sealed, "new", 1)
+            same_a._FrozenMapping__data = {}
         with self.assertRaises(TypeError):
-            sealed["new"] = 1
-        try:
-            FrozenMapping.__init__(sealed, {"reset": True})
-        except TypeError:
-            pass
-        self.assertEqual(sealed.to_dict(), original_value)
-        self.assertEqual(hash(sealed), original_hash)
+            del same_a._FrozenMapping__data
+        with self.assertRaises(TypeError):
+            intent.parameters["new"] = 1
         with self.assertRaises(TypeError):
             intent.parameters["nested"]["new"] = 1
 
@@ -245,6 +268,10 @@ class MovementModelTests(unittest.TestCase):
         invalid = ExternalMapping({"bad": MutableBox(1)})
         with self.assertRaisesRegex(TypeError, "parameters.bad"):
             MovementIntent(action="wave", parameters=invalid)
+
+    def test_custom_mapping_duplicate_keys_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            FrozenMapping(DuplicateKeyMapping())
 
     def test_intent_parameters_are_recursive_immutable_snapshot(self):
         parameters = {
@@ -317,7 +344,7 @@ class MovementModelTests(unittest.TestCase):
             "integer": 3,
             "float": 1.5,
             "mapping": {"items": [1, {"ok": False}]},
-            "tuple": (1, 2),
+            "array": [1, 2],
         }
         intent = MovementIntent(action="wave", parameters=source)
 
@@ -328,7 +355,7 @@ class MovementModelTests(unittest.TestCase):
             intent.parameters["mapping"]["items"],
             (1, FrozenMapping({"ok": False})),
         )
-        self.assertEqual(intent.parameters["tuple"], (1, 2))
+        self.assertEqual(intent.parameters["array"], (1, 2))
 
         asdict_payload = dataclasses.asdict(intent)
         payload = intent.to_dict()
@@ -339,6 +366,8 @@ class MovementModelTests(unittest.TestCase):
 
     def test_movement_data_rejects_non_json_safe_values_with_context(self):
         invalid_values = (
+            ((1, 2), TypeError),
+            (LyingLengthList([1, 2]), TypeError),
             ({1, 2}, TypeError),
             (frozenset({1, 2}), TypeError),
             (range(3), TypeError),
@@ -372,6 +401,10 @@ class MovementModelTests(unittest.TestCase):
             for value in (
                 [1, 2, 3],
                 {"a": 1, "b": 2, "c": 3},
+                ExternalMapping(
+                    {"a": 1, "b": 2, "c": 3},
+                    reported_length=0,
+                ),
             ):
                 with self.subTest(limit="items", value_type=type(value).__name__):
                     with self.assertRaisesRegex(ValueError, "parameters.bad"):
