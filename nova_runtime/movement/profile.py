@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from nova_runtime.movement.models import FrozenDict
+from nova_runtime.movement.models import FrozenMapping
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROFILE = ROOT / "data" / "body_profiles" / "nova_humanoid_sim_v1.json"
@@ -129,7 +129,7 @@ def _validate_profile(profile: Any) -> dict[str, Any]:
 
 def load_body_profile(
     path: str | os.PathLike[str] | Path = DEFAULT_PROFILE,
-) -> FrozenDict:
+) -> FrozenMapping:
     profile_path = Path(path)
     try:
         text = profile_path.read_text(encoding="utf-8")
@@ -150,4 +150,4 @@ def load_body_profile(
         raise ValueError(
             f"Invalid body profile schema in {profile_path}: {exc}"
         ) from exc
-    return FrozenDict(validated)
+    return FrozenMapping(validated)

@@ -2,6 +2,7 @@ import dataclasses
 import json
 import math
 import os
+from collections.abc import Mapping
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, get_type_hints
@@ -10,7 +11,7 @@ from unittest.mock import patch
 
 import nova_runtime.movement.models as movement_models
 from nova_runtime.movement.models import (
-    FrozenDict,
+    FrozenMapping,
     JointTarget,
     MovementIntent,
     MovementPlan,
@@ -62,7 +63,7 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(intent.execution_tier, "avatar")
         self.assertEqual(intent.source, "owner")
 
-    def test_movement_record_public_field_annotations_remain_dicts(self):
+    def test_movement_record_mapping_annotations_and_defaults_are_immutable(self):
         intent_hints = get_type_hints(MovementIntent)
         result_hints = get_type_hints(MovementResult)
         parameters_field = next(
@@ -70,11 +71,33 @@ class MovementModelTests(unittest.TestCase):
             for field in dataclasses.fields(MovementIntent)
             if field.name == "parameters"
         )
+        body_state_field = next(
+            field
+            for field in dataclasses.fields(MovementResult)
+            if field.name == "body_state"
+        )
+        evidence_field = next(
+            field
+            for field in dataclasses.fields(MovementResult)
+            if field.name == "evidence"
+        )
 
-        self.assertEqual(intent_hints["parameters"], dict[str, Any])
-        self.assertIs(parameters_field.default_factory, dict)
-        self.assertEqual(result_hints["body_state"], dict[str, Any])
-        self.assertEqual(result_hints["evidence"], dict[str, Any])
+        self.assertEqual(intent_hints["parameters"], Mapping[str, Any])
+        self.assertIs(parameters_field.default_factory, FrozenMapping)
+        self.assertEqual(result_hints["body_state"], Mapping[str, Any])
+        self.assertIs(body_state_field.default_factory, FrozenMapping)
+        self.assertEqual(result_hints["evidence"], Mapping[str, Any])
+        self.assertIs(evidence_field.default_factory, FrozenMapping)
+
+        intent = MovementIntent(action="wave")
+        result = MovementResult(
+            accepted=True,
+            status="complete",
+            reason="safe",
+        )
+        self.assertIsInstance(intent.parameters, FrozenMapping)
+        self.assertIsInstance(result.body_state, FrozenMapping)
+        self.assertIsInstance(result.evidence, FrozenMapping)
 
     def test_movement_record_serialization_uses_dataclasses_asdict(self):
         intent = MovementIntent(action="wave", parameters={"count": 1})
@@ -100,10 +123,10 @@ class MovementModelTests(unittest.TestCase):
             [intent, result],
         )
 
-    def test_frozen_dict_preserves_dict_compatibility_and_blocks_mutation(self):
+    def test_frozen_mapping_is_not_a_dict_and_blocks_all_dict_bypasses(self):
         intent = MovementIntent(
             action="wave",
-            parameters=FrozenDict([("nested", {"values": [1, 2]})]),
+            parameters=FrozenMapping({"nested": {"values": [1, 2]}}),
         )
         result = MovementResult(
             accepted=True,
@@ -113,16 +136,32 @@ class MovementModelTests(unittest.TestCase):
             evidence={"checks": ["collision"]},
         )
 
-        self.assertIsInstance(intent.parameters, dict)
+        self.assertIsInstance(intent.parameters, Mapping)
+        self.assertIsInstance(intent.parameters, FrozenMapping)
+        self.assertNotIsInstance(intent.parameters, dict)
+        self.assertEqual(intent.parameters.get("nested")["values"], (1, 2))
+        self.assertEqual(
+            intent.parameters,
+            {"nested": {"values": (1, 2)}},
+        )
+        self.assertIn("FrozenMapping", repr(intent.parameters))
+        self.assertEqual(
+            hash(FrozenMapping({"b": 2, "a": 1})),
+            hash(FrozenMapping({"a": 1, "b": 2})),
+        )
         json.dumps(dataclasses.asdict(intent))
         json.dumps(dataclasses.asdict(result))
 
         with self.assertRaises(TypeError):
             intent.parameters["new"] = 1
         with self.assertRaises(TypeError):
-            intent.parameters.update({"new": 1})
+            dict.__setitem__(intent.parameters, "new", 1)
         with self.assertRaises(TypeError):
-            intent.parameters.pop("nested")
+            dict.__init__(intent.parameters, {"reset": True})
+        with self.assertRaises(TypeError):
+            FrozenMapping.__init__(intent.parameters, {"reset": True})
+        with self.assertRaises(TypeError):
+            intent.parameters["nested"]["new"] = 1
 
         payload = intent.to_dict()
         payload["parameters"]["nested"]["values"].append(3)
@@ -249,10 +288,10 @@ class MovementModelTests(unittest.TestCase):
         source["bytearray"].append(6)
         source["set"].add(4)
 
-        self.assertIsInstance(intent.parameters["mapping"], dict)
+        self.assertIsInstance(intent.parameters["mapping"], FrozenMapping)
         self.assertEqual(
             intent.parameters["mapping"]["items"],
-            (1, FrozenDict({"ok": False})),
+            (1, FrozenMapping({"ok": False})),
         )
         self.assertEqual(intent.parameters["tuple"], (1, 2))
         self.assertEqual(intent.parameters["range"], (0, 1, 2))
@@ -339,6 +378,145 @@ class MovementModelTests(unittest.TestCase):
 
         self.assertIsInstance(plan.targets, tuple)
         self.assertEqual(len(plan.targets), 1)
+
+    def test_movement_intent_rejects_invalid_fields(self):
+        cases = (
+            ({"action": ""}, ValueError, "action"),
+            ({"action": " "}, ValueError, "action"),
+            ({"action": 1}, TypeError, "action"),
+            ({"action": "wave", "source": "user"}, ValueError, "source"),
+            ({"action": "wave", "source": None}, ValueError, "source"),
+            (
+                {"action": "wave", "execution_tier": "live"},
+                ValueError,
+                "execution_tier",
+            ),
+            (
+                {"action": "wave", "execution_tier": None},
+                ValueError,
+                "execution_tier",
+            ),
+            ({"action": "wave", "target": ""}, ValueError, "target"),
+            ({"action": "wave", "target": " "}, ValueError, "target"),
+            ({"action": "wave", "target": 1}, TypeError, "target"),
+            ({"action": "wave", "speed": True}, TypeError, "speed"),
+            ({"action": "wave", "speed": "fast"}, TypeError, "speed"),
+            ({"action": "wave", "speed": -0.01}, ValueError, "speed"),
+            ({"action": "wave", "speed": 1.01}, ValueError, "speed"),
+            ({"action": "wave", "speed": math.nan}, ValueError, "speed"),
+            ({"action": "wave", "speed": math.inf}, ValueError, "speed"),
+            ({"action": "wave", "speed": -math.inf}, ValueError, "speed"),
+        )
+
+        for kwargs, error_type, message in cases:
+            with self.subTest(kwargs=kwargs):
+                with self.assertRaisesRegex(error_type, message):
+                    MovementIntent(**kwargs)
+
+    def test_joint_target_rejects_invalid_fields(self):
+        valid = {
+            "joint": "head_yaw",
+            "position": 10.0,
+            "velocity": 5.0,
+            "effort": 0.0,
+        }
+        cases = (
+            ("joint", "", ValueError),
+            ("joint", " ", ValueError),
+            ("joint", 1, TypeError),
+            ("position", True, TypeError),
+            ("position", "10", TypeError),
+            ("position", math.nan, ValueError),
+            ("position", math.inf, ValueError),
+            ("position", -math.inf, ValueError),
+            ("velocity", True, TypeError),
+            ("velocity", "5", TypeError),
+            ("velocity", math.nan, ValueError),
+            ("velocity", math.inf, ValueError),
+            ("velocity", -math.inf, ValueError),
+            ("velocity", -0.01, ValueError),
+            ("effort", True, TypeError),
+            ("effort", "0", TypeError),
+            ("effort", math.nan, ValueError),
+            ("effort", math.inf, ValueError),
+            ("effort", -math.inf, ValueError),
+        )
+
+        for field_name, value, error_type in cases:
+            with self.subTest(field_name=field_name, value=value):
+                kwargs = dict(valid)
+                kwargs[field_name] = value
+                with self.assertRaisesRegex(error_type, field_name):
+                    JointTarget(**kwargs)
+
+    def test_movement_plan_rejects_invalid_fields_and_targets(self):
+        intent = MovementIntent(action="look")
+        target = JointTarget(
+            joint="head_yaw",
+            position=10.0,
+            velocity=5.0,
+        )
+        valid = {
+            "intent": intent,
+            "duration_ms": 250,
+            "targets": [target],
+            "expression": "focused",
+            "recovery_action": "neutral",
+        }
+        cases = (
+            ("intent", object(), TypeError, "intent"),
+            ("duration_ms", True, TypeError, "duration_ms"),
+            ("duration_ms", 0, ValueError, "duration_ms"),
+            ("duration_ms", -1, ValueError, "duration_ms"),
+            ("duration_ms", 1.5, TypeError, "duration_ms"),
+            ("targets", [target, object()], TypeError, "targets"),
+            ("targets", None, TypeError, "targets"),
+            ("expression", "", ValueError, "expression"),
+            ("expression", " ", ValueError, "expression"),
+            ("expression", 1, TypeError, "expression"),
+            ("recovery_action", "", ValueError, "recovery_action"),
+            ("recovery_action", " ", ValueError, "recovery_action"),
+            ("recovery_action", 1, TypeError, "recovery_action"),
+        )
+
+        for field_name, value, error_type, message in cases:
+            with self.subTest(field_name=field_name, value=value):
+                kwargs = dict(valid)
+                kwargs[field_name] = value
+                with self.assertRaisesRegex(error_type, message):
+                    MovementPlan(**kwargs)
+
+    def test_movement_result_rejects_invalid_fields(self):
+        valid = {
+            "accepted": True,
+            "status": "complete",
+            "reason": "safe",
+            "body_state": {},
+            "evidence": {},
+        }
+        cases = (
+            ("accepted", 1, TypeError),
+            ("accepted", 0, TypeError),
+            ("accepted", "true", TypeError),
+            ("accepted", None, TypeError),
+            ("status", "", ValueError),
+            ("status", " ", ValueError),
+            ("status", 1, TypeError),
+            ("reason", "", ValueError),
+            ("reason", " ", ValueError),
+            ("reason", 1, TypeError),
+            ("body_state", [], TypeError),
+            ("body_state", None, TypeError),
+            ("evidence", [], TypeError),
+            ("evidence", None, TypeError),
+        )
+
+        for field_name, value, error_type in cases:
+            with self.subTest(field_name=field_name, value=value):
+                kwargs = dict(valid)
+                kwargs[field_name] = value
+                with self.assertRaisesRegex(error_type, field_name):
+                    MovementResult(**kwargs)
 
     def test_profile_accepts_string_pathlike_and_path(self):
         with TemporaryDirectory() as directory:
@@ -544,6 +722,8 @@ class MovementModelTests(unittest.TestCase):
     def test_profile_is_recursive_immutable_and_serializable(self):
         profile = load_body_profile()
 
+        self.assertIsInstance(profile, FrozenMapping)
+        self.assertNotIsInstance(profile, dict)
         self.assertEqual(profile.get("execution_tier"), "simulation")
         self.assertIn("joints", tuple(iter(profile)))
         with self.assertRaises(TypeError):
