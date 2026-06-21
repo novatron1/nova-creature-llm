@@ -131,7 +131,12 @@ def load_body_profile(
     path: str | os.PathLike[str] | Path = DEFAULT_PROFILE,
 ) -> FrozenDict:
     profile_path = Path(path)
-    text = profile_path.read_text(encoding="utf-8")
+    try:
+        text = profile_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(
+            f"Invalid body profile encoding in {profile_path}: {exc}"
+        ) from exc
     try:
         profile = json.loads(text)
     except json.JSONDecodeError as exc:

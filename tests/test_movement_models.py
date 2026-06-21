@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import nova_runtime.movement.models as movement_models
 from nova_runtime.movement.models import (
+    FrozenDict,
     JointTarget,
     MovementIntent,
     MovementPlan,
@@ -24,6 +25,11 @@ class CustomPathLike(os.PathLike[str]):
 
     def __fspath__(self) -> str:
         return str(self.path)
+
+
+class MutableBox:
+    def __init__(self, value):
+        self.value = value
 
 
 class MovementModelTests(unittest.TestCase):
@@ -93,6 +99,34 @@ class MovementModelTests(unittest.TestCase):
             [call.args[0] for call in asdict_spy.call_args_list],
             [intent, result],
         )
+
+    def test_frozen_dict_preserves_dict_compatibility_and_blocks_mutation(self):
+        intent = MovementIntent(
+            action="wave",
+            parameters=FrozenDict([("nested", {"values": [1, 2]})]),
+        )
+        result = MovementResult(
+            accepted=True,
+            status="complete",
+            reason="safe",
+            body_state={"pose": {"stable": True}},
+            evidence={"checks": ["collision"]},
+        )
+
+        self.assertIsInstance(intent.parameters, dict)
+        json.dumps(dataclasses.asdict(intent))
+        json.dumps(dataclasses.asdict(result))
+
+        with self.assertRaises(TypeError):
+            intent.parameters["new"] = 1
+        with self.assertRaises(TypeError):
+            intent.parameters.update({"new": 1})
+        with self.assertRaises(TypeError):
+            intent.parameters.pop("nested")
+
+        payload = intent.to_dict()
+        payload["parameters"]["nested"]["values"].append(3)
+        self.assertEqual(intent.parameters["nested"]["values"], (1, 2))
 
     def test_intent_parameters_are_recursive_immutable_snapshot(self):
         parameters = {
@@ -175,8 +209,11 @@ class MovementModelTests(unittest.TestCase):
         intent_values.add(4)
         result_values.add("three")
 
-        self.assertEqual(intent.parameters["values"], frozenset({1, 2, 3}))
-        self.assertEqual(result.body_state["values"], frozenset({1, "two"}))
+        self.assertEqual(intent.parameters["values"], (1, 2, 3))
+        self.assertEqual(
+            result.body_state["values"],
+            tuple(sorted([1, "two"], key=repr)),
+        )
         intent_payload = intent.to_dict()
         result_payload = result.to_dict()
         json.dumps(intent_payload)
@@ -190,6 +227,102 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(result_payload["evidence"]["values"], ["a", "b"])
         self.assertEqual(intent.to_dict(), intent_payload)
         self.assertEqual(result.to_dict(), result_payload)
+
+    def test_nested_json_safe_values_are_normalized_and_serializable(self):
+        source = {
+            "none": None,
+            "bool": True,
+            "text": "wave",
+            "integer": 3,
+            "float": 1.5,
+            "mapping": {"items": [1, {"ok": False}]},
+            "tuple": (1, 2),
+            "range": range(3),
+            "bytearray": bytearray([4, 5]),
+            "set": {3, 1, 2},
+            "mixed_set": {1, "two"},
+            "frozenset": frozenset({"b", "a"}),
+        }
+        intent = MovementIntent(action="wave", parameters=source)
+
+        source["mapping"]["items"].append(99)
+        source["bytearray"].append(6)
+        source["set"].add(4)
+
+        self.assertIsInstance(intent.parameters["mapping"], dict)
+        self.assertEqual(
+            intent.parameters["mapping"]["items"],
+            (1, FrozenDict({"ok": False})),
+        )
+        self.assertEqual(intent.parameters["tuple"], (1, 2))
+        self.assertEqual(intent.parameters["range"], (0, 1, 2))
+        self.assertEqual(intent.parameters["bytearray"], (4, 5))
+        self.assertEqual(intent.parameters["set"], (1, 2, 3))
+        self.assertEqual(
+            intent.parameters["mixed_set"],
+            tuple(sorted([1, "two"], key=repr)),
+        )
+        self.assertEqual(intent.parameters["frozenset"], ("a", "b"))
+
+        asdict_payload = dataclasses.asdict(intent)
+        payload = intent.to_dict()
+        json.dumps(asdict_payload)
+        json.dumps(payload)
+        payload["parameters"]["mapping"]["items"].append("detached")
+        self.assertEqual(len(intent.parameters["mapping"]["items"]), 2)
+
+    def test_movement_data_rejects_non_json_safe_values_with_context(self):
+        invalid_values = (
+            (b"bytes", TypeError),
+            (1 + 2j, TypeError),
+            (math.inf, ValueError),
+            (-math.inf, ValueError),
+            (math.nan, ValueError),
+            ({"key": 1}.keys(), TypeError),
+            (MutableBox(1), TypeError),
+            (object(), TypeError),
+        )
+
+        for value, error_type in invalid_values:
+            with self.subTest(value=repr(value)):
+                with self.assertRaises(error_type) as raised:
+                    MovementIntent(
+                        action="wave",
+                        parameters={"bad": value},
+                    )
+                self.assertIn("parameters.bad", str(raised.exception))
+
+    def test_movement_data_rejects_non_string_mapping_keys(self):
+        with self.assertRaises(TypeError) as raised:
+            MovementResult(
+                accepted=False,
+                status="rejected",
+                reason="invalid",
+                body_state={"nested": {1: "not-json"}},
+                evidence={},
+            )
+
+        self.assertIn("body_state.nested", str(raised.exception))
+        self.assertIn("string keys", str(raised.exception))
+
+    def test_movement_data_rejects_reference_cycles_with_context(self):
+        cyclic_list = []
+        cyclic_list.append(cyclic_list)
+        cyclic_mapping = {}
+        cyclic_mapping["self"] = cyclic_mapping
+
+        for field_name, value in (
+            ("list_cycle", cyclic_list),
+            ("mapping_cycle", cyclic_mapping),
+        ):
+            with self.subTest(field_name=field_name):
+                with self.assertRaises(ValueError) as raised:
+                    MovementIntent(
+                        action="wave",
+                        parameters={field_name: value},
+                    )
+                self.assertIn(f"parameters.{field_name}", str(raised.exception))
+                self.assertIn("cycle", str(raised.exception).lower())
 
     def test_movement_plan_snapshots_target_sequence(self):
         targets = [JointTarget(joint="head_yaw", position=10.0, velocity=5.0)]
@@ -238,6 +371,16 @@ class MovementModelTests(unittest.TestCase):
             path.write_text('{"profile_id":', encoding="utf-8")
             with self.assertRaisesRegex(
                 ValueError, r"Invalid body profile JSON.*profile\.json"
+            ):
+                load_body_profile(path)
+
+    def test_profile_wraps_unicode_decode_error_with_path(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "profile.json"
+            path.write_bytes(b"\xff")
+
+            with self.assertRaisesRegex(
+                ValueError, r"Invalid body profile encoding.*profile\.json"
             ):
                 load_body_profile(path)
 

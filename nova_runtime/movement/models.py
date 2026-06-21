@@ -1,37 +1,70 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass, field
-from types import MappingProxyType
+import math
 from typing import Any, Literal
 
 ExecutionTier = Literal["avatar", "simulation", "shadow", "physical"]
 
 
-class FrozenDict(Mapping[str, Any]):
-    __slots__ = ("_data",)
+class FrozenDict(dict[str, Any]):
+    def __init__(
+        self,
+        values: Mapping[str, Any]
+        | Iterable[tuple[str, Any]]
+        | None = None,
+        *,
+        _path: str = "value",
+        _active: set[int] | None = None,
+    ) -> None:
+        if values is None:
+            source: Mapping[Any, Any] = {}
+        elif isinstance(values, Mapping):
+            source = values
+        else:
+            try:
+                source = dict(values)
+            except (TypeError, ValueError) as exc:
+                raise TypeError(
+                    f"{_path} must be a mapping or iterable of key/value pairs"
+                ) from exc
 
-    def __init__(self, values: Mapping[str, Any] | None = None) -> None:
-        source = {} if values is None else values
-        if not isinstance(source, Mapping):
-            raise TypeError("FrozenDict values must be a mapping")
-        frozen = {key: freeze_value(value) for key, value in source.items()}
-        object.__setattr__(self, "_data", MappingProxyType(frozen))
+        active = set() if _active is None else _active
+        identity = id(source)
+        if identity in active:
+            raise ValueError(f"Reference cycle detected at {_path}")
+        active.add(identity)
+        try:
+            frozen: dict[str, Any] = {}
+            for key, value in source.items():
+                if not isinstance(key, str):
+                    raise TypeError(
+                        f"{_path} mappings require string keys; got {key!r}"
+                    )
+                frozen[key] = freeze_value(
+                    value,
+                    path=f"{_path}.{key}",
+                    _active=active,
+                )
+        finally:
+            active.remove(identity)
+        dict.__init__(self, frozen)
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def _immutable(self, *args: Any, **kwargs: Any) -> None:
         raise TypeError("FrozenDict is immutable")
 
-    def __getitem__(self, key: str) -> Any:
-        return self._data[key]
+    __setitem__ = _immutable
+    __delitem__ = _immutable
+    clear = _immutable
+    pop = _immutable
+    popitem = _immutable
+    setdefault = _immutable
+    update = _immutable
+    __ior__ = _immutable
 
-    def __iter__(self) -> Iterator[str]:
-        return iter(self._data)
-
-    def __len__(self) -> int:
-        return len(self._data)
-
-    def __repr__(self) -> str:
-        return f"FrozenDict({dict(self._data)!r})"
+    def __hash__(self) -> int:
+        return hash(tuple((key, self[key]) for key in sorted(self)))
 
     def __deepcopy__(self, memo: dict[int, Any]) -> FrozenDict:
         memo[id(self)] = self
@@ -41,36 +74,106 @@ class FrozenDict(Mapping[str, Any]):
         return thaw_value(self)
 
 
-def freeze_value(value: Any) -> Any:
+def _freeze_sequence(
+    value: list[Any] | tuple[Any, ...] | range | bytearray,
+    path: str,
+    active: set[int],
+) -> tuple[Any, ...]:
+    identity = id(value)
+    if identity in active:
+        raise ValueError(f"Reference cycle detected at {path}")
+    active.add(identity)
+    try:
+        return tuple(
+            freeze_value(item, path=f"{path}[{index}]", _active=active)
+            for index, item in enumerate(value)
+        )
+    finally:
+        active.remove(identity)
+
+
+def _freeze_set(
+    value: set[Any] | frozenset[Any],
+    path: str,
+    active: set[int],
+) -> tuple[Any, ...]:
+    identity = id(value)
+    if identity in active:
+        raise ValueError(f"Reference cycle detected at {path}")
+    active.add(identity)
+    try:
+        normalized = [
+            freeze_value(item, path=f"{path}[{index}]", _active=active)
+            for index, item in enumerate(value)
+        ]
+    finally:
+        active.remove(identity)
+    try:
+        return tuple(sorted(normalized))
+    except TypeError:
+        return tuple(sorted(normalized, key=repr))
+
+
+def freeze_value(
+    value: Any,
+    *,
+    path: str = "value",
+    _active: set[int] | None = None,
+) -> Any:
+    active = set() if _active is None else _active
+    if value is None or isinstance(value, (bool, str)):
+        return value
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"{path} must be a finite number")
+        return value
     if isinstance(value, FrozenDict):
         return value
     if isinstance(value, Mapping):
-        return FrozenDict(value)
+        return FrozenDict(value, _path=path, _active=active)
     if isinstance(value, (set, frozenset)):
-        return frozenset(freeze_value(item) for item in value)
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-        return tuple(freeze_value(item) for item in value)
-    return value
+        return _freeze_set(value, path, active)
+    if isinstance(value, (list, tuple, range, bytearray)):
+        return _freeze_sequence(value, path, active)
+    if isinstance(value, bytes):
+        raise TypeError(f"{path} does not accept bytes")
+    raise TypeError(
+        f"{path} has unsupported value type {type(value).__name__}"
+    )
 
 
-def thaw_value(value: Any) -> Any:
+def thaw_value(value: Any, *, path: str = "value") -> Any:
     if isinstance(value, Mapping):
-        return {key: thaw_value(item) for key, item in value.items()}
+        thawed = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise TypeError(
+                    f"{path} mappings require string keys; got {key!r}"
+                )
+            thawed[key] = thaw_value(item, path=f"{path}.{key}")
+        return thawed
     if isinstance(value, tuple):
-        return [thaw_value(item) for item in value]
-    if isinstance(value, frozenset):
-        try:
-            ordered = sorted(value)
-        except TypeError:
-            ordered = sorted(value, key=repr)
-        return [thaw_value(item) for item in ordered]
-    return value
+        return [
+            thaw_value(item, path=f"{path}[{index}]")
+            for index, item in enumerate(value)
+        ]
+    if value is None or isinstance(value, (bool, str, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"{path} must be a finite number")
+        return value
+    raise TypeError(
+        f"{path} has unsupported frozen value type {type(value).__name__}"
+    )
 
 
 def _freeze_mapping(value: Mapping[str, Any], field_name: str) -> FrozenDict:
     if not isinstance(value, Mapping):
         raise TypeError(f"{field_name} must be a mapping")
-    return FrozenDict(value)
+    return FrozenDict(value, _path=field_name)
 
 
 @dataclass(frozen=True)
