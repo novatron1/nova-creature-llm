@@ -1,5 +1,6 @@
 import copy
 import dataclasses
+import itertools
 import json
 import math
 import os
@@ -73,6 +74,28 @@ class LyingLengthList(list):
         return 0
 
 
+class StringSubclass(str):
+    pass
+
+
+class IntegerSubclass(int):
+    pass
+
+
+class FloatSubclass(float):
+    pass
+
+
+class EqualitySpoof:
+    def __eq__(self, other):
+        return True
+
+
+class HashableExternalMapping(ExternalMapping):
+    __hash__ = object.__hash__
+    __eq__ = object.__eq__
+
+
 class MovementModelTests(unittest.TestCase):
     def valid_profile(self):
         return json.loads(DEFAULT_PROFILE.read_text(encoding="utf-8"))
@@ -80,6 +103,11 @@ class MovementModelTests(unittest.TestCase):
     def write_profile(self, directory, profile):
         path = Path(directory) / "profile.json"
         path.write_text(json.dumps(profile), encoding="utf-8")
+        return path
+
+    def write_raw_profile(self, directory, text):
+        path = Path(directory) / "profile.json"
+        path.write_text(text, encoding="utf-8")
         return path
 
     def assert_invalid_profile(self, profile, message):
@@ -213,6 +241,11 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(same_a, same_b)
         self.assertEqual(hash(same_a), hash(same_b))
         self.assertEqual(hash(same_a), hash(same_a))
+        self.assertEqual(same_a, {"a": 1, "b": 2})
+        self.assertEqual({"a": 1, "b": 2}, same_a)
+        external = HashableExternalMapping({"a": 1, "b": 2})
+        self.assertIs(same_a.__eq__(external), NotImplemented)
+        self.assertNotEqual(same_a, external)
         self.assertIs(copy.copy(same_a), same_a)
         self.assertEqual(copy.deepcopy(same_a), {"a": 1, "b": 2})
 
@@ -366,6 +399,9 @@ class MovementModelTests(unittest.TestCase):
 
     def test_movement_data_rejects_non_json_safe_values_with_context(self):
         invalid_values = (
+            (StringSubclass("text"), TypeError),
+            (IntegerSubclass(1), TypeError),
+            (FloatSubclass(1.0), TypeError),
             ((1, 2), TypeError),
             (LyingLengthList([1, 2]), TypeError),
             ({1, 2}, TypeError),
@@ -390,6 +426,20 @@ class MovementModelTests(unittest.TestCase):
                         parameters={"bad": value},
                     )
                 self.assertIn("parameters.bad", str(raised.exception))
+
+    def test_movement_data_enforces_shared_recursive_node_budget(self):
+        shared = [1, 2]
+        with patch.object(
+            movement_models,
+            "MAX_TOTAL_NODES",
+            9,
+            create=True,
+        ):
+            with self.assertRaisesRegex(ValueError, "node budget"):
+                MovementIntent(
+                    action="wave",
+                    parameters={"first": shared, "second": shared},
+                )
 
     def test_movement_data_enforces_container_size_and_depth_limits(self):
         with patch.object(
@@ -496,7 +546,7 @@ class MovementModelTests(unittest.TestCase):
             ({"action": " "}, ValueError, "action"),
             ({"action": 1}, TypeError, "action"),
             ({"action": "wave", "source": "user"}, ValueError, "source"),
-            ({"action": "wave", "source": None}, ValueError, "source"),
+            ({"action": "wave", "source": None}, TypeError, "source"),
             (
                 {"action": "wave", "execution_tier": "live"},
                 ValueError,
@@ -504,7 +554,7 @@ class MovementModelTests(unittest.TestCase):
             ),
             (
                 {"action": "wave", "execution_tier": None},
-                ValueError,
+                TypeError,
                 "execution_tier",
             ),
             ({"action": "wave", "target": ""}, ValueError, "target"),
@@ -518,6 +568,45 @@ class MovementModelTests(unittest.TestCase):
             ({"action": "wave", "speed": math.inf}, ValueError, "speed"),
             ({"action": "wave", "speed": -math.inf}, ValueError, "speed"),
             ({"action": "wave", "speed": 10**400}, ValueError, "speed"),
+            ({"action": StringSubclass("wave")}, TypeError, "action"),
+            (
+                {"action": "wave", "source": StringSubclass("owner")},
+                TypeError,
+                "source",
+            ),
+            (
+                {"action": "wave", "source": EqualitySpoof()},
+                TypeError,
+                "source",
+            ),
+            (
+                {
+                    "action": "wave",
+                    "execution_tier": StringSubclass("avatar"),
+                },
+                TypeError,
+                "execution_tier",
+            ),
+            (
+                {"action": "wave", "execution_tier": EqualitySpoof()},
+                TypeError,
+                "execution_tier",
+            ),
+            (
+                {"action": "wave", "target": StringSubclass("owner")},
+                TypeError,
+                "target",
+            ),
+            (
+                {"action": "wave", "speed": IntegerSubclass(1)},
+                TypeError,
+                "speed",
+            ),
+            (
+                {"action": "wave", "speed": FloatSubclass(0.5)},
+                TypeError,
+                "speed",
+            ),
         )
 
         for kwargs, error_type, message in cases:
@@ -555,6 +644,9 @@ class MovementModelTests(unittest.TestCase):
             ("effort", math.inf, ValueError),
             ("effort", -math.inf, ValueError),
             ("effort", 10**400, ValueError),
+            ("joint", StringSubclass("head_yaw"), TypeError),
+            ("position", IntegerSubclass(1), TypeError),
+            ("velocity", FloatSubclass(1.0), TypeError),
         )
 
         for field_name, value, error_type in cases:
@@ -593,6 +685,24 @@ class MovementModelTests(unittest.TestCase):
             ("recovery_action", "", ValueError, "recovery_action"),
             ("recovery_action", " ", ValueError, "recovery_action"),
             ("recovery_action", 1, TypeError, "recovery_action"),
+            (
+                "duration_ms",
+                IntegerSubclass(250),
+                TypeError,
+                "duration_ms",
+            ),
+            (
+                "expression",
+                StringSubclass("focused"),
+                TypeError,
+                "expression",
+            ),
+            (
+                "recovery_action",
+                StringSubclass("neutral"),
+                TypeError,
+                "recovery_action",
+            ),
         )
 
         for field_name, value, error_type, message in cases:
@@ -601,6 +711,40 @@ class MovementModelTests(unittest.TestCase):
                 kwargs[field_name] = value
                 with self.assertRaisesRegex(error_type, message):
                     MovementPlan(**kwargs)
+
+    def test_movement_plan_bounds_target_iteration(self):
+        intent = MovementIntent(action="look")
+        target = JointTarget(
+            joint="head_yaw",
+            position=10.0,
+            velocity=5.0,
+        )
+        with patch.object(
+            movement_models,
+            "MAX_PLAN_TARGETS",
+            2,
+            create=True,
+        ):
+            plan = MovementPlan(
+                intent=intent,
+                duration_ms=250,
+                targets=itertools.repeat(target, 2),
+                expression="focused",
+            )
+            self.assertEqual(len(plan.targets), 2)
+
+            for targets in (
+                [target, target, target],
+                itertools.repeat(target),
+            ):
+                with self.subTest(targets_type=type(targets).__name__):
+                    with self.assertRaisesRegex(ValueError, "targets"):
+                        MovementPlan(
+                            intent=intent,
+                            duration_ms=250,
+                            targets=targets,
+                            expression="focused",
+                        )
 
     def test_movement_result_rejects_invalid_fields(self):
         valid = {
@@ -625,6 +769,9 @@ class MovementModelTests(unittest.TestCase):
             ("body_state", None, TypeError),
             ("evidence", [], TypeError),
             ("evidence", None, TypeError),
+            ("accepted", IntegerSubclass(1), TypeError),
+            ("status", StringSubclass("complete"), TypeError),
+            ("reason", StringSubclass("safe"), TypeError),
         )
 
         for field_name, value, error_type in cases:
@@ -676,6 +823,39 @@ class MovementModelTests(unittest.TestCase):
                 ValueError, r"Invalid body profile JSON.*profile\.json"
             ):
                 load_body_profile(path)
+
+    def test_profile_rejects_duplicate_json_object_names(self):
+        base = json.dumps(self.valid_profile())
+        duplicate_cases = (
+            (
+                '"execution_tier": "simulation"',
+                '"execution_tier": "avatar", '
+                '"execution_tier": "simulation"',
+                "execution_tier",
+            ),
+            (
+                '"physical_output_locked": true',
+                '"physical_output_locked": false, '
+                '"physical_output_locked": true',
+                "physical_output_locked",
+            ),
+            (
+                '"min": -60',
+                '"min": -61, "min": -60',
+                "min",
+            ),
+        )
+
+        for original, replacement, duplicate_name in duplicate_cases:
+            with self.subTest(duplicate_name=duplicate_name):
+                raw = base.replace(original, replacement, 1)
+                with TemporaryDirectory() as directory:
+                    path = self.write_raw_profile(directory, raw)
+                    with self.assertRaisesRegex(
+                        ValueError,
+                        rf"Invalid body profile JSON.*{duplicate_name}",
+                    ):
+                        load_body_profile(path)
 
     def test_profile_wraps_unicode_decode_error_with_path(self):
         with TemporaryDirectory() as directory:
@@ -867,6 +1047,9 @@ class MovementModelTests(unittest.TestCase):
         profile = load_body_profile()
 
         self.assertIsInstance(profile, FrozenMapping)
+        self.assertIsInstance(profile, Mapping)
+        self.assertIsInstance(profile["joints"], Mapping)
+        self.assertIsInstance(profile["joints"]["head_yaw"], Mapping)
         self.assertNotIsInstance(profile, dict)
         self.assertEqual(profile.get("execution_tier"), "simulation")
         self.assertIn("joints", tuple(iter(profile)))

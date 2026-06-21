@@ -26,6 +26,17 @@ SAFE_ZONE_FIELDS = {"x_min", "x_max", "y_min", "y_max"}
 PROFILE_NUMERIC_ABS_LIMIT = 1_000_000
 
 
+def _reject_duplicate_object_pairs(
+    pairs: list[tuple[str, Any]],
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object name {key!r}")
+        result[key] = value
+    return result
+
+
 def _is_finite_number(value: Any) -> bool:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return False
@@ -142,10 +153,17 @@ def load_body_profile(
             f"Invalid body profile encoding in {profile_path}: {exc}"
         ) from exc
     try:
-        profile = json.loads(text)
+        profile = json.loads(
+            text,
+            object_pairs_hook=_reject_duplicate_object_pairs,
+        )
     except json.JSONDecodeError as exc:
         raise ValueError(
             f"Invalid body profile JSON in {profile_path}: {exc.msg}"
+        ) from exc
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid body profile JSON in {profile_path}: {exc}"
         ) from exc
 
     try:

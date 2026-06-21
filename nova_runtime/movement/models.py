@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
+from itertools import islice
 import math
 from types import MappingProxyType
 from typing import Any, Literal
@@ -17,6 +18,8 @@ MIN_JSON_INTEGER = -(2**63)
 MAX_JSON_INTEGER = 2**63 - 1
 MOTION_NUMERIC_ABS_LIMIT = 1_000_000
 MAX_DURATION_MS = 2**31 - 1
+MAX_TOTAL_NODES = 10_000
+MAX_PLAN_TARGETS = 10_000
 
 
 class FrozenMapping(Mapping[str, Any]):
@@ -29,6 +32,7 @@ class FrozenMapping(Mapping[str, Any]):
         _path: str = "value",
         _active: set[int] | None = None,
         _depth: int = 0,
+        _node_count: list[int] | None = None,
     ) -> None:
         if values is None:
             source: Mapping[Any, Any] = {}
@@ -42,6 +46,7 @@ class FrozenMapping(Mapping[str, Any]):
         _validate_nesting_depth(_path, _depth)
 
         active = set() if _active is None else _active
+        node_count = [0] if _node_count is None else _node_count
         identity = id(source)
         if identity in active:
             raise ValueError(f"Reference cycle detected at {_path}")
@@ -55,10 +60,11 @@ class FrozenMapping(Mapping[str, Any]):
                         f"{_path} exceeds the maximum container size "
                         f"of {MAX_CONTAINER_ITEMS}"
                     )
-                if not isinstance(key, str):
+                if type(key) is not str:
                     raise TypeError(
                         f"{_path} mappings require string keys; got {key!r}"
                     )
+                _consume_node(node_count, f"{_path}.{key}")
                 if key in seen:
                     raise ValueError(
                         f"{_path} mappings require unique keys; "
@@ -70,6 +76,7 @@ class FrozenMapping(Mapping[str, Any]):
                     path=f"{_path}.{key}",
                     _active=active,
                     _depth=_depth + 1,
+                    _node_count=node_count,
                 )
         finally:
             active.remove(identity)
@@ -105,9 +112,11 @@ class FrozenMapping(Mapping[str, Any]):
         return f"{type(self).__name__}({dict(self.__data)!r})"
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Mapping):
-            return NotImplemented
-        return dict(self.__data) == dict(other)
+        if isinstance(other, FrozenMapping):
+            return self.__data == other.__data
+        if type(other) is dict:
+            return dict(self.__data) == other
+        return NotImplemented
 
     def __ne__(self, other: object) -> bool:
         equal = self.__eq__(other)
@@ -144,11 +153,21 @@ def _validate_nesting_depth(path: str, depth: int) -> None:
         )
 
 
+def _consume_node(node_count: list[int], path: str) -> None:
+    node_count[0] += 1
+    if node_count[0] > MAX_TOTAL_NODES:
+        raise ValueError(
+            f"{path} exceeds the maximum total node budget "
+            f"of {MAX_TOTAL_NODES}"
+        )
+
+
 def _freeze_sequence(
     value: list[Any],
     path: str,
     active: set[int],
     depth: int,
+    node_count: list[int],
 ) -> tuple[Any, ...]:
     _validate_nesting_depth(path, depth)
     identity = id(value)
@@ -163,12 +182,14 @@ def _freeze_sequence(
                     f"{path} exceeds the maximum container size "
                     f"of {MAX_CONTAINER_ITEMS}"
                 )
+            _consume_node(node_count, f"{path}[{index}]")
             frozen.append(
                 freeze_value(
                     item,
                     path=f"{path}[{index}]",
                     _active=active,
                     _depth=depth + 1,
+                    _node_count=node_count,
                 )
             )
         return tuple(frozen)
@@ -182,17 +203,28 @@ def freeze_value(
     path: str = "value",
     _active: set[int] | None = None,
     _depth: int = 0,
+    _node_count: list[int] | None = None,
 ) -> Any:
     active = set() if _active is None else _active
-    if value is None or isinstance(value, (bool, str)):
+    node_count = [0] if _node_count is None else _node_count
+    if value is None:
+        _consume_node(node_count, path)
         return value
-    if isinstance(value, int):
+    if type(value) is bool:
+        _consume_node(node_count, path)
+        return value
+    if type(value) is str:
+        _consume_node(node_count, path)
+        return value
+    if type(value) is int:
+        _consume_node(node_count, path)
         if not MIN_JSON_INTEGER <= value <= MAX_JSON_INTEGER:
             raise ValueError(
                 f"{path} must be within the signed 64-bit integer range"
             )
         return value
-    if isinstance(value, float):
+    if type(value) is float:
+        _consume_node(node_count, path)
         if not math.isfinite(value):
             raise ValueError(f"{path} must be a finite number")
         return value
@@ -202,9 +234,16 @@ def freeze_value(
             _path=path,
             _active=active,
             _depth=_depth,
+            _node_count=node_count,
         )
     if type(value) is list:
-        return _freeze_sequence(value, path, active, _depth)
+        return _freeze_sequence(
+            value,
+            path,
+            active,
+            _depth,
+            node_count,
+        )
     raise TypeError(
         f"{path} has unsupported value type {type(value).__name__}"
     )
@@ -246,16 +285,16 @@ def _freeze_mapping(
 
 
 def _validate_non_empty_string(value: Any, field_name: str) -> None:
-    if not isinstance(value, str):
+    if type(value) is not str:
         raise TypeError(f"{field_name} must be a non-empty string")
     if not value.strip():
         raise ValueError(f"{field_name} must be a non-empty string")
 
 
 def _validate_finite_number(value: Any, field_name: str) -> None:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+    if type(value) not in (int, float):
         raise TypeError(f"{field_name} must be a finite number")
-    if isinstance(value, int):
+    if type(value) is int:
         if abs(value) > MOTION_NUMERIC_ABS_LIMIT:
             raise ValueError(
                 f"{field_name} exceeds the supported numeric range"
@@ -266,6 +305,19 @@ def _validate_finite_number(value: Any, field_name: str) -> None:
         or abs(value) > MOTION_NUMERIC_ABS_LIMIT
     ):
         raise ValueError(f"{field_name} must be a finite number")
+
+
+def _validate_literal_string(
+    value: Any,
+    field_name: str,
+    allowed: tuple[str, ...],
+) -> None:
+    if type(value) is not str:
+        raise TypeError(f"{field_name} must be a string")
+    if value not in allowed:
+        raise ValueError(
+            f"{field_name} must be one of " + ", ".join(allowed)
+        )
 
 
 @dataclass(frozen=True)
@@ -279,15 +331,16 @@ class MovementIntent:
 
     def __post_init__(self) -> None:
         _validate_non_empty_string(self.action, "action")
-        if self.source not in MOVEMENT_SOURCES:
-            raise ValueError(
-                "source must be one of owner, task, self, or safety"
-            )
-        if self.execution_tier not in EXECUTION_TIERS:
-            raise ValueError(
-                "execution_tier must be one of "
-                "avatar, simulation, shadow, or physical"
-            )
+        _validate_literal_string(
+            self.source,
+            "source",
+            MOVEMENT_SOURCES,
+        )
+        _validate_literal_string(
+            self.execution_tier,
+            "execution_tier",
+            EXECUTION_TIERS,
+        )
         if self.target is not None:
             _validate_non_empty_string(self.target, "target")
         _validate_finite_number(self.speed, "speed")
@@ -330,21 +383,27 @@ class MovementPlan:
     def __post_init__(self) -> None:
         if not isinstance(self.intent, MovementIntent):
             raise TypeError("intent must be a MovementIntent")
-        if (
-            not isinstance(self.duration_ms, int)
-            or isinstance(self.duration_ms, bool)
-        ):
+        if type(self.duration_ms) is not int:
             raise TypeError("duration_ms must be a positive integer")
         if self.duration_ms <= 0:
             raise ValueError("duration_ms must be a positive integer")
         if self.duration_ms > MAX_DURATION_MS:
             raise ValueError("duration_ms exceeds the supported range")
         try:
-            targets = tuple(self.targets)
+            iterator = iter(self.targets)
         except TypeError as exc:
             raise TypeError(
                 "targets must be an iterable of JointTarget values"
             ) from exc
+        targets = []
+        for index, target in enumerate(
+            islice(iterator, MAX_PLAN_TARGETS + 1)
+        ):
+            if index >= MAX_PLAN_TARGETS:
+                raise ValueError(
+                    f"targets must contain at most {MAX_PLAN_TARGETS} values"
+                )
+            targets.append(target)
         if any(not isinstance(target, JointTarget) for target in targets):
             raise TypeError("targets must contain only JointTarget values")
         _validate_non_empty_string(self.expression, "expression")
@@ -352,7 +411,7 @@ class MovementPlan:
             self.recovery_action,
             "recovery_action",
         )
-        object.__setattr__(self, "targets", targets)
+        object.__setattr__(self, "targets", tuple(targets))
 
 
 @dataclass(frozen=True)
