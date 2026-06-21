@@ -655,11 +655,13 @@ def route_intent(intent: MovementIntent) -> dict[str, object]:
 # nova_runtime/movement/planner.py
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from nova_runtime.movement.models import JointTarget, MovementIntent, MovementPlan
 
 
 def build_movement_plan(
-    intent: MovementIntent, profile: dict[str, object]
+    intent: MovementIntent, profile: Mapping[str, object]
 ) -> MovementPlan:
     plans = {
         "wave": (
@@ -798,16 +800,21 @@ Create `data/movement_skills/core_gestures.json`:
 # nova_runtime/movement/safety.py
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from nova_runtime.movement.models import MovementPlan
 
 
-def check_plan(plan: MovementPlan, profile: dict[str, object]) -> dict[str, object]:
+def check_plan(
+    plan: MovementPlan,
+    profile: Mapping[str, object],
+) -> dict[str, object]:
     violations: list[str] = []
     joints = profile["joints"]
-    assert isinstance(joints, dict)
+    assert isinstance(joints, Mapping)
     for target in plan.targets:
         limits = joints.get(target.joint)
-        if not isinstance(limits, dict):
+        if not isinstance(limits, Mapping):
             violations.append(f"Unknown joint: {target.joint}")
             continue
         if not limits["min"] <= target.position <= limits["max"]:
