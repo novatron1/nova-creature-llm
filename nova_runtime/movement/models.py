@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from types import MappingProxyType
 from typing import Any, Literal
 
@@ -33,6 +33,10 @@ class FrozenDict(Mapping[str, Any]):
     def __repr__(self) -> str:
         return f"FrozenDict({dict(self._data)!r})"
 
+    def __deepcopy__(self, memo: dict[int, Any]) -> FrozenDict:
+        memo[id(self)] = self
+        return self
+
     def to_dict(self) -> dict[str, Any]:
         return thaw_value(self)
 
@@ -42,6 +46,8 @@ def freeze_value(value: Any) -> Any:
         return value
     if isinstance(value, Mapping):
         return FrozenDict(value)
+    if isinstance(value, (set, frozenset)):
+        return frozenset(freeze_value(item) for item in value)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         return tuple(freeze_value(item) for item in value)
     return value
@@ -52,6 +58,12 @@ def thaw_value(value: Any) -> Any:
         return {key: thaw_value(item) for key, item in value.items()}
     if isinstance(value, tuple):
         return [thaw_value(item) for item in value]
+    if isinstance(value, frozenset):
+        try:
+            ordered = sorted(value)
+        except TypeError:
+            ordered = sorted(value, key=repr)
+        return [thaw_value(item) for item in ordered]
     return value
 
 
@@ -68,7 +80,7 @@ class MovementIntent:
     execution_tier: ExecutionTier = "avatar"
     target: str | None = None
     speed: float = 0.5
-    parameters: Mapping[str, Any] = field(default_factory=FrozenDict)
+    parameters: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -78,14 +90,7 @@ class MovementIntent:
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "action": self.action,
-            "source": self.source,
-            "execution_tier": self.execution_tier,
-            "target": self.target,
-            "speed": self.speed,
-            "parameters": thaw_value(self.parameters),
-        }
+        return thaw_value(asdict(self))
 
 
 @dataclass(frozen=True)
@@ -113,8 +118,8 @@ class MovementResult:
     accepted: bool
     status: str
     reason: str
-    body_state: Mapping[str, Any]
-    evidence: Mapping[str, Any]
+    body_state: dict[str, Any]
+    evidence: dict[str, Any]
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -129,10 +134,4 @@ class MovementResult:
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "accepted": self.accepted,
-            "status": self.status,
-            "reason": self.reason,
-            "body_state": thaw_value(self.body_state),
-            "evidence": thaw_value(self.evidence),
-        }
+        return thaw_value(asdict(self))

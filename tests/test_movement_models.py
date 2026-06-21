@@ -1,10 +1,14 @@
+import dataclasses
 import json
 import math
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any, get_type_hints
 import unittest
+from unittest.mock import patch
 
+import nova_runtime.movement.models as movement_models
 from nova_runtime.movement.models import (
     JointTarget,
     MovementIntent,
@@ -51,6 +55,44 @@ class MovementModelTests(unittest.TestCase):
         intent = MovementIntent(action="wave")
         self.assertEqual(intent.execution_tier, "avatar")
         self.assertEqual(intent.source, "owner")
+
+    def test_movement_record_public_field_annotations_remain_dicts(self):
+        intent_hints = get_type_hints(MovementIntent)
+        result_hints = get_type_hints(MovementResult)
+        parameters_field = next(
+            field
+            for field in dataclasses.fields(MovementIntent)
+            if field.name == "parameters"
+        )
+
+        self.assertEqual(intent_hints["parameters"], dict[str, Any])
+        self.assertIs(parameters_field.default_factory, dict)
+        self.assertEqual(result_hints["body_state"], dict[str, Any])
+        self.assertEqual(result_hints["evidence"], dict[str, Any])
+
+    def test_movement_record_serialization_uses_dataclasses_asdict(self):
+        intent = MovementIntent(action="wave", parameters={"count": 1})
+        result = MovementResult(
+            accepted=True,
+            status="complete",
+            reason="safe",
+            body_state={"stable": True},
+            evidence={"checks": 1},
+        )
+
+        with patch.object(
+            movement_models,
+            "asdict",
+            wraps=dataclasses.asdict,
+            create=True,
+        ) as asdict_spy:
+            intent.to_dict()
+            result.to_dict()
+
+        self.assertEqual(
+            [call.args[0] for call in asdict_spy.call_args_list],
+            [intent, result],
+        )
 
     def test_intent_parameters_are_recursive_immutable_snapshot(self):
         parameters = {
@@ -114,6 +156,40 @@ class MovementModelTests(unittest.TestCase):
         result_payload["body_state"]["pose"]["joints"][0] = 9.0
         self.assertEqual(intent.parameters["gesture"]["angles"], (10, 20))
         self.assertEqual(result.body_state["pose"]["joints"], (1.0, 2.0))
+
+    def test_sets_are_frozen_and_serialize_deterministically(self):
+        intent_values = {3, 1, 2}
+        result_values = {1, "two"}
+        intent = MovementIntent(
+            action="wave",
+            parameters={"values": intent_values},
+        )
+        result = MovementResult(
+            accepted=True,
+            status="complete",
+            reason="safe",
+            body_state={"values": result_values},
+            evidence={"values": frozenset({"b", "a"})},
+        )
+
+        intent_values.add(4)
+        result_values.add("three")
+
+        self.assertEqual(intent.parameters["values"], frozenset({1, 2, 3}))
+        self.assertEqual(result.body_state["values"], frozenset({1, "two"}))
+        intent_payload = intent.to_dict()
+        result_payload = result.to_dict()
+        json.dumps(intent_payload)
+        json.dumps(result_payload)
+
+        self.assertEqual(intent_payload["parameters"]["values"], [1, 2, 3])
+        self.assertEqual(
+            result_payload["body_state"]["values"],
+            sorted([1, "two"], key=repr),
+        )
+        self.assertEqual(result_payload["evidence"]["values"], ["a", "b"])
+        self.assertEqual(intent.to_dict(), intent_payload)
+        self.assertEqual(result.to_dict(), result_payload)
 
     def test_movement_plan_snapshots_target_sequence(self):
         targets = [JointTarget(joint="head_yaw", position=10.0, velocity=5.0)]
