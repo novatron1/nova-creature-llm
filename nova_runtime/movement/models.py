@@ -310,8 +310,8 @@ class MovementResult:
     accepted: bool
     status: str
     reason: str
-    body_state: Mapping[str, Any] = field(default_factory=FrozenMapping)
-    evidence: Mapping[str, Any] = field(default_factory=FrozenMapping)
+    body_state: Mapping[str, Any]
+    evidence: Mapping[str, Any]
 
     def __post_init__(self) -> None:
         if type(self.accepted) is not bool:

@@ -63,7 +63,7 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(intent.execution_tier, "avatar")
         self.assertEqual(intent.source, "owner")
 
-    def test_movement_record_mapping_annotations_and_defaults_are_immutable(self):
+    def test_movement_record_mapping_annotations_preserve_constructor_contract(self):
         intent_hints = get_type_hints(MovementIntent)
         result_hints = get_type_hints(MovementResult)
         parameters_field = next(
@@ -85,19 +85,30 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(intent_hints["parameters"], Mapping[str, Any])
         self.assertIs(parameters_field.default_factory, FrozenMapping)
         self.assertEqual(result_hints["body_state"], Mapping[str, Any])
-        self.assertIs(body_state_field.default_factory, FrozenMapping)
+        self.assertIs(body_state_field.default, dataclasses.MISSING)
+        self.assertIs(body_state_field.default_factory, dataclasses.MISSING)
         self.assertEqual(result_hints["evidence"], Mapping[str, Any])
-        self.assertIs(evidence_field.default_factory, FrozenMapping)
+        self.assertIs(evidence_field.default, dataclasses.MISSING)
+        self.assertIs(evidence_field.default_factory, dataclasses.MISSING)
 
         intent = MovementIntent(action="wave")
-        result = MovementResult(
-            accepted=True,
-            status="complete",
-            reason="safe",
-        )
         self.assertIsInstance(intent.parameters, FrozenMapping)
-        self.assertIsInstance(result.body_state, FrozenMapping)
-        self.assertIsInstance(result.evidence, FrozenMapping)
+
+    def test_movement_result_requires_body_state_and_evidence(self):
+        base = {
+            "accepted": True,
+            "status": "complete",
+            "reason": "safe",
+            "body_state": {},
+            "evidence": {},
+        }
+
+        for missing_field in ("body_state", "evidence"):
+            with self.subTest(missing_field=missing_field):
+                kwargs = dict(base)
+                del kwargs[missing_field]
+                with self.assertRaisesRegex(TypeError, missing_field):
+                    MovementResult(**kwargs)
 
     def test_movement_record_serialization_uses_dataclasses_asdict(self):
         intent = MovementIntent(action="wave", parameters={"count": 1})
