@@ -23,13 +23,17 @@ PROFILE_FIELDS = {
 }
 JOINT_LIMIT_FIELDS = {"min", "max", "max_velocity"}
 SAFE_ZONE_FIELDS = {"x_min", "x_max", "y_min", "y_max"}
+PROFILE_NUMERIC_ABS_LIMIT = 1_000_000
 
 
 def _is_finite_number(value: Any) -> bool:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    if isinstance(value, int):
+        return abs(value) <= PROFILE_NUMERIC_ABS_LIMIT
     return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(value)
+        math.isfinite(value)
+        and abs(value) <= PROFILE_NUMERIC_ABS_LIMIT
     )
 
 

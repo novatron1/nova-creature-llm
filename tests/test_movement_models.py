@@ -33,6 +33,20 @@ class MutableBox:
         self.value = value
 
 
+class ExternalMapping(Mapping):
+    def __init__(self, data):
+        self.data = data
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+
 class MovementModelTests(unittest.TestCase):
     def valid_profile(self):
         return json.loads(DEFAULT_PROFILE.read_text(encoding="utf-8"))
@@ -110,7 +124,7 @@ class MovementModelTests(unittest.TestCase):
                 with self.assertRaisesRegex(TypeError, missing_field):
                     MovementResult(**kwargs)
 
-    def test_movement_record_serialization_uses_dataclasses_asdict(self):
+    def test_external_asdict_and_to_dict_return_detached_json_data(self):
         intent = MovementIntent(action="wave", parameters={"count": 1})
         result = MovementResult(
             accepted=True,
@@ -120,21 +134,25 @@ class MovementModelTests(unittest.TestCase):
             evidence={"checks": 1},
         )
 
-        with patch.object(
-            movement_models,
-            "asdict",
-            wraps=dataclasses.asdict,
-            create=True,
-        ) as asdict_spy:
-            intent.to_dict()
-            result.to_dict()
+        intent_asdict = dataclasses.asdict(intent)
+        result_asdict = dataclasses.asdict(result)
+        intent_dict = intent.to_dict()
+        result_dict = result.to_dict()
 
-        self.assertEqual(
-            [call.args[0] for call in asdict_spy.call_args_list],
-            [intent, result],
-        )
+        for payload in (
+            intent_asdict,
+            result_asdict,
+            intent_dict,
+            result_dict,
+        ):
+            json.dumps(payload)
 
-    def test_frozen_mapping_is_not_a_dict_and_blocks_all_dict_bypasses(self):
+        intent_asdict["parameters"]["count"] = 2
+        result_dict["evidence"]["checks"] = 2
+        self.assertEqual(intent.parameters["count"], 1)
+        self.assertEqual(result.evidence["checks"], 1)
+
+    def test_frozen_mapping_is_tuple_backed_and_sealed(self):
         intent = MovementIntent(
             action="wave",
             parameters=FrozenMapping({"nested": {"values": [1, 2]}}),
@@ -149,7 +167,9 @@ class MovementModelTests(unittest.TestCase):
 
         self.assertIsInstance(intent.parameters, Mapping)
         self.assertIsInstance(intent.parameters, FrozenMapping)
+        self.assertIsInstance(intent.parameters, tuple)
         self.assertNotIsInstance(intent.parameters, dict)
+        self.assertEqual(FrozenMapping.__slots__, ())
         self.assertEqual(intent.parameters.get("nested")["values"], (1, 2))
         self.assertEqual(
             intent.parameters,
@@ -163,14 +183,30 @@ class MovementModelTests(unittest.TestCase):
         json.dumps(dataclasses.asdict(intent))
         json.dumps(dataclasses.asdict(result))
 
+        sealed = FrozenMapping({"stable": {"value": 1}})
+        original_hash = hash(sealed)
+        original_value = sealed.to_dict()
+        with self.assertRaises((AttributeError, TypeError)):
+            object.__setattr__(
+                FrozenMapping({"value": 1}),
+                "_FrozenMapping__data",
+                {"changed": True},
+            )
+        with self.assertRaises((AttributeError, TypeError)):
+            object.__delattr__(
+                FrozenMapping({"value": 1}),
+                "_FrozenMapping__data",
+            )
         with self.assertRaises(TypeError):
-            intent.parameters["new"] = 1
+            dict.__setitem__(sealed, "new", 1)
         with self.assertRaises(TypeError):
-            dict.__setitem__(intent.parameters, "new", 1)
-        with self.assertRaises(TypeError):
-            dict.__init__(intent.parameters, {"reset": True})
-        with self.assertRaises(TypeError):
-            FrozenMapping.__init__(intent.parameters, {"reset": True})
+            sealed["new"] = 1
+        try:
+            FrozenMapping.__init__(sealed, {"reset": True})
+        except TypeError:
+            pass
+        self.assertEqual(sealed.to_dict(), original_value)
+        self.assertEqual(hash(sealed), original_hash)
         with self.assertRaises(TypeError):
             intent.parameters["nested"]["new"] = 1
 
@@ -178,10 +214,42 @@ class MovementModelTests(unittest.TestCase):
         payload["parameters"]["nested"]["values"].append(3)
         self.assertEqual(intent.parameters["nested"]["values"], (1, 2))
 
+    def test_frozen_mapping_cannot_be_subclassed(self):
+        with self.assertRaises(TypeError):
+            class MutableFrozenMapping(FrozenMapping):
+                pass
+
+    def test_frozen_mapping_public_construction_requires_a_mapping(self):
+        for value in ([], [("key", "value")]):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(TypeError, "mapping"):
+                    FrozenMapping(value)
+
+    def test_mappings_are_always_snapshotted_and_revalidated(self):
+        backing = {
+            "profile_id": "custom_simulation_profile",
+            "nested": {"values": [1, 2]},
+        }
+        source = ExternalMapping(backing)
+        snapshot = FrozenMapping(source)
+        intent = MovementIntent(action="wave", parameters=snapshot)
+
+        self.assertIsNot(intent.parameters, snapshot)
+        backing["profile_id"] = "changed"
+        backing["nested"]["values"].append(3)
+
+        self.assertEqual(snapshot["profile_id"], "custom_simulation_profile")
+        self.assertEqual(snapshot["nested"]["values"], (1, 2))
+        self.assertEqual(intent.parameters["nested"]["values"], (1, 2))
+
+        invalid = ExternalMapping({"bad": MutableBox(1)})
+        with self.assertRaisesRegex(TypeError, "parameters.bad"):
+            MovementIntent(action="wave", parameters=invalid)
+
     def test_intent_parameters_are_recursive_immutable_snapshot(self):
         parameters = {
             "gesture": {"angles": [10, 20]},
-            "samples": bytearray([1, 2]),
+            "samples": [1, 2],
         }
         intent = MovementIntent(action="wave", parameters=parameters)
 
@@ -241,44 +309,7 @@ class MovementModelTests(unittest.TestCase):
         self.assertEqual(intent.parameters["gesture"]["angles"], (10, 20))
         self.assertEqual(result.body_state["pose"]["joints"], (1.0, 2.0))
 
-    def test_sets_are_frozen_and_serialize_deterministically(self):
-        intent_values = {3, 1, 2}
-        result_values = {1, "two"}
-        intent = MovementIntent(
-            action="wave",
-            parameters={"values": intent_values},
-        )
-        result = MovementResult(
-            accepted=True,
-            status="complete",
-            reason="safe",
-            body_state={"values": result_values},
-            evidence={"values": frozenset({"b", "a"})},
-        )
-
-        intent_values.add(4)
-        result_values.add("three")
-
-        self.assertEqual(intent.parameters["values"], (1, 2, 3))
-        self.assertEqual(
-            result.body_state["values"],
-            tuple(sorted([1, "two"], key=repr)),
-        )
-        intent_payload = intent.to_dict()
-        result_payload = result.to_dict()
-        json.dumps(intent_payload)
-        json.dumps(result_payload)
-
-        self.assertEqual(intent_payload["parameters"]["values"], [1, 2, 3])
-        self.assertEqual(
-            result_payload["body_state"]["values"],
-            sorted([1, "two"], key=repr),
-        )
-        self.assertEqual(result_payload["evidence"]["values"], ["a", "b"])
-        self.assertEqual(intent.to_dict(), intent_payload)
-        self.assertEqual(result.to_dict(), result_payload)
-
-    def test_nested_json_safe_values_are_normalized_and_serializable(self):
+    def test_json_native_values_are_frozen_and_serializable(self):
         source = {
             "none": None,
             "bool": True,
@@ -287,17 +318,10 @@ class MovementModelTests(unittest.TestCase):
             "float": 1.5,
             "mapping": {"items": [1, {"ok": False}]},
             "tuple": (1, 2),
-            "range": range(3),
-            "bytearray": bytearray([4, 5]),
-            "set": {3, 1, 2},
-            "mixed_set": {1, "two"},
-            "frozenset": frozenset({"b", "a"}),
         }
         intent = MovementIntent(action="wave", parameters=source)
 
         source["mapping"]["items"].append(99)
-        source["bytearray"].append(6)
-        source["set"].add(4)
 
         self.assertIsInstance(intent.parameters["mapping"], FrozenMapping)
         self.assertEqual(
@@ -305,14 +329,6 @@ class MovementModelTests(unittest.TestCase):
             (1, FrozenMapping({"ok": False})),
         )
         self.assertEqual(intent.parameters["tuple"], (1, 2))
-        self.assertEqual(intent.parameters["range"], (0, 1, 2))
-        self.assertEqual(intent.parameters["bytearray"], (4, 5))
-        self.assertEqual(intent.parameters["set"], (1, 2, 3))
-        self.assertEqual(
-            intent.parameters["mixed_set"],
-            tuple(sorted([1, "two"], key=repr)),
-        )
-        self.assertEqual(intent.parameters["frozenset"], ("a", "b"))
 
         asdict_payload = dataclasses.asdict(intent)
         payload = intent.to_dict()
@@ -323,6 +339,10 @@ class MovementModelTests(unittest.TestCase):
 
     def test_movement_data_rejects_non_json_safe_values_with_context(self):
         invalid_values = (
+            ({1, 2}, TypeError),
+            (frozenset({1, 2}), TypeError),
+            (range(3), TypeError),
+            (bytearray([1, 2]), TypeError),
             (b"bytes", TypeError),
             (1 + 2j, TypeError),
             (math.inf, ValueError),
@@ -341,6 +361,53 @@ class MovementModelTests(unittest.TestCase):
                         parameters={"bad": value},
                     )
                 self.assertIn("parameters.bad", str(raised.exception))
+
+    def test_movement_data_enforces_container_size_and_depth_limits(self):
+        with patch.object(
+            movement_models,
+            "MAX_CONTAINER_ITEMS",
+            2,
+            create=True,
+        ):
+            for value in (
+                [1, 2, 3],
+                {"a": 1, "b": 2, "c": 3},
+            ):
+                with self.subTest(limit="items", value_type=type(value).__name__):
+                    with self.assertRaisesRegex(ValueError, "parameters.bad"):
+                        MovementIntent(
+                            action="wave",
+                            parameters={"bad": value},
+                        )
+
+        with patch.object(
+            movement_models,
+            "MAX_NESTING_DEPTH",
+            2,
+            create=True,
+        ):
+            too_deep = {"a": {"b": {"c": {"value": 1}}}}
+            with self.assertRaisesRegex(ValueError, "parameters.a.b"):
+                MovementIntent(action="wave", parameters=too_deep)
+
+    def test_json_integer_bounds_are_contextual_and_serializable(self):
+        minimum = -(2**63)
+        maximum = 2**63 - 1
+        intent = MovementIntent(
+            action="wave",
+            parameters={"minimum": minimum, "maximum": maximum},
+        )
+        json.dumps(dataclasses.asdict(intent))
+        self.assertEqual(intent.parameters["minimum"], minimum)
+        self.assertEqual(intent.parameters["maximum"], maximum)
+
+        for value in (minimum - 1, maximum + 1):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "parameters.bad"):
+                    MovementIntent(
+                        action="wave",
+                        parameters={"bad": value},
+                    )
 
     def test_movement_data_rejects_non_string_mapping_keys(self):
         with self.assertRaises(TypeError) as raised:
@@ -417,6 +484,7 @@ class MovementModelTests(unittest.TestCase):
             ({"action": "wave", "speed": math.nan}, ValueError, "speed"),
             ({"action": "wave", "speed": math.inf}, ValueError, "speed"),
             ({"action": "wave", "speed": -math.inf}, ValueError, "speed"),
+            ({"action": "wave", "speed": 10**400}, ValueError, "speed"),
         )
 
         for kwargs, error_type, message in cases:
@@ -440,17 +508,20 @@ class MovementModelTests(unittest.TestCase):
             ("position", math.nan, ValueError),
             ("position", math.inf, ValueError),
             ("position", -math.inf, ValueError),
+            ("position", 10**400, ValueError),
             ("velocity", True, TypeError),
             ("velocity", "5", TypeError),
             ("velocity", math.nan, ValueError),
             ("velocity", math.inf, ValueError),
             ("velocity", -math.inf, ValueError),
+            ("velocity", 10**400, ValueError),
             ("velocity", -0.01, ValueError),
             ("effort", True, TypeError),
             ("effort", "0", TypeError),
             ("effort", math.nan, ValueError),
             ("effort", math.inf, ValueError),
             ("effort", -math.inf, ValueError),
+            ("effort", 10**400, ValueError),
         )
 
         for field_name, value, error_type in cases:
@@ -480,6 +551,7 @@ class MovementModelTests(unittest.TestCase):
             ("duration_ms", 0, ValueError, "duration_ms"),
             ("duration_ms", -1, ValueError, "duration_ms"),
             ("duration_ms", 1.5, TypeError, "duration_ms"),
+            ("duration_ms", 10**400, ValueError, "duration_ms"),
             ("targets", [target, object()], TypeError, "targets"),
             ("targets", None, TypeError, "targets"),
             ("expression", "", ValueError, "expression"),
@@ -543,6 +615,15 @@ class MovementModelTests(unittest.TestCase):
                             f"got {type(exc).__name__}: {exc}"
                         )
                     self.assertEqual(profile["profile_id"], "nova_humanoid_sim_v1")
+
+    def test_profile_accepts_custom_non_empty_profile_id(self):
+        profile = self.valid_profile()
+        profile["profile_id"] = "custom_simulation_profile"
+
+        with TemporaryDirectory() as directory:
+            loaded = load_body_profile(self.write_profile(directory, profile))
+
+        self.assertEqual(loaded["profile_id"], "custom_simulation_profile")
 
     def test_profile_missing_file_preserves_file_not_found(self):
         with TemporaryDirectory() as directory:
@@ -649,7 +730,14 @@ class MovementModelTests(unittest.TestCase):
                 self.assert_invalid_profile(profile, r"head_yaw.*schema")
 
     def test_profile_rejects_non_numeric_or_non_finite_joint_values(self):
-        invalid_values = (True, "10", math.inf, -math.inf, math.nan)
+        invalid_values = (
+            True,
+            "10",
+            math.inf,
+            -math.inf,
+            math.nan,
+            10**400,
+        )
         for field in ("min", "max", "max_velocity"):
             for value in invalid_values:
                 profile = self.valid_profile()
@@ -673,7 +761,16 @@ class MovementModelTests(unittest.TestCase):
         self.assert_invalid_profile(negative_velocity, r"head_yaw.*max_velocity")
 
     def test_profile_rejects_invalid_mass_and_height(self):
-        invalid_values = (None, True, "1", 0, -1, math.inf, math.nan)
+        invalid_values = (
+            None,
+            True,
+            "1",
+            0,
+            -1,
+            math.inf,
+            math.nan,
+            10**400,
+        )
         for field in ("mass_kg", "height_m"):
             for value in invalid_values:
                 profile = self.valid_profile()
@@ -717,6 +814,9 @@ class MovementModelTests(unittest.TestCase):
         non_finite_bound = self.valid_profile()
         non_finite_bound["safe_zone"]["y_max"] = math.inf
         cases.append(non_finite_bound)
+        huge_bound = self.valid_profile()
+        huge_bound["safe_zone"]["y_max"] = 10**400
+        cases.append(huge_bound)
         reversed_x = self.valid_profile()
         reversed_x["safe_zone"]["x_min"] = 4
         reversed_x["safe_zone"]["x_max"] = -4
