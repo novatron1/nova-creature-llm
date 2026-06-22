@@ -209,5 +209,61 @@
     "source": "assisted_learning",
     "timestamp": "2026-06-20T11:51:28.922453",
     "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1782139146",
+    "prompt": "Lesson: nova creature should explain its brain routes without exposing hidden reasoning",
+    "answer": "Remembered: nova creature should explain its brain routes without exposing hidden reasoning",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:39:06.866568",
+    "session": "aea3a007"
+  },
+  {
+    "prompt": "SPEECH: nova creature should explain its brain routes without exposing hidden reasoning",
+    "answer": "Explained: nova creature should explain its brain routes without exposing hidden reasoning",
+    "type": "explanation",
+    "source": "decomposed",
+    "matched_keywords": [
+      "explain"
+    ],
+    "id": "decomp_1782139146_25",
+    "timestamp": "2026-06-22T10:39:06.875451",
+    "session": "aea3a007"
+  },
+  {
+    "id": "lesson_1782139146",
+    "prompt": "Lesson: SPEECH: nova creature should explain its brain routes without exposing hidden reasoning Explained: nova creature should explain its brain routes without exposing hidden reasoning",
+    "answer": "Remembered: SPEECH: nova creature should explain its brain routes without exposing hidden reasoning Explained: nova creature should explain its brain routes without exposing hidden reasoning",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:39:06.879449",
+    "session": "aea3a007"
+  },
+  {
+    "id": "lesson_1782139650",
+    "prompt": "Lesson: ultimate answer is 42",
+    "answer": "Remembered: ultimate answer is 42",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:47:30.865331",
+    "session": "6fa06ba3"
+  },
+  {
+    "prompt": "SPEECH: ultimate answer is 42",
+    "answer": "Applied: ultimate answer is 42",
+    "type": "matched",
+    "source": "decomposed",
+    "matched_keywords": [
+      "answer"
+    ],
+    "id": "decomp_1782139650_28",
+    "timestamp": "2026-06-22T10:47:30.880143",
+    "session": "6fa06ba3"
+  },
+  {
+    "id": "lesson_1782139650",
+    "prompt": "Lesson: SPEECH: ultimate answer is 42 Applied: ultimate answer is 42",
+    "answer": "Remembered: SPEECH: ultimate answer is 42 Applied: ultimate answer is 42",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:47:30.885234",
+    "session": "6fa06ba3"
   }
 ]

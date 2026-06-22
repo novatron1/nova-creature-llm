@@ -9,6 +9,40 @@
       "name": "GitHub User",
       "introduced_at": "2026-06-20T22:45:54.136655",
       "session": "bfa2ff58"
+    },
+    "nova test": {
+      "name": "Nova Test",
+      "introduced_at": "2026-06-22T10:33:32.992213",
+      "session": "1e1cd3e5"
+    },
+    "mr. novotron": {
+      "name": "Mr. Novotron",
+      "introduced_at": "2026-06-22T14:08:33.948167",
+      "session": "103be630"
+    },
+    "memory test user": {
+      "name": "Memory Test User",
+      "introduced_at": "2026-06-22T10:47:28.221087",
+      "session": "6fa06ba3"
+    },
+    "second user": {
+      "name": "Second User",
+      "introduced_at": "2026-06-22T10:47:30.831570",
+      "session": "6fa06ba3"
+    },
+    "nova tester": {
+      "name": "Nova Tester",
+      "introduced_at": "2026-06-22T14:11:05.847954",
+      "session": "327e4de3"
+    },
+    "test user": {
+      "name": "Test User",
+      "introduced_at": "2026-06-22T13:08:37.431304"
+    },
+    "nova": {
+      "name": "Nova",
+      "introduced_at": "2026-06-22T14:11:09.954233",
+      "session": "327e4de3"
     }
   },
   "lessons": {
@@ -16,8 +50,58 @@
       "text": "the latest code from github is now live",
       "learned_at": "2026-06-20T22:45:54.364679",
       "session": "bfa2ff58"
+    },
+    "lesson_2": {
+      "text": "nova creature should explain its brain routes without exposing hidden reasoning",
+      "learned_at": "2026-06-22T10:39:06.865885",
+      "session": "aea3a007"
+    },
+    "lesson_3": {
+      "text": "nova has 7 brain roles",
+      "learned_at": "2026-06-22T10:41:29.822385",
+      "session": "c7433974"
+    },
+    "lesson_4": {
+      "text": "nova has 7 brain roles",
+      "learned_at": "2026-06-22T10:44:06.683547",
+      "session": "d912cbfd"
+    },
+    "lesson_5": {
+      "text": "nova has 7 brain roles",
+      "learned_at": "2026-06-22T10:45:48.706795",
+      "session": "17b310c0"
+    },
+    "lesson_6": {
+      "text": "nova has 7 brain roles",
+      "learned_at": "2026-06-22T10:46:49.284705",
+      "session": "a585389c"
+    },
+    "lesson_7": {
+      "text": "nova creature memory persistence test value is 42",
+      "learned_at": "2026-06-22T10:47:10.043716",
+      "session": "96fe5f9d"
+    },
+    "lesson_8": {
+      "text": "nova creature persistence value is 42",
+      "learned_at": "2026-06-22T10:47:28.206421",
+      "session": "6fa06ba3"
+    },
+    "lesson_9": {
+      "text": "ultimate answer is 42",
+      "learned_at": "2026-06-22T10:47:30.859550",
+      "session": "6fa06ba3"
+    },
+    "lesson_10": {
+      "text": "transformers should route intelligently",
+      "learned_at": "2026-06-22T14:08:34.773797",
+      "session": "103be630"
+    },
+    "lesson_11": {
+      "text": "hybrid routers combine dictionary lookup with transformer generation",
+      "learned_at": "2026-06-22T14:11:06.375109",
+      "session": "327e4de3"
     }
   },
-  "last_person": "github user",
-  "last_lesson": "lesson_1"
+  "last_person": "nova",
+  "last_lesson": "lesson_11"
 }

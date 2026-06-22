@@ -3275,5 +3275,193 @@
     "source": "assisted_learning",
     "timestamp": "2026-06-20T11:51:28.881209",
     "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "prompt": "FACT: Remember: nova creature should explain its brain routes without exposing hidden reasoning",
+    "answer": "Stored fact: nova creature should explain its brain routes without exposing hidden reasoning",
+    "type": "factual",
+    "source": "decomposed",
+    "matched_keywords": [
+      "brain"
+    ],
+    "id": "decomp_1782139146_353",
+    "timestamp": "2026-06-22T10:39:06.872131",
+    "session": "aea3a007"
+  },
+  {
+    "id": "lesson_1782139146",
+    "prompt": "Lesson: FACT: Remember: nova creature should explain its brain routes without exposing hidden reasoning Stored fact: nova creature should explain its brain routes without exposing hidden reasoning",
+    "answer": "Remembered: FACT: Remember: nova creature should explain its brain routes without exposing hidden reasoning Stored fact: nova creature should explain its brain routes without exposing hidden reasoning",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:39:06.875932",
+    "session": "aea3a007"
+  },
+  {
+    "id": "lesson_1782139289",
+    "prompt": "Lesson: nova has 7 brain roles",
+    "answer": "Remembered: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:41:29.823351",
+    "session": "c7433974"
+  },
+  {
+    "prompt": "FACT: Remember: nova has 7 brain roles",
+    "answer": "Stored fact: nova has 7 brain roles",
+    "type": "factual",
+    "source": "decomposed",
+    "matched_keywords": [
+      "brain"
+    ],
+    "id": "decomp_1782139289_356",
+    "timestamp": "2026-06-22T10:41:29.830330",
+    "session": "c7433974"
+  },
+  {
+    "id": "lesson_1782139289",
+    "prompt": "Lesson: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "answer": "Remembered: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:41:29.832789",
+    "session": "c7433974"
+  },
+  {
+    "id": "lesson_1782139446",
+    "prompt": "Lesson: nova has 7 brain roles",
+    "answer": "Remembered: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:44:06.684639",
+    "session": "d912cbfd"
+  },
+  {
+    "prompt": "FACT: Remember: nova has 7 brain roles",
+    "answer": "Stored fact: nova has 7 brain roles",
+    "type": "factual",
+    "source": "decomposed",
+    "matched_keywords": [
+      "brain"
+    ],
+    "id": "decomp_1782139446_359",
+    "timestamp": "2026-06-22T10:44:06.691920",
+    "session": "d912cbfd"
+  },
+  {
+    "id": "lesson_1782139446",
+    "prompt": "Lesson: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "answer": "Remembered: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:44:06.695117",
+    "session": "d912cbfd"
+  },
+  {
+    "id": "lesson_1782139548",
+    "prompt": "Lesson: nova has 7 brain roles",
+    "answer": "Remembered: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:45:48.707524",
+    "session": "17b310c0"
+  },
+  {
+    "prompt": "FACT: Remember: nova has 7 brain roles",
+    "answer": "Stored fact: nova has 7 brain roles",
+    "type": "factual",
+    "source": "decomposed",
+    "matched_keywords": [
+      "brain"
+    ],
+    "id": "decomp_1782139548_362",
+    "timestamp": "2026-06-22T10:45:48.713120",
+    "session": "17b310c0"
+  },
+  {
+    "id": "lesson_1782139548",
+    "prompt": "Lesson: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "answer": "Remembered: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:45:48.715517",
+    "session": "17b310c0"
+  },
+  {
+    "id": "lesson_1782139609",
+    "prompt": "Lesson: nova has 7 brain roles",
+    "answer": "Remembered: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:46:49.285566",
+    "session": "a585389c"
+  },
+  {
+    "prompt": "FACT: Remember: nova has 7 brain roles",
+    "answer": "Stored fact: nova has 7 brain roles",
+    "type": "factual",
+    "source": "decomposed",
+    "matched_keywords": [
+      "brain"
+    ],
+    "id": "decomp_1782139609_365",
+    "timestamp": "2026-06-22T10:46:49.292085",
+    "session": "a585389c"
+  },
+  {
+    "id": "lesson_1782139609",
+    "prompt": "Lesson: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "answer": "Remembered: FACT: Remember: nova has 7 brain roles Stored fact: nova has 7 brain roles",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:46:49.294951",
+    "session": "a585389c"
+  },
+  {
+    "id": "lesson_1782139630",
+    "prompt": "Lesson: nova creature memory persistence test value is 42",
+    "answer": "Remembered: nova creature memory persistence test value is 42",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:47:10.044594",
+    "session": "96fe5f9d"
+  },
+  {
+    "prompt": "FACT: nova creature memory persistence test value is 42",
+    "answer": "Stored: nova creature memory persistence test value is 42",
+    "type": "general_knowledge",
+    "source": "decomposed_fallback",
+    "matched_keywords": [
+      "general"
+    ],
+    "id": "decomp_1782139630_368",
+    "timestamp": "2026-06-22T10:47:10.050130",
+    "session": "96fe5f9d"
+  },
+  {
+    "id": "lesson_1782139630",
+    "prompt": "Lesson: FACT: nova creature memory persistence test value is 42 Stored: nova creature memory persistence test value is 42",
+    "answer": "Remembered: FACT: nova creature memory persistence test value is 42 Stored: nova creature memory persistence test value is 42",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:47:10.052523",
+    "session": "96fe5f9d"
+  },
+  {
+    "id": "lesson_1782139648",
+    "prompt": "Lesson: nova creature persistence value is 42",
+    "answer": "Remembered: nova creature persistence value is 42",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:47:28.207272",
+    "session": "6fa06ba3"
+  },
+  {
+    "prompt": "FACT: nova creature persistence value is 42",
+    "answer": "Stored: nova creature persistence value is 42",
+    "type": "general_knowledge",
+    "source": "decomposed_fallback",
+    "matched_keywords": [
+      "general"
+    ],
+    "id": "decomp_1782139648_371",
+    "timestamp": "2026-06-22T10:47:28.212847",
+    "session": "6fa06ba3"
+  },
+  {
+    "id": "lesson_1782139648",
+    "prompt": "Lesson: FACT: nova creature persistence value is 42 Stored: nova creature persistence value is 42",
+    "answer": "Remembered: FACT: nova creature persistence value is 42 Stored: nova creature persistence value is 42",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-22T10:47:28.215207",
+    "session": "6fa06ba3"
   }
 ]
