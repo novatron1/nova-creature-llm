@@ -78,6 +78,73 @@ def test_generation_result_rejects_bad_evidence(kwargs):
     assert result.ok is False
 
 
+@pytest.mark.parametrize(
+    "checkpoint_path",
+    [
+        "artifacts/transformer_training/winner.pt",
+        "../checkpoints/left_hemisphere/winner.pt",
+        "checkpoints/left_hemisphere/winner.txt",
+    ],
+)
+def test_generation_result_rejects_malformed_checkpoint_paths(checkpoint_path):
+    result = GenerationResult(
+        text="Use a loop.",
+        role="left_hemisphere",
+        checkpoint_path=checkpoint_path,
+        checkpoint_hash="a" * 64,
+        tokens_generated=4,
+        elapsed_seconds=0.02,
+        tokens_per_second=200.0,
+        finish_reason="eos",
+    )
+    assert result.ok is False
+
+
+@pytest.mark.parametrize("tokens_generated", [float("inf"), 1.5, True])
+def test_generation_result_rejects_non_integer_token_counts(tokens_generated):
+    result = GenerationResult(
+        text="Use a loop.",
+        role="left_hemisphere",
+        checkpoint_path="checkpoints/brain_slots/left_hemisphere/winner.pt",
+        checkpoint_hash="a" * 64,
+        tokens_generated=tokens_generated,
+        elapsed_seconds=0.02,
+        tokens_per_second=200.0,
+        finish_reason="eos",
+    )
+    assert result.ok is False
+
+
+def test_generation_result_handles_none_evidence_without_raising():
+    result = GenerationResult(
+        text="Use a loop.",
+        role="left_hemisphere",
+        checkpoint_path=None,  # type: ignore[arg-type]
+        checkpoint_hash=None,  # type: ignore[arg-type]
+        tokens_generated=4,
+        elapsed_seconds=0.02,
+        tokens_per_second=200.0,
+        finish_reason="eos",
+    )
+    assert result.ok is False
+
+
+def test_generation_result_invalid_trace_is_json_safe():
+    result = GenerationResult(
+        text="Use a loop.",
+        role="left_hemisphere",
+        checkpoint_path="checkpoints/brain_slots/left_hemisphere/winner.pt",
+        checkpoint_hash="a" * 64,
+        tokens_generated=float("inf"),
+        elapsed_seconds=float("nan"),
+        tokens_per_second=float("inf"),
+        finish_reason="eos",
+    )
+    trace = result.to_trace()
+    assert result.ok is False
+    assert json.dumps(trace, allow_nan=False)
+
+
 def test_route_prediction_support_roles_become_tuple_and_resist_mutation():
     source_roles = ["left_hemisphere", "memory_transformer"]
     prediction = RoutePrediction(
@@ -216,6 +283,24 @@ def test_promotion_decision_rejects_string_collection_and_invalid_verdict():
         PromotionDecision(
             verdict="maybe",
             reasons=("candidate beats baseline",),
+            baseline_joint=0.41,
+            candidate_joint=0.55,
+            previous_winner_joint=0.44,
+        )
+
+    with pytest.raises(ValueError):
+        PromotionDecision(
+            verdict="PROMOTED",
+            reasons=(),
+            baseline_joint=0.41,
+            candidate_joint=0.55,
+            previous_winner_joint=0.44,
+        )
+
+    with pytest.raises(ValueError):
+        PromotionDecision(
+            verdict="PROMOTED",
+            reasons=("",),
             baseline_joint=0.41,
             candidate_joint=0.55,
             previous_winner_joint=0.44,
