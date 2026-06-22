@@ -98,9 +98,15 @@ class GenerationResult:
 
     def to_trace(self) -> dict:
         trace = asdict(self)
+        trace["text"] = _json_safe_text(trace["text"])
+        trace["role"] = _json_safe_text(trace["role"])
+        trace["checkpoint_path"] = _json_safe_text(trace["checkpoint_path"])
+        trace["checkpoint_hash"] = _json_safe_optional_text(trace["checkpoint_hash"])
         trace["tokens_generated"] = _json_safe_int(trace["tokens_generated"])
         trace["elapsed_seconds"] = _json_safe_float(trace["elapsed_seconds"])
         trace["tokens_per_second"] = _json_safe_float(trace["tokens_per_second"])
+        trace["finish_reason"] = _json_safe_text(trace["finish_reason"])
+        trace["error"] = _json_safe_optional_text(trace["error"])
         return {"source": "transformer", **trace, "ok": self.ok}
 
 
@@ -203,6 +209,22 @@ def _json_safe_int(value: object) -> int | None:
 
 def _json_safe_float(value: object) -> float | None:
     return float(value) if _is_finite_nonnegative_number(value) else None
+
+
+def _json_safe_text(value: object) -> str:
+    if isinstance(value, str):
+        return value
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return str(value)
+
+
+def _json_safe_optional_text(value: object) -> str | None:
+    if value is None:
+        return None
+    return _json_safe_text(value)
 
 
 def _coerce_nonempty_string_sequence(value: Sequence[str], field_name: str) -> tuple[str, ...]:

@@ -145,6 +145,28 @@ def test_generation_result_invalid_trace_is_json_safe():
     assert json.dumps(trace, allow_nan=False)
 
 
+def test_generation_result_trace_sanitizes_non_string_runtime_values():
+    result = GenerationResult(
+        text=b"ok",  # type: ignore[arg-type]
+        role=b"left_hemisphere",  # type: ignore[arg-type]
+        checkpoint_path=Path("checkpoints/brain_slots/left_hemisphere/winner.pt"),  # type: ignore[arg-type]
+        checkpoint_hash=None,  # type: ignore[arg-type]
+        tokens_generated=4,
+        elapsed_seconds=0.02,
+        tokens_per_second=200.0,
+        finish_reason="eos",
+        error=object(),  # type: ignore[arg-type]
+    )
+    trace = result.to_trace()
+    assert result.ok is False
+    assert json.dumps(trace, allow_nan=False)
+    assert isinstance(trace["text"], str)
+    assert isinstance(trace["role"], str)
+    assert isinstance(trace["checkpoint_path"], str)
+    assert trace["checkpoint_hash"] is None
+    assert isinstance(trace["error"], str)
+
+
 def test_route_prediction_support_roles_become_tuple_and_resist_mutation():
     source_roles = ["left_hemisphere", "memory_transformer"]
     prediction = RoutePrediction(
