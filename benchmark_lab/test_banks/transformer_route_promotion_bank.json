@@ -1,8 +1,4 @@
-{
-  "bank": "transformer_route_promotion",
-  "protected": true,
-  "case_count": 21,
-  "cases": [
+[
     {
       "id": "route-coding-001",
       "prompt": "Help me debug a Python loop that never stops.",
@@ -171,5 +167,4 @@
       "required_terms": ["concise"],
       "protected": true
     }
-  ]
-}
+]

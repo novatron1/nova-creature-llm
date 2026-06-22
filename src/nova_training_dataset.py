@@ -68,6 +68,7 @@ FALLBACK_TEMPLATES = {
     "I am not sure. That seems uncertain.",
     "I don't know that yet.",
 }
+FALLBACK_TEMPLATE_KEYS = {template.casefold() for template in FALLBACK_TEMPLATES}
 
 PROMPT_ANSWER_KEYS = (
     ("prompt", "answer"),
@@ -95,6 +96,7 @@ TRUNCATED_FRAGMENTS = {
     "transfor",
     "woul",
 }
+ALLOWED_SHORT_FINAL_WORDS = {"def"}
 
 
 def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
@@ -103,7 +105,7 @@ def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | N
 
     if answer.lower().count("i recall your last question") >= 2:
         return None, "recursive_followup"
-    if answer in FALLBACK_TEMPLATES:
+    if answer.casefold() in FALLBACK_TEMPLATE_KEYS:
         return None, "fallback_template"
     if len(answer.strip()) < 2:
         return None, "empty_answer"
@@ -119,8 +121,9 @@ def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | N
 
 def grouped_split(rows: list[dict[str, Any]], seed: int = DEFAULT_SEED) -> dict[str, list[dict[str, Any]]]:
     splits: dict[str, list[dict[str, Any]]] = {"train": [], "validation": [], "promotion": []}
+    prompt_counts = Counter(_normalize_for_group(str(row.get("prompt") or "")) for row in rows)
     for row in rows:
-        group = str(row.get("intent_group") or row.get("id") or "")
+        group = _split_group(row, prompt_counts)
         bucket = int(hashlib.sha256(f"{seed}:{group}".encode("utf-8")).hexdigest(), 16) % 100
         if bucket <= 69:
             split = "train"
@@ -138,9 +141,12 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
     domain = _valid_domain(record.get("domain")) or _infer_domain(record, prompt, source)
     primary_role = _valid_role(record.get("primary_role") or record.get("role")) or _infer_role(record, domain, prompt, source)
     support_roles = _extract_support_roles(record, primary_role)
+    task_type = "route" if _is_route_only_record(record, answer) else "answer"
+    if task_type == "route":
+        answer = f"Route to {primary_role} for {domain}."
     intent_group = _clean_text(record.get("intent_group")) or _intent_group(primary_role, domain, prompt, answer)
     stable_id = _stable_id(source, prompt, answer, primary_role, domain)
-    return {
+    normalized = {
         "id": stable_id,
         "source": source,
         "intent_group": intent_group,
@@ -151,6 +157,9 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
         "answer": answer,
         "quality_flags": [],
     }
+    if task_type == "route":
+        normalized["task_type"] = task_type
+    return normalized
 
 
 def looks_truncated(answer: str) -> bool:
@@ -159,10 +168,15 @@ def looks_truncated(answer: str) -> bool:
         return False
     if text[-1] in TERMINAL_CHARS:
         return False
+    last_token = text.rsplit(maxsplit=1)[-1].strip(",;:")
+    if re.fullmatch(r"\d+(\.\d+)?", last_token) or re.fullmatch(r"\d+[A-Za-z]+", last_token):
+        return False
     words = re.findall(r"[A-Za-z][A-Za-z'-]*", text)
     if len(words) <= 3:
         return False
     last_word = words[-1].lower().strip("-'")
+    if last_word in ALLOWED_SHORT_FINAL_WORDS:
+        return False
     if last_word in TRUNCATED_FRAGMENTS:
         return True
     if len(last_word) <= 3 and last_word not in {"and", "but", "for", "not", "you", "yes", "no"}:
@@ -222,13 +236,16 @@ def build_dataset(project_root: Path, seed: int = DEFAULT_SEED) -> dict[str, Any
         "split_counts": split_counts,
         "content_fingerprint": _content_fingerprint(splits),
         "outputs": {
-            "train": str(Path("artifacts/transformer_training/dataset/train.jsonl")),
-            "validation": str(Path("artifacts/transformer_training/dataset/validation.jsonl")),
-            "promotion": str(Path("artifacts/transformer_training/dataset/promotion.jsonl")),
-            "quarantine": str(Path("artifacts/transformer_training/dataset/quarantine.jsonl")),
+            "train": "artifacts/transformer_training/dataset/train.jsonl",
+            "validation": "artifacts/transformer_training/dataset/validation.jsonl",
+            "promotion": "artifacts/transformer_training/dataset/promotion.jsonl",
+            "quarantine": "artifacts/transformer_training/dataset/quarantine.jsonl",
         },
     }
-    (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output_dir / "manifest.json").write_text(
+        json.dumps(manifest, allow_nan=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return manifest
 
 
@@ -238,7 +255,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Grouped split seed.")
     args = parser.parse_args(argv)
     manifest = build_dataset(Path(args.project_root).resolve(), seed=args.seed)
-    print(json.dumps(manifest, indent=2, sort_keys=True))
+    print(json.dumps(manifest, allow_nan=False, indent=2, sort_keys=True))
     return 0
 
 
@@ -268,16 +285,16 @@ def _extract_support_roles(record: dict[str, Any], primary_role: str) -> list[st
 def _infer_domain(record: dict[str, Any], prompt: str, source: str) -> str:
     source_hint = _clean_text(record.get("_source_path") or source)
     source_role = _role_from_source(source) or _role_from_source(source_hint)
-    if source_role:
-        return DOMAIN_BY_ROLE[source_role]
     text = f"{prompt} {_clean_text(record.get('type'))}".lower()
     if any(term in text for term in ("python", "code", "debug", "loop", "function")):
         return "coding"
-    if any(term in text for term in ("quadratic", "formula", "times", "multiply", "math")):
+    if any(term in text for term in ("calculus", "quadratic", "formula", "times", "multiply", "math")):
         return "math"
+    if any(term in text for term in ("gravity", "physics", "chemistry", "biology", "neuron", "science")):
+        return "science"
     if any(term in text for term in ("plan", "steps", "release", "deploy")):
         return "planning"
-    if any(term in text for term in ("created", "made you", "mr. novotron", "remember")):
+    if any(term in text for term in ("created", "made you", "who are you", "mr. novotron", "remember")):
         return "memory_recall"
     if any(term in text for term in ("dream", "simulate", "scenario", "what happens if")):
         return "dream"
@@ -285,6 +302,8 @@ def _infer_domain(record: dict[str, Any], prompt: str, source: str) -> str:
         return "critic"
     if any(term in text for term in ("visual", "creative", "design", "pattern")):
         return "creative"
+    if source_role and not _is_generic_source(source_hint):
+        return DOMAIN_BY_ROLE[source_role]
     return "general"
 
 
@@ -295,9 +314,11 @@ def _infer_role(record: dict[str, Any], domain: str, prompt: str, source: str) -
             role = _valid_role(item)
             if role:
                 return role
+    if domain != "general":
+        return ROLE_BY_DOMAIN.get(domain, "speech_output_transformer")
     source_hint = _clean_text(record.get("_source_path") or source)
     source_role = _role_from_source(source) or _role_from_source(source_hint)
-    if source_role:
+    if source_role and not _is_generic_source(source_hint):
         return source_role
     return ROLE_BY_DOMAIN.get(domain, "speech_output_transformer")
 
@@ -319,10 +340,10 @@ def _role_from_source(source: str) -> str | None:
 
 
 def _intent_group(primary_role: str, domain: str, prompt: str, answer: str) -> str:
-    normalized_answer = _normalize_for_group(answer)
-    if normalized_answer:
-        return f"{primary_role}:{domain}:answer:{_short_hash(normalized_answer)}"
-    return f"{primary_role}:{domain}:prompt:{_short_hash(_normalize_for_group(prompt))}"
+    normalized_prompt = _normalize_for_group(prompt)
+    if normalized_prompt:
+        return f"{primary_role}:{domain}:prompt:{_short_hash(normalized_prompt)}"
+    return f"{primary_role}:{domain}:answer:{_short_hash(_normalize_for_group(answer))}"
 
 
 def _stable_id(source: str, prompt: str, answer: str, primary_role: str, domain: str) -> str:
@@ -333,7 +354,9 @@ def _stable_id(source: str, prompt: str, answer: str, primary_role: str, domain:
         "primary_role": primary_role,
         "domain": domain,
     }
-    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(payload, allow_nan=False, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
 
 
 def _short_hash(value: str) -> str:
@@ -342,7 +365,9 @@ def _short_hash(value: str) -> str:
 
 def _content_fingerprint(splits: dict[str, list[dict[str, Any]]]) -> str:
     payload = {name: values for name, values in sorted(splits.items())}
-    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(payload, allow_nan=False, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
 
 
 def _normalize_for_group(value: str) -> str:
@@ -382,7 +407,7 @@ def _load_records(path: Path) -> list[dict[str, Any]]:
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         for row in rows:
-            handle.write(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n")
+            handle.write(json.dumps(row, allow_nan=False, sort_keys=True, ensure_ascii=False) + "\n")
 
 
 def _quarantine_record(
@@ -400,6 +425,27 @@ def _quarantine_record(
         "prompt": prompt,
         "answer": answer,
     }
+
+
+def _split_group(row: dict[str, Any], prompt_counts: Counter[str]) -> str:
+    normalized_prompt = _normalize_for_group(str(row.get("prompt") or ""))
+    if normalized_prompt and prompt_counts[normalized_prompt] > 1:
+        return f"prompt:{normalized_prompt}"
+    explicit_group = _clean_text(row.get("intent_group"))
+    if explicit_group:
+        return f"intent:{explicit_group}"
+    if normalized_prompt:
+        return f"prompt:{normalized_prompt}"
+    return f"id:{_clean_text(row.get('id'))}"
+
+
+def _is_route_only_record(record: dict[str, Any], answer: str) -> bool:
+    return not answer.strip() and bool(record.get("route")) and bool(_clean_text(record.get("text")))
+
+
+def _is_generic_source(source: str) -> bool:
+    stem = Path(source.replace("\\", "/")).stem
+    return stem in {"conversation_training_data", "routing_log"}
 
 
 if __name__ == "__main__":
