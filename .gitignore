@@ -29,6 +29,11 @@ checkpoints/
 *.pt
 *.pth
 
+# Transformer hyper-training artifacts
+artifacts/transformer_training/
+data/transformer_training_runs/
+*.registry.lock
+
 # Archives
 *.zip
 
