@@ -33,16 +33,17 @@ def build_supervised_sequence(
     if not answer_ids:
         raise ValueError("answer must produce at least one token")
 
-    token_ids = [tokenizer.BOS, *prompt_ids, tokenizer.SEP, *answer_ids, tokenizer.EOS]
-    token_ids = token_ids[:block_size]
+    full_token_ids = [tokenizer.BOS, *prompt_ids, tokenizer.SEP, *answer_ids, tokenizer.EOS]
+    full_targets = [*full_token_ids[1:], -100]
+    token_ids = full_token_ids[:block_size]
+    targets = full_targets[:block_size]
 
     if tokenizer.SEP not in token_ids:
         raise ValueError("supervised sequence lost SEP during truncation")
     sep_index = token_ids.index(tokenizer.SEP)
-    if sep_index + 1 >= len(token_ids):
+    if sep_index >= len(targets) or targets[sep_index] == -100:
         raise ValueError("supervised sequence lost all answer tokens during truncation")
 
-    targets = token_ids[1:] + [tokenizer.EOS]
     for index in range(min(sep_index, len(targets))):
         targets[index] = -100
     if not any(target != -100 for target in targets):
@@ -61,6 +62,7 @@ def train_role_candidate(
     epochs: int = 10,
     batch_size: int = 8,
     learning_rate: float = 3e-4,
+    protected_paths: Sequence[str | Path] | None = None,
 ) -> dict[str, Any]:
     if role not in ROLE_NAMES:
         raise ValueError(f"invalid role: {role!r}")
@@ -73,7 +75,7 @@ def train_role_candidate(
 
     baseline_path = Path(baseline_path)
     output_path = Path(output_path)
-    _validate_candidate_path(baseline_path, output_path)
+    _validate_candidate_path(baseline_path, output_path, protected_paths)
 
     model, payload = load_checkpoint(baseline_path)
     baseline_metadata = payload.get("metadata", {})
@@ -116,10 +118,13 @@ def train_role_candidate(
                     raise FloatingPointError("non-finite training loss")
                 loss.backward()
                 _reject_non_finite_gradients(model)
-                total_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                if not torch.isfinite(total_norm):
-                    raise FloatingPointError("non-finite gradient norm")
+                torch.nn.utils.clip_grad_norm_(
+                    model.parameters(),
+                    1.0,
+                    error_if_nonfinite=True,
+                )
                 optimizer.step()
+                _reject_non_finite_parameters(model)
 
                 train_loss_history.append(float(loss.detach().cpu()))
                 steps += 1
@@ -142,6 +147,8 @@ def train_role_candidate(
     model.load_state_dict(best_state, strict=True)
 
     duration_seconds = time.perf_counter() - start_time
+    checkpoint_validation_loss = best_validation_loss
+    improves_over_baseline = checkpoint_validation_loss < baseline_validation_loss
     metadata = {
         "role": role,
         "seed": seed,
@@ -150,6 +157,8 @@ def train_role_candidate(
         "baseline_sha256": baseline_sha256,
         "baseline_validation_loss": baseline_validation_loss,
         "best_validation_loss": best_validation_loss,
+        "checkpoint_validation_loss": checkpoint_validation_loss,
+        "improves_over_baseline": improves_over_baseline,
         "final_validation_loss": final_validation_loss,
         "steps": steps,
         "duration_seconds": duration_seconds,
@@ -188,7 +197,10 @@ def _prepare_examples(
             raise ValueError(f"{split_name} row {index} must have a non-empty prompt")
         if not isinstance(answer, str) or not answer.strip():
             raise ValueError(f"{split_name} row {index} must have a non-empty answer")
-        examples.append(build_supervised_sequence(tokenizer, prompt, answer, block_size))
+        try:
+            examples.append(build_supervised_sequence(tokenizer, prompt, answer, block_size))
+        except ValueError as exc:
+            raise ValueError(f"{split_name} row {index}: {exc}") from exc
     if not examples:
         raise ValueError(f"{split_name} rows produced no answer examples")
     return examples
@@ -242,17 +254,27 @@ def _reject_non_finite_gradients(model: torch.nn.Module) -> None:
             raise FloatingPointError(f"non-finite gradient detected: {name}")
 
 
+def _reject_non_finite_parameters(model: torch.nn.Module) -> None:
+    for name, parameter in model.named_parameters():
+        if parameter.is_floating_point() and not torch.isfinite(parameter).all():
+            raise FloatingPointError(f"non-finite parameter detected: {name}")
+
+
 def _clone_state_dict(state_dict: Mapping[str, torch.Tensor]) -> dict[str, torch.Tensor]:
     return {name: tensor.detach().cpu().clone() for name, tensor in state_dict.items()}
 
 
-def _validate_candidate_path(baseline_path: Path, output_path: Path) -> None:
-    if baseline_path.resolve() == output_path.resolve():
+def _validate_candidate_path(
+    baseline_path: Path,
+    output_path: Path,
+    protected_paths: Sequence[str | Path] | None = None,
+) -> None:
+    resolved_output = output_path.resolve()
+    if baseline_path.resolve() == resolved_output:
         raise ValueError("candidate output path must not equal baseline path")
-    path_text = str(output_path).lower()
-    forbidden_markers = ("baseline", "winner", "live")
-    if any(marker in path_text for marker in forbidden_markers):
-        raise ValueError("candidate output path must not look like a baseline, winner, or live path")
+    for protected_path in protected_paths or ():
+        if Path(protected_path).resolve() == resolved_output:
+            raise ValueError("candidate output path must not equal a protected path")
 
 
 def _sha256_file(path: Path) -> str:
