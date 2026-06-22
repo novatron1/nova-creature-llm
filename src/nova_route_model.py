@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import io
 import json
+import math
 import random
 from dataclasses import dataclass
 from pathlib import Path
@@ -67,8 +67,15 @@ def train_route_model(
     block_size: int = DEFAULT_BLOCK_SIZE,
     batch_size: int = DEFAULT_BATCH_SIZE,
     learning_rate: float = DEFAULT_LEARNING_RATE,
+    allow_train_fallback_for_output: bool = False,
 ) -> tuple[NovaRouteClassifier, dict]:
     rows = _coerce_examples(examples, "examples")
+    validation_source = "holdout" if validation_examples is not None else "train_fallback"
+    if output_path is not None and validation_examples is None and not allow_train_fallback_for_output:
+        raise ValueError(
+            "validation_examples must be provided when output_path is used; "
+            "pass allow_train_fallback_for_output=True to explicitly save a train-fallback artifact"
+        )
     validation_rows = _coerce_examples(validation_examples, "validation_examples") if validation_examples is not None else rows
     if epochs <= 0:
         raise ValueError("epochs must be positive")
@@ -78,8 +85,8 @@ def train_route_model(
         raise ValueError("block_size must be positive")
     if batch_size <= 0:
         raise ValueError("batch_size must be positive")
-    if learning_rate <= 0:
-        raise ValueError("learning_rate must be positive")
+    if not math.isfinite(learning_rate) or learning_rate <= 0:
+        raise ValueError("learning_rate must be finite and positive")
 
     _set_seed(seed)
     tokenizer = NovaByteTokenizer()
@@ -109,8 +116,10 @@ def train_route_model(
             optimizer.zero_grad(set_to_none=True)
             domain_logits, role_logits = model(token_ids, mask)
             loss = F.cross_entropy(domain_logits, domain_targets) + F.cross_entropy(role_logits, role_targets)
+            if not torch.isfinite(loss):
+                raise ValueError("non-finite training loss while fitting route model")
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0, error_if_nonfinite=True)
             optimizer.step()
 
         current_metrics = evaluate_route_model(model, validation_rows)
@@ -140,6 +149,9 @@ def train_route_model(
         "block_size": block_size,
         "batch_size": batch_size,
         "learning_rate": learning_rate,
+        "train_count": len(rows),
+        "validation_count": len(validation_rows),
+        "validation_source": validation_source,
         "class_maps": class_maps,
         "best_metrics": best_metrics,
         "model_hash": model_hash,
@@ -175,15 +187,25 @@ def evaluate_route_model(model: NovaRouteClassifier, examples: Sequence[RouteExa
 
     role_accuracy = _accuracy(role_true, role_pred)
     domain_accuracy = _accuracy(domain_true, domain_pred)
-    macro_f1, per_role_f1 = _macro_f1(role_true, role_pred, len(class_maps["id_to_role"]))
+    macro_f1_active, macro_f1_all_roles, per_role_f1, per_role_support = _macro_f1(
+        role_true,
+        role_pred,
+        len(class_maps["id_to_role"]),
+    )
 
     return {
         "domain_accuracy": domain_accuracy,
         "primary_role_accuracy": role_accuracy,
-        "macro_f1": macro_f1,
+        "macro_f1": macro_f1_active,
+        "macro_f1_active": macro_f1_active,
+        "macro_f1_all_roles": macro_f1_all_roles,
         "per_role_f1": {
             class_maps["id_to_role"][index]: score
             for index, score in enumerate(per_role_f1)
+        },
+        "per_role_support": {
+            class_maps["id_to_role"][index]: support
+            for index, support in enumerate(per_role_support)
         },
         "support": len(rows),
     }
@@ -228,10 +250,11 @@ def save_route_model(
     path.parent.mkdir(parents=True, exist_ok=True)
 
     saved_metadata = dict(metadata or getattr(model, "route_metadata", {}))
-    saved_metadata.setdefault("model_hash", _hash_state_dict(model.state_dict()))
+    saved_metadata["model_hash"] = _hash_state_dict(model.state_dict())
     saved_metadata.setdefault("class_maps", getattr(model, "route_class_maps", _class_maps()))
     saved_metadata.setdefault("block_size", int(getattr(model, "route_block_size", DEFAULT_BLOCK_SIZE)))
     saved_metadata.setdefault("hidden_size", _infer_hidden_size(model))
+    _validate_class_maps(saved_metadata["class_maps"])
 
     payload = {
         "state_dict": model.state_dict(),
@@ -241,17 +264,48 @@ def save_route_model(
     torch.save(payload, path)
 
     sidecar_path = _sidecar_path(path)
-    sidecar_path.write_text(json.dumps(saved_metadata, indent=2, sort_keys=True), encoding="utf-8")
+    sidecar_path.write_text(
+        json.dumps(saved_metadata, allow_nan=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
     model.route_metadata = saved_metadata
     return saved_metadata
 
 
 def load_route_model(path: str | Path) -> tuple[NovaRouteClassifier, dict]:
-    payload = torch.load(Path(path), map_location="cpu")
-    metadata = dict(payload.get("metadata", {}))
-    class_maps = metadata.get("class_maps") or payload.get("class_maps") or _class_maps()
-    hidden_size = int(metadata.get("hidden_size", DEFAULT_HIDDEN_SIZE))
-    block_size = int(metadata.get("block_size", DEFAULT_BLOCK_SIZE))
+    payload = _safe_torch_load(Path(path))
+    if not isinstance(payload, dict):
+        raise ValueError("route model payload must be a dictionary")
+    if "state_dict" not in payload or "metadata" not in payload:
+        raise ValueError("route model payload missing required state_dict or metadata")
+
+    state_dict = payload["state_dict"]
+    if not isinstance(state_dict, dict) or not state_dict:
+        raise ValueError("route model state_dict must be a non-empty dictionary")
+    if not all(isinstance(key, str) and torch.is_tensor(value) for key, value in state_dict.items()):
+        raise ValueError("route model state_dict must contain string keys and tensor values")
+
+    metadata = payload["metadata"]
+    if not isinstance(metadata, dict):
+        raise ValueError("route model metadata must be a dictionary")
+    metadata = dict(metadata)
+
+    class_maps = metadata.get("class_maps")
+    if class_maps is None:
+        class_maps = payload.get("class_maps")
+    _validate_class_maps(class_maps)
+    if "class_maps" in payload and payload["class_maps"] != class_maps:
+        raise ValueError("route model class_maps disagree between payload and metadata")
+
+    expected_hash = metadata.get("model_hash")
+    actual_hash = _hash_state_dict(state_dict)
+    if not isinstance(expected_hash, str):
+        raise ValueError("route model metadata missing model_hash")
+    if expected_hash != actual_hash:
+        raise ValueError("route model model_hash does not match state_dict")
+
+    hidden_size = _positive_int(metadata.get("hidden_size"), "hidden_size")
+    block_size = _positive_int(metadata.get("block_size"), "block_size")
 
     model = NovaRouteClassifier(
         NovaByteTokenizer.vocab_size,
@@ -259,9 +313,12 @@ def load_route_model(path: str | Path) -> tuple[NovaRouteClassifier, dict]:
         len(class_maps["id_to_domain"]),
         len(class_maps["id_to_role"]),
     )
-    model.load_state_dict(payload["state_dict"])
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError as exc:
+        raise ValueError("route model state_dict does not match expected classifier architecture") from exc
     _attach_route_metadata(model, NovaByteTokenizer(), block_size, class_maps)
-    metadata.setdefault("model_hash", _hash_state_dict(model.state_dict()))
+    metadata["model_hash"] = actual_hash
     model.route_metadata = metadata
     return model, metadata
 
@@ -288,7 +345,6 @@ def route_examples_from_rows(
 def _set_seed(seed: int) -> None:
     random.seed(seed)
     torch.manual_seed(seed)
-    torch.set_num_threads(1)
 
 
 def _class_maps() -> dict:
@@ -372,27 +428,38 @@ def _accuracy(true_ids: Sequence[int], predicted_ids: Sequence[int]) -> float:
     return correct / len(true_ids)
 
 
-def _macro_f1(true_ids: Sequence[int], predicted_ids: Sequence[int], class_count: int) -> tuple[float, list[float]]:
+def _macro_f1(true_ids: Sequence[int], predicted_ids: Sequence[int], class_count: int) -> tuple[float, float, list[float], list[int]]:
     active_labels = set(true_ids) | set(predicted_ids)
     per_class = [0.0 for _ in range(class_count)]
+    per_class_support = [0 for _ in range(class_count)]
     if not active_labels:
-        return 0.0, per_class
+        return 0.0, 0.0, per_class, per_class_support
 
     for label in active_labels:
+        per_class_support[label] = sum(1 for truth in true_ids if truth == label)
         true_positive = sum(1 for truth, prediction in zip(true_ids, predicted_ids) if truth == label and prediction == label)
         false_positive = sum(1 for truth, prediction in zip(true_ids, predicted_ids) if truth != label and prediction == label)
         false_negative = sum(1 for truth, prediction in zip(true_ids, predicted_ids) if truth == label and prediction != label)
         denominator = (2 * true_positive) + false_positive + false_negative
         per_class[label] = 0.0 if denominator == 0 else (2 * true_positive) / denominator
 
-    return sum(per_class[label] for label in active_labels) / len(active_labels), per_class
+    macro_active = sum(per_class[label] for label in active_labels) / len(active_labels)
+    macro_all = sum(per_class) / class_count if class_count else 0.0
+    return macro_active, macro_all, per_class, per_class_support
 
 
 def _hash_state_dict(state_dict: dict) -> str:
-    buffer = io.BytesIO()
-    cpu_state = {key: value.detach().cpu() for key, value in state_dict.items()}
-    torch.save(cpu_state, buffer)
-    return hashlib.sha256(buffer.getvalue()).hexdigest()
+    digest = hashlib.sha256()
+    for key in sorted(state_dict):
+        value = state_dict[key]
+        if not torch.is_tensor(value):
+            raise ValueError("state_dict values must be tensors")
+        tensor = value.detach().cpu().contiguous()
+        digest.update(key.encode("utf-8"))
+        digest.update(str(tensor.dtype).encode("utf-8"))
+        digest.update(json.dumps(list(tensor.shape), separators=(",", ":")).encode("utf-8"))
+        digest.update(tensor.numpy().tobytes())
+    return digest.hexdigest()
 
 
 def _sidecar_path(path: Path) -> Path:
@@ -404,3 +471,27 @@ def _sidecar_path(path: Path) -> Path:
 
 def _infer_hidden_size(model: NovaRouteClassifier) -> int:
     return int(model.embedding.embedding_dim)
+
+
+def _safe_torch_load(path: Path) -> object:
+    try:
+        return torch.load(path, map_location="cpu", weights_only=True)
+    except TypeError:
+        return torch.load(path, map_location="cpu")
+
+
+def _validate_class_maps(class_maps: object) -> None:
+    if not isinstance(class_maps, dict):
+        raise ValueError("route model class_maps must be a dictionary")
+    expected = _class_maps()
+    required_keys = {"domain_to_id", "id_to_domain", "role_to_id", "id_to_role"}
+    if set(class_maps) != required_keys:
+        raise ValueError("route model class_maps keys do not match expected schema")
+    if class_maps != expected:
+        raise ValueError("route model class_maps do not match DOMAIN_NAMES and ROLE_NAMES")
+
+
+def _positive_int(value: object, field_name: str) -> int:
+    if type(value) is not int or value <= 0:
+        raise ValueError(f"route model metadata {field_name} must be a positive integer")
+    return value
