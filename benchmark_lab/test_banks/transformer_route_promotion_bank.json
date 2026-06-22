@@ -1,0 +1,175 @@
+{
+  "bank": "transformer_route_promotion",
+  "protected": true,
+  "case_count": 21,
+  "cases": [
+    {
+      "id": "route-coding-001",
+      "prompt": "Help me debug a Python loop that never stops.",
+      "domain": "coding",
+      "primary_role": "left_hemisphere",
+      "required_terms": ["loop"],
+      "protected": true
+    },
+    {
+      "id": "route-coding-002",
+      "prompt": "Find the bug in a function that returns the wrong total.",
+      "domain": "coding",
+      "primary_role": "left_hemisphere",
+      "required_terms": ["bug"],
+      "protected": true
+    },
+    {
+      "id": "route-coding-003",
+      "prompt": "Explain why this conditional branch is never reached.",
+      "domain": "coding",
+      "primary_role": "left_hemisphere",
+      "required_terms": ["condition"],
+      "protected": true
+    },
+    {
+      "id": "route-planning-001",
+      "prompt": "Give me an ordered plan to test and release this app.",
+      "domain": "planning",
+      "primary_role": "planner_transformer",
+      "required_terms": ["test", "release"],
+      "protected": true
+    },
+    {
+      "id": "route-planning-002",
+      "prompt": "Break a messy feature launch into safe next steps.",
+      "domain": "planning",
+      "primary_role": "planner_transformer",
+      "required_terms": ["steps"],
+      "protected": true
+    },
+    {
+      "id": "route-planning-003",
+      "prompt": "Make a checklist for preparing a local demo build.",
+      "domain": "planning",
+      "primary_role": "planner_transformer",
+      "required_terms": ["checklist"],
+      "protected": true
+    },
+    {
+      "id": "route-critic-001",
+      "prompt": "Verify this claim and say when the evidence is insufficient.",
+      "domain": "critic",
+      "primary_role": "critic_conscience_transformer",
+      "required_terms": ["evidence"],
+      "protected": true
+    },
+    {
+      "id": "route-critic-002",
+      "prompt": "Check whether a confident statement is actually supported.",
+      "domain": "critic",
+      "primary_role": "critic_conscience_transformer",
+      "required_terms": ["supported"],
+      "protected": true
+    },
+    {
+      "id": "route-critic-003",
+      "prompt": "Point out uncertainty before accepting a risky conclusion.",
+      "domain": "critic",
+      "primary_role": "critic_conscience_transformer",
+      "required_terms": ["uncertainty"],
+      "protected": true
+    },
+    {
+      "id": "route-creative-001",
+      "prompt": "Design a calm blue visual pattern for Nova's interface.",
+      "domain": "creative",
+      "primary_role": "right_hemisphere",
+      "required_terms": ["blue"],
+      "protected": true
+    },
+    {
+      "id": "route-creative-002",
+      "prompt": "Invent a soft glowing icon concept for a memory panel.",
+      "domain": "creative",
+      "primary_role": "right_hemisphere",
+      "required_terms": ["glowing"],
+      "protected": true
+    },
+    {
+      "id": "route-creative-003",
+      "prompt": "Describe a friendly robot face animation for idle mode.",
+      "domain": "creative",
+      "primary_role": "right_hemisphere",
+      "required_terms": ["animation"],
+      "protected": true
+    },
+    {
+      "id": "route-memory-001",
+      "prompt": "Who created Nova Creature?",
+      "domain": "memory_recall",
+      "primary_role": "memory_transformer",
+      "required_terms": ["Mr. Novotron"],
+      "protected": true
+    },
+    {
+      "id": "route-memory-002",
+      "prompt": "Recall Nova's known identity in one short answer.",
+      "domain": "memory_recall",
+      "primary_role": "memory_transformer",
+      "required_terms": ["Nova"],
+      "protected": true
+    },
+    {
+      "id": "route-memory-003",
+      "prompt": "Answer from saved facts instead of guessing a new origin story.",
+      "domain": "memory_recall",
+      "primary_role": "memory_transformer",
+      "required_terms": ["saved"],
+      "protected": true
+    },
+    {
+      "id": "route-dream-001",
+      "prompt": "Simulate what happens if the first deployment fails.",
+      "domain": "dream",
+      "primary_role": "dream_simulation_transformer",
+      "required_terms": ["if"],
+      "protected": true
+    },
+    {
+      "id": "route-dream-002",
+      "prompt": "Imagine three possible outcomes after a rushed release.",
+      "domain": "dream",
+      "primary_role": "dream_simulation_transformer",
+      "required_terms": ["outcomes"],
+      "protected": true
+    },
+    {
+      "id": "route-dream-003",
+      "prompt": "Replay a practice scenario where the router chooses the wrong role.",
+      "domain": "dream",
+      "primary_role": "dream_simulation_transformer",
+      "required_terms": ["scenario"],
+      "protected": true
+    },
+    {
+      "id": "route-speech-001",
+      "prompt": "Explain transformer routing in one clear sentence.",
+      "domain": "speech",
+      "primary_role": "speech_output_transformer",
+      "required_terms": ["route"],
+      "protected": true
+    },
+    {
+      "id": "route-speech-002",
+      "prompt": "Rewrite a technical answer so it sounds simple and warm.",
+      "domain": "speech",
+      "primary_role": "speech_output_transformer",
+      "required_terms": ["simple"],
+      "protected": true
+    },
+    {
+      "id": "route-speech-003",
+      "prompt": "Summarize the next action in a concise user-facing reply.",
+      "domain": "speech",
+      "primary_role": "speech_output_transformer",
+      "required_terms": ["concise"],
+      "protected": true
+    }
+  ]
+}
