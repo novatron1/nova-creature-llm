@@ -61,6 +61,12 @@ ROLE_BY_DOMAIN = {
     "general": "speech_output_transformer",
 }
 
+
+def _fallback_key(value: str) -> str:
+    cleaned = re.sub(r"\s+", " ", "" if value is None else str(value)).strip().casefold()
+    return re.sub(r"[.?!]+$", "", cleaned).strip()
+
+
 FALLBACK_TEMPLATES = {
     "I do not know.",
     "I don't know.",
@@ -68,7 +74,7 @@ FALLBACK_TEMPLATES = {
     "I am not sure. That seems uncertain.",
     "I don't know that yet.",
 }
-FALLBACK_TEMPLATE_KEYS = {template.casefold() for template in FALLBACK_TEMPLATES}
+FALLBACK_TEMPLATE_KEYS = {_fallback_key(template) for template in FALLBACK_TEMPLATES}
 
 PROMPT_ANSWER_KEYS = (
     ("prompt", "answer"),
@@ -103,9 +109,11 @@ def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | N
     normalized = normalize_record(record)
     answer = normalized["answer"]
 
+    if normalized["task_type"] == "route" and _is_weak_route_prompt(record, normalized):
+        return None, "weak_route_prompt"
     if answer.lower().count("i recall your last question") >= 2:
         return None, "recursive_followup"
-    if answer.casefold() in FALLBACK_TEMPLATE_KEYS:
+    if _fallback_key(answer) in FALLBACK_TEMPLATE_KEYS:
         return None, "fallback_template"
     if len(answer.strip()) < 2:
         return None, "empty_answer"
@@ -144,9 +152,10 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
     task_type = "route" if _is_route_only_record(record, answer) else "answer"
     if task_type == "route":
         answer = f"Route to {primary_role} for {domain}."
+    quality_flags = [f"route_source:{source}"] if task_type == "route" else []
     intent_group = _clean_text(record.get("intent_group")) or _intent_group(primary_role, domain, prompt, answer)
     stable_id = _stable_id(source, prompt, answer, primary_role, domain)
-    normalized = {
+    return {
         "id": stable_id,
         "source": source,
         "intent_group": intent_group,
@@ -155,11 +164,9 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
         "support_roles": support_roles,
         "prompt": prompt,
         "answer": answer,
-        "quality_flags": [],
+        "quality_flags": quality_flags,
+        "task_type": task_type,
     }
-    if task_type == "route":
-        normalized["task_type"] = task_type
-    return normalized
 
 
 def looks_truncated(answer: str) -> bool:
@@ -170,6 +177,8 @@ def looks_truncated(answer: str) -> bool:
         return False
     last_token = text.rsplit(maxsplit=1)[-1].strip(",;:")
     if re.fullmatch(r"\d+(\.\d+)?", last_token) or re.fullmatch(r"\d+[A-Za-z]+", last_token):
+        return False
+    if re.search(r"[=+\-*/^²±()]|\bsqrt\b", text, flags=re.IGNORECASE):
         return False
     words = re.findall(r"[A-Za-z][A-Za-z'-]*", text)
     if len(words) <= 3:
@@ -441,6 +450,22 @@ def _split_group(row: dict[str, Any], prompt_counts: Counter[str]) -> str:
 
 def _is_route_only_record(record: dict[str, Any], answer: str) -> bool:
     return not answer.strip() and bool(record.get("route")) and bool(_clean_text(record.get("text")))
+
+
+def _is_weak_route_prompt(record: dict[str, Any], normalized: dict[str, Any]) -> bool:
+    prompt = _normalize_for_group(normalized.get("prompt", ""))
+    tokens = re.findall(r"\b\w+\b", prompt)
+    raw_domain = _clean_text(record.get("domain")).casefold()
+    source = _clean_text(record.get("source")).casefold()
+    if source in {"hit", "memory_hit"} or raw_domain == "dictionary":
+        return True
+    if len(tokens) <= 2:
+        return True
+    if prompt in {"hello", "hi", "hey", "howdy", "sup", "bet"}:
+        return True
+    if re.fullmatch(r"can you \w+\??", prompt):
+        return True
+    return False
 
 
 def _is_generic_source(source: str) -> bool:

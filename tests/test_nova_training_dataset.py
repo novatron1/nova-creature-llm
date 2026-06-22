@@ -10,6 +10,20 @@ sys.path.insert(0, str(ROOT / "src"))
 from nova_training_dataset import build_dataset, clean_record, grouped_split
 
 
+EXPECTED_ACCEPTED_KEYS = {
+    "id",
+    "source",
+    "intent_group",
+    "domain",
+    "primary_role",
+    "support_roles",
+    "prompt",
+    "answer",
+    "quality_flags",
+    "task_type",
+}
+
+
 def test_recursive_followup_is_quarantined():
     record = {
         "user": "yeah",
@@ -43,6 +57,19 @@ def test_paraphrase_group_never_crosses_splits():
     }
     assert sum(any(row["intent_group"] == "creator_identity" for row in values) for values in splits.values()) == 1
     assert set(splits) == {"train", "validation", "promotion"}
+
+
+def test_grouped_split_bucket_boundaries_are_exact():
+    rows = [
+        {"id": "train-69", "intent_group": "boundary_8", "prompt": "train 69", "answer": "ok"},
+        {"id": "validation-70", "intent_group": "boundary_60", "prompt": "validation 70", "answer": "ok"},
+        {"id": "validation-84", "intent_group": "boundary_179", "prompt": "validation 84", "answer": "ok"},
+        {"id": "promotion-85", "intent_group": "boundary_67", "prompt": "promotion 85", "answer": "ok"},
+    ]
+    splits = grouped_split(rows, seed=20260622)
+    assert [row["id"] for row in splits["train"]] == ["train-69"]
+    assert [row["id"] for row in splits["validation"]] == ["validation-70", "validation-84"]
+    assert [row["id"] for row in splits["promotion"]] == ["promotion-85"]
 
 
 def test_project_root_import_reexports_public_api():
@@ -129,7 +156,9 @@ def test_route_log_records_keep_route_label_without_empty_answer_quarantine():
     )
     assert reason is None
     assert cleaned is not None
+    assert set(cleaned) == EXPECTED_ACCEPTED_KEYS
     assert cleaned["task_type"] == "route"
+    assert cleaned["quality_flags"] == ["route_source:fallback"]
     assert cleaned["prompt"] == "What is a variable in Python?"
     assert cleaned["domain"] == "coding"
     assert cleaned["primary_role"] == "left_hemisphere"
@@ -137,10 +166,49 @@ def test_route_log_records_keep_route_label_without_empty_answer_quarantine():
     assert cleaned["answer"] == "Route to left_hemisphere for coding."
 
 
+def test_route_log_rejects_tiny_greeting_and_questionable_route_prompts():
+    cases = [
+        {
+            "text": "bet",
+            "domain": "dictionary",
+            "route": ["memory_transformer"],
+            "source": "hit",
+            "_source_path": "data/routing_log.jsonl",
+        },
+        {
+            "text": "hello",
+            "domain": "general",
+            "route": ["speech_output_transformer"],
+            "source": "fallback",
+            "_source_path": "data/routing_log.jsonl",
+        },
+        {
+            "text": "Can you code?",
+            "domain": "coding",
+            "route": ["left_hemisphere"],
+            "source": "fallback",
+            "_source_path": "data/routing_log.jsonl",
+        },
+        {
+            "text": "can you help me debug my python code family/friends",
+            "domain": "coding",
+            "route": ["memory_transformer"],
+            "source": "memory_hit",
+            "_source_path": "data/routing_log.jsonl",
+        },
+    ]
+    for record in cases:
+        cleaned, reason = clean_record(record)
+        assert cleaned is None
+        assert reason == "weak_route_prompt"
+
+
 def test_truncation_accepts_short_technical_endings_but_rejects_fragments():
     for answer in [
         "Functions are defined with def",
         "x = (-b ± sqrt(b² - 4ac)) / 2a",
+        "x = (-b ± sqrt(b² - 4ac))/2a",
+        "ax²+bx+c=0",
     ]:
         cleaned, reason = clean_record({"prompt": "Technical answer?", "answer": answer, "source": "unit"})
         assert reason is None
@@ -154,9 +222,10 @@ def test_truncation_accepts_short_technical_endings_but_rejects_fragments():
 
 
 def test_fallback_template_is_normalized_and_high_repetition_is_quarantined():
-    cleaned, reason = clean_record({"prompt": "Unknown?", "answer": " i do not know. ", "source": "unit"})
-    assert cleaned is None
-    assert reason == "fallback_template"
+    for answer in [" i do not know. ", "I do not know", "i don't know", "I don't know."]:
+        cleaned, reason = clean_record({"prompt": "Unknown?", "answer": answer, "source": "unit"})
+        assert cleaned is None
+        assert reason == "fallback_template"
 
     cleaned, reason = clean_record({"prompt": "Repeat?", "answer": "loop loop loop loop done.", "source": "unit"})
     assert cleaned is None
@@ -177,17 +246,8 @@ def test_clean_record_shape_and_stable_id_are_strict():
     assert second_reason is None
     assert first is not None
     assert second is not None
-    assert set(first) == {
-        "id",
-        "source",
-        "intent_group",
-        "domain",
-        "primary_role",
-        "support_roles",
-        "prompt",
-        "answer",
-        "quality_flags",
-    }
+    assert set(first) == EXPECTED_ACCEPTED_KEYS
+    assert first["task_type"] == "answer"
     assert first["id"] == second["id"]
     assert len(first["id"]) == 64
     json.dumps(first, allow_nan=False)
@@ -261,6 +321,7 @@ def test_build_dataset_manifest_is_posix_strict_and_excludes_promotion_bank(tmp_
         prompts_by_split[split] = {row["prompt"].lower().strip() for row in rows}
         all_prompts.update(row["prompt"] for row in rows)
         for row in rows:
+            assert set(row) == EXPECTED_ACCEPTED_KEYS
             json.dumps(row, allow_nan=False)
 
     assert bank_prompt not in all_prompts
