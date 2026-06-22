@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import uuid
 from copy import deepcopy
 from dataclasses import dataclass
@@ -9,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from nova_training_types import ROLE_NAMES
+
+_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 @dataclass(frozen=True)
@@ -30,15 +33,30 @@ class CheckpointRegistry:
         self._validate_role(role)
         self._validate_sha256(sha256)
         resolved_path = self._validate_checkpoint_path(path)
+        self._validate_checkpoint_hash(resolved_path, sha256)
         role_record = self._role_record(role)
+        previous_baseline = role_record.get("baseline")
+        previous_baseline_sha256 = (
+            previous_baseline.get("sha256") if isinstance(previous_baseline, dict) else None
+        )
+        previous_live_sha256 = role_record.get("live_sha256")
+        candidates = role_record.setdefault("candidates", {})
+        promoted_winner_is_live = (
+            isinstance(candidates, dict)
+            and isinstance(previous_live_sha256, str)
+            and isinstance(candidates.get(previous_live_sha256), dict)
+            and candidates[previous_live_sha256].get("status") == "promoted"
+        )
         role_record["baseline"] = {
             "path": self._serialize_path(resolved_path),
             "sha256": sha256,
             "status": "baseline",
             "metrics": {},
         }
-        role_record.setdefault("candidates", {})
-        role_record["live_sha256"] = sha256
+        if previous_live_sha256 is None or (
+            previous_live_sha256 == previous_baseline_sha256 and not promoted_winner_is_live
+        ):
+            role_record["live_sha256"] = sha256
         self._write()
 
     def register_candidate(
@@ -51,6 +69,7 @@ class CheckpointRegistry:
         self._validate_role(role)
         self._validate_sha256(sha256)
         resolved_path = self._validate_checkpoint_path(path)
+        self._validate_checkpoint_hash(resolved_path, sha256)
         metrics = self._json_safe_dict(metrics, "metrics")
         role_record = self._role_record(role)
         role_record.setdefault("candidates", {})
@@ -174,9 +193,13 @@ class CheckpointRegistry:
             raise ValueError(f"registry record for {role!r} is missing status")
         if not isinstance(metrics_value, dict):
             metrics_value = {}
+        resolved_path = self._deserialize_path(path_value)
+        self._validate_checkpoint_path(resolved_path, registered=True)
+        self._validate_sha256(sha256_value)
+        self._validate_checkpoint_hash(resolved_path, sha256_value, registered=True)
         return ResolvedCheckpoint(
             role=role,
-            path=self._deserialize_path(path_value),
+            path=resolved_path,
             sha256=sha256_value,
             status=status_value,
             metrics=deepcopy(metrics_value),
@@ -184,9 +207,9 @@ class CheckpointRegistry:
 
     def _serialize_path(self, path: Path) -> str:
         try:
-            return str(path.resolve().relative_to(self.project_root))
+            return path.resolve().relative_to(self.project_root).as_posix()
         except ValueError:
-            return str(path.resolve())
+            return path.resolve().as_posix()
 
     def _deserialize_path(self, path_value: str) -> Path:
         path = Path(path_value)
@@ -194,9 +217,11 @@ class CheckpointRegistry:
             return path
         return self.project_root / path
 
-    def _validate_checkpoint_path(self, path: str | Path) -> Path:
+    def _validate_checkpoint_path(self, path: str | Path, registered: bool = False) -> Path:
         resolved_path = Path(path).resolve()
         if not resolved_path.exists():
+            if registered:
+                raise FileNotFoundError(f"registered checkpoint is missing: {resolved_path}")
             raise FileNotFoundError(f"checkpoint path does not exist: {resolved_path}")
         if not resolved_path.is_file():
             raise ValueError(f"checkpoint path is not a file: {resolved_path}")
@@ -207,8 +232,26 @@ class CheckpointRegistry:
             raise ValueError(f"invalid checkpoint role: {role!r}")
 
     def _validate_sha256(self, value: str) -> None:
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError("sha256 must be a non-blank string")
+        if not isinstance(value, str) or not _SHA256_RE.fullmatch(value):
+            raise ValueError("sha256 must be a 64-character hexadecimal string")
+
+    def _validate_checkpoint_hash(
+        self,
+        path: Path,
+        expected_sha256: str,
+        registered: bool = False,
+    ) -> None:
+        actual_sha256 = sha256(path)
+        if actual_sha256 != expected_sha256:
+            if registered:
+                raise ValueError(
+                    f"registered checkpoint hash mismatch for {path}: "
+                    f"expected {expected_sha256}, got {actual_sha256}"
+                )
+            raise ValueError(
+                f"checkpoint sha256 does not match file for {path}: "
+                f"expected {expected_sha256}, got {actual_sha256}"
+            )
 
     def _json_safe_dict(self, value: dict[str, Any], field_name: str) -> dict[str, Any]:
         if not isinstance(value, dict):

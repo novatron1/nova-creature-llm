@@ -1,29 +1,17 @@
 from __future__ import annotations
 
-import hashlib
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from nova_checkpoint_registry import CheckpointRegistry
 from nova_training_types import ROLE_NAMES
 
 ROLES = list(ROLE_NAMES)
 
-BASE_CHECKPOINT_NAME = "creature_v032_bigfit_twenty_plain.pt"
-FALLBACK_CHECKPOINT_NAME = "creature_v019_proof_fallback.pt"
-
 
 def root() -> Path:
     return Path(__file__).resolve().parents[1]
-
-
-def sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def resolve_checkpoint(role: str) -> dict:
@@ -38,9 +26,9 @@ def resolve_checkpoint(role: str) -> dict:
 
     exists = resolved.path.exists()
     try:
-        selected_checkpoint = str(resolved.path.relative_to(root()))
+        selected_checkpoint = resolved.path.relative_to(root()).as_posix()
     except ValueError:
-        selected_checkpoint = str(resolved.path)
+        selected_checkpoint = resolved.path.as_posix()
     return {
         "role": role,
         "selected_checkpoint": selected_checkpoint,
