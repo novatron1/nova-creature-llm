@@ -1,5 +1,6 @@
-from pathlib import Path
 import json
+from dataclasses import asdict
+from pathlib import Path
 import sys
 
 import pytest
@@ -91,6 +92,8 @@ def test_route_prediction_support_roles_become_tuple_and_resist_mutation():
     assert prediction.support_roles == ("left_hemisphere", "memory_transformer")
     source_roles.append("speech_output_transformer")
     assert prediction.support_roles == ("left_hemisphere", "memory_transformer")
+    trace = asdict(prediction)
+    assert json.dumps(trace, allow_nan=False)
 
 
 def test_route_prediction_rejects_string_collection_and_invalid_metadata():
@@ -122,11 +125,71 @@ def test_route_prediction_rejects_string_collection_and_invalid_metadata():
             source="invalid",
         )
 
+    with pytest.raises(ValueError):
+        RoutePrediction(
+            domain="coding",
+            primary_role="planner_transformer",
+            support_roles=("left_hemisphere",),
+            confidence=1.1,
+            model_hash="b" * 64,
+        )
+
+    with pytest.raises(ValueError):
+        RoutePrediction(
+            domain="coding",
+            primary_role="planner_transformer",
+            support_roles=("left_hemisphere",),
+            confidence=float("nan"),
+            model_hash="b" * 64,
+        )
+
+    with pytest.raises(ValueError):
+        RoutePrediction(
+            domain="coding",
+            primary_role="planner_transformer",
+            support_roles=("left_hemisphere",),
+            confidence=0.91,
+            model_hash="not-a-hash",
+        )
+
+    with pytest.raises(ValueError):
+        RoutePrediction(
+            domain="coding",
+            primary_role="planner_transformer",
+            support_roles=("left_hemisphere",),
+            confidence=0.91,
+            model_hash="b" * 64,
+            source="transformer",
+        )
+
+
+def test_route_prediction_supports_learned_and_baseline_sources():
+    learned = RoutePrediction(
+        domain="coding",
+        primary_role="planner_transformer",
+        support_roles=("left_hemisphere",),
+        confidence=0.33,
+        model_hash="b" * 64,
+        source="learned_route_model",
+    )
+    baseline = RoutePrediction(
+        domain="general",
+        primary_role="right_hemisphere",
+        support_roles=("memory_transformer",),
+        confidence=0.11,
+        model_hash="c" * 64,
+        source="baseline_fallback",
+    )
+    assert learned.source == "learned_route_model"
+    assert baseline.source == "baseline_fallback"
+    assert json.dumps(asdict(learned), allow_nan=False)
+    assert json.dumps(asdict(baseline), allow_nan=False)
+
 
 def test_promotion_decision_reasons_become_tuple_and_resist_mutation():
     reasons = ["candidate beats baseline"]
     decision = PromotionDecision(
-        verdict="promote",
+        verdict="REJECTED",
         reasons=reasons,
         baseline_joint=0.41,
         candidate_joint=0.55,
@@ -136,12 +199,13 @@ def test_promotion_decision_reasons_become_tuple_and_resist_mutation():
     assert decision.reasons == ("candidate beats baseline",)
     reasons.append("mutated")
     assert decision.reasons == ("candidate beats baseline",)
+    assert json.dumps(asdict(decision), allow_nan=False)
 
 
 def test_promotion_decision_rejects_string_collection_and_invalid_verdict():
     with pytest.raises(ValueError):
         PromotionDecision(
-            verdict="promote",
+            verdict="PROMOTED",
             reasons="candidate beats baseline",
             baseline_joint=0.41,
             candidate_joint=0.55,
@@ -156,3 +220,60 @@ def test_promotion_decision_rejects_string_collection_and_invalid_verdict():
             candidate_joint=0.55,
             previous_winner_joint=0.44,
         )
+
+    with pytest.raises(ValueError):
+        PromotionDecision(
+            verdict="REJECTED",
+            reasons=("candidate beats baseline",),
+            baseline_joint=float("inf"),
+            candidate_joint=0.55,
+            previous_winner_joint=0.44,
+        )
+
+    with pytest.raises(ValueError):
+        PromotionDecision(
+            verdict="REJECTED",
+            reasons=("candidate beats baseline",),
+            baseline_joint=0.41,
+            candidate_joint=float("nan"),
+            previous_winner_joint=0.44,
+        )
+
+    with pytest.raises(ValueError):
+        PromotionDecision(
+            verdict="REJECTED",
+            reasons=("candidate beats baseline",),
+            baseline_joint=0.41,
+            candidate_joint=0.55,
+            previous_winner_joint=float("inf"),
+        )
+
+
+def test_promotion_decision_supports_uppercase_verdict_contract():
+    promoted = PromotionDecision(
+        verdict="PROMOTED",
+        reasons=("candidate beats baseline",),
+        baseline_joint=0.41,
+        candidate_joint=0.55,
+        previous_winner_joint=None,
+    )
+    rejected = PromotionDecision(
+        verdict="REJECTED",
+        reasons=("candidate fell short",),
+        baseline_joint=0.55,
+        candidate_joint=0.41,
+        previous_winner_joint=0.49,
+    )
+    blocked = PromotionDecision(
+        verdict="BLOCKED",
+        reasons=("need more evidence",),
+        baseline_joint=0.55,
+        candidate_joint=0.48,
+        previous_winner_joint=0.49,
+    )
+    assert promoted.verdict == "PROMOTED"
+    assert rejected.verdict == "REJECTED"
+    assert blocked.verdict == "BLOCKED"
+    assert json.dumps(asdict(promoted), allow_nan=False)
+    assert json.dumps(asdict(rejected), allow_nan=False)
+    assert json.dumps(asdict(blocked), allow_nan=False)

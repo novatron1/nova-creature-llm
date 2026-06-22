@@ -29,9 +29,9 @@ DomainName = Literal[
     "dream",
     "general",
 ]
-PromotionVerdict = Literal["promote", "hold", "reject"]
+PromotionVerdict = Literal["PROMOTED", "REJECTED", "BLOCKED"]
 FinishReason = Literal["eos", "length", "error"]
-RouteSource = Literal["learned_route_model", "transformer"]
+RouteSource = Literal["learned_route_model", "baseline_fallback"]
 
 ROLE_NAMES: Final[tuple[RoleName, ...]] = (
     "left_hemisphere",
@@ -57,8 +57,8 @@ DOMAIN_NAMES: Final[tuple[DomainName, ...]] = (
     "general",
 )
 FINISH_REASON_NAMES: Final[tuple[FinishReason, ...]] = ("eos", "length", "error")
-PROMOTION_VERDICTS: Final[tuple[PromotionVerdict, ...]] = ("promote", "hold", "reject")
-ROUTE_SOURCES: Final[tuple[RouteSource, ...]] = ("learned_route_model", "transformer")
+PROMOTION_VERDICTS: Final[tuple[PromotionVerdict, ...]] = ("PROMOTED", "REJECTED", "BLOCKED")
+ROUTE_SOURCES: Final[tuple[RouteSource, ...]] = ("learned_route_model", "baseline_fallback")
 
 _HEX_HASH_RE = re.compile(r"^[0-9A-Fa-f]{64}$")
 
@@ -66,13 +66,13 @@ _HEX_HASH_RE = re.compile(r"^[0-9A-Fa-f]{64}$")
 @dataclass(frozen=True)
 class GenerationResult:
     text: str
-    role: RoleName | str
+    role: RoleName
     checkpoint_path: str
     checkpoint_hash: str
     tokens_generated: int
     elapsed_seconds: float
     tokens_per_second: float
-    finish_reason: FinishReason | str
+    finish_reason: FinishReason
     error: str | None = None
 
     @property
@@ -101,12 +101,12 @@ class GenerationResult:
 
 @dataclass(frozen=True)
 class RoutePrediction:
-    domain: DomainName | str
-    primary_role: RoleName | str
+    domain: DomainName
+    primary_role: RoleName
     support_roles: Sequence[str]
     confidence: float
     model_hash: str
-    source: RouteSource | str = "learned_route_model"
+    source: RouteSource = "learned_route_model"
 
     def __post_init__(self) -> None:
         if self.domain not in DOMAIN_NAMES:
@@ -115,13 +115,17 @@ class RoutePrediction:
             raise ValueError(f"invalid primary_role: {self.primary_role!r}")
         if self.source not in ROUTE_SOURCES:
             raise ValueError(f"invalid source: {self.source!r}")
+        if not math.isfinite(self.confidence) or not 0.0 <= self.confidence <= 1.0:
+            raise ValueError(f"invalid confidence: {self.confidence!r}")
+        if not _is_valid_hash(self.model_hash):
+            raise ValueError(f"invalid model_hash: {self.model_hash!r}")
         support_roles = _coerce_role_sequence(self.support_roles, "support_roles")
         object.__setattr__(self, "support_roles", support_roles)
 
 
 @dataclass(frozen=True)
 class PromotionDecision:
-    verdict: PromotionVerdict | str
+    verdict: PromotionVerdict
     reasons: Sequence[str]
     baseline_joint: float
     candidate_joint: float
@@ -130,6 +134,12 @@ class PromotionDecision:
     def __post_init__(self) -> None:
         if self.verdict not in PROMOTION_VERDICTS:
             raise ValueError(f"invalid verdict: {self.verdict!r}")
+        if not math.isfinite(self.baseline_joint):
+            raise ValueError(f"invalid baseline_joint: {self.baseline_joint!r}")
+        if not math.isfinite(self.candidate_joint):
+            raise ValueError(f"invalid candidate_joint: {self.candidate_joint!r}")
+        if self.previous_winner_joint is not None and not math.isfinite(self.previous_winner_joint):
+            raise ValueError(f"invalid previous_winner_joint: {self.previous_winner_joint!r}")
         reasons = _coerce_string_sequence(self.reasons, "reasons")
         object.__setattr__(self, "reasons", reasons)
 
@@ -150,3 +160,7 @@ def _coerce_string_sequence(value: Sequence[str], field_name: str) -> tuple[str,
         if not isinstance(item, str):
             raise ValueError(f"{field_name} entries must be strings")
     return items
+
+
+def _is_valid_hash(value: str) -> bool:
+    return bool(_HEX_HASH_RE.fullmatch(value))
