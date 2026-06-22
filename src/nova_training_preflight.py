@@ -4,12 +4,18 @@ import argparse
 import importlib.metadata
 import importlib.util
 import json
+import math
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Sequence
 
-from nova_checkpoint_registry import CheckpointRegistry, sha256
-from nova_training_types import ROLE_NAMES
+try:
+    from nova_checkpoint_registry import CheckpointRegistry, sha256
+    from nova_training_types import ROLE_NAMES
+except ModuleNotFoundError:
+    from .nova_checkpoint_registry import CheckpointRegistry, sha256
+    from .nova_training_types import ROLE_NAMES
 
 
 def run_preflight(
@@ -50,6 +56,7 @@ def run_preflight(
         }
         role_evidence[role] = evidence
         hashes[role] = None
+        _apply_registry_hint(root, registry, role, evidence, hashes)
 
         if checkpoint_tools is None:
             reason = f"{role}: cannot validate checkpoint because torch-dependent checkpoint tools are unavailable"
@@ -105,6 +112,7 @@ def run_preflight(
             reason = _role_failure_reason(root, role, evidence.get("path"), exc)
             reasons.append(reason)
             evidence["error"] = reason
+            evidence["unexpected_error"] = True
 
     result = {
         "verdict": "READY" if not reasons and roles_ready == len(tuple(required_roles)) else "BLOCKED",
@@ -115,7 +123,8 @@ def run_preflight(
         "hashes": hashes,
         "roles": role_evidence,
     }
-    json.dumps(result)
+    result = _strict_json_safe(result)
+    json.dumps(result, allow_nan=False)
     return result
 
 
@@ -130,7 +139,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     result = run_preflight(args.project_root)
-    print(json.dumps(result, indent=2, sort_keys=True))
+    print(json.dumps(result, indent=2, sort_keys=True, allow_nan=False))
     return 0 if result["verdict"] == "READY" else 1
 
 
@@ -141,6 +150,13 @@ def _load_checkpoint_tools(checks: dict[str, bool]) -> dict[str, Any] | None:
         import torch
         from nova_byte_tokenizer import NovaByteTokenizer
         from nova_torch_transformer import load_checkpoint
+    except ModuleNotFoundError:
+        try:
+            import torch
+            from .nova_byte_tokenizer import NovaByteTokenizer
+            from .nova_torch_transformer import load_checkpoint
+        except (ImportError, RuntimeError, OSError):
+            return None
     except (ImportError, RuntimeError, OSError):
         return None
     return {
@@ -165,6 +181,83 @@ def _role_failure_reason(
 ) -> str:
     path_text = str(path) if path else str(_conventional_baseline_path(root, role))
     return f"{role} checkpoint {path_text} invalid: {type(exc).__name__}: {exc}"
+
+
+def _apply_registry_hint(
+    root: Path,
+    registry: CheckpointRegistry,
+    role: str,
+    evidence: dict[str, Any],
+    hashes: dict[str, str | None],
+) -> None:
+    try:
+        snapshot = registry.snapshot()
+    except (ValueError, OSError, json.JSONDecodeError):
+        return
+    roles = snapshot.get("roles")
+    if not isinstance(roles, dict):
+        return
+    role_record = roles.get(role)
+    if not isinstance(role_record, dict):
+        return
+    record = _live_record_hint(role_record)
+    if not isinstance(record, dict):
+        return
+
+    path_value = record.get("path")
+    if isinstance(path_value, str) and path_value:
+        path = Path(path_value)
+        resolved_path = path if path.is_absolute() else root / path
+        evidence["path"] = _display_path(root, resolved_path)
+        if resolved_path.exists() and resolved_path.is_file():
+            try:
+                evidence["actual_sha256"] = sha256(resolved_path)
+            except OSError as exc:
+                evidence["hash_error"] = str(exc)
+
+    sha256_value = record.get("sha256")
+    if isinstance(sha256_value, str) and sha256_value:
+        evidence["sha256"] = sha256_value
+        hashes[role] = sha256_value
+
+    status_value = record.get("status")
+    if isinstance(status_value, str):
+        evidence["status"] = status_value
+
+    metrics_value = record.get("metrics")
+    if isinstance(metrics_value, dict):
+        evidence["metrics"] = metrics_value
+
+
+def _live_record_hint(role_record: dict[str, Any]) -> dict[str, Any] | None:
+    baseline = role_record.get("baseline")
+    if not isinstance(baseline, dict):
+        return None
+
+    live_sha256 = role_record.get("live_sha256") or baseline.get("sha256")
+    if live_sha256 == baseline.get("sha256"):
+        return baseline
+
+    candidates = role_record.get("candidates")
+    if isinstance(candidates, dict):
+        candidate = candidates.get(live_sha256)
+        if isinstance(candidate, dict):
+            return candidate
+    return baseline
+
+
+def _strict_json_safe(value: Any) -> Any:
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, Mapping):
+        return {str(key): _strict_json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_strict_json_safe(item) for item in value]
+    return str(value)
 
 
 def _placeholder_reason(root: Path, role: str) -> str | None:

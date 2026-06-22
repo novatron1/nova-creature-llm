@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 
-def _load_main():
+def _load_impl():
     root = Path(__file__).resolve().parent
     src = root / "src"
     sys.path.insert(0, str(src))
@@ -17,8 +17,13 @@ def _load_main():
         raise RuntimeError("cannot load src/nova_training_preflight.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.main
+    return module
+
+
+_impl = _load_impl()
+run_preflight = _impl.run_preflight
+main = _impl.main
 
 
 if __name__ == "__main__":
-    raise SystemExit(_load_main()())
+    raise SystemExit(main())
