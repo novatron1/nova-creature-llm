@@ -43,7 +43,34 @@ def run_preflight(
             reasons.append(f"{name} check failed")
 
     checkpoint_tools = _load_checkpoint_tools(checks)
-    registry = CheckpointRegistry(root)
+    try:
+        registry = CheckpointRegistry(root)
+    except (ValueError, OSError, json.JSONDecodeError) as exc:
+        registry_reason = (
+            f"checkpoint registry JSON is invalid or corrupt at "
+            f"{root / 'checkpoints' / 'registry.json'}: {type(exc).__name__}: {exc}"
+        )
+        reasons.append(registry_reason)
+        return _final_result(
+            required_roles=required_roles,
+            reasons=reasons,
+            checks=checks,
+            runtime=runtime,
+            hashes={role: None for role in tuple(required_roles)},
+            role_evidence={
+                role: {
+                    "ready": False,
+                    "path": None,
+                    "sha256": None,
+                    "status": None,
+                    "config_vocab_size": None,
+                    "parameters_finite": None,
+                    "error": registry_reason,
+                }
+                for role in tuple(required_roles)
+            },
+            roles_ready=0,
+        )
 
     for role in tuple(required_roles):
         evidence: dict[str, Any] = {
@@ -114,6 +141,26 @@ def run_preflight(
             evidence["error"] = reason
             evidence["unexpected_error"] = True
 
+    return _final_result(
+        required_roles=required_roles,
+        reasons=reasons,
+        checks=checks,
+        runtime=runtime,
+        hashes=hashes,
+        role_evidence=role_evidence,
+        roles_ready=roles_ready,
+    )
+
+
+def _final_result(
+    required_roles: Sequence[str],
+    reasons: list[str],
+    checks: dict[str, bool],
+    runtime: dict[str, str | None],
+    hashes: dict[str, str | None],
+    role_evidence: dict[str, dict[str, Any]],
+    roles_ready: int,
+) -> dict[str, Any]:
     result = {
         "verdict": "READY" if not reasons and roles_ready == len(tuple(required_roles)) else "BLOCKED",
         "reasons": reasons,

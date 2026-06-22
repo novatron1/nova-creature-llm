@@ -108,6 +108,22 @@ def test_preflight_blocks_missing_registry_baseline(tmp_path):
     assert any("no checkpoints registered" in reason.lower() for reason in result["reasons"])
 
 
+def test_preflight_blocks_malformed_registry_json(tmp_path):
+    registry_path = tmp_path / "checkpoints" / "registry.json"
+    registry_path.parent.mkdir(parents=True)
+    registry_path.write_text("{not valid json", encoding="utf-8")
+
+    result = run_preflight(tmp_path, required_roles=("left_hemisphere",))
+
+    assert result["verdict"] == "BLOCKED"
+    assert result["roles_ready"] == 0
+    assert any(
+        any(word in reason.lower() for word in ("registry", "json", "corrupt", "invalid"))
+        for reason in result["reasons"]
+    )
+    json.dumps(result, allow_nan=False)
+
+
 def test_preflight_blocks_wrong_vocab_checkpoint(tmp_path):
     from nova_checkpoint_registry import CheckpointRegistry
     from nova_torch_transformer import ModelConfig, NovaCausalLM, save_checkpoint
