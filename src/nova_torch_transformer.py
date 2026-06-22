@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import math
+import uuid
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -143,24 +146,33 @@ def save_checkpoint(
     path: str | Path,
     model: NovaCausalLM,
     metadata: dict[str, Any] | None = None,
-) -> None:
+) -> str:
     _reject_non_finite_parameters(model)
     target_path = Path(path)
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = target_path.with_suffix(".tmp")
+    tmp_path = target_path.with_name(f"{target_path.name}.{uuid.uuid4().hex}.tmp")
     payload = {
         "format_version": 1,
         "config": asdict(model.config),
         "model_state": model.state_dict(),
         "metadata": dict(metadata or {}),
     }
-    torch.save(payload, tmp_path)
-    tmp_path.replace(target_path)
+    try:
+        torch.save(payload, tmp_path)
+        tmp_path.replace(target_path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+    return hashlib.sha256(target_path.read_bytes()).hexdigest()
 
 
 def load_checkpoint(path: str | Path) -> tuple[NovaCausalLM, dict[str, Any]]:
     payload = torch.load(Path(path), map_location="cpu", weights_only=False)
-    config = ModelConfig(**payload["config"])
+    payload = _validate_checkpoint_payload(payload)
+    try:
+        config = ModelConfig(**payload["config"])
+    except (TypeError, ValueError) as exc:
+        raise ValueError("invalid checkpoint config") from exc
     model = NovaCausalLM(config)
     model.load_state_dict(payload["model_state"], strict=True)
     _reject_non_finite_parameters(model)
@@ -171,3 +183,27 @@ def _reject_non_finite_parameters(model: nn.Module) -> None:
     for name, parameter in model.named_parameters():
         if parameter.is_floating_point() and not torch.isfinite(parameter).all():
             raise ValueError(f"non-finite parameter detected: {name}")
+
+
+def _validate_checkpoint_payload(payload: object) -> dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        raise ValueError("checkpoint payload must be a mapping")
+
+    normalized = dict(payload)
+    required_keys = ("format_version", "config", "model_state", "metadata")
+    for key in required_keys:
+        if key not in normalized:
+            raise ValueError(f"checkpoint payload missing required key: {key}")
+
+    if normalized["format_version"] != 1:
+        raise ValueError(f"unsupported checkpoint format_version: {normalized['format_version']!r}")
+    if not isinstance(normalized["config"], Mapping):
+        raise ValueError("checkpoint config must be a mapping")
+    if not isinstance(normalized["model_state"], Mapping):
+        raise ValueError("checkpoint model_state must be a mapping")
+    if not isinstance(normalized["metadata"], Mapping):
+        normalized["metadata"] = {}
+
+    normalized["config"] = dict(normalized["config"])
+    normalized["metadata"] = dict(normalized["metadata"])
+    return normalized

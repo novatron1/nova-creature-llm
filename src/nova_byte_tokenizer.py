@@ -13,11 +13,14 @@ class NovaByteTokenizer:
         return token_ids
 
     def decode(self, token_ids: list[int]) -> str:
-        byte_values = [
-            token_id - self.BYTE_OFFSET
-            for token_id in token_ids
-            if self.BYTE_OFFSET <= token_id < self.vocab_size
-        ]
+        byte_values = []
+        for index, token_id in enumerate(token_ids):
+            try:
+                token_int = int(token_id)
+            except (TypeError, ValueError) as exc:
+                raise TypeError(f"unsupported token id at index {index}: {token_id!r}") from exc
+            if self.BYTE_OFFSET <= token_int < self.vocab_size:
+                byte_values.append(token_int - self.BYTE_OFFSET)
         return bytes(byte_values).decode("utf-8", errors="replace")
 
     def encode_pair(self, prompt: str, answer: str) -> tuple[list[int], list[int]]:
