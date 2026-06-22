@@ -21,8 +21,8 @@ def build_supervised_sequence(
     answer: str,
     block_size: int,
 ) -> tuple[list[int], list[int]]:
-    if block_size < 3:
-        raise ValueError("block_size must leave room for BOS, SEP, and at least one answer token")
+    if block_size <= 0:
+        raise ValueError("block_size must be positive")
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("prompt must be a non-empty string")
     if not isinstance(answer, str) or not answer.strip():
@@ -34,31 +34,16 @@ def build_supervised_sequence(
         raise ValueError("answer must produce at least one token")
 
     token_ids = [tokenizer.BOS, *prompt_ids, tokenizer.SEP, *answer_ids, tokenizer.EOS]
-    if len(token_ids) > block_size:
-        if block_size == 3:
-            token_ids = [tokenizer.BOS, tokenizer.SEP, answer_ids[0]]
-        else:
-            prompt_budget = max(0, block_size - 4)
-            kept_prompt_ids = prompt_ids[:prompt_budget]
-            answer_budget = block_size - 2 - len(kept_prompt_ids)
-            if answer_budget < 2:
-                raise ValueError("block_size cannot preserve SEP and an answer token")
-            token_ids = [
-                tokenizer.BOS,
-                *kept_prompt_ids,
-                tokenizer.SEP,
-                *answer_ids[: answer_budget - 1],
-                tokenizer.EOS,
-            ]
+    token_ids = token_ids[:block_size]
 
     if tokenizer.SEP not in token_ids:
         raise ValueError("supervised sequence lost SEP during truncation")
     sep_index = token_ids.index(tokenizer.SEP)
     if sep_index + 1 >= len(token_ids):
-        raise ValueError("supervised sequence must include at least one answer token after SEP")
+        raise ValueError("supervised sequence lost all answer tokens during truncation")
 
     targets = token_ids[1:] + [tokenizer.EOS]
-    for index in range(min(sep_index + 1, len(targets))):
+    for index in range(min(sep_index, len(targets))):
         targets[index] = -100
     if not any(target != -100 for target in targets):
         raise ValueError("supervised sequence has no answer targets")

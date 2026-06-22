@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 
+import pytest
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,10 +14,35 @@ from nova_torch_transformer import ModelConfig, NovaCausalLM, save_checkpoint
 
 def test_prompt_tokens_are_masked_from_answer_loss():
     tokenizer = NovaByteTokenizer()
-    token_ids, targets = build_supervised_sequence(tokenizer, "Question?", "Answer.", block_size=64)
+    answer = "Answer."
+    token_ids, targets = build_supervised_sequence(tokenizer, "Question?", answer, block_size=64)
     sep_index = token_ids.index(tokenizer.SEP)
-    assert all(value == -100 for value in targets[: sep_index + 1])
-    assert any(value != -100 for value in targets[sep_index + 1 :])
+    answer_ids = tokenizer.encode(answer, add_special=False)
+    assert all(value == -100 for value in targets[:sep_index])
+    assert targets[sep_index] == answer_ids[0]
+    assert targets[sep_index : sep_index + len(answer_ids)] == answer_ids
+
+
+def test_sequence_truncation_keeps_literal_prefix_without_rebalancing():
+    tokenizer = NovaByteTokenizer()
+    prompt = "ab"
+    answer = "WXYZ"
+    token_ids, targets = build_supervised_sequence(tokenizer, prompt, answer, block_size=5)
+    expected_prefix = [
+        tokenizer.BOS,
+        *tokenizer.encode(prompt, add_special=False),
+        tokenizer.SEP,
+        tokenizer.encode(answer, add_special=False)[0],
+    ]
+    assert token_ids == expected_prefix
+    sep_index = token_ids.index(tokenizer.SEP)
+    assert targets[sep_index] == tokenizer.encode(answer, add_special=False)[0]
+
+
+def test_truncation_that_removes_sep_fails_clearly():
+    tokenizer = NovaByteTokenizer()
+    with pytest.raises(ValueError, match="SEP"):
+        build_supervised_sequence(tokenizer, "abcdef", "Z", block_size=5)
 
 
 def test_role_training_reduces_validation_loss(tmp_path):
