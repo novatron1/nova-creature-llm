@@ -23,7 +23,6 @@ sys.path.insert(0, str(ROOT / "src"))
 BRAIN = None
 TOKENIZER = None
 CONV_ENGINE = None
-LAST_TRANSFORMER_RESULT = None
 
 def _ensure_brain():
     global BRAIN
@@ -108,16 +107,14 @@ def get_route_for_domain(domain):
 def generate_transformer_response(text, domain=None):
     """Generate a response using the live transformer runtime.
 
-    Returns (GenerationResult | None, RoutePrediction).
+    Returns (GenerationResult | None, RoutePrediction, GenerationResult).
     """
-    global LAST_TRANSFORMER_RESULT
     brain = _ensure_brain()
     prediction = brain.route(text)
     result = brain.generate(prediction.primary_role, text, max_new_tokens=80)
-    LAST_TRANSFORMER_RESULT = result
     if not result.ok:
-        return None, prediction
-    return result, prediction
+        return None, prediction, result
+    return result, prediction, result
 
 def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: bool = False):
     """Main routing function — the hybrid brain.
@@ -182,8 +179,10 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
             return response, trace
     
     # ─── Transformer Path: Generate response ───
-    gen_result, prediction = generate_transformer_response(text, domain)
-    route = [prediction.primary_role, *prediction.support_roles]
+    gen_result, prediction, attempted_generation = generate_transformer_response(text, domain)
+    route = _dedupe_roles([prediction.primary_role, *prediction.support_roles])
+    generation_trace = attempted_generation.to_trace()
+    route_error = getattr(_ensure_brain(), "last_route_error", None)
 
     if gen_result:
         trace["roles"] = route
@@ -194,12 +193,14 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
         trace.update({
             "source": "transformer",
             "domain": prediction.domain,
-            "roles": [prediction.primary_role, *prediction.support_roles],
+            "roles": route,
             "confidence": prediction.confidence,
+            "route_source": prediction.source,
             "route_model_hash": prediction.model_hash,
+            "route_error": route_error,
             "checkpoint_hash": gen_result.checkpoint_hash,
             "checkpoint_path": gen_result.checkpoint_path,
-            "generation": gen_result.to_trace(),
+            "generation": generation_trace,
         })
         _log_route(text, prediction.domain, route, prediction.confidence, "transformer")
         if CONV_ENGINE:
@@ -209,12 +210,8 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
                 pass
         return gen_result.text, trace
 
-    failed_generation = LAST_TRANSFORMER_RESULT
     if transformer_only:
-        generation_trace = failed_generation.to_trace() if failed_generation is not None else None
-        error = None
-        if generation_trace:
-            error = generation_trace.get("error")
+        error = generation_trace.get("error")
         error_text = (
             "Transformer generation failed, and transformer_only=True prevented "
             "dictionary or memory fallback."
@@ -226,9 +223,11 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
             "domain": prediction.domain,
             "roles": route,
             "confidence": prediction.confidence,
+            "route_source": prediction.source,
             "route_model_hash": prediction.model_hash,
-            "checkpoint_hash": generation_trace.get("checkpoint_hash") if generation_trace else None,
-            "checkpoint_path": generation_trace.get("checkpoint_path") if generation_trace else None,
+            "route_error": route_error,
+            "checkpoint_hash": generation_trace.get("checkpoint_hash"),
+            "checkpoint_path": generation_trace.get("checkpoint_path"),
             "generation": generation_trace,
             "route_path": route,
             "skills": ["transformer_inference"],
@@ -258,10 +257,27 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
     trace["roles"] = ["memory_transformer", "speech_output_transformer"]
     trace["skills"] = ["fallback", "domain_aware"]
     trace["confidence"] = 0.75
+    trace["source"] = "fallback"
+    trace["domain"] = prediction.domain
     trace["route_path"] = route
+    trace["route_source"] = prediction.source
+    trace["route_model_hash"] = prediction.model_hash
+    trace["route_error"] = route_error
+    trace["checkpoint_hash"] = generation_trace.get("checkpoint_hash")
+    trace["checkpoint_path"] = generation_trace.get("checkpoint_path")
+    trace["generation"] = generation_trace
     
-    _log_route(text, domain, route, 0.75, "fallback")
+    _log_route(text, prediction.domain, route, 0.75, "fallback")
     return fallback, trace
+
+def _dedupe_roles(roles):
+    deduped = []
+    seen = set()
+    for role in roles:
+        if role not in seen:
+            deduped.append(role)
+            seen.add(role)
+    return deduped
 
 def _search_lessons(q, memory):
     """Search stored lessons for relevant content."""

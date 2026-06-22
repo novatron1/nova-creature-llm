@@ -1,5 +1,8 @@
 from pathlib import Path
+import json
 import sys
+
+import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -7,17 +10,44 @@ sys.path.insert(0, str(ROOT / "src"))
 from nova_checkpoint_registry import CheckpointRegistry
 from nova_torch_transformer import ModelConfig, NovaCausalLM, save_checkpoint
 from nova_transformer_runtime import NovaTransformerRuntime
+from nova_training_types import GenerationResult, RoutePrediction
+
+HASH_A = "a" * 64
+HASH_B = "b" * 64
 
 
 class FixedRouteModel:
-    model_hash = "routehash"
+    model_hash = HASH_A
 
     def predict(self, text):
-        from nova_training_types import RoutePrediction
         return RoutePrediction("coding", "left_hemisphere", ("planner_transformer",), 0.91, self.model_hash)
 
 
-def test_runtime_returns_generation_evidence(tmp_path):
+class DeterministicModel:
+    def __init__(self, text="ok", block_size=64):
+        self.config = ModelConfig(block_size=block_size, d_model=32, n_heads=4, n_layers=1, dropout=0.0)
+        self.token_ids = [ord(char) + 4 for char in text]
+        self.calls = 0
+
+    def eval(self):
+        return self
+
+    def __call__(self, tokens):
+        logits = torch.zeros((1, tokens.shape[1], 260), dtype=torch.float32)
+        token_id = self.token_ids[min(self.calls, len(self.token_ids) - 1)]
+        logits[0, -1, token_id] = 1.0
+        self.calls += 1
+        return logits, None
+
+
+class ExplodingRouteModel:
+    model_hash = HASH_A
+
+    def predict(self, text):
+        raise RuntimeError("route boom")
+
+
+def _register_left_checkpoint(tmp_path):
     path = tmp_path / "checkpoints" / "brain_slots" / "left_hemisphere" / "left_hemisphere_baseline.pt"
     digest = save_checkpoint(
         path,
@@ -25,6 +55,11 @@ def test_runtime_returns_generation_evidence(tmp_path):
         {"role": "left_hemisphere"},
     )
     CheckpointRegistry(tmp_path).register_baseline("left_hemisphere", path, digest)
+    return path, digest
+
+
+def test_runtime_returns_generation_evidence(tmp_path):
+    _, digest = _register_left_checkpoint(tmp_path)
     runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
     route = runtime.route("debug this code")
     result = runtime.generate(route.primary_role, "debug this code", max_new_tokens=4)
@@ -32,3 +67,190 @@ def test_runtime_returns_generation_evidence(tmp_path):
     assert result.role == "left_hemisphere"
     assert result.checkpoint_hash == digest
     assert result.to_trace()["source"] == "transformer"
+
+
+def test_runtime_success_result_is_ok_and_non_empty_with_controlled_model(tmp_path, monkeypatch):
+    _, digest = _register_left_checkpoint(tmp_path)
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(runtime, "_load_model", lambda role, sha256, path: DeterministicModel("ok"))
+
+    result = runtime.generate("left_hemisphere", "debug this code", max_new_tokens=2)
+
+    assert result.ok is True
+    assert result.text == "ok"
+    assert result.checkpoint_hash == digest
+    assert result.to_trace()["ok"] is True
+
+
+def test_runtime_failure_after_resolve_preserves_checkpoint_evidence(tmp_path, monkeypatch):
+    _, digest = _register_left_checkpoint(tmp_path)
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+
+    def explode_after_resolve(role, sha256, path):
+        raise RuntimeError("model load exploded")
+
+    monkeypatch.setattr(runtime, "_load_model", explode_after_resolve)
+
+    result = runtime.generate("left_hemisphere", "debug this code", max_new_tokens=2)
+
+    assert result.ok is False
+    assert result.checkpoint_hash == digest
+    assert result.checkpoint_path == "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt"
+    assert "model load exploded" in result.error
+    assert result.to_trace()["checkpoint_hash"] == digest
+
+
+def test_runtime_rejects_prompt_too_long_to_keep_sep(tmp_path, monkeypatch):
+    _, digest = _register_left_checkpoint(tmp_path)
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(runtime, "_load_model", lambda role, sha256, path: DeterministicModel("ok", block_size=6))
+
+    result = runtime.generate("left_hemisphere", "abcdef", max_new_tokens=1)
+
+    assert result.ok is False
+    assert result.checkpoint_hash == digest
+    assert "prompt too long" in result.error
+
+
+def test_route_model_exception_falls_back_with_error_provenance(tmp_path):
+    runtime = NovaTransformerRuntime(tmp_path, route_model=ExplodingRouteModel())
+
+    route = runtime.route("debug this code")
+
+    assert route.source == "baseline_fallback"
+    assert runtime.last_route_error == "route boom"
+
+
+def test_hybrid_success_trace_is_json_safe_and_exposes_route_provenance(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction(
+        "coding",
+        "left_hemisphere",
+        ("left_hemisphere", "planner_transformer"),
+        0.91,
+        HASH_A,
+        source="baseline_fallback",
+    )
+    generation = GenerationResult(
+        "fixed",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        2,
+        0.1,
+        20.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route(self, text):
+            return prediction
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("debug this code")
+
+    assert response == "fixed"
+    assert trace["source"] == "transformer"
+    assert trace["route_source"] == "baseline_fallback"
+    assert trace["route_model_hash"] == HASH_A
+    assert trace["checkpoint_hash"] == HASH_B
+    assert trace["checkpoint_path"] == "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt"
+    assert trace["generation"]["ok"] is True
+    assert trace["roles"] == ["left_hemisphere", "planner_transformer"]
+    json.dumps(trace)
+
+
+def test_transformer_only_skips_dictionary_and_memory_and_returns_transformer_error(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        0,
+        0.1,
+        0.0,
+        "error",
+        "generation boom",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route(self, text):
+            return prediction
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    dictionary_calls = []
+
+    def dict_lookup(text):
+        dictionary_calls.append(text)
+        return "dictionary answer"
+
+    memory = {"lessons": {"1": {"text": "debug code lesson stored in memory"}}}
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond(
+        "debug code",
+        dict_lookup_fn=dict_lookup,
+        memory=memory,
+        transformer_only=True,
+    )
+
+    assert dictionary_calls == []
+    assert "Transformer generation failed" in response
+    assert trace["source"] == "transformer_error"
+    assert trace["route_source"] == "learned_route_model"
+    assert trace["generation"]["error"] == "generation boom"
+    assert trace["memory_event"] == "transformer_failed"
+
+
+def test_non_transformer_fallback_keeps_attempted_transformer_failure_evidence(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        0,
+        0.1,
+        0.0,
+        "error",
+        "generation boom",
+    )
+
+    class FakeBrain:
+        last_route_error = "route degraded"
+
+        def route(self, text):
+            return prediction
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("debug code")
+
+    assert response
+    assert trace["source"] == "fallback"
+    assert trace["route_source"] == "learned_route_model"
+    assert trace["route_error"] == "route degraded"
+    assert trace["generation"]["error"] == "generation boom"
+    assert trace["checkpoint_hash"] == HASH_B

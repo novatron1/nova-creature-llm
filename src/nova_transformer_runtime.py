@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import math
-import re
 import time
 from pathlib import Path
 from typing import Any
@@ -20,8 +19,6 @@ from nova_training_types import (
     RoutePrediction,
 )
 
-_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
-
 
 class NovaTransformerRuntime:
     def __init__(self, project_root: Path, route_model=None):
@@ -30,13 +27,14 @@ class NovaTransformerRuntime:
         self.tokenizer = NovaByteTokenizer()
         self.route_model = route_model or load_promoted_route_model(self.project_root)
         self.models: dict[tuple[str, str], NovaCausalLM] = {}
+        self.last_route_error: str | None = None
 
     def route(self, text: str) -> RoutePrediction:
         if not isinstance(text, str) or not text.strip():
             text = "general request"
 
         model = self.route_model or _BaselineRouteModel()
-        self._normalize_route_model_hash(model)
+        self.last_route_error = None
         try:
             if hasattr(model, "predict") and callable(model.predict):
                 prediction = model.predict(text)
@@ -45,14 +43,19 @@ class NovaTransformerRuntime:
             else:
                 prediction = _BaselineRouteModel().predict(text)
             return _ensure_route_prediction(prediction)
-        except Exception:
+        except Exception as exc:
+            self.last_route_error = str(exc)
             return _BaselineRouteModel().predict(text)
 
     def generate(self, role: str, prompt: str, max_new_tokens: int = 80) -> GenerationResult:
         started = time.perf_counter()
+        checkpoint = None
+        checkpoint_path = ""
+        checkpoint_hash = ""
         try:
             checkpoint = self.registry.resolve_live(role)
             checkpoint_path = self._trace_checkpoint_path(checkpoint.path)
+            checkpoint_hash = checkpoint.sha256
             model = self._load_model(checkpoint.role, checkpoint.sha256, checkpoint.path)
             model.eval()
 
@@ -61,6 +64,19 @@ class NovaTransformerRuntime:
                 *self.tokenizer.encode(str(prompt), add_special=False),
                 self.tokenizer.SEP,
             ]
+            if len(prompt_tokens) > model.config.block_size:
+                elapsed = max(time.perf_counter() - started, 0.0)
+                return GenerationResult(
+                    text="",
+                    role=checkpoint.role,
+                    checkpoint_path=checkpoint_path,
+                    checkpoint_hash=checkpoint_hash,
+                    tokens_generated=0,
+                    elapsed_seconds=elapsed,
+                    tokens_per_second=0.0,
+                    finish_reason="error",
+                    error="prompt too long to preserve BOS/prompt/SEP within transformer block_size",
+                )
             max_new_tokens = max(0, int(max_new_tokens))
             generated_tokens: list[int] = []
             finish_reason = "length"
@@ -93,7 +109,7 @@ class NovaTransformerRuntime:
                 text=text if error is None else "",
                 role=checkpoint.role,
                 checkpoint_path=checkpoint_path,
-                checkpoint_hash=checkpoint.sha256,
+                checkpoint_hash=checkpoint_hash,
                 tokens_generated=tokens_generated,
                 elapsed_seconds=elapsed,
                 tokens_per_second=tokens_per_second,
@@ -101,7 +117,18 @@ class NovaTransformerRuntime:
                 error=error,
             )
         except Exception as exc:
-            return GenerationResult.failed(str(role), str(exc))
+            elapsed = max(time.perf_counter() - started, 0.0)
+            return GenerationResult(
+                text="",
+                role=checkpoint.role if checkpoint is not None else str(role),
+                checkpoint_path=checkpoint_path,
+                checkpoint_hash=checkpoint_hash,
+                tokens_generated=0,
+                elapsed_seconds=elapsed,
+                tokens_per_second=0.0,
+                finish_reason="error",
+                error=str(exc),
+            )
 
     def _load_model(self, role: str, sha256: str, path: Path) -> NovaCausalLM:
         cache_key = (role, sha256)
@@ -117,18 +144,6 @@ class NovaTransformerRuntime:
             return path.resolve().relative_to(self.project_root).as_posix()
         except ValueError:
             return path.resolve().as_posix()
-
-    def _normalize_route_model_hash(self, model: object) -> None:
-        model_hash = getattr(model, "model_hash", None)
-        if isinstance(model_hash, str) and _is_sha256(model_hash):
-            return
-        if model_hash is None:
-            return
-        try:
-            setattr(model, "model_hash", hashlib.sha256(str(model_hash).encode("utf-8")).hexdigest())
-        except Exception:
-            pass
-
 
 def load_promoted_route_model(project_root: str | Path):
     root = Path(project_root)
@@ -227,10 +242,6 @@ def _ensure_route_prediction(value: Any) -> RoutePrediction:
             source=value.get("source", "learned_route_model"),
         )
     raise TypeError("route model must return RoutePrediction")
-
-
-def _is_sha256(value: str) -> bool:
-    return bool(_SHA256_RE.fullmatch(value))
 
 
 def _is_repetitive(text: str, tokens: list[int]) -> bool:
