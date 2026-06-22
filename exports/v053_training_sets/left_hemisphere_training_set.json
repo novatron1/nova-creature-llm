@@ -1843,5 +1843,33 @@
     "source": "assisted_learning",
     "timestamp": "2026-06-20T11:51:28.916191",
     "session": "rapid-dict-vocab-jump"
+  },
+  {
+    "id": "lesson_1782009954",
+    "prompt": "Lesson: the latest code from github is now live",
+    "answer": "Remembered: the latest code from github is now live",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T22:45:54.365721",
+    "session": "bfa2ff58"
+  },
+  {
+    "prompt": "CODE/MATH: the latest code from github is now live",
+    "answer": "Applied: the latest code from github is now live",
+    "type": "technical",
+    "source": "decomposed",
+    "matched_keywords": [
+      "code"
+    ],
+    "id": "decomp_1782009954_190",
+    "timestamp": "2026-06-20T22:45:54.374397",
+    "session": "bfa2ff58"
+  },
+  {
+    "id": "lesson_1782009954",
+    "prompt": "Lesson: CODE/MATH: the latest code from github is now live Applied: the latest code from github is now live",
+    "answer": "Remembered: CODE/MATH: the latest code from github is now live Applied: the latest code from github is now live",
+    "source": "assisted_learning",
+    "timestamp": "2026-06-20T22:45:54.375983",
+    "session": "bfa2ff58"
   }
 ]
