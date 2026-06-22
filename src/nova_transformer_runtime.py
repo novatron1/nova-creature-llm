@@ -1,0 +1,254 @@
+from __future__ import annotations
+
+import hashlib
+import math
+import re
+import time
+from pathlib import Path
+from typing import Any
+
+import torch
+
+from nova_byte_tokenizer import NovaByteTokenizer
+from nova_checkpoint_registry import CheckpointRegistry
+from nova_route_model import load_route_model, predict_route
+from nova_torch_transformer import NovaCausalLM, load_checkpoint
+from nova_training_types import (
+    DOMAIN_NAMES,
+    ROLE_NAMES,
+    GenerationResult,
+    RoutePrediction,
+)
+
+_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+
+
+class NovaTransformerRuntime:
+    def __init__(self, project_root: Path, route_model=None):
+        self.project_root = Path(project_root).resolve()
+        self.registry = CheckpointRegistry(self.project_root)
+        self.tokenizer = NovaByteTokenizer()
+        self.route_model = route_model or load_promoted_route_model(self.project_root)
+        self.models: dict[tuple[str, str], NovaCausalLM] = {}
+
+    def route(self, text: str) -> RoutePrediction:
+        if not isinstance(text, str) or not text.strip():
+            text = "general request"
+
+        model = self.route_model or _BaselineRouteModel()
+        self._normalize_route_model_hash(model)
+        try:
+            if hasattr(model, "predict") and callable(model.predict):
+                prediction = model.predict(text)
+            elif hasattr(model, "route") and callable(model.route):
+                prediction = model.route(text)
+            else:
+                prediction = _BaselineRouteModel().predict(text)
+            return _ensure_route_prediction(prediction)
+        except Exception:
+            return _BaselineRouteModel().predict(text)
+
+    def generate(self, role: str, prompt: str, max_new_tokens: int = 80) -> GenerationResult:
+        started = time.perf_counter()
+        try:
+            checkpoint = self.registry.resolve_live(role)
+            checkpoint_path = self._trace_checkpoint_path(checkpoint.path)
+            model = self._load_model(checkpoint.role, checkpoint.sha256, checkpoint.path)
+            model.eval()
+
+            prompt_tokens = [
+                self.tokenizer.BOS,
+                *self.tokenizer.encode(str(prompt), add_special=False),
+                self.tokenizer.SEP,
+            ]
+            max_new_tokens = max(0, int(max_new_tokens))
+            generated_tokens: list[int] = []
+            finish_reason = "length"
+
+            with torch.no_grad():
+                for _ in range(max_new_tokens):
+                    context = prompt_tokens + generated_tokens
+                    context = context[-model.config.block_size :]
+                    token_tensor = torch.tensor([context], dtype=torch.long)
+                    logits, _ = model(token_tensor)
+                    next_token = int(torch.argmax(logits[0, -1]).item())
+                    if next_token == self.tokenizer.EOS:
+                        finish_reason = "eos"
+                        break
+                    generated_tokens.append(next_token)
+
+            elapsed = max(time.perf_counter() - started, 0.0)
+            tokens_generated = len(generated_tokens)
+            tokens_per_second = tokens_generated / elapsed if elapsed > 0 else 0.0
+            text = self.tokenizer.decode(generated_tokens).strip()
+            error = None
+            if not text:
+                finish_reason = "error"
+                error = "transformer generated no decodable text"
+            elif _is_repetitive(text, generated_tokens):
+                finish_reason = "error"
+                error = "transformer generated repetitive text"
+
+            return GenerationResult(
+                text=text if error is None else "",
+                role=checkpoint.role,
+                checkpoint_path=checkpoint_path,
+                checkpoint_hash=checkpoint.sha256,
+                tokens_generated=tokens_generated,
+                elapsed_seconds=elapsed,
+                tokens_per_second=tokens_per_second,
+                finish_reason=finish_reason,
+                error=error,
+            )
+        except Exception as exc:
+            return GenerationResult.failed(str(role), str(exc))
+
+    def _load_model(self, role: str, sha256: str, path: Path) -> NovaCausalLM:
+        cache_key = (role, sha256)
+        model = self.models.get(cache_key)
+        if model is None:
+            model, _ = load_checkpoint(path)
+            model.eval()
+            self.models[cache_key] = model
+        return model
+
+    def _trace_checkpoint_path(self, path: Path) -> str:
+        try:
+            return path.resolve().relative_to(self.project_root).as_posix()
+        except ValueError:
+            return path.resolve().as_posix()
+
+    def _normalize_route_model_hash(self, model: object) -> None:
+        model_hash = getattr(model, "model_hash", None)
+        if isinstance(model_hash, str) and _is_sha256(model_hash):
+            return
+        if model_hash is None:
+            return
+        try:
+            setattr(model, "model_hash", hashlib.sha256(str(model_hash).encode("utf-8")).hexdigest())
+        except Exception:
+            pass
+
+
+def load_promoted_route_model(project_root: str | Path):
+    root = Path(project_root)
+    candidates = (
+        root / "checkpoints" / "route_model" / "promoted.pt",
+        root / "checkpoints" / "route_model" / "route_model.pt",
+        root / "checkpoints" / "routes" / "promoted_route_model.pt",
+    )
+    for path in candidates:
+        if path.exists():
+            try:
+                model, _ = load_route_model(path)
+                return _RouteModelAdapter(model)
+            except Exception:
+                continue
+    return _BaselineRouteModel()
+
+
+class _RouteModelAdapter:
+    def __init__(self, model):
+        self.model = model
+        self.model_hash = getattr(model, "route_metadata", {}).get("model_hash", "")
+
+    def predict(self, text: str) -> RoutePrediction:
+        return predict_route(self.model, text)
+
+
+class _BaselineRouteModel:
+    model_hash = hashlib.sha256(b"nova-baseline-route-model-v1").hexdigest()
+
+    _DOMAIN_ROLES = {
+        "coding": ("left_hemisphere", ("planner_transformer", "critic_conscience_transformer"), 0.76),
+        "math": ("left_hemisphere", ("memory_transformer",), 0.72),
+        "science": ("memory_transformer", ("left_hemisphere", "critic_conscience_transformer"), 0.70),
+        "philosophy": ("critic_conscience_transformer", ("memory_transformer", "right_hemisphere"), 0.68),
+        "psychology": ("right_hemisphere", ("memory_transformer", "critic_conscience_transformer"), 0.68),
+        "creative": ("right_hemisphere", ("dream_simulation_transformer",), 0.72),
+        "memory_recall": ("memory_transformer", ("critic_conscience_transformer",), 0.78),
+        "planning": ("planner_transformer", ("left_hemisphere",), 0.74),
+        "critic": ("critic_conscience_transformer", ("memory_transformer",), 0.74),
+        "speech": ("speech_output_transformer", ("planner_transformer",), 0.70),
+        "dream": ("dream_simulation_transformer", ("right_hemisphere",), 0.70),
+        "general": ("speech_output_transformer", ("memory_transformer", "critic_conscience_transformer"), 0.55),
+    }
+    _KEYWORDS = {
+        "coding": ("code", "debug", "python", "javascript", "bug", "function", "class", "api", "server", "database", "git"),
+        "math": ("math", "equation", "formula", "solve", "calculate", "algebra", "calculus", "probability"),
+        "science": ("science", "physics", "chemistry", "biology", "energy", "atom", "cell", "experiment", "theory"),
+        "philosophy": ("philosophy", "ethics", "meaning", "consciousness", "truth", "existence", "free will"),
+        "psychology": ("psychology", "emotion", "behavior", "mental", "stress", "trauma", "cognitive", "neuron"),
+        "creative": ("draw", "paint", "design", "story", "poem", "creative", "imagine", "compose"),
+        "memory_recall": ("remember", "recall", "what did i", "who am i", "do you remember"),
+        "planning": ("plan", "steps", "strategy", "schedule", "organize", "roadmap", "how to"),
+        "critic": ("verify", "check", "evidence", "proof", "wrong", "mistake", "contradiction", "fact"),
+        "speech": ("explain", "summarize", "describe", "clarify", "define", "tell me"),
+        "dream": ("what if", "simulate", "pretend", "suppose", "hypothetical", "scenario"),
+    }
+
+    def predict(self, text: str) -> RoutePrediction:
+        domain = self._classify(text)
+        primary_role, support_roles, confidence = self._DOMAIN_ROLES[domain]
+        return RoutePrediction(
+            domain=domain,
+            primary_role=primary_role,
+            support_roles=support_roles,
+            confidence=confidence,
+            model_hash=self.model_hash,
+            source="baseline_fallback",
+        )
+
+    def route(self, text: str) -> RoutePrediction:
+        return self.predict(text)
+
+    def _classify(self, text: str) -> str:
+        query = str(text).lower()
+        scores: dict[str, int] = {}
+        for domain, keywords in self._KEYWORDS.items():
+            score = sum(1 for keyword in keywords if keyword in query)
+            if score:
+                scores[domain] = score
+        if not scores:
+            return "general"
+        return max(scores, key=scores.get)
+
+
+def _ensure_route_prediction(value: Any) -> RoutePrediction:
+    if isinstance(value, RoutePrediction):
+        return value
+    if isinstance(value, dict):
+        return RoutePrediction(
+            domain=value.get("domain", "general"),
+            primary_role=value.get("primary_role", "speech_output_transformer"),
+            support_roles=tuple(value.get("support_roles", ())),
+            confidence=float(value.get("confidence", 0.0)),
+            model_hash=value.get("model_hash", _BaselineRouteModel.model_hash),
+            source=value.get("source", "learned_route_model"),
+        )
+    raise TypeError("route model must return RoutePrediction")
+
+
+def _is_sha256(value: str) -> bool:
+    return bool(_SHA256_RE.fullmatch(value))
+
+
+def _is_repetitive(text: str, tokens: list[int]) -> bool:
+    compact = "".join(text.split())
+    if len(compact) >= 8 and len(set(compact)) <= 2:
+        return True
+    byte_tokens = [token for token in tokens if NovaByteTokenizer.BYTE_OFFSET <= token < NovaByteTokenizer.vocab_size]
+    if len(byte_tokens) >= 8 and len(set(byte_tokens[-8:])) <= 2:
+        return True
+    return False
+
+
+def _assert_contracts() -> None:
+    assert set(_BaselineRouteModel._DOMAIN_ROLES).issubset(set(DOMAIN_NAMES))
+    for primary_role, support_roles, confidence in _BaselineRouteModel._DOMAIN_ROLES.values():
+        assert primary_role in ROLE_NAMES
+        assert all(role in ROLE_NAMES for role in support_roles)
+        assert math.isfinite(confidence)
+
+
+_assert_contracts()

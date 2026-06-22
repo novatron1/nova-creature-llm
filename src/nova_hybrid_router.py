@@ -23,14 +23,13 @@ sys.path.insert(0, str(ROOT / "src"))
 BRAIN = None
 TOKENIZER = None
 CONV_ENGINE = None
+LAST_TRANSFORMER_RESULT = None
 
 def _ensure_brain():
-    global BRAIN, TOKENIZER
+    global BRAIN
     if BRAIN is None:
-        from nova_transformer_engine import NovaBrain, NovaTokenizer
-        TOKENIZER = NovaTokenizer()
-        BRAIN = NovaBrain()
-        BRAIN.load_all()
+        from nova_transformer_runtime import NovaTransformerRuntime
+        BRAIN = NovaTransformerRuntime(ROOT)
     return BRAIN
 
 def _ensure_conv():
@@ -107,64 +106,20 @@ def get_route_for_domain(domain):
     return ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
 
 def generate_transformer_response(text, domain=None):
-    """Generate a response using the transformer brain.
-    
-    This uses the trained weights from the 7 brain roles to actually
-    generate responses rather than returning hardcoded text.
-    
-    Returns (response_text, route_path)
-    """
-    brain = _ensure_brain()
-    route = []
-    
-    if domain is None:
-        domain = classify_domain(text)
-    
-    # Get the route roles for this domain
-    route_roles = get_route_for_domain(domain)
-    route = route_roles
-    
-    # Build a prompt that includes domain context
-    # The transformer generates based on its trained patterns
-    prompt = f"[{domain.upper()}] {text}"
-    
-    # Try each role in the route, pick the best response
-    best_response = None
-    best_confidence = 0.0
-    
-    for role in route_roles:
-        if role in brain.models:
-            model = brain.models[role]
-            try:
-                gen_text = model.generate(prompt, max_new_tokens=40, temperature=0.3)
-                if gen_text and len(gen_text) > len(text) + 5:
-                    # Extract the generated part (after the prompt)
-                    response = gen_text[len(prompt):].strip()
-                    if response and len(response) > 10:
-                        conf = min(0.95, 0.5 + 0.05 * len(response))
-                        if conf > best_confidence:
-                            best_response = response
-                            best_confidence = conf
-            except Exception as e:
-                continue
-    
-    if best_response:
-        return best_response, route, best_confidence
-    
-    # Fallback: use the most domain-relevant role
-    primary_role = route[0] if route else "memory_transformer"
-    if primary_role in brain.models:
-        try:
-            gen_text = brain.models[primary_role].generate(prompt, max_new_tokens=30, temperature=0.2)
-            response = gen_text[len(prompt):].strip()
-            if response and len(response) > 5:
-                return response, route, 0.7
-        except:
-            pass
-    
-    return None, route, 0.0
+    """Generate a response using the live transformer runtime.
 
-def route_and_respond(text, dict_lookup_fn=None, memory=None):
+    Returns (GenerationResult | None, RoutePrediction).
+    """
+    global LAST_TRANSFORMER_RESULT
+    brain = _ensure_brain()
+    prediction = brain.route(text)
+    result = brain.generate(prediction.primary_role, text, max_new_tokens=80)
+    LAST_TRANSFORMER_RESULT = result
+    if not result.ok:
+        return None, prediction
+    return result, prediction
+
+def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: bool = False):
     """Main routing function — the hybrid brain.
     
     1. Fast Path: Dictionary check
@@ -186,7 +141,7 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     q = text.lower().strip()
     
     # ─── Fast Path: Dictionary ───
-    if dict_lookup_fn:
+    if dict_lookup_fn and not transformer_only:
         dict_answer = dict_lookup_fn(text)
         if dict_answer:
             trace["roles"] = ["memory_transformer", "dictionary_system"]
@@ -207,7 +162,7 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     trace["domain"] = domain
     
     # ─── Memory Path: Check stored lessons ───
-    if memory and domain in ("memory_recall", "general", "science", "coding", "philosophy"):
+    if memory and not transformer_only and domain in ("memory_recall", "general", "science", "coding", "philosophy"):
         lessons_found = _search_lessons(q, memory)
         if lessons_found:
             response = "From my stored knowledge, I recall:\n"
@@ -227,21 +182,60 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             return response, trace
     
     # ─── Transformer Path: Generate response ───
-    gen_response, route, confidence = generate_transformer_response(text, domain)
-    
-    if gen_response:
+    gen_result, prediction = generate_transformer_response(text, domain)
+    route = [prediction.primary_role, *prediction.support_roles]
+
+    if gen_result:
         trace["roles"] = route
-        trace["skills"] = [f"generated_{domain}", "transformer_inference"]
-        trace["confidence"] = confidence
-        trace["memory_event"] = f"transformer_generated:{domain}"
+        trace["skills"] = [f"generated_{prediction.domain}", "transformer_inference"]
+        trace["confidence"] = prediction.confidence
+        trace["memory_event"] = f"transformer_generated:{prediction.domain}"
         trace["route_path"] = route
-        _log_route(text, domain, route, confidence, "transformer")
+        trace.update({
+            "source": "transformer",
+            "domain": prediction.domain,
+            "roles": [prediction.primary_role, *prediction.support_roles],
+            "confidence": prediction.confidence,
+            "route_model_hash": prediction.model_hash,
+            "checkpoint_hash": gen_result.checkpoint_hash,
+            "checkpoint_path": gen_result.checkpoint_path,
+            "generation": gen_result.to_trace(),
+        })
+        _log_route(text, prediction.domain, route, prediction.confidence, "transformer")
         if CONV_ENGINE:
             try:
-                CONV_ENGINE.add_exchange(text, gen_response)
+                CONV_ENGINE.add_exchange(text, gen_result.text)
             except:
                 pass
-        return gen_response, trace
+        return gen_result.text, trace
+
+    failed_generation = LAST_TRANSFORMER_RESULT
+    if transformer_only:
+        generation_trace = failed_generation.to_trace() if failed_generation is not None else None
+        error = None
+        if generation_trace:
+            error = generation_trace.get("error")
+        error_text = (
+            "Transformer generation failed, and transformer_only=True prevented "
+            "dictionary or memory fallback."
+        )
+        if error:
+            error_text += f" Error: {error}"
+        trace.update({
+            "source": "transformer_error",
+            "domain": prediction.domain,
+            "roles": route,
+            "confidence": prediction.confidence,
+            "route_model_hash": prediction.model_hash,
+            "checkpoint_hash": generation_trace.get("checkpoint_hash") if generation_trace else None,
+            "checkpoint_path": generation_trace.get("checkpoint_path") if generation_trace else None,
+            "generation": generation_trace,
+            "route_path": route,
+            "skills": ["transformer_inference"],
+            "memory_event": "transformer_failed",
+        })
+        _log_route(text, prediction.domain, route, prediction.confidence, "transformer_error")
+        return error_text, trace
     
     # ─── Ultimate Fallback ───
     # Even transformers failed — provide intelligent fallback
