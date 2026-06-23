@@ -164,6 +164,16 @@ def _apply_hybrid_trace(trace, hybrid_trace):
         "checkpoint_hash",
         "checkpoint_path",
         "generation",
+        "recognized",
+        "navigation_intent",
+        "target_surface",
+        "action",
+        "safety_level",
+        "steps",
+        "verification",
+        "blocked",
+        "blocker",
+        "next_safe_step",
     ):
         if key in hybrid_trace:
             trace[key] = hybrid_trace.get(key)

@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import nova_enhanced_server as server
+import nova_hybrid_router as router
 
 
 HASH_A = "a" * 64
@@ -21,6 +22,8 @@ def test_chat_payload_preserves_present_text_over_message():
 
 def test_brain_route_exposes_transformer_evidence_from_hybrid_router(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
     monkeypatch.setattr(
         server,
         "pipeline_process",
@@ -59,3 +62,22 @@ def test_brain_route_exposes_transformer_evidence_from_hybrid_router(monkeypatch
     assert trace["route_path"] == ["left_hemisphere", "planner_transformer"]
     assert trace["route_model_hash"] == HASH_A
     assert trace["checkpoint_hash"] == HASH_B
+
+
+def test_brain_route_returns_app_navigation_trace(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+    monkeypatch.setattr(router, "APP_NAV_CONTEXT", router.AppNavigationContext())
+
+    response, trace = server.brain_route("go to Agent Library")
+
+    assert "Agent Library" in response
+    assert trace["source"] == "app_navigation"
+    assert trace["target_surface"] == "agent_library"
+    assert trace["action"] == "navigate"
+    assert trace["safety_level"] == "read_only"
+    assert [step["kind"] for step in trace["steps"]] == ["understand", "navigate", "verify"]
+    assert trace["verification"]["status"] == "planned"
+    assert trace["verification"]["method"] == "structured_navigation_plan"

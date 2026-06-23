@@ -118,6 +118,18 @@ Final candidate promotion split role confusions, `expected -> predicted`:
     - `checkpoint_hash`: `23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47`
     - both hashes matched 64-character hexadecimal format.
 
+## Autonomous App Navigation Mode
+
+The branch also adds the approved app-operator design and implementation. Navigation commands are recognized before generic memory/dictionary fallback and return structured traces with `source: "app_navigation"`, target surface, action, safety level, steps, and verification state.
+
+Verified examples:
+
+- `go to Agent Library` -> `agent_library`, `navigate`, `read_only`;
+- `make an agent that researches better LLM methods weekly` -> create-agent action loop with schedule/save/verify steps;
+- `check if it works` -> uses recent context;
+- `delete that draft` -> blocked with `confirm_required`;
+- generic chat still uses the existing transformer route path.
+
 ## Remaining weaknesses
 
 - No new hyper-training candidate was promoted in Task 11.
