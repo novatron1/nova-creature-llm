@@ -17,7 +17,17 @@ from nova_training_types import GenerationResult, RoutePrediction
 HASH_A = "a" * 64
 
 
-def metrics(joint, route, answer, repetition=0.01, protected=True, reload_ok=True):
+def metrics(
+    joint,
+    route,
+    answer,
+    repetition=0.01,
+    protected=True,
+    reload_ok=True,
+    load_ok=True,
+    role_checkpoints_ok=True,
+    role_ok=True,
+):
     return {
         "joint": joint,
         "routing": {"macro_f1": route, "protected_domain_floor_delta": 0.0},
@@ -27,7 +37,15 @@ def metrics(joint, route, answer, repetition=0.01, protected=True, reload_ok=Tru
             "malformed_rate": 0.0,
             "repetition_rate": repetition,
         },
-        "stability": {"reload_ok": reload_ok, "confirmation_ok": True, "regressions": 0},
+        "stability": {
+            "reload_ok": reload_ok,
+            "load_ok": load_ok,
+            "role_checkpoints_ok": role_checkpoints_ok,
+            "role_ok": role_ok,
+            "confirmation_ok": True,
+            "regressions": 0,
+            "score": 100.0,
+        },
     }
 
 
@@ -67,6 +85,38 @@ def test_previous_winner_is_the_reference_for_joint_gain():
     )
     assert decision.verdict == "REJECTED"
     assert any("joint" in reason.lower() for reason in decision.reasons)
+
+
+def test_explicit_joint_values_cannot_override_component_score():
+    decision = decide_promotion(
+        baseline=metrics(10.0, 80.0, 80.0),
+        candidate=metrics(99.0, 81.0, 81.0),
+        previous_winner=None,
+    )
+    assert decision.verdict == "REJECTED"
+    assert decision.baseline_joint == 82.0
+    assert decision.candidate_joint == 82.9
+    assert any("joint" in reason.lower() for reason in decision.reasons)
+
+
+def test_load_gate_blocks_promotion():
+    decision = decide_promotion(
+        baseline=metrics(70.0, 70.0, 70.0),
+        candidate=metrics(75.0, 76.0, 74.0, load_ok=False),
+        previous_winner=None,
+    )
+    assert decision.verdict == "REJECTED"
+    assert any("load" in reason.lower() for reason in decision.reasons)
+
+
+def test_role_checkpoint_gate_blocks_promotion():
+    decision = decide_promotion(
+        baseline=metrics(70.0, 70.0, 70.0),
+        candidate=metrics(75.0, 76.0, 74.0, role_checkpoints_ok=False),
+        previous_winner=None,
+    )
+    assert decision.verdict == "REJECTED"
+    assert any("role" in reason.lower() for reason in decision.reasons)
 
 
 class FixedRouteModel:
@@ -167,6 +217,7 @@ def test_run_negative_controls_rejects_known_bad_candidates(tmp_path):
         "absent_checkpoints",
         "invalid_checkpoint_payloads",
         "repetitive_output",
+        "empty_output",
         "random_weights_candidate",
         "promotion_data_leak",
         "transformer_source_without_checkpoint",

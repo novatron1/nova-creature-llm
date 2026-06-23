@@ -107,6 +107,16 @@ def evaluate_answers(runtime: Any, cases: Sequence[Any]) -> dict:
 def evaluate_stability(runtime: Any, regression_result: Any) -> dict:
     result = regression_result if isinstance(regression_result, Mapping) else {}
     reload_ok = _bool_or_runtime(result, runtime, "reload_ok", ("check_reload", "reload_ok"))
+    load_ok = _bool_or_runtime(result, runtime, "load_ok", ("check_load", "load_ok"), default=True)
+    role_checkpoints_ok = _bool_or_runtime(
+        result,
+        runtime,
+        "role_checkpoints_ok",
+        ("check_role_checkpoints", "role_checkpoints_ok"),
+        default=True,
+    )
+    roles_ok = _bool_or_runtime(result, runtime, "roles_ok", ("check_roles", "roles_ok"), default=True)
+    role_ok = _bool_or_runtime(result, runtime, "role_ok", ("check_role", "role_ok"), default=True)
     confirmation_ok = _bool_or_runtime(
         result,
         runtime,
@@ -118,12 +128,20 @@ def evaluate_stability(runtime: Any, regression_result: Any) -> dict:
     score = 100.0
     if not reload_ok:
         score -= 45.0
+    if not load_ok:
+        score -= 25.0
+    if not (role_checkpoints_ok and roles_ok and role_ok):
+        score -= 25.0
     if not confirmation_ok:
         score -= 45.0
     score -= min(10.0 * regressions, 100.0)
     score = max(0.0, score)
     return {
         "reload_ok": reload_ok,
+        "load_ok": load_ok,
+        "role_checkpoints_ok": role_checkpoints_ok,
+        "roles_ok": roles_ok,
+        "role_ok": role_ok,
         "confirmation_ok": confirmation_ok,
         "regressions": regressions,
         "score": score,
@@ -184,6 +202,11 @@ def decide_promotion(
 
     if not _nested_bool(candidate, ("stability", "reload_ok"), False):
         reasons.append("reload gate failed")
+    stability = _mapping(candidate.get("stability", {}))
+    if not _stability_gate_ok(stability, ("load_ok",)):
+        reasons.append("load gate failed")
+    if not _stability_gate_ok(stability, ("role_checkpoints_ok", "roles_ok", "role_ok")):
+        reasons.append("role checkpoint gate failed")
     if not _nested_bool(candidate, ("stability", "confirmation_ok"), False):
         reasons.append("deterministic confirmation failed")
     regressions = _regression_count(_nested_value(candidate, ("stability", "regressions"), 1))
@@ -251,6 +274,12 @@ def run_negative_controls(project_root: str | Path, cases: Any) -> dict:
 
     candidate = _candidate_from_parts(
         baseline,
+        answers={"composite": 0.0, "protected_perfect": False, "malformed_rate": 1.0, "repetition_rate": 0.0},
+    )
+    controls["empty_output"] = _control_result(decide_promotion(baseline, candidate, None).verdict == "REJECTED")
+
+    candidate = _candidate_from_parts(
+        baseline,
         routing={"macro_f1": 0.0, "protected_domain_floor_delta": 0.0},
         answers={"composite": 50.0, "protected_perfect": True, "malformed_rate": 0.0, "repetition_rate": 0.0},
     )
@@ -285,9 +314,6 @@ def run_negative_controls(project_root: str | Path, cases: Any) -> dict:
 def _joint_metric(metrics: Mapping[str, Any] | None) -> float:
     if metrics is None:
         return float("-inf")
-    explicit = _optional_float(metrics.get("joint"))
-    if explicit is not None:
-        return explicit
     routing_score = _nested_float(metrics, ("routing", "macro_f1"), 0.0)
     answer_score = _nested_float(metrics, ("answers", "composite"), 0.0)
     stability_score = _nested_float(metrics, ("stability", "score"), 0.0)
@@ -315,7 +341,16 @@ def _candidate_from_parts(
             "malformed_rate": _nested_float(baseline, ("answers", "malformed_rate"), 0.0),
             "repetition_rate": min(_nested_float(baseline, ("answers", "repetition_rate"), 0.0), 0.01),
         },
-        "stability": {"reload_ok": True, "confirmation_ok": True, "regressions": 0, "score": 100.0},
+        "stability": {
+            "reload_ok": True,
+            "load_ok": True,
+            "role_checkpoints_ok": True,
+            "roles_ok": True,
+            "role_ok": True,
+            "confirmation_ok": True,
+            "regressions": 0,
+            "score": 100.0,
+        },
     }
     if routing is not None:
         candidate["routing"].update(dict(routing))
@@ -343,7 +378,16 @@ def _default_metrics() -> dict:
             "malformed_rate": 0.0,
             "repetition_rate": 0.0,
         },
-        "stability": {"reload_ok": True, "confirmation_ok": True, "regressions": 0, "score": 100.0},
+        "stability": {
+            "reload_ok": True,
+            "load_ok": True,
+            "role_checkpoints_ok": True,
+            "roles_ok": True,
+            "role_ok": True,
+            "confirmation_ok": True,
+            "regressions": 0,
+            "score": 100.0,
+        },
     }
 
 
@@ -449,7 +493,14 @@ def _is_repetitive_output(text: str) -> bool:
     return len(compact) >= 8 and len(set(compact)) <= 2
 
 
-def _bool_or_runtime(result: Mapping[str, Any], runtime: Any, key: str, runtime_names: Sequence[str]) -> bool:
+def _bool_or_runtime(
+    result: Mapping[str, Any],
+    runtime: Any,
+    key: str,
+    runtime_names: Sequence[str],
+    *,
+    default: bool = False,
+) -> bool:
     if key in result:
         return bool(result[key])
     for name in runtime_names:
@@ -458,7 +509,14 @@ def _bool_or_runtime(result: Mapping[str, Any], runtime: Any, key: str, runtime_
             return bool(value())
         if isinstance(value, bool):
             return value
-    return False
+    return default
+
+
+def _stability_gate_ok(stability: Mapping[str, Any], keys: Sequence[str]) -> bool:
+    values = [stability[key] for key in keys if key in stability]
+    if not values:
+        return False
+    return all(bool(value) for value in values)
 
 
 def _regression_count(value: Any) -> int:
