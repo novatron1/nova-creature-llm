@@ -94,6 +94,9 @@ def test_brain_route_builds_pacman_game_preview(monkeypatch, tmp_path):
     assert "Nova Pac Runner" in response
     assert "Open:" in response
     assert trace["source"] == "sandbox_game_builder"
+    assert "Three.js/WebGL" in response
+    assert "three_webgl" in trace["skills"]
+    assert "three_webgl" in trace["verification"]["checks"]
     assert trace["target_surface"] == "preview_area"
     assert trace["action"] == "create_game"
     assert trace["safety_level"] == "safe_write"

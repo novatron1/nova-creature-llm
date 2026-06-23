@@ -3,6 +3,7 @@
 A sandboxed Pac-Man-style browser game created by Nova's game builder.
 
 - Open `index.html` in a browser.
+- The playfield renders with Three.js/WebGL.
 - The yellow runner moves on its own when you do not press arrows.
 - Arrow keys can override the autopilot.
 - Eating pellets increases score.

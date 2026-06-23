@@ -249,7 +249,7 @@ def brain_route(text, context=None):
     if _GAME_BUILDER_AVAIL and is_pacman_game_request(text):
         result = build_pacman_game(APP_BUILDER_PROJECTS_ROOT)
         trace["roles"] = ["planner_transformer", "right_hemisphere", "critic_conscience_transformer"]
-        trace["skills"] = ["sandbox_game_builder", "browser_game", "playtest_ready"]
+        trace["skills"] = ["sandbox_game_builder", "browser_game", "three_webgl", "playtest_ready"]
         trace["confidence"] = 0.94
         trace["domain"] = "game_builder"
         trace["source"] = "sandbox_game_builder"
@@ -264,12 +264,12 @@ def brain_route(text, context=None):
         trace["verification"] = {
             "method": "sandbox_project_files",
             "status": "built_pending_browser_playtest",
-            "checks": ["autopilot", "score", "age_ticks", "preview_url"],
+            "checks": ["three_webgl", "autopilot", "score", "age_ticks", "preview_url"],
         }
         return (
-            "[APP BUILDER] Built Nova Pac Runner, a Pac-Man-style sandbox game.\n"
+            "[APP BUILDER] Built Nova Pac Runner, a Three.js/WebGL Pac-Man-style sandbox game.\n"
             f"Open: {result.url_path}\n"
-            "Autopilot: ON. Scoring: ON. Age ticks: ON.\n"
+            "Renderer: Three.js/WebGL. Autopilot: ON. Scoring: ON. Age ticks: ON.\n"
             "Next: open the preview and watch the runner move without keyboard input."
         ), trace
 

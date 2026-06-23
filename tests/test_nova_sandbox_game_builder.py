@@ -25,7 +25,16 @@ def test_build_pacman_game_creates_autoplaying_browser_game(tmp_path):
     assert (result.project_dir / "test_spec.json").exists()
 
     html = result.entry_file.read_text(encoding="utf-8")
-    assert "<canvas" in html
+    assert 'type="module"' in html
+    assert 'import * as THREE' in html
+    assert "three.module.js" in html
+    assert "new THREE.Scene" in html
+    assert "new THREE.WebGLRenderer" in html
+    assert "renderer.render(scene, camera)" in html
+    assert 'renderer.domElement.dataset.engine = "three-webgl"' in html
+    assert "renderer.domElement.dataset.threeRevision = THREE.REVISION" in html
+    assert 'data-renderer="three-webgl"' in html
+    assert 'getContext("2d")' not in html
     assert "window.NovaPacGame" in html
     assert "requestAnimationFrame" in html
     assert "chooseAutoDirection" in html

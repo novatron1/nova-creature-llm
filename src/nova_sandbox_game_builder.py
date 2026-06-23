@@ -43,6 +43,9 @@ def build_pacman_game(projects_root: str | Path | None = None) -> GameBuildResul
                 "name": PROJECT_NAME,
                 "kind": "browser_game",
                 "entry": "index.html",
+                "engine": "Three.js",
+                "renderer": "three-webgl",
+                "webgl": True,
                 "autopilot": True,
                 "scoring": True,
                 "age_ticks": True,
@@ -55,10 +58,12 @@ def build_pacman_game(projects_root: str | Path | None = None) -> GameBuildResul
             {
                 "checks": [
                     "loads index.html",
+                    "renders with Three.js WebGLRenderer",
                     "exposes window.NovaPacGame.getState()",
                     "autopilot moves the player without keyboard input",
                     "score increases when pellets are eaten",
                     "ageTicks increases over time",
+                    "DOM HUD stays synchronized with simulation state",
                 ]
             },
             indent=2,
@@ -97,6 +102,7 @@ def _readme() -> str:
         A sandboxed Pac-Man-style browser game created by Nova's game builder.
 
         - Open `index.html` in a browser.
+        - The playfield renders with Three.js/WebGL.
         - The yellow runner moves on its own when you do not press arrows.
         - Arrow keys can override the autopilot.
         - Eating pellets increases score.
@@ -138,13 +144,19 @@ def _game_html() -> str:
             .stat { border: 1px solid #303c90; border-radius: 12px; padding: 10px; background: #101743; }
             .stat span { display: block; color: #8fa0ff; font-size: 12px; text-transform: uppercase; }
             .stat strong { font-size: 22px; }
-            canvas {
-              display: block;
+            #game {
+              position: relative;
               width: 100%;
               aspect-ratio: 19 / 21;
+              overflow: hidden;
               border: 2px solid #3146d9;
               border-radius: 16px;
               background: #050817;
+            }
+            #game canvas {
+              display: block;
+              width: 100%;
+              height: 100%;
             }
             .notes { margin-top: 12px; font-size: 14px; color: #cbd1ff; }
             kbd { background: #20295f; border-radius: 6px; padding: 2px 6px; border: 1px solid #3d4bb0; }
@@ -153,20 +165,21 @@ def _game_html() -> str:
         <body>
           <main class="shell">
             <h1>Nova Pac Runner</h1>
-            <p>Autopilot is on. The runner will move on its own, chase pellets, avoid ghosts, and keep score.</p>
+            <p>Autopilot is on. The runner uses a Three.js/WebGL scene, moves on its own, chases pellets, avoids ghosts, and keeps score.</p>
             <section class="hud" aria-label="Game stats">
               <div class="stat"><span>Score</span><strong id="score">0</strong></div>
               <div class="stat"><span>Pellets</span><strong id="pellets">0</strong></div>
               <div class="stat"><span>Age</span><strong id="age">0</strong></div>
               <div class="stat"><span>Smart</span><strong id="smart">0</strong></div>
             </section>
-            <canvas id="game" width="456" height="504" aria-label="Nova Pac Runner playfield"></canvas>
+            <section id="game" data-renderer="three-webgl" aria-label="Nova Pac Runner Three.js playfield"></section>
             <p class="notes">Use <kbd>Arrow Keys</kbd> to take over. Stop pressing keys and Nova autopilot resumes.</p>
           </main>
-          <script>
-            const canvas = document.getElementById("game");
-            const ctx = canvas.getContext("2d");
-            const tile = 24;
+          <script type="module">
+            import * as THREE from "https://unpkg.com/three@0.165.0/build/three.module.js";
+
+            const gameHost = document.getElementById("game");
+            const boardTileSize = 1;
             const maze = [
               "###################",
               "#........#........#",
@@ -191,6 +204,8 @@ def _game_html() -> str:
               "###################"
             ];
 
+            const boardWidth = maze[0].length;
+            const boardHeight = maze.length;
             const dirs = [
               { x: 1, y: 0, name: "right" },
               { x: -1, y: 0, name: "left" },
@@ -214,6 +229,104 @@ def _game_html() -> str:
                 if (maze[y][x] === ".") state.pellets.add(`${x},${y}`);
               }
             }
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color("#050817");
+
+            const camera = new THREE.OrthographicCamera(
+              -boardWidth / 2,
+              boardWidth / 2,
+              boardHeight / 2,
+              -boardHeight / 2,
+              0.1,
+              100
+            );
+            camera.position.set(0, 0, 30);
+            camera.lookAt(0, 0, 0);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setClearColor(0x050817, 1);
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.domElement.dataset.engine = "three-webgl";
+            renderer.domElement.dataset.threeRevision = THREE.REVISION;
+            renderer.domElement.setAttribute("aria-label", "Three.js WebGL Pac Runner scene");
+            gameHost.appendChild(renderer.domElement);
+
+            document.body.dataset.renderer = "three-webgl";
+            document.body.dataset.threeRevision = THREE.REVISION;
+
+            scene.add(new THREE.AmbientLight(0x93a5ff, 0.62));
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.3);
+            keyLight.position.set(3, 5, 8);
+            scene.add(keyLight);
+            const rimLight = new THREE.DirectionalLight(0x47f6ff, 0.5);
+            rimLight.position.set(-4, -3, 6);
+            scene.add(rimLight);
+
+            const floor = new THREE.Mesh(
+              new THREE.PlaneGeometry(boardWidth, boardHeight),
+              new THREE.MeshBasicMaterial({ color: "#060a1e" })
+            );
+            floor.position.set(0, 0, -0.16);
+            scene.add(floor);
+
+            const wallGeometry = new THREE.BoxGeometry(0.96, 0.96, 0.28);
+            const pelletGeometry = new THREE.SphereGeometry(0.105, 12, 8);
+            const pacGeometry = new THREE.SphereGeometry(0.38, 32, 16);
+            const ghostGeometry = new THREE.SphereGeometry(0.4, 24, 14);
+            const ghostBaseGeometry = new THREE.BoxGeometry(0.68, 0.22, 0.26);
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: "#2148ff", emissive: "#071a8d", roughness: 0.44 });
+            const pelletMaterial = new THREE.MeshStandardMaterial({ color: "#f7d66b", emissive: "#4b3000", roughness: 0.25 });
+            const pacMaterial = new THREE.MeshStandardMaterial({ color: "#ffeb3b", emissive: "#8a7100", roughness: 0.28 });
+            const ghostMaterial = new THREE.MeshStandardMaterial({ color: "#ff4b6e", emissive: "#771128", roughness: 0.36 });
+
+            const boardGroup = new THREE.Group();
+            const pelletMeshes = new Map();
+            scene.add(boardGroup);
+
+            function worldPosition(x, y, z = 0) {
+              return {
+                x: (x - boardWidth / 2 + 0.5) * boardTileSize,
+                y: (boardHeight / 2 - y - 0.5) * boardTileSize,
+                z
+              };
+            }
+
+            function placeAtTile(object, x, y, z = 0) {
+              const pos = worldPosition(x, y, z);
+              object.position.set(pos.x, pos.y, pos.z);
+            }
+
+            for (let y = 0; y < maze.length; y++) {
+              for (let x = 0; x < maze[y].length; x++) {
+                if (maze[y][x] === "#") {
+                  const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+                  placeAtTile(wall, x, y, 0.02);
+                  boardGroup.add(wall);
+                } else if (state.pellets.has(`${x},${y}`)) {
+                  const pellet = new THREE.Mesh(pelletGeometry, pelletMaterial);
+                  placeAtTile(pellet, x, y, 0.24);
+                  pelletMeshes.set(`${x},${y}`, pellet);
+                  boardGroup.add(pellet);
+                }
+              }
+            }
+
+            const pacMesh = new THREE.Mesh(pacGeometry, pacMaterial);
+            scene.add(pacMesh);
+
+            function createGhostMesh() {
+              const ghost = new THREE.Group();
+              const head = new THREE.Mesh(ghostGeometry, ghostMaterial);
+              const base = new THREE.Mesh(ghostBaseGeometry, ghostMaterial);
+              base.position.set(0, -0.27, -0.02);
+              ghost.add(head, base);
+              scene.add(ghost);
+              return ghost;
+            }
+
+            const ghostMeshes = state.ghosts.map(createGhostMesh);
 
             function isWall(x, y) {
               return y < 0 || y >= maze.length || x < 0 || x >= maze[y].length || maze[y][x] === "#";
@@ -273,7 +386,14 @@ def _game_html() -> str:
 
             function eatPellet() {
               const key = `${state.pac.x},${state.pac.y}`;
-              if (state.pellets.delete(key)) state.score += 10;
+              if (state.pellets.delete(key)) {
+                state.score += 10;
+                const pellet = pelletMeshes.get(key);
+                if (pellet) {
+                  boardGroup.remove(pellet);
+                  pelletMeshes.delete(key);
+                }
+              }
             }
 
             function resetIfCaught() {
@@ -282,6 +402,31 @@ def _game_html() -> str:
                 state.pac.x = 9;
                 state.pac.y = 19;
               }
+            }
+
+            function updateHud() {
+              document.body.dataset.pacX = String(state.pac.x);
+              document.body.dataset.pacY = String(state.pac.y);
+              document.body.dataset.autopilot = String(state.autopilot);
+              document.getElementById("score").textContent = String(state.score);
+              document.getElementById("pellets").textContent = String(state.pellets.size);
+              document.getElementById("age").textContent = String(state.ageTicks);
+              document.getElementById("smart").textContent = String(state.smartScore);
+            }
+
+            function directionAngle(dir) {
+              if (dir.name === "left") return Math.PI;
+              if (dir.name === "up") return Math.PI / 2;
+              if (dir.name === "down") return -Math.PI / 2;
+              return 0;
+            }
+
+            function syncScene() {
+              placeAtTile(pacMesh, state.pac.x, state.pac.y, 0.38);
+              pacMesh.rotation.z = directionAngle(state.pac.dir);
+              state.ghosts.forEach((ghost, index) => {
+                placeAtTile(ghostMeshes[index], ghost.x, ghost.y, 0.38);
+              });
             }
 
             function tick() {
@@ -297,49 +442,25 @@ def _game_html() -> str:
               resetIfCaught();
               if (state.pellets.size === 0) state.running = false;
               state.smartScore = Math.min(100, Math.round((state.score / 6) + state.ageTicks / 8));
+              syncScene();
               updateHud();
             }
 
-            function updateHud() {
-              document.body.dataset.pacX = String(state.pac.x);
-              document.body.dataset.pacY = String(state.pac.y);
-              document.body.dataset.autopilot = String(state.autopilot);
-              document.getElementById("score").textContent = String(state.score);
-              document.getElementById("pellets").textContent = String(state.pellets.size);
-              document.getElementById("age").textContent = String(state.ageTicks);
-              document.getElementById("smart").textContent = String(state.smartScore);
+            function resizeRenderer() {
+              const bounds = gameHost.getBoundingClientRect();
+              const width = Math.max(320, Math.floor(bounds.width));
+              const height = Math.max(320, Math.floor(bounds.height || width * boardHeight / boardWidth));
+              renderer.setSize(width, height, false);
             }
 
-            function draw() {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              for (let y = 0; y < maze.length; y++) {
-                for (let x = 0; x < maze[y].length; x++) {
-                  if (maze[y][x] === "#") {
-                    ctx.fillStyle = "#1a38d8";
-                    ctx.fillRect(x * tile, y * tile, tile, tile);
-                  } else if (state.pellets.has(`${x},${y}`)) {
-                    ctx.fillStyle = "#f7d66b";
-                    ctx.beginPath();
-                    ctx.arc(x * tile + tile / 2, y * tile + tile / 2, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                  }
-                }
-              }
-              ctx.fillStyle = "#ffeb3b";
-              ctx.beginPath();
-              ctx.arc(state.pac.x * tile + tile / 2, state.pac.y * tile + tile / 2, 10, 0.2 * Math.PI, 1.8 * Math.PI);
-              ctx.lineTo(state.pac.x * tile + tile / 2, state.pac.y * tile + tile / 2);
-              ctx.fill();
-              for (const ghost of state.ghosts) {
-                ctx.fillStyle = "#ff4b6e";
-                ctx.beginPath();
-                ctx.arc(ghost.x * tile + tile / 2, ghost.y * tile + tile / 2, 10, Math.PI, 0);
-                ctx.lineTo(ghost.x * tile + tile - 2, ghost.y * tile + tile - 2);
-                ctx.lineTo(ghost.x * tile + 2, ghost.y * tile + tile - 2);
-                ctx.closePath();
-                ctx.fill();
-              }
-              requestAnimationFrame(draw);
+            function animateScene() {
+              const pulse = 1 + Math.sin(performance.now() / 80) * 0.045;
+              pacMesh.scale.set(pulse, pulse, pulse);
+              ghostMeshes.forEach((ghost, index) => {
+                ghost.position.z = 0.38 + Math.sin(performance.now() / 190 + index) * 0.035;
+              });
+              renderer.render(scene, camera);
+              requestAnimationFrame(animateScene);
             }
 
             const keyMap = { ArrowRight: dirs[0], ArrowLeft: dirs[1], ArrowDown: dirs[2], ArrowUp: dirs[3] };
@@ -352,7 +473,16 @@ def _game_html() -> str:
               }
             });
 
+            renderer.domElement.addEventListener("webglcontextlost", event => {
+              event.preventDefault();
+              state.running = false;
+              updateHud();
+            });
+
+            addEventListener("resize", resizeRenderer);
+
             window.NovaPacGame = {
+              renderer: "three-webgl",
               getState() {
                 return {
                   pac: { ...state.pac },
@@ -361,16 +491,19 @@ def _game_html() -> str:
                   smartScore: state.smartScore,
                   pelletsRemaining: state.pellets.size,
                   autopilot: state.autopilot,
-                  running: state.running
+                  running: state.running,
+                  renderer: "three-webgl"
                 };
               },
               forceTick: tick,
               isRunning() { return state.running; }
             };
 
+            resizeRenderer();
+            syncScene();
             updateHud();
             setInterval(tick, 130);
-            requestAnimationFrame(draw);
+            requestAnimationFrame(animateScene);
           </script>
         </body>
         </html>
