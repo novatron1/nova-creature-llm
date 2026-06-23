@@ -390,6 +390,229 @@ def test_app_navigation_commands_short_circuit_hybrid_router(monkeypatch):
     assert trace["action"] == "navigate"
 
 
+def test_memory_and_logging_coding_requests_do_not_use_app_navigation(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "normal transformer answer",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        3,
+        0.1,
+        30.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    for prompt in [
+        "check memory leak in Python",
+        "can you check memory leak in Python?",
+        "check logs in Python logging",
+        "check debug logs in Python logging",
+        "open debug logs in Python logging",
+    ]:
+        response, trace = router.route_and_respond(prompt, transformer_only=False)
+
+        assert response == "normal transformer answer", prompt
+        assert trace["source"] == "transformer", prompt
+
+
+def test_broad_alias_domain_prompts_do_not_use_app_navigation(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "normal domain answer",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        3,
+        0.1,
+        30.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "APP_NAV_CONTEXT", router.AppNavigationContext())
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    for prompt in [
+        "open files in Python",
+        "check settings in Django",
+        "open tools for Python",
+        "show agents in reinforcement learning",
+        "run tests in Python",
+    ]:
+        response, trace = router.route_and_respond(prompt, transformer_only=False)
+
+        assert response == "normal domain answer", prompt
+        assert trace["source"] == "transformer", prompt
+
+
+def test_domain_qualified_verify_after_app_context_uses_transformer_and_preserves_context(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "normal test guidance",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        3,
+        0.1,
+        30.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "APP_NAV_CONTEXT", router.AppNavigationContext())
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    _, nav_trace = router.route_and_respond("open the builder", transformer_only=False)
+    response, trace = router.route_and_respond("run tests in Python", transformer_only=False)
+
+    assert nav_trace["source"] == "app_navigation"
+    assert nav_trace["target_surface"] == "app_builder"
+    assert response == "normal test guidance"
+    assert trace["source"] == "transformer"
+    assert router.APP_NAV_CONTEXT.last_surface == "app_builder"
+    assert router.APP_NAV_CONTEXT.verification_target == "app_builder"
+
+    followup_response, followup_trace = router.route_and_respond("check if it works", transformer_only=False)
+
+    assert "App Builder" in followup_response
+    assert followup_trace["source"] == "app_navigation"
+    assert followup_trace["target_surface"] == "app_builder"
+    assert followup_trace["action"] == "verify"
+
+
+def test_contextual_app_verify_commands_still_use_app_navigation(monkeypatch):
+    import nova_hybrid_router as router
+
+    monkeypatch.setattr(router, "APP_NAV_CONTEXT", router.AppNavigationContext())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    for prompt in [
+        "check if it works",
+        "run tests",
+        "run the test",
+        "verify the app",
+        "test the preview",
+    ]:
+        router.APP_NAV_CONTEXT = router.AppNavigationContext()
+        _, nav_trace = router.route_and_respond("open the builder", transformer_only=False)
+        response, trace = router.route_and_respond(prompt, transformer_only=False)
+
+        assert nav_trace["source"] == "app_navigation", prompt
+        assert response, prompt
+        assert trace["source"] == "app_navigation", prompt
+        assert trace["action"] == "verify", prompt
+
+
+def test_repair_words_in_coding_or_admin_chat_do_not_use_app_navigation(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "normal transformer repair answer",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        3,
+        0.1,
+        30.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "APP_NAV_CONTEXT", router.AppNavigationContext())
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    for prompt in [
+        "fix the app bug in Python",
+        "fix app memory leak in Python",
+        "repair app permissions in Linux",
+    ]:
+        response, trace = router.route_and_respond(prompt, transformer_only=False)
+
+        assert response == "normal transformer repair answer", prompt
+        assert trace["source"] == "transformer", prompt
+
+
+def test_transformer_only_bypasses_app_navigation_commands(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("planning", "planner_transformer", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "transformer-only answer",
+        "planner_transformer",
+        "checkpoints/brain_slots/planner_transformer/planner_transformer_baseline.pt",
+        HASH_B,
+        3,
+        0.1,
+        30.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("go to Agent Library", transformer_only=True)
+
+    assert response == "transformer-only answer"
+    assert trace["source"] == "transformer"
+    assert trace["domain"] == "planning"
+
+
 def test_generic_chat_still_uses_existing_transformer_path(monkeypatch):
     import nova_hybrid_router as router
 

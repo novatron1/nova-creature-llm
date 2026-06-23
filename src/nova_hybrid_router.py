@@ -311,9 +311,13 @@ def _is_contextual_app_verify(text):
     q = text.lower().strip()
     app_targets = r"(?:page|build|test|tests|app|screen|view|workflow|navigation|button|form|preview)"
     return (
-        "check if it works" in q
-        or re.search(rf"\b(?:verify|check|test|run)\s+(?:the\s+)?{app_targets}\b", q) is not None
-        or re.search(r"\b(?:verify|check|test|run)\s+(?:that\s+)?(?:it|this)\s+(?:works|loads|opens|runs|saves)\b", q) is not None
+        re.fullmatch(r"check\s+if\s+it\s+works\s*[?.!]*", q) is not None
+        or re.fullmatch(rf"(?:verify|check|test|run)\s+(?:the\s+)?{app_targets}\s*[?.!]*", q) is not None
+        or re.fullmatch(
+            r"(?:verify|check|test|run)\s+(?:that\s+)?(?:it|this)\s+(?:works|loads|opens|runs|saves)\s*[?.!]*",
+            q,
+        )
+        is not None
     )
 
 def _snapshot_app_navigation_context(context):

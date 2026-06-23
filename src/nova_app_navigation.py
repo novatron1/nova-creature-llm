@@ -112,12 +112,15 @@ OPERATOR_VERBS = (
     "save",
     "make",
     "create",
+    "fix",
+    "repair",
 )
 
 DESTRUCTIVE_VERBS = ("delete", "remove", "clear")
 RESUME_COMMANDS = ("resume", "continue", "continue from where you left off")
 AGENT_CREATION_PHRASES = ("make an agent", "create an agent", "new agent")
 DESTRUCTIVE_CONTEXT_TERMS = ("draft", "project", "log", "memory", "settings")
+TERMINAL_ONLY_ALIASES = ("memory", "logs")
 
 QUESTION_STARTERS = ("what ", "how ", "why ", "when ", "where ", "who ")
 EXPLAIN_REQUEST_STARTERS = ("can you explain", "could you explain", "would you explain")
@@ -136,11 +139,22 @@ def plan_app_navigation(text: str, context: AppNavigationContext | None = None) 
 
     if target_surface is None and action == "create_agent":
         target_surface = "agent_library"
-    if target_surface is None and action == "verify" and context.verification_target:
+    if (
+        target_surface is None
+        and action == "verify"
+        and context.verification_target
+        and _is_contextual_app_verify_request(normalized)
+    ):
         target_surface = context.verification_target
+    if target_surface is None and action == "repair":
+        target_surface = context.last_surface or "debug_logs"
+    if target_surface is None and action == "navigate" and _is_contextual_open_request(normalized):
+        target_surface = context.last_surface
     if target_surface is None and action == "resume" and context.last_surface:
         target_surface = context.last_surface
         action = context.pending_action or "resume"
+    if target_surface is None and action == "delete" and _is_saved_project_delete_request(normalized):
+        target_surface = "saved_projects"
     if (
         target_surface is None
         and action == "delete"
@@ -188,6 +202,8 @@ def _detect_surface(normalized: str) -> str | None:
 def _detect_action(normalized: str) -> str:
     if normalized in RESUME_COMMANDS:
         return "resume"
+    if _is_repair_command(normalized):
+        return "repair"
     if _has_destructive_verb(normalized):
         return "delete"
     if _is_agent_creation_command(normalized):
@@ -215,7 +231,7 @@ def _safety_for(action: str, normalized: str) -> SafetyLevel:
         or "clear memory" in normalized
     ):
         return SafetyLevel.CONFIRM_REQUIRED
-    if action in {"create", "create_agent", "save"}:
+    if action in {"create", "create_agent", "repair", "save"}:
         return SafetyLevel.SAFE_WRITE
     return SafetyLevel.READ_ONLY
 
@@ -225,6 +241,8 @@ def _subject_for(normalized: str, action: str) -> str | None:
         return "Weekly LLM Upgrade Scout" if "weekly" in normalized and "llm" in normalized else "Custom Agent"
     if "draft" in normalized:
         return "draft"
+    if action == "delete" and _is_saved_project_delete_request(normalized):
+        return "saved project"
     return None
 
 
@@ -236,7 +254,7 @@ def _blocker_for(intent: NavigationIntent, context: AppNavigationContext) -> tup
         return (
             True,
             "destructive action requires explicit target confirmation",
-            "Confirm the exact draft or saved item to delete.",
+            _confirmation_next_safe_step(intent),
         )
     if intent.action in {"open", "navigate", "resume"} and intent.target_surface == "preview_area" and not context.active_project:
         return True, "no active project is selected", "Choose a project or ask me to create one."
@@ -267,6 +285,15 @@ def _steps_for(intent: NavigationIntent, *, blocker: str | None) -> list[Navigat
     )
     if intent.action == "verify":
         steps.append(NavigationStep("verify", intent.target_surface, "Run the relevant check and inspect the result."))
+    elif intent.action == "repair":
+        steps.extend(
+            [
+                NavigationStep("inspect", "debug_logs", "Inspect the cause and relevant logs before changing anything."),
+                NavigationStep("repair", intent.target_surface, "Apply the smallest safe fix inside the current app or project context."),
+                NavigationStep("test", intent.target_surface, "Re-test the affected app flow."),
+                NavigationStep("verify", intent.target_surface, "Verify the app is no longer blocked."),
+            ]
+        )
     elif intent.action == "delete":
         steps.append(NavigationStep("confirm", intent.target_surface, blocker or "Confirm destructive action before continuing."))
     else:
@@ -290,6 +317,47 @@ def _is_agent_creation_command(normalized: str) -> bool:
     return any(phrase in normalized for phrase in AGENT_CREATION_PHRASES)
 
 
+def _is_repair_command(normalized: str) -> bool:
+    return (
+        re.fullmatch(r"(?:fix|repair)\s+the\s+app\s*[?.!]*", normalized) is not None
+        or re.fullmatch(
+            r"(?:fix|repair)\s+(?:the\s+)?(?:blocker|anything that stops you|anything stopping you|anything blocking you)\s*[?.!]*",
+            normalized,
+        )
+        is not None
+    )
+
+
+def _is_contextual_open_request(normalized: str) -> bool:
+    return normalized in {"open it", "open that", "open this", "show it", "view it", "go there"}
+
+
+def _is_contextual_app_verify_request(normalized: str) -> bool:
+    app_targets = r"(?:page|build|test|tests|app|screen|view|workflow|navigation|button|form|preview)"
+    return (
+        re.fullmatch(r"check\s+if\s+it\s+works\s*[?.!]*", normalized) is not None
+        or re.fullmatch(rf"(?:verify|check|test|run)\s+(?:the\s+)?{app_targets}\s*[?.!]*", normalized) is not None
+        or re.fullmatch(
+            r"(?:verify|check|test|run)\s+(?:that\s+)?(?:it|this)\s+(?:works|loads|opens|runs|saves)\s*[?.!]*",
+            normalized,
+        )
+        is not None
+    )
+
+
+def _is_saved_project_delete_request(normalized: str) -> bool:
+    match = re.fullmatch(
+        r"(?:delete|remove)\s+(?:the\s+|that\s+|my\s+)?(?:saved\s+)?project(?:\s+(?P<qualifier>.+?))?\s*[?.!]*",
+        normalized,
+    )
+    if match is None:
+        return False
+    qualifier = match.group("qualifier")
+    if not qualifier:
+        return True
+    return re.match(r"(?:in|with|using|from|for|on)\b", qualifier) is None
+
+
 def _is_contextual_delete_request(normalized: str) -> bool:
     if _is_question_like_non_command(normalized):
         return False
@@ -311,15 +379,29 @@ def _is_question_like_non_command(normalized: str) -> bool:
 def _matches_command_surface(normalized: str, alias: str) -> bool:
     connector_pattern = "|".join(re.escape(connector) for connector in COMMAND_CONNECTORS)
     alias_pattern = re.escape(alias)
+    alias_requires_terminal_match = alias in TERMINAL_ONLY_ALIASES or " " not in alias or alias.endswith(" logs")
+    alias_suffix = r"\s*[?.!]*$" if alias_requires_terminal_match else r"(?![a-z0-9_])"
     for verb in OPERATOR_VERBS:
         pattern = (
             rf"(?<![a-z0-9_]){re.escape(verb)}"
             rf"(?:\s+(?:{connector_pattern})){{0,3}}"
-            rf"\s+{alias_pattern}(?![a-z0-9_])"
+            rf"\s+{alias_pattern}{alias_suffix}"
         )
         if re.search(pattern, normalized):
             return True
     return False
+
+
+def _confirmation_next_safe_step(intent: NavigationIntent) -> str:
+    if intent.subject == "draft":
+        return "Confirm the exact draft to delete."
+    if intent.target_surface == "saved_projects":
+        return "Confirm the exact saved project to delete."
+    if intent.target_surface == "debug_logs":
+        return "Confirm the exact logs to delete."
+    if intent.target_surface == "memory_panel":
+        return "Confirm the exact memory item to delete."
+    return "Confirm the exact target to delete."
 
 
 def _format_response(
