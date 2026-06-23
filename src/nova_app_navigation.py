@@ -97,6 +97,25 @@ SURFACE_ALIASES = {
     "file_manager": ("file manager", "files"),
 }
 
+OPERATOR_VERBS = (
+    "go",
+    "open",
+    "show",
+    "look",
+    "view",
+    "check",
+    "run",
+    "delete",
+    "remove",
+    "clear",
+    "save",
+    "make",
+    "create",
+    "new",
+)
+
+DESTRUCTIVE_VERBS = ("delete", "remove", "clear")
+
 
 def plan_app_navigation(text: str, context: AppNavigationContext | None = None) -> NavigationResult:
     context = context or AppNavigationContext()
@@ -130,12 +149,19 @@ def plan_app_navigation(text: str, context: AppNavigationContext | None = None) 
 
 def _detect_surface(normalized: str) -> str | None:
     for surface, aliases in SURFACE_ALIASES.items():
-        if any(alias in normalized for alias in aliases):
+        if normalized in aliases:
+            return surface
+    if not _has_operator_verb(normalized):
+        return None
+    for surface, aliases in SURFACE_ALIASES.items():
+        if any(_matches_phrase(normalized, alias) for alias in aliases):
             return surface
     return None
 
 
 def _detect_action(normalized: str) -> str:
+    if _has_destructive_verb(normalized):
+        return "delete"
     if re.search(r"\b(run|test|check|verify|prove)\b", normalized):
         return "verify"
     if re.search(r"\b(make|create|new)\b", normalized):
@@ -150,11 +176,28 @@ def _detect_action(normalized: str) -> str:
 
 
 def _safety_for(action: str, normalized: str) -> SafetyLevel:
-    if action == "delete" or "overwrite stable" in normalized or "clear memory" in normalized:
+    if (
+        action == "delete"
+        or _has_destructive_verb(normalized)
+        or "overwrite stable" in normalized
+        or "clear memory" in normalized
+    ):
         return SafetyLevel.CONFIRM_REQUIRED
     if action in {"create", "save"}:
         return SafetyLevel.SAFE_WRITE
     return SafetyLevel.READ_ONLY
+
+
+def _has_operator_verb(normalized: str) -> bool:
+    return any(_matches_phrase(normalized, verb) for verb in OPERATOR_VERBS)
+
+
+def _has_destructive_verb(normalized: str) -> bool:
+    return any(_matches_phrase(normalized, verb) for verb in DESTRUCTIVE_VERBS)
+
+
+def _matches_phrase(normalized: str, phrase: str) -> bool:
+    return re.search(rf"(?<![a-z0-9_]){re.escape(phrase)}(?![a-z0-9_])", normalized) is not None
 
 
 def _format_response(
@@ -167,7 +210,7 @@ def _format_response(
 ) -> str:
     lines = [
         f"I understood: {intent.raw_text.strip()}",
-        f"Went to: {intent.target_surface.replace('_', ' ').title()}.",
+        f"Planned navigation to: {intent.target_surface.replace('_', ' ').title()}.",
         "Did: planned the safe app operation.",
         f"Checked: {steps[-1].detail}",
     ]
