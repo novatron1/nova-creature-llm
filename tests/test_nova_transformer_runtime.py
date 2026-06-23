@@ -367,6 +367,133 @@ def test_fallback_response_uses_prediction_domain_when_legacy_domain_differs(mon
     assert trace["domain"] == "science"
 
 
+def test_app_navigation_commands_short_circuit_hybrid_router(monkeypatch):
+    import nova_hybrid_router as router
+
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+    dictionary_calls = []
+
+    def dict_lookup(text):
+        dictionary_calls.append(text)
+        return "dictionary should not win"
+
+    response, trace = router.route_and_respond(
+        "go to Agent Library",
+        dict_lookup_fn=dict_lookup,
+        memory={"lessons": {"1": {"text": "Agent Library memory hit"}}},
+    )
+
+    assert dictionary_calls == []
+    assert "Agent Library" in response
+    assert trace["source"] == "app_navigation"
+    assert trace["target_surface"] == "agent_library"
+    assert trace["action"] == "navigate"
+
+
+def test_generic_chat_still_uses_existing_transformer_path(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "fixed",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        1,
+        0.1,
+        10.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("help me debug python")
+
+    assert response == "fixed"
+    assert trace["source"] == "transformer"
+    assert trace["domain"] == "coding"
+
+
+def test_agent_question_is_not_hijacked_by_app_navigation(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    generation = GenerationResult(
+        "normal answer",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        2,
+        0.1,
+        20.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("can you explain how to make an agent in Python?")
+
+    assert response == "normal answer"
+    assert trace["source"] == "transformer"
+
+
+def test_generic_verify_after_navigation_uses_transformer_path(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("critic", "critic_conscience_transformer", (), 0.82, HASH_A)
+    generation = GenerationResult(
+        "evidence answer",
+        "critic_conscience_transformer",
+        "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_baseline.pt",
+        HASH_B,
+        3,
+        0.1,
+        30.0,
+        "length",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "APP_NAV_CONTEXT", router.AppNavigationContext())
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    _, nav_trace = router.route_and_respond("go to Agent Library", transformer_only=False)
+    response, trace = router.route_and_respond("verify this claim using evidence", transformer_only=False)
+
+    assert nav_trace["source"] == "app_navigation"
+    assert response == "evidence answer"
+    assert trace["source"] == "transformer"
+    assert trace["domain"] == "critic"
+
+
 def _write_route_classifier(path: Path) -> str:
     examples = [
         RouteExample("debug python code", "coding", "left_hemisphere"),

@@ -18,10 +18,13 @@ from datetime import datetime
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from nova_app_navigation import AppNavigationContext, plan_app_navigation
+
 # ─── Imports (lazy) ─────────────────────────────────────────
 BRAIN = None
 TOKENIZER = None
 CONV_ENGINE = None
+APP_NAV_CONTEXT = AppNavigationContext()
 
 def _ensure_brain():
     global BRAIN
@@ -139,6 +142,22 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
     }
     
     q = text.lower().strip()
+
+    if not transformer_only:
+        app_nav_snapshot = _snapshot_app_navigation_context(APP_NAV_CONTEXT)
+        navigation = plan_app_navigation(text, APP_NAV_CONTEXT)
+        if navigation.recognized:
+            if not _should_accept_app_navigation(text, navigation):
+                _restore_app_navigation_context(APP_NAV_CONTEXT, app_nav_snapshot)
+            else:
+                nav_trace = trace | navigation.trace()
+                nav_trace["roles"] = ["planner_transformer", "memory_transformer"]
+                nav_trace["skills"] = ["app_navigation", "operator_loop"]
+                nav_trace["confidence"] = navigation.intent.confidence if navigation.intent else 0.0
+                nav_trace["domain"] = "app_navigation"
+                nav_trace["route_path"] = ["planner_transformer", "memory_transformer"]
+                _log_route(text, "app_navigation", nav_trace["route_path"], nav_trace["confidence"], "app_navigation")
+                return navigation.response, nav_trace
     
     # ─── Fast Path: Dictionary ───
     if dict_lookup_fn and not transformer_only:
@@ -280,6 +299,42 @@ def _dedupe_roles(roles):
             deduped.append(role)
             seen.add(role)
     return deduped
+
+def _should_accept_app_navigation(text, navigation):
+    if not navigation.intent or navigation.intent.action != "verify":
+        return True
+    if plan_app_navigation(text, AppNavigationContext()).recognized:
+        return True
+    return _is_contextual_app_verify(text)
+
+def _is_contextual_app_verify(text):
+    q = text.lower().strip()
+    app_targets = r"(?:page|build|test|tests|app|screen|view|workflow|navigation|button|form|preview)"
+    return (
+        "check if it works" in q
+        or re.search(rf"\b(?:verify|check|test|run)\s+(?:the\s+)?{app_targets}\b", q) is not None
+        or re.search(r"\b(?:verify|check|test|run)\s+(?:that\s+)?(?:it|this)\s+(?:works|loads|opens|runs|saves)\b", q) is not None
+    )
+
+def _snapshot_app_navigation_context(context):
+    return AppNavigationContext(
+        last_surface=context.last_surface,
+        active_project=context.active_project,
+        active_agent=context.active_agent,
+        active_draft=context.active_draft,
+        pending_action=context.pending_action,
+        verification_target=context.verification_target,
+        last_blocker=context.last_blocker,
+    )
+
+def _restore_app_navigation_context(context, snapshot):
+    context.last_surface = snapshot.last_surface
+    context.active_project = snapshot.active_project
+    context.active_agent = snapshot.active_agent
+    context.active_draft = snapshot.active_draft
+    context.pending_action = snapshot.pending_action
+    context.verification_target = snapshot.verification_target
+    context.last_blocker = snapshot.last_blocker
 
 def _search_lessons(q, memory):
     """Search stored lessons for relevant content."""
