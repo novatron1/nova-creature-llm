@@ -17,12 +17,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--route-epochs", type=int, default=80)
     parser.add_argument("--role-epochs", type=int, default=30)
     args = parser.parse_args(argv)
-    result = run_hyper_training(
-        ROOT,
-        seed=args.seed,
-        route_epochs=args.route_epochs,
-        role_epochs=args.role_epochs,
-    )
+    try:
+        result = run_hyper_training(
+            ROOT,
+            seed=args.seed,
+            route_epochs=args.route_epochs,
+            role_epochs=args.role_epochs,
+        )
+    except Exception as exc:
+        result = {
+            "verdict": "BLOCKED",
+            "error": {
+                "type": type(exc).__name__,
+                "message": str(exc),
+            },
+        }
     print(json.dumps(result, indent=2))
     return 0 if result["verdict"] in {"PROMOTED", "REJECTED"} else 2
 

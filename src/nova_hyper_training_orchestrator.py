@@ -42,18 +42,13 @@ def apply_decision(
     if not reasons:
         reasons = [f"promotion verdict was {decision.verdict}"]
 
+    _prevalidate_candidate_set(
+        registry,
+        candidate_hashes,
+        disallow_rejected=decision.verdict == "PROMOTED",
+    )
+
     if decision.verdict == "PROMOTED":
-        snapshot = registry.snapshot()
-        roles = snapshot.get("roles", {})
-        missing: list[str] = []
-        for role, candidate_hash in candidate_hashes.items():
-            role_record = roles.get(role)
-            candidates = role_record.get("candidates", {}) if isinstance(role_record, dict) else {}
-            candidate = candidates.get(candidate_hash) if isinstance(candidates, dict) else None
-            if not isinstance(candidate, dict) or candidate.get("status") == "rejected":
-                missing.append(f"{role}:{candidate_hash}")
-        if missing:
-            raise LookupError("cannot promote missing or rejected candidates: " + ", ".join(missing))
         for role, candidate_hash in candidate_hashes.items():
             registry.promote(role, candidate_hash)
         return
@@ -74,7 +69,7 @@ def run_hyper_training(
 ) -> dict:
     root = Path(project_root).resolve()
     run_id = _new_run_id()
-    registry = CheckpointRegistry(root)
+    registry: CheckpointRegistry | None = None
     context: dict[str, Any] = {
         "run_id": run_id,
         "project_root": str(root),
@@ -86,6 +81,7 @@ def run_hyper_training(
     }
 
     try:
+        registry = CheckpointRegistry(root)
         preflight = _run_preflight(root)
         context["preflight"] = preflight
         if preflight.get("verdict") != "READY":
@@ -101,6 +97,7 @@ def run_hyper_training(
         context["route_candidate"] = _report_safe(route_candidate)
 
         role_candidates: dict[str, dict[str, Any]] = {}
+        candidate_hashes: dict[str, str] = {}
         for index, role in enumerate(ROLE_NAMES):
             candidate = _train_role_candidate_for_orchestrator(
                 root,
@@ -111,13 +108,9 @@ def run_hyper_training(
                 role_epochs,
             )
             role_candidates[role] = candidate
+            candidate_hashes[role] = str(candidate["candidate_sha256"])
+            context["candidate_hashes"] = dict(candidate_hashes)
         context["role_candidates"] = _report_safe(role_candidates)
-
-        candidate_hashes = {
-            role: str(candidate["candidate_sha256"])
-            for role, candidate in role_candidates.items()
-        }
-        context["candidate_hashes"] = candidate_hashes
 
         reload_check = _fresh_process_reload_check(root, route_candidate, role_candidates)
         context["reload_check"] = reload_check
@@ -148,9 +141,19 @@ def run_hyper_training(
             )
         context["decision"] = _decision_dict(decision)
 
-        apply_decision(registry, candidate_hashes, decision)
         if decision.verdict == "PROMOTED":
-            _promote_route_candidate(root, route_candidate)
+            return _complete_promoted_transaction(
+                root,
+                run_id,
+                registry,
+                candidate_hashes,
+                decision,
+                context,
+                route_candidate,
+                candidate_metrics,
+            )
+
+        apply_decision(registry, candidate_hashes, decision)
 
         return _final_result(root, run_id, decision.verdict, context)
     except Exception as exc:
@@ -160,7 +163,12 @@ def run_hyper_training(
         }
         reasons = [f"{type(exc).__name__}: {exc}"]
         candidate_hashes = context.get("candidate_hashes")
-        if isinstance(candidate_hashes, Mapping) and candidate_hashes:
+        if (
+            registry is not None
+            and isinstance(candidate_hashes, Mapping)
+            and candidate_hashes
+            and not context.get("promotion_transaction_started")
+        ):
             try:
                 blocked = PromotionDecision(
                     "BLOCKED",
@@ -176,6 +184,60 @@ def run_hyper_training(
                     "message": str(reject_exc),
                 }
         return _blocked_result(root, run_id, context, reasons)
+
+
+def _prevalidate_candidate_set(
+    registry: CheckpointRegistry,
+    candidate_hashes: Mapping[str, str],
+    *,
+    disallow_rejected: bool,
+) -> None:
+    snapshot = registry.snapshot()
+    roles = snapshot.get("roles", {})
+    missing: list[str] = []
+    rejected: list[str] = []
+    for role, candidate_hash in candidate_hashes.items():
+        role_record = roles.get(role)
+        candidates = role_record.get("candidates", {}) if isinstance(role_record, dict) else {}
+        candidate = candidates.get(candidate_hash) if isinstance(candidates, dict) else None
+        if not isinstance(candidate, dict):
+            missing.append(f"{role}:{candidate_hash}")
+        elif disallow_rejected and candidate.get("status") == "rejected":
+            rejected.append(f"{role}:{candidate_hash}")
+    if missing or rejected:
+        messages = []
+        if missing:
+            messages.append("missing candidates: " + ", ".join(missing))
+        if rejected:
+            messages.append("rejected candidates: " + ", ".join(rejected))
+        raise LookupError("; ".join(messages))
+
+
+def _complete_promoted_transaction(
+    project_root: Path,
+    run_id: str,
+    registry: CheckpointRegistry,
+    candidate_hashes: Mapping[str, str],
+    decision: PromotionDecision,
+    context: dict[str, Any],
+    route_candidate: Mapping[str, Any],
+    candidate_metrics: Mapping[str, Any],
+) -> dict:
+    context["promotion_transaction_started"] = True
+    registry_snapshot = registry.snapshot()
+    route_snapshot = _capture_route_snapshot(project_root)
+    try:
+        _prevalidate_candidate_set(registry, candidate_hashes, disallow_rejected=True)
+        _validate_route_candidate(route_candidate)
+        _update_candidate_metrics(registry, candidate_hashes, candidate_metrics)
+        result = _final_result(project_root, run_id, decision.verdict, context)
+        apply_decision(registry, candidate_hashes, decision)
+        _promote_route_candidate(project_root, route_candidate)
+        return result
+    except Exception:
+        _restore_registry_snapshot(registry, registry_snapshot)
+        _restore_route_snapshot(project_root, route_snapshot)
+        raise
 
 
 def _run_preflight(project_root: Path) -> dict[str, Any]:
@@ -575,24 +637,79 @@ def _previous_winner_metrics(registry: CheckpointRegistry) -> dict[str, Any] | N
     return {"joint": sum(metrics) / len(metrics)}
 
 
-def _promote_route_candidate(project_root: Path, route_candidate: Mapping[str, Any]) -> None:
+def _update_candidate_metrics(
+    registry: CheckpointRegistry,
+    candidate_hashes: Mapping[str, str],
+    candidate_metrics: Mapping[str, Any],
+) -> None:
+    metrics = _json_safe(dict(candidate_metrics))
+    roles = registry._data.setdefault("roles", {})
+    for role, candidate_hash in candidate_hashes.items():
+        role_record = roles[role]
+        candidate = role_record["candidates"][candidate_hash]
+        existing_metrics = candidate.get("metrics", {})
+        if not isinstance(existing_metrics, dict):
+            existing_metrics = {}
+        merged_metrics = dict(existing_metrics)
+        merged_metrics.update(metrics)
+        candidate["metrics"] = merged_metrics
+    registry._write()
+
+
+def _restore_registry_snapshot(registry: CheckpointRegistry, snapshot: Mapping[str, Any]) -> None:
+    registry._data = json.loads(json.dumps(snapshot))
+    registry._write()
+
+
+def _capture_route_snapshot(project_root: Path) -> dict[str, bytes | None]:
+    target = project_root / "checkpoints" / "route_model" / "promoted.pt"
+    sidecar = target.with_suffix(f"{target.suffix}.json")
+    return {
+        "model": target.read_bytes() if target.exists() else None,
+        "sidecar": sidecar.read_bytes() if sidecar.exists() else None,
+    }
+
+
+def _restore_route_snapshot(project_root: Path, snapshot: Mapping[str, bytes | None]) -> None:
+    target = project_root / "checkpoints" / "route_model" / "promoted.pt"
+    sidecar = target.with_suffix(f"{target.suffix}.json")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    for path, key in ((target, "model"), (sidecar, "sidecar")):
+        value = snapshot.get(key)
+        if value is None:
+            if path.exists():
+                path.unlink()
+        else:
+            temp = path.with_name(f"{path.name}.{uuid.uuid4().hex}.tmp")
+            temp.write_bytes(value)
+            temp.replace(path)
+
+
+def _validate_route_candidate(route_candidate: Mapping[str, Any]) -> Path:
     source_value = route_candidate.get("checkpoint_path")
     if not source_value:
-        return
+        raise ValueError("route candidate is missing checkpoint_path")
     source = Path(str(source_value))
     if not source.exists():
         raise FileNotFoundError(f"route candidate is missing: {source}")
+    if not source.is_file():
+        raise ValueError(f"route candidate is not a file: {source}")
+    return source
+
+
+def _promote_route_candidate(project_root: Path, route_candidate: Mapping[str, Any]) -> None:
+    source = _validate_route_candidate(route_candidate)
     target = project_root / "checkpoints" / "route_model" / "promoted.pt"
     target.parent.mkdir(parents=True, exist_ok=True)
-    temp = target.with_name(f"{target.name}.{uuid.uuid4().hex}.tmp")
-    temp.write_bytes(source.read_bytes())
-    temp.replace(target)
     sidecar = source.with_suffix(f"{source.suffix}.json")
     if sidecar.exists():
         target_sidecar = target.with_suffix(f"{target.suffix}.json")
         temp_sidecar = target_sidecar.with_name(f"{target_sidecar.name}.{uuid.uuid4().hex}.tmp")
         temp_sidecar.write_bytes(sidecar.read_bytes())
         temp_sidecar.replace(target_sidecar)
+    temp = target.with_name(f"{target.name}.{uuid.uuid4().hex}.tmp")
+    temp.write_bytes(source.read_bytes())
+    temp.replace(target)
 
 
 class _RouteCandidateAdapter:

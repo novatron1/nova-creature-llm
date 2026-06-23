@@ -148,3 +148,23 @@ def test_transformer_hyper_training_cli_delegates_and_returns_success(monkeypatc
     assert exit_code == 0
     assert calls == [(ROOT, 7, 2, 1)]
     assert json.loads(capsys.readouterr().out)["run_id"] == "cli-run"
+
+
+def test_transformer_hyper_training_cli_reports_blocked_on_exception(monkeypatch, capsys):
+    script = ROOT / "scripts" / "run_transformer_hyper_training.py"
+    spec = importlib.util.spec_from_file_location("run_transformer_hyper_training_error", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    def fail_run(project_root, seed, route_epochs, role_epochs):
+        raise RuntimeError("orchestrator exploded")
+
+    monkeypatch.setattr(module, "run_hyper_training", fail_run)
+
+    exit_code = module.main([])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["verdict"] == "BLOCKED"
+    assert payload["error"]["type"] == "RuntimeError"
+    assert "orchestrator exploded" in payload["error"]["message"]
