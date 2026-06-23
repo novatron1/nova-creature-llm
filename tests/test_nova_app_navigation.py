@@ -94,6 +94,19 @@ def test_operator_words_inside_questions_do_not_trigger_navigation():
         assert result.trace()["source"] == "app_navigation_miss"
 
 
+def test_question_like_agent_prompts_do_not_create_agents():
+    context = AppNavigationContext()
+    prompts = [
+        "can you explain how to make an agent in Python?",
+        "what are new agent architectures?",
+    ]
+
+    for prompt in prompts:
+        result = plan_app_navigation(prompt, context)
+        assert result.recognized is False, prompt
+        assert result.trace()["source"] == "app_navigation_miss"
+
+
 def test_destructive_terms_force_confirmation_even_when_check_is_present():
     result = plan_app_navigation("verify then delete logs", AppNavigationContext())
 
@@ -170,6 +183,8 @@ def test_destructive_ambiguous_delete_requires_confirmation():
     result = plan_app_navigation("delete that draft", context)
 
     assert result.recognized is True
+    assert result.intent.target_surface == "saved_projects"
     assert result.intent.safety_level == SafetyLevel.CONFIRM_REQUIRED
+    assert result.intent.subject == "draft"
     assert result.blocked is True
     assert "confirm" in result.next_safe_step.lower()

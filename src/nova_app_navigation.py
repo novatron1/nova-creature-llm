@@ -128,6 +128,9 @@ def plan_app_navigation(text: str, context: AppNavigationContext | None = None) 
     context = context or AppNavigationContext()
     raw = "" if text is None else str(text)
     normalized = _normalize(raw)
+    if _is_question_like_non_command(normalized):
+        return NavigationResult(False, None)
+
     action = _detect_action(normalized)
     target_surface = _detect_surface(normalized)
 
@@ -152,7 +155,7 @@ def plan_app_navigation(text: str, context: AppNavigationContext | None = None) 
     subject = _subject_for(normalized, action)
     intent = NavigationIntent(raw, target_surface, action, 0.90, safety, subject=subject)
     blocked, blocker, next_safe_step = _blocker_for(intent, context)
-    steps = _steps_for(intent, blocked=blocked, blocker=blocker)
+    steps = _steps_for(intent, blocker=blocker)
     response = _format_response(intent, steps, blocked=blocked, blocker=blocker, next_safe_step=next_safe_step)
     context.last_surface = target_surface
     context.pending_action = action
@@ -176,8 +179,6 @@ def _detect_surface(normalized: str) -> str | None:
     for surface, aliases in SURFACE_ALIASES.items():
         if normalized in aliases:
             return surface
-    if _is_question_like_non_command(normalized):
-        return None
     for surface, aliases in SURFACE_ALIASES.items():
         if any(_matches_command_surface(normalized, alias) for alias in aliases):
             return surface
@@ -242,7 +243,7 @@ def _blocker_for(intent: NavigationIntent, context: AppNavigationContext) -> tup
     return False, None, None
 
 
-def _steps_for(intent: NavigationIntent, *, blocked: bool, blocker: str | None) -> list[NavigationStep]:
+def _steps_for(intent: NavigationIntent, *, blocker: str | None) -> list[NavigationStep]:
     steps = [
         NavigationStep("understand", intent.target_surface, f"Understood command: {intent.raw_text.strip()}"),
     ]
