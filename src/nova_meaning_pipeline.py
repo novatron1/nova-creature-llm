@@ -457,9 +457,15 @@ def process_input(text, memory=None, dict_lookup_fn=None):
     }
     
     # Stage 4: Dictionary lookup (fast path)
+    # Check ORIGINAL text first (before normalization destroys shorthand matches like "bet" -> "agreed")
     dict_result = None
     if dict_lookup_fn:
-        dict_result = dict_lookup_fn(repaired)
+        dict_result = dict_lookup_fn(text)  # Check original text
+        if not dict_result:
+            dict_result = dict_lookup_fn(repaired)  # Also check normalized+repaired
+        if not dict_result:
+            dict_result = dict_lookup_fn(normalized)  # Also check just normalized
+    
     pipeline_stages["dictionary_lookup"] = {
         "found": dict_result is not None,
         "confidence": 0.98 if dict_result else 0.0

@@ -617,6 +617,26 @@ def main():
     print(f"  {'='*60}")
     print(f"  Open the URL in your browser to chat with Nova!")
     print(f"  {'='*60}\n")
+    
+    # Pre-load hybrid router so it doesn't lazy-load in request threads
+    print("  [LOAD] Loading hybrid router + transformer models...")
+    try:
+        from nova_hybrid_router import route_and_respond
+        from nova_meaning_pipeline import process_input as pp
+        from nova_transformer_engine import NovaBrain, NovaTokenizer
+        test_result = pp("preload test", memory={}, dict_lookup_fn=lambda t: None)
+        print(f"  [LOAD] Pipeline: {test_result.get('intent',{}).get('primary_intent','?')}")
+        print("  [LOAD] Loading 7 brain transformers...")
+        brain = NovaBrain()
+        brain.load_all()
+        if hasattr(brain, 'models'):
+            print(f"  [LOAD] Loaded {len(brain.models)}/7 transformer models")
+        print(f"  [LOAD] Hybrid router ready")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"  [LOAD] Warning: {e}")
+    
     try:
         server.serve_forever()
     except KeyboardInterrupt:
