@@ -1,0 +1,1154 @@
+{
+  "baseline_metrics": {
+    "answers": {
+      "composite": 0.0,
+      "malformed_rate": 0.010416666666666666,
+      "protected_perfect": true,
+      "repetition_rate": 0.0,
+      "support": 96,
+      "traces": [
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: always check for hallucinations before presenting facts as truth",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CRITIC: Novotron",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CRITIC: Planning should happen before coding",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Approved answers are the ground truth for common questions.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: in python, 'is' compares identity, '==' compares equality",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CODE/MATH: Code blocks use indentation",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CODE/MATH: Python uses classes",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CODE/MATH: Functions use the def keyword",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CODE/MATH: Indentation defines blocks",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: python uses indentation for blocks",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CODE/MATH: python uses indentation for blocks",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: in python, the len() function returns the length of a sequence and range() generates numbers",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: CODE/MATH: python uses indentation Applied: python uses indentation",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: in python, len() returns length. range() generates numbers.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Mathematical thinking: identify variables, choose formulas, solve step by step.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "CODE/MATH: Functions encapsulate logic and return values. Classes define objects with methods.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is your name",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is the v058 system",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: the mitochondria is the powerhouse of the cell",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: nova was created by mr. novotron on june 15, 2026",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "FACT: Remember: Check the discriminant first to determine if solutions are real",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "FACT: Remember: Visualize the parabola to understand the roots",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "FACT: e=mc\u00b2 means energy equals mass times the speed of light squared",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "FACT: Remember: nova creature has 7 brain roles that work together",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: e=mc\u00b2 means energy equals mass times speed of light squared.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: who created you: Mr. Novotron.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: what is your best score: The best Whole-Brain Jump Overdrive score is 0.948.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: who is mr novotron: Mr. Novotron.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Memory stores facts about people, places, events, and concepts.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Dictionary knowledge must be retained across sessions.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Concise responses: say only what is needed. No filler words or unnecessary disclaimers.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Uncertainty wording: use 'I think' for low confidence, 'I know' for high confidence.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "FACT: Facts are recalled by matching keywords to stored patterns.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "FACT: Dictionary knowledge must be retained across sessions.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: nova creature persistence value is 42",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: clear explanation style: state answer first then reasoning then example",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": "transformer generated repetitive text",
+          "malformed": true,
+          "ok": false,
+          "prompt": "Lesson: nova was created by mr. novotron. the brain has 7 roles. planning comes before coding. always verify the output is truthful.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "PLAN: what is the v058 system: Dictionary lessons exported into transformer training sets",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Task planning: identify goal, break into steps, order dependencies.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "PLAN: Task planning: identify goal, break into steps, order dependencies.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: good ui contrast ratio should be at least 4.5:1 for readability",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: DESIGN/VISUAL: Good UI has consistent spacing Pattern applied: Good UI has consistent spacing",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "DESIGN/VISUAL: the earth revolves around the sun in 365",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "Lesson: Visual structure: organize information in grids, cards, and sections.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "SPEECH: Methods are defined with def",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "SPEECH: User-friendly wording: use simple language to explain complex topics clearly.",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "hey nova",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "good to see you",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "no cap",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "bussin",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "mid",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "yeet",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "smh",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "hbu",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is probability",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a derivative",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is gravity",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a neuron",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is ethics",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is reality",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is knowledge",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is good and evil",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a paradox",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "do you remember me",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "remember this",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "do you have memory",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "forget what I said",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "my name is bob",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "I'm bored",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "thank you",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "another fact",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "how do you work",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "can you see me",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "make a plan",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "create a schedule",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "you're wrong",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "verify",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what if",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "simulate",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what looks nice",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "art",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is wisdom",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a theory",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a fact",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "random trivia",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "space trivia",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "no cap",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is gravity",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a paradox",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is a variable in python",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "how does dna work",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what is reality",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what does bet mean",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "what systems do you have",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "What is a variable in Python?",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        },
+        {
+          "correct": false,
+          "error": null,
+          "malformed": false,
+          "ok": true,
+          "prompt": "How do neurons work?",
+          "repetitive": false,
+          "role": "left_hemisphere"
+        }
+      ]
+    },
+    "joint": 41.158765070055395,
+    "routing": {
+      "domain_accuracy": 65.0,
+      "errors": [],
+      "macro_f1": 62.3175301401108,
+      "primary_role_macro_f1": 62.3175301401108,
+      "protected_domain_floor_delta": 0.0,
+      "support": 100
+    },
+    "stability": {
+      "confirmation_ok": true,
+      "load_ok": true,
+      "regression_evidence_ok": true,
+      "regressions": 0,
+      "reload_ok": true,
+      "role_checkpoints_ok": true,
+      "role_ok": true,
+      "roles_ok": true,
+      "score": 100.0
+    }
+  },
+  "candidate_hashes": {
+    "left_hemisphere": "cf1e6714abf5d6f69e09583048ece5cb8351d66b3851089804db1ad62c41696a",
+    "right_hemisphere": "38ec2d29439ceade6e16a6ff9e3ef4839598f4a975ef4c10f5c7111ee62a3b02"
+  },
+  "dataset": {
+    "content_fingerprint": "cc144c6f057b526b528df79d27bf32a27351dfc9014ba8857975079815ed3836",
+    "outputs": {
+      "promotion": "artifacts/transformer_training/dataset/promotion.jsonl",
+      "quarantine": "artifacts/transformer_training/dataset/quarantine.jsonl",
+      "train": "artifacts/transformer_training/dataset/train.jsonl",
+      "validation": "artifacts/transformer_training/dataset/validation.jsonl"
+    },
+    "quarantine_count": 585,
+    "quarantine_reason_counts": {
+      "duplicate": 253,
+      "fallback_template": 2,
+      "high_repetition": 212,
+      "recursive_followup": 11,
+      "truncated_answer": 90,
+      "weak_route_prompt": 17
+    },
+    "record_count": 675,
+    "seed": 20260622,
+    "source_counts": {
+      "assisted_learning": 503,
+      "data/conversation_training_data.jsonl": 404,
+      "decomposed": 198,
+      "decomposed_fallback": 59,
+      "exports/v053_training_sets/critic_conscience_transformer_training_set.json": 2,
+      "exports/v053_training_sets/dream_simulation_transformer_training_set.json": 2,
+      "exports/v053_training_sets/left_hemisphere_training_set.json": 2,
+      "exports/v053_training_sets/memory_transformer_training_set.json": 2,
+      "exports/v053_training_sets/planner_transformer_training_set.json": 2,
+      "exports/v053_training_sets/right_hemisphere_training_set.json": 2,
+      "exports/v053_training_sets/speech_output_transformer_training_set.json": 2,
+      "fallback": 11,
+      "hit": 11,
+      "memory_hit": 3,
+      "rapid-vocab-jump": 35,
+      "transformer": 7,
+      "v058_dictionary_export": 11,
+      "v063_dream_replay": 4
+    },
+    "split_counts": {
+      "promotion": 100,
+      "train": 474,
+      "validation": 101
+    }
+  },
+  "decision": {
+    "baseline_joint": 41.158765070055395,
+    "candidate_joint": 0.0,
+    "previous_winner_joint": null,
+    "reasons": [
+      "ValueError: train row 34: supervised sequence lost SEP during truncation"
+    ],
+    "verdict": "BLOCKED"
+  },
+  "exception": {
+    "message": "train row 34: supervised sequence lost SEP during truncation",
+    "type": "ValueError"
+  },
+  "finished_at": "2026-06-23T02:33:45.084580+00:00",
+  "preflight": {
+    "checks": {
+      "pytest": true,
+      "python": true,
+      "torch": true
+    },
+    "hashes": {
+      "critic_conscience_transformer": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+      "dream_simulation_transformer": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+      "left_hemisphere": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+      "memory_transformer": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+      "planner_transformer": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+      "right_hemisphere": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+      "speech_output_transformer": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47"
+    },
+    "reasons": [],
+    "roles": {
+      "critic_conscience_transformer": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      },
+      "dream_simulation_transformer": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      },
+      "left_hemisphere": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      },
+      "memory_transformer": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/memory_transformer/memory_transformer_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      },
+      "planner_transformer": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/planner_transformer/planner_transformer_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      },
+      "right_hemisphere": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      },
+      "speech_output_transformer": {
+        "actual_sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "config_vocab_size": 260,
+        "metrics": {},
+        "parameters_finite": true,
+        "path": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_baseline.pt",
+        "ready": true,
+        "sha256": "23363326e6561414e4ac4af92c49b9c8b16797ccada083ab89f4a8cded080c47",
+        "status": "baseline"
+      }
+    },
+    "roles_ready": 7,
+    "runtime": {
+      "pytest": "8.4.2",
+      "python": "3.11.3",
+      "torch": "2.12.1"
+    },
+    "verdict": "READY"
+  },
+  "project_root": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.worktrees\\transformer-route-hyper-training",
+  "role_epochs": 30,
+  "route_candidate": {
+    "checkpoint_path": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.worktrees\\transformer-route-hyper-training\\artifacts\\transformer_training\\route_candidates\\route_model_cc144c6f057b526b_20260622.pt",
+    "metadata": {
+      "batch_size": 16,
+      "best_metrics": {
+        "domain_accuracy": 0.7821782178217822,
+        "macro_f1": 0.7190952088406118,
+        "macro_f1_active": 0.7190952088406118,
+        "macro_f1_all_roles": 0.7190952088406118,
+        "per_role_f1": {
+          "critic_conscience_transformer": 0.75,
+          "dream_simulation_transformer": 0.5714285714285714,
+          "left_hemisphere": 0.5185185185185185,
+          "memory_transformer": 0.6666666666666666,
+          "planner_transformer": 0.8888888888888888,
+          "right_hemisphere": 0.7272727272727273,
+          "speech_output_transformer": 0.9108910891089109
+        },
+        "per_role_support": {
+          "critic_conscience_transformer": 5,
+          "dream_simulation_transformer": 2,
+          "left_hemisphere": 15,
+          "memory_transformer": 19,
+          "planner_transformer": 5,
+          "right_hemisphere": 5,
+          "speech_output_transformer": 50
+        },
+        "primary_role_accuracy": 0.7821782178217822,
+        "support": 101
+      },
+      "block_size": 128,
+      "class_maps": {
+        "domain_to_id": {
+          "coding": 0,
+          "creative": 5,
+          "critic": 8,
+          "dream": 10,
+          "general": 11,
+          "math": 1,
+          "memory_recall": 6,
+          "philosophy": 3,
+          "planning": 7,
+          "psychology": 4,
+          "science": 2,
+          "speech": 9
+        },
+        "id_to_domain": [
+          "coding",
+          "math",
+          "science",
+          "philosophy",
+          "psychology",
+          "creative",
+          "memory_recall",
+          "planning",
+          "critic",
+          "speech",
+          "dream",
+          "general"
+        ],
+        "id_to_role": [
+          "left_hemisphere",
+          "right_hemisphere",
+          "memory_transformer",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "dream_simulation_transformer",
+          "speech_output_transformer"
+        ],
+        "role_to_id": {
+          "critic_conscience_transformer": 4,
+          "dream_simulation_transformer": 5,
+          "left_hemisphere": 0,
+          "memory_transformer": 2,
+          "planner_transformer": 3,
+          "right_hemisphere": 1,
+          "speech_output_transformer": 6
+        }
+      },
+      "epochs": 80,
+      "hidden_size": 64,
+      "learning_rate": 0.01,
+      "model_hash": "396df56758485ca8a9af4264b4e29d4794a2d5289a2c88d443e0b81201d2a3ae",
+      "output_path": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.worktrees\\transformer-route-hyper-training\\artifacts\\transformer_training\\route_candidates\\route_model_cc144c6f057b526b_20260622.pt",
+      "seed": 20260622,
+      "train_count": 474,
+      "validation_count": 101,
+      "validation_source": "holdout"
+    },
+    "sha256": "661ab65bdc9dbbf0cde0bec50eaf5b653201cec91044d17b4aeca9d8e7bdfd5c"
+  },
+  "route_epochs": 80,
+  "run_id": "20260623T023139Z_4ed4b48f",
+  "seed": 20260622,
+  "started_at": "2026-06-23T02:31:39.228077+00:00",
+  "verdict": "BLOCKED"
+}
