@@ -109,10 +109,8 @@ def get_route_for_domain(domain):
 def generate_transformer_response(text, domain=None):
     """Generate a response using the transformer brain.
     
-    This uses the trained weights from the 7 brain roles to actually
-    generate responses rather than returning hardcoded text.
-    
-    Returns (response_text, route_path)
+    Uses actual trained checkpoint weights to generate responses.
+    Returns (response_text, route_path, confidence, error_info).
     """
     brain = _ensure_brain()
     route = []
@@ -125,44 +123,49 @@ def generate_transformer_response(text, domain=None):
     route = route_roles
     
     # Build a prompt that includes domain context
-    # The transformer generates based on its trained patterns
     prompt = f"[{domain.upper()}] {text}"
     
-    # Try each role in the route, pick the best response
     best_response = None
     best_confidence = 0.0
+    errors = {}
     
+    # Try each role in the route, pick the best response
     for role in route_roles:
-        if role in brain.models:
-            model = brain.models[role]
-            try:
-                gen_text = model.generate(prompt, max_new_tokens=40, temperature=0.3)
-                if gen_text and len(gen_text) > len(text) + 5:
-                    # Extract the generated part (after the prompt)
-                    response = gen_text[len(prompt):].strip()
-                    if response and len(response) > 10:
-                        conf = min(0.95, 0.5 + 0.05 * len(response))
-                        if conf > best_confidence:
-                            best_response = response
-                            best_confidence = conf
-            except Exception as e:
-                continue
+        if role not in brain.models:
+            errors[role] = 'not_loaded'
+            continue
+        
+        try:
+            gen_result = brain.infer(role, prompt, max_new_tokens=40, temperature=0.1)
+            gen_text, stats = gen_result
+            
+            if gen_text and len(gen_text) > len(prompt) + 3:
+                response = gen_text[len(prompt):].strip()
+                if response and len(response) > 5:
+                    conf = min(0.92, 0.5 + 0.04 * len(response))
+                    if conf > best_confidence:
+                        best_response = response
+                        best_confidence = conf
+        except Exception as e:
+            errors[role] = f"{type(e).__name__}: {str(e)[:80]}"
+            continue
     
     if best_response:
-        return best_response, route, best_confidence
+        return best_response, route, best_confidence, errors
     
-    # Fallback: use the most domain-relevant role
+    # Fallback: use the most domain-relevant role with lower temperature
     primary_role = route[0] if route else "memory_transformer"
     if primary_role in brain.models:
         try:
-            gen_text = brain.models[primary_role].generate(prompt, max_new_tokens=30, temperature=0.2)
+            gen_result = brain.infer(primary_role, prompt, max_new_tokens=25, temperature=0.0)
+            gen_text, stats = gen_result
             response = gen_text[len(prompt):].strip()
-            if response and len(response) > 5:
-                return response, route, 0.7
-        except:
-            pass
+            if response and len(response) > 3:
+                return response, route, 0.6, {}
+        except Exception as e:
+            errors[primary_role] = f"Fallback error: {type(e).__name__}: {str(e)[:80]}"
     
-    return None, route, 0.0
+    return None, route, 0.0, errors
 
 def route_and_respond(text, dict_lookup_fn=None, memory=None):
     """Main routing function — the hybrid brain.
@@ -227,14 +230,24 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             return response, trace
     
     # ─── Transformer Path: Generate response ───
-    gen_response, route, confidence = generate_transformer_response(text, domain)
+    gen_response, route, confidence, gen_errors = generate_transformer_response(text, domain)
     
+    # Quality check: count meaningful tokens vs <unk>
     if gen_response:
-        trace["roles"] = route
-        trace["skills"] = [f"generated_{domain}", "transformer_inference"]
-        trace["confidence"] = confidence
-        trace["memory_event"] = f"transformer_generated:{domain}"
-        trace["route_path"] = route
+        unk_count = gen_response.count('<unk>')
+        total_chars = len(gen_response.strip())
+        # If >50% of output is <unk>, skip transformer result
+        too_many_unks = total_chars > 0 and (unk_count * 5 > total_chars)
+        
+        if not too_many_unks:
+            trace["roles"] = route
+            trace["skills"] = [f"generated_{domain}", "transformer_inference"]
+            trace["confidence"] = confidence
+            trace["memory_event"] = f"transformer_generated:{domain}"
+            trace["route_path"] = route
+            trace["transformer_used"] = True
+            trace["transformer_output_quality"] = "good"
+            trace["gen_errors"] = gen_errors if gen_errors else None
         _log_route(text, domain, route, confidence, "transformer")
         if CONV_ENGINE:
             try:

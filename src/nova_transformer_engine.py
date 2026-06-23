@@ -99,8 +99,8 @@ class NovaTokenizer:
 # PARAMETER LOADER
 # ============================================================
 class NovaParameterLoader:
-    """Loads weights from .pt checkpoint files"""
-    
+    """Loads weights from .pt checkpoint files with correct parameter mapping"""
+
     MODEL_CONFIG = {
         'vocab_size': 8000,
         'd_model': 96,
@@ -108,18 +108,68 @@ class NovaParameterLoader:
         'n_heads': 4,
         'block_size': 64,
         'd_mlp': 384,
-        'd_kv': 96,  # d_model (not split per head in this model)
+        'd_kv': 96,
+    }
+    
+    # Known correct storage index -> parameter name mapping
+    # Verified against actual pickle metadata for both v054 and v055 formats
+    STORAGE_MAP = {
+        0:  ('token_embedding.weight', (8000, 96)),
+        1:  ('position_embedding.weight', (64, 96)),
+        2:  ('blocks.0.ln1.weight', (96,)),
+        3:  ('blocks.0.ln1.bias', (96,)),
+        4:  ('blocks.0.attn.qkv.weight', (288, 96)),
+        5:  ('blocks.0.attn.proj.weight', (96, 96)),
+        6:  ('blocks.0.attn.proj.bias', (96,)),
+        7:  ('blocks.0.ln2.weight', (96,)),
+        8:  ('blocks.0.ln2.bias', (96,)),
+        9:  ('blocks.0.mlp.fc.weight', (384, 96)),
+        10: ('blocks.0.mlp.fc.bias', (384,)),
+        11: ('blocks.0.mlp.proj.weight', (96, 384)),
+        12: ('blocks.0.mlp.proj.bias', (96,)),
+        13: ('blocks.1.ln1.weight', (96,)),
+        14: ('blocks.1.ln1.bias', (96,)),
+        15: ('blocks.1.attn.qkv.weight', (288, 96)),
+        16: ('blocks.1.attn.proj.weight', (96, 96)),
+        17: ('blocks.1.attn.proj.bias', (96,)),
+        18: ('blocks.1.ln2.weight', (96,)),
+        19: ('blocks.1.ln2.bias', (96,)),
+        20: ('blocks.1.mlp.fc.weight', (384, 96)),
+        21: ('blocks.1.mlp.fc.bias', (384,)),
+        22: ('blocks.1.mlp.proj.weight', (96, 384)),
+        23: ('blocks.1.mlp.proj.bias', (96,)),
+        24: ('ln_f.weight', (96,)),
+        25: ('ln_f.bias', (96,)),
     }
     
     @staticmethod
+    def _detect_archive_prefix(z):
+        """Detect the archive prefix used in the zip file."""
+        names = z.namelist()
+        for n in names:
+            if n.endswith('/data.pkl'):
+                return n[:-len('/data.pkl')]
+        for n in names:
+            if '/' in n:
+                prefix = n[:n.index('/')]
+                if f'{prefix}/data.pkl' in names:
+                    return prefix
+        return 'creature_v032_bigfit_twenty_plain'
+    
+    @staticmethod
     def load(pt_path):
-        """Load weights from a .pt checkpoint"""
+        """Load weights from a .pt checkpoint using the correct parameter mapping.
+        
+        Uses the KNOWN CORRECT storage index mapping derived from pickle metadata,
+        NOT size-based heuristics which can mistake optimizer state for weights.
+        """
         with zipfile.ZipFile(pt_path, 'r') as z:
-            # Load all storages
+            prefix = NovaParameterLoader._detect_archive_prefix(z)
+            
             storages = {}
             i = 0
             while True:
-                name = f'creature_v032_bigfit_twenty_plain/data/{i}'
+                name = f'{prefix}/data/{i}'
                 try:
                     info = z.getinfo(name)
                     raw = z.read(name)
@@ -128,135 +178,38 @@ class NovaParameterLoader:
                 except KeyError:
                     break
             
-            # Map storages to parameters based on architecture
-            # We know the exact storage layout from pickletools analysis
             params = {}
+            errors = []
             
-            # Find storages by size matching
-            def find_storage(size, exclude=None):
-                for sid, arr in sorted(storages.items()):
-                    if exclude and sid in exclude:
-                        continue
-                    if len(arr) == size:
-                        return sid
-                return None
+            for sid, (param_name, expected_shape) in NovaParameterLoader.STORAGE_MAP.items():
+                if sid not in storages:
+                    errors.append(f"Missing storage[{sid}] for {param_name}")
+                    continue
+                
+                arr = storages[sid]
+                expected_size = int(np.prod(expected_shape))
+                
+                if arr.size != expected_size:
+                    errors.append(
+                        f"Storage[{sid}] ({param_name}): "
+                        f"expected {expected_size} floats, got {arr.size}"
+                    )
+                    continue
+                
+                try:
+                    params[param_name] = arr.reshape(expected_shape).copy()
+                except Exception as e:
+                    errors.append(f"Storage[{sid}] ({param_name}): reshape error: {e}")
             
-            used = set()
-            
-            # token_embedding.weight (8000, 96) = 768000
-            sid = find_storage(768000)
-            if sid is not None:
-                params['token_embedding.weight'] = storages[sid].reshape(8000, 96).copy()
-                used.add(sid)
-            
-            # position_embedding.weight (64, 96) = 6144
-            sid = find_storage(6144)
-            if sid is not None:
-                params['position_embedding.weight'] = storages[sid].reshape(64, 96).copy()
-                used.add(sid)
-            
-            # lm_head.weight - same shape as token_embedding (8000, 96)
-            sid = find_storage(768000, exclude=used)
-            if sid is not None:
-                params['lm_head.weight'] = storages[sid].reshape(8000, 96).copy()
-                used.add(sid)
-            else:
-                # Weight tying - lm_head shares with token_embedding
+            if 'token_embedding.weight' in params:
                 params['lm_head.weight'] = params['token_embedding.weight']
+            else:
+                errors.append("Cannot create lm_head.weight: token_embedding.weight not loaded")
             
-            # Find all (288, 96) = 27648 = qkv weights
-            qkv_storages = []
-            while True:
-                sid = find_storage(27648, exclude=used)
-                if sid is not None:
-                    qkv_storages.append(sid)
-                    used.add(sid)
-                else:
-                    break
-            
-            # Find all (96, 96) = 9216 = attn proj weights
-            proj_storages = []
-            while True:
-                sid = find_storage(9216, exclude=used)
-                if sid is not None:
-                    proj_storages.append(sid)
-                    used.add(sid)
-                else:
-                    break
-            
-            # Find all (384, 96) = 36864 = mlp fc weights (or proj weights)
-            mlp_weights = []
-            while True:
-                sid = find_storage(36864, exclude=used)
-                if sid is not None:
-                    mlp_weights.append(sid)
-                    used.add(sid)
-                else:
-                    break
-            
-            # Map to blocks
-            for layer_idx in range(NovaParameterLoader.MODEL_CONFIG['n_layers']):
-                base = f'blocks.{layer_idx}'
-                
-                # Layer norms (96,)
-                ln_storages = []
-                while True:
-                    sid = find_storage(96, exclude=used)
-                    if sid is not None:
-                        ln_storages.append(sid)
-                        used.add(sid)
-                    else:
-                        break
-                
-                # Biases (384,)
-                bias_384 = []
-                while True:
-                    sid = find_storage(384, exclude=used)
-                    if sid is not None:
-                        bias_384.append(sid)
-                        used.add(sid)
-                    else:
-                        break
-                
-                if len(ln_storages) >= 4:
-                    params[f'{base}.ln1.weight'] = storages[ln_storages[0]].copy()
-                    params[f'{base}.ln1.bias'] = storages[ln_storages[1]].copy()
-                    params[f'{base}.ln2.weight'] = storages[ln_storages[2]].copy()
-                    params[f'{base}.ln2.bias'] = storages[ln_storages[3]].copy()
-                
-                if len(qkv_storages) >= layer_idx + 1:
-                    sid = qkv_storages[layer_idx]
-                    params[f'{base}.attn.qkv.weight'] = storages[sid].reshape(288, 96).copy()
-                
-                if len(proj_storages) >= layer_idx + 1:
-                    sid = proj_storages[layer_idx]
-                    params[f'{base}.attn.proj.weight'] = storages[sid].reshape(96, 96).copy()
-                
-                if len(mlp_weights) >= (layer_idx * 2) + 2:
-                    sid_fc = mlp_weights[layer_idx * 2]
-                    sid_proj = mlp_weights[layer_idx * 2 + 1]
-                    params[f'{base}.mlp.fc.weight'] = storages[sid_fc].reshape(384, 96).copy()
-                    params[f'{base}.mlp.proj.weight'] = storages[sid_proj].reshape(96, 384).copy()
-                
-                if len(bias_384) >= layer_idx * 2 + 2:
-                    sid_fc_b = bias_384[layer_idx * 2]
-                    sid_proj_b = bias_384[layer_idx * 2 + 1]
-                    params[f'{base}.mlp.fc.bias'] = storages[sid_fc_b].copy()
-                    params[f'{base}.mlp.proj.bias'] = storages[sid_proj_b].copy()
-            
-            # ln_f (final layer norm)
-            ln_f_storages = []
-            while True:
-                sid = find_storage(96, exclude=used)
-                if sid is not None:
-                    ln_f_storages.append(sid)
-                    used.add(sid)
-                else:
-                    break
-            
-            if len(ln_f_storages) >= 2:
-                params['ln_f.weight'] = storages[ln_f_storages[0]].copy()
-                params['ln_f.bias'] = storages[ln_f_storages[1]].copy()
+            if errors:
+                print(f"  [ParamLoader] WARNING: {len(errors)} errors")
+                for e in errors:
+                    print(f"    {e}")
             
             return params
     
@@ -266,9 +219,6 @@ class NovaParameterLoader:
         return hashlib.sha256(open(pt_path, 'rb').read()).hexdigest()
 
 
-# ============================================================
-# TRANSFORMER MODEL (Pure NumPy)
-# ============================================================
 class NovaTransformer:
     """Pure NumPy implementation of the Nova decoder-only transformer"""
     
@@ -294,7 +244,7 @@ class NovaTransformer:
         return weight * x_norm + bias
     
     # ── Attention ──
-    def attention(self, x, qkv_weight, proj_weight, mask=None):
+    def attention(self, x, qkv_weight, proj_weight, mask=None, proj_bias=None):
         """Multi-head self-attention with causal masking"""
         B, T, C = x.shape  # batch, seq_len, d_model
         
@@ -338,6 +288,8 @@ class NovaTransformer:
         
         # Output projection
         out = out @ proj_weight.T
+        if proj_bias is not None:
+            out = out + proj_bias
         
         return out
     
@@ -387,7 +339,8 @@ class NovaTransformer:
             
             # Attention with residual
             x_norm = self.layer_norm(x, ln1_w, ln1_b)
-            attn_out = self.attention(x_norm, qkv_w, proj_w)
+            proj_b = p.get(f'blocks.{layer_idx}.attn.proj.bias', None)
+            attn_out = self.attention(x_norm, qkv_w, proj_w, proj_bias=proj_b)
             x = x + attn_out
             
             # MLP with residual
@@ -396,10 +349,12 @@ class NovaTransformer:
             x = x + mlp_out
         
         # Final layer norm
-        x = self.layer_norm(x, p['ln_f.weight'], p['ln_f.bias'])
+        if 'ln_f.weight' in p and 'ln_f.bias' in p:
+            x = self.layer_norm(x, p['ln_f.weight'], p['ln_f.bias'])
         
-        # LM head (project to vocab)
-        logits = x @ p['lm_head.weight'].T  # (B, T, 8000)
+        # LM head (project to vocab) - tied with token_embedding
+        lm_head = p.get('lm_head.weight', p.get('token_embedding.weight'))
+        logits = x @ lm_head.T  # (B, T, 8000)
         
         if return_logits:
             return logits
@@ -424,6 +379,9 @@ class NovaTransformer:
             prompt_ids = self._simple_encode(prompt_text)
         else:
             prompt_ids = self.tokenizer.encode(prompt_text)
+            # Remove trailing EOS so generation can continue past it
+            while prompt_ids and prompt_ids[-1] == self.tokenizer.EOS_ID:
+                prompt_ids = prompt_ids[:-1]
         
         # Handle empty input
         if len(prompt_ids) == 0:
@@ -448,12 +406,24 @@ class NovaTransformer:
             if temperature > 0:
                 # Apply temperature
                 last_logits = last_logits / temperature
+                # Mask out-of-vocabulary tokens (logit = -inf)
+                valid_vocab_size = self.tokenizer.vocab_size if self.tokenizer else len(last_logits)
+                if valid_vocab_size < len(last_logits):
+                    mask = np.zeros(len(last_logits), dtype=bool)
+                    mask[valid_vocab_size:] = True
+                    last_logits[mask] = -1e9
                 probs = np.exp(last_logits - last_logits.max())
                 probs /= probs.sum()
                 next_id = np.random.choice(len(probs), p=probs)
             else:
-                # Greedy (deterministic)
-                next_id = int(np.argmax(last_logits))
+                # Greedy with vocab masking
+                last_logits_safe = last_logits.copy()
+                valid_vocab_size = self.tokenizer.vocab_size if self.tokenizer else len(last_logits)
+                if valid_vocab_size < len(last_logits_safe):
+                    mask = np.zeros(len(last_logits_safe), dtype=bool)
+                    mask[valid_vocab_size:] = True
+                    last_logits_safe[mask] = -1e9
+                next_id = int(np.argmax(last_logits_safe))
             
             if print_progress:
                 if self.tokenizer:
@@ -524,14 +494,21 @@ class NovaBrain:
         self.hashes = {}  # role_name → sha256
         self.loaded = False
     
-    def load_all(self, checkpoint_version='v054_specialized'):
-        """Load all 7 brain role checkpoints"""
+    def load_all(self, checkpoint_version=None):
+        """Load all 7 brain role checkpoints.
+        
+        Args:
+            checkpoint_version: If None, auto-selects the best version.
+                Priority: 'v055_finetuned' (unique per-role) > 'v055_numpy_trained' > 'v054_specialized'
+        """
+        if checkpoint_version is None:
+            checkpoint_version = self._select_best_version()
+        
         print(f"[Brain] Loading all 7 roles ({checkpoint_version})...")
         for role in ROLE_NAMES:
             pt_path = self.checkpoint_dir / role / f'{role}_{checkpoint_version}.pt'
             if not pt_path.exists():
-                # Try other versions
-                for ver in ['v054_specialized', 'v055_finetuned', 'v055_numpy_trained']:
+                for ver in ['v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
                     pt_path = self.checkpoint_dir / role / f'{role}_{ver}.pt'
                     if pt_path.exists():
                         checkpoint_version = ver
@@ -542,15 +519,37 @@ class NovaBrain:
                 continue
             
             print(f"  Loading {role} ({checkpoint_version})...")
-            params = NovaParameterLoader.load(pt_path)
+            params = NovaParameterLoader.load(str(pt_path))
             model = NovaTransformer(params)
             model.set_tokenizer(self.tokenizer)
             self.models[role] = model
-            self.hashes[role] = NovaParameterLoader.sha256(pt_path)
+            self.hashes[role] = NovaParameterLoader.sha256(str(pt_path))
         
         self.loaded = bool(self.models)
         print(f"[Brain] Loaded {len(self.models)}/{len(ROLE_NAMES)} roles")
+        if self.loaded:
+            unique_hashes = set(self.hashes.values())
+            if len(unique_hashes) == 1 and len(self.models) > 1:
+                print(f"[Brain] NOTE: All {len(self.models)} checkpoints are identical (same hash)")
+            else:
+                print(f"[Brain] {len(unique_hashes)} unique role hashes detected")
         return self.loaded
+    
+    def _select_best_version(self):
+        """Select checkpoint version with unique per-role weights."""
+        for ver in ['v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
+            hashes = set()
+            all_exist = True
+            for role in ROLE_NAMES:
+                pt_path = self.checkpoint_dir / role / f'{role}_{ver}.pt'
+                if pt_path.exists():
+                    hashes.add(NovaParameterLoader.sha256(str(pt_path)))
+                else:
+                    all_exist = False
+                    break
+            if all_exist:
+                return ver
+        return 'v054_specialized'
     
     def infer(self, role, text, max_new_tokens=50, temperature=0.0):
         """Run inference on a specific brain role"""
