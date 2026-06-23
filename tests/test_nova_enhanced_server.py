@@ -277,3 +277,29 @@ def test_brain_route_learns_natural_fact_into_dictionary_and_recalls(monkeypatch
     assert recall_trace["source"] == "dictionary"
     assert recall_trace["domain"] == "dictionary"
     assert recall_trace["memory_event"] == "dictionary_hit"
+
+
+def test_web_ui_exposes_whole_app_surfaces():
+    required_tabs = [
+        "data-panel=\"home-panel\"",
+        "data-panel=\"chat-panel\"",
+        "data-panel=\"display-panel\"",
+        "data-panel=\"agent-library-panel\"",
+        "data-panel=\"app-builder-panel\"",
+        "data-panel=\"memory-panel\"",
+        "data-panel=\"tools-panel\"",
+        "data-panel=\"research-panel\"",
+        "data-panel=\"test-check-panel\"",
+        "data-panel=\"saved-projects-panel\"",
+        "data-panel=\"preview-panel\"",
+        "data-panel=\"debug-logs-panel\"",
+        "data-panel=\"scheduler-panel\"",
+        "data-panel=\"file-manager-panel\"",
+        "data-panel=\"settings-panel\"",
+    ]
+
+    for marker in required_tabs:
+        assert marker in server.WEB_HTML
+
+    assert "function openPanel" in server.WEB_HTML
+    assert "Whole App Navigation" in server.WEB_HTML

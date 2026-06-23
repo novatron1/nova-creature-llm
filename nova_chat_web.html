@@ -14,6 +14,24 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .header .status{font-size:10px;padding:2px 8px;border-radius:8px;margin-left:auto}
 .status.online{background:#2a4a2a;color:#4a8;border:1px solid #3a5a3a}
 .status.offline{background:#4a2a2a;color:#a44;border:1px solid #5a3a3a}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-top:1px solid #17172a;border-bottom:1px solid #242444;background:#10101c;scrollbar-width:thin}
+.nav-tab{white-space:nowrap;border:1px solid #32325a;background:#17172a;color:#aeb0dc;border-radius:999px;padding:7px 11px;font-size:12px;cursor:pointer}
+.nav-tab:hover{border-color:#6a6aff;color:#fff}
+.nav-tab.active{background:#4a4a8a;color:#fff;border-color:#7c7cff;box-shadow:0 0 0 1px #7c7cff33 inset}
+.workspace{flex:1;min-height:0;overflow:hidden}
+.workspace-panel{height:100%;display:none;overflow:auto;padding:16px 20px}
+.workspace-panel.active{display:flex;flex-direction:column}
+.panel-title{font-size:18px;color:#fff;margin-bottom:6px}
+.panel-note{font-size:13px;color:#aeb0dc;line-height:1.45;margin-bottom:12px}
+.surface-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.surface-card{border:1px solid #2e2e58;background:linear-gradient(135deg,#15152a,#201729);border-radius:14px;padding:12px;min-height:94px}
+.surface-card h3{font-size:14px;color:#f0f0ff;margin-bottom:6px}
+.surface-card p{font-size:12px;color:#b6b6d6;line-height:1.35}
+.panel-action{margin-top:10px;border:1px solid #44447a;background:#242447;color:#ddd;border-radius:10px;padding:7px 10px;font-size:12px;cursor:pointer}
+.panel-action:hover{background:#313163;color:#fff}
+.status-list{display:grid;gap:8px}
+.status-row{display:flex;justify-content:space-between;gap:12px;border:1px solid #2e2e58;background:#141426;border-radius:10px;padding:9px 10px;font-size:12px;color:#cfd0ee}
+.status-row span:last-child{color:#7cffaa;text-align:right}
 .chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
 .msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .msg.user{background:#2a2a4a;color:#e0e0e0;align-self:flex-end;border-bottom-right-radius:4px}
@@ -50,7 +68,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .perm-btn.on{border-color:#4a8;color:#4a8;background:#4a822}
 .perm-btn.danger{border-color:#a44;color:#a44}
 .perm-btn.server{background:#2a2a4a;color:#7c7cff;border-color:#4a4a8a}
-@media(max-width:600px){.msg{max-width:95%;font-size:13px}.header h1{font-size:15px}.perm-btn{font-size:9px;padding:2px 8px}}
+@media(max-width:600px){.msg{max-width:95%;font-size:13px}.header h1{font-size:15px}.perm-btn{font-size:9px;padding:2px 8px}.workspace-panel{padding:12px}.nav-tab{font-size:11px;padding:6px 9px}}
 </style>
 </head>
 <body>
@@ -65,8 +83,121 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 <span class="eye" id="eyeR"></span>
 <span class="mouth" id="mouth"></span>
 </div>
+<nav class="tabs" aria-label="Whole App Navigation">
+<button class="nav-tab active" data-panel="chat-panel">Chat</button>
+<button class="nav-tab" data-panel="home-panel">Home</button>
+<button class="nav-tab" data-panel="display-panel">Display</button>
+<button class="nav-tab" data-panel="agent-library-panel">Agent Library</button>
+<button class="nav-tab" data-panel="app-builder-panel">App Builder</button>
+<button class="nav-tab" data-panel="memory-panel">Memory</button>
+<button class="nav-tab" data-panel="tools-panel">Tools</button>
+<button class="nav-tab" data-panel="research-panel">Research</button>
+<button class="nav-tab" data-panel="test-check-panel">Test/Check</button>
+<button class="nav-tab" data-panel="saved-projects-panel">Projects</button>
+<button class="nav-tab" data-panel="preview-panel">Preview</button>
+<button class="nav-tab" data-panel="debug-logs-panel">Logs</button>
+<button class="nav-tab" data-panel="scheduler-panel">Scheduler</button>
+<button class="nav-tab" data-panel="file-manager-panel">Files</button>
+<button class="nav-tab" data-panel="settings-panel">Settings</button>
+</nav>
+<main class="workspace">
+<section class="workspace-panel active" id="chat-panel">
 <div class="chat" id="chat"></div>
 <div class="typing" id="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Nova is thinking...</div>
+</section>
+<section class="workspace-panel" id="home-panel">
+<h2 class="panel-title">Home Screen</h2>
+<p class="panel-note">Whole App Navigation is now visible. Use these panels to operate Nova without memorizing hidden commands.</p>
+<div class="surface-grid">
+<div class="surface-card"><h3>Autonomous operator</h3><p>Give Nova a goal. It should decide where to go, what to click, how to verify, and what to report.</p></div>
+<div class="surface-card"><h3>Live brain</h3><p>7 transformer roles route chat, memory, planning, coding, checking, imagination, and speech output.</p></div>
+<div class="surface-card"><h3>Safe controls</h3><p>Mic, camera, private mode, and stop-all controls stay visible at the bottom.</p></div>
+</div>
+</section>
+<section class="workspace-panel" id="display-panel">
+<h2 class="panel-title">Display Tab</h2>
+<p class="panel-note">Nova's face/status display lives here. The compact face remains above so you can see activity while using every panel.</p>
+<div class="status-list">
+<div class="status-row"><strong>Face display</strong><span>online in header</span></div>
+<div class="status-row"><strong>Live server</strong><span id="displayServerState">checking...</span></div>
+<div class="status-row"><strong>Route badges</strong><span>shown under answers</span></div>
+</div>
+</section>
+<section class="workspace-panel" id="agent-library-panel">
+<h2 class="panel-title">Agent Library</h2>
+<p class="panel-note">Create, edit, and review custom agents from here. Current shell exposes the place; deeper agent CRUD can be wired next.</p>
+<div class="surface-grid">
+<div class="surface-card"><h3>Create custom agent</h3><p>Use chat commands like "make an agent..." and Nova will plan the steps.</p><button class="panel-action" onclick="quickCmd('what can you do')">Ask capabilities</button></div>
+<div class="surface-card"><h3>Saved agents</h3><p>Reserved for persisted agents and schedules.</p></div>
+</div>
+</section>
+<section class="workspace-panel" id="app-builder-panel">
+<h2 class="panel-title">App Builder</h2>
+<p class="panel-note">Build sandbox apps and games. Pac Runner lives in the preview/projects area.</p>
+<div class="surface-grid">
+<div class="surface-card"><h3>Build from command</h3><p>Tell Nova what app to make. It can create and test browser projects.</p></div>
+<div class="surface-card"><h3>Open preview</h3><p>Jump to the preview area for generated apps.</p><button class="panel-action" onclick="openPanel('preview-panel')">Open Preview</button></div>
+</div>
+</section>
+<section class="workspace-panel" id="memory-panel">
+<h2 class="panel-title">Memory Panel</h2>
+<p class="panel-note">People memory, lessons, and dictionary facts show here conceptually. Chat still performs the live read/write.</p>
+<div class="status-list">
+<div class="status-row"><strong>People</strong><span id="memoryPeople">from server status</span></div>
+<div class="status-row"><strong>Lessons</strong><span id="memoryLessons">from server status</span></div>
+<div class="status-row"><strong>Dictionary</strong><span>plain facts can now be learned</span></div>
+</div>
+</section>
+<section class="workspace-panel" id="tools-panel">
+<h2 class="panel-title">Tools Page</h2>
+<p class="panel-note">Use tools for weather, news, coding, app building, tests, and memory checks.</p>
+<div class="surface-grid">
+<div class="surface-card"><h3>Weather/news</h3><p>Ask for weather or local news from chat.</p></div>
+<div class="surface-card"><h3>Coding/debug</h3><p>Ask Nova to inspect files, fix blockers, and retest.</p></div>
+<div class="surface-card"><h3>Game builder</h3><p>Ask for a Pac-Man style game and Nova can create a sandbox project.</p></div>
+</div>
+</section>
+<section class="workspace-panel" id="research-panel">
+<h2 class="panel-title">Research Panel</h2>
+<p class="panel-note">Use this area for lookup goals. Nova should identify what info is needed, search/check if allowed, and summarize results.</p>
+</section>
+<section class="workspace-panel" id="test-check-panel">
+<h2 class="panel-title">Test / Check Page</h2>
+<p class="panel-note">Run checks and verify fixes. Latest code-level checks are reported by Codex after each fix.</p>
+<button class="panel-action" onclick="quickCmd('test yourself')">Ask Nova to test itself</button>
+</section>
+<section class="workspace-panel" id="saved-projects-panel">
+<h2 class="panel-title">Saved Projects</h2>
+<p class="panel-note">Generated app projects appear under the sandbox projects folder. Pac Runner is available if it has been built.</p>
+<button class="panel-action" onclick="window.location.href='/sandbox/app_builder_projects/Nova_Pac_Runner/index.html'">Open Nova Pac Runner</button>
+</section>
+<section class="workspace-panel" id="preview-panel">
+<h2 class="panel-title">Preview Area</h2>
+<p class="panel-note">Preview generated apps here. Use the button below to open the current Pac Runner build.</p>
+<button class="panel-action" onclick="window.location.href='/sandbox/app_builder_projects/Nova_Pac_Runner/index.html'">Open Game Preview</button>
+</section>
+<section class="workspace-panel" id="debug-logs-panel">
+<h2 class="panel-title">Debug / Log Area</h2>
+<p class="panel-note">Use this panel when something breaks. Nova should inspect logs, fix blockers if allowed, and retest.</p>
+<button class="panel-action" onclick="quickCmd('training logs')">Show training logs</button>
+</section>
+<section class="workspace-panel" id="scheduler-panel">
+<h2 class="panel-title">Scheduler</h2>
+<p class="panel-note">Reserved for scheduled agents and recurring checks. Nova can plan schedules from commands.</p>
+</section>
+<section class="workspace-panel" id="file-manager-panel">
+<h2 class="panel-title">File Manager</h2>
+<p class="panel-note">Reserved for browsing generated projects, memory exports, and artifacts safely.</p>
+</section>
+<section class="workspace-panel" id="settings-panel">
+<h2 class="panel-title">Settings</h2>
+<p class="panel-note">Permission and privacy controls stay at the bottom. Future settings can live here.</p>
+<div class="status-list">
+<div class="status-row"><strong>Private mode</strong><span>bottom toggle</span></div>
+<div class="status-row"><strong>Stop all</strong><span>always visible</span></div>
+</div>
+</section>
+</main>
 <div class="input-bar">
 <div class="input-row">
 <input type="text" id="input" placeholder="Talk to Nova..." autofocus>
@@ -85,15 +216,27 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 const chat=document.getElementById('chat'),input=document.getElementById('input'),typing=document.getElementById('typing'),sendBtn=document.getElementById('sendBtn');
 const statusTag=document.getElementById('statusTag'),sessionEl=document.getElementById('sessionId');
 const eyeL=document.getElementById('eyeL'),eyeR=document.getElementById('eyeR'),mouth=document.getElementById('mouth');
+const navTabs=[...document.querySelectorAll('.nav-tab')];
+const panels=[...document.querySelectorAll('.workspace-panel')];
 let SERVER_BASE = window.location.protocol === 'file:' ? null : window.location.origin;
 let connected = false;
 let sessionId = Math.random().toString(36).slice(2,8);
 sessionEl.textContent = 'Session: '+sessionId;
 
+function openPanel(panelId){
+  panels.forEach(panel => panel.classList.toggle('active', panel.id === panelId));
+  navTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.panel === panelId));
+  if(panelId === 'chat-panel') setTimeout(() => { chat.scrollTop = chat.scrollHeight; input.focus(); }, 0);
+}
+
+navTabs.forEach(tab => tab.addEventListener('click', () => openPanel(tab.dataset.panel)));
+
 function setStatus(online){
   connected = online;
   statusTag.textContent = online ? '🟢 Live' : '🔴 Offline';
   statusTag.className = 'status ' + (online ? 'online' : 'offline');
+  const displayState = document.getElementById('displayServerState');
+  if(displayState) displayState.textContent = online ? 'live' : 'offline';
 }
 
 function setFace(state){
@@ -167,6 +310,7 @@ function localRoute(text){
 
 async function send(){
   const text=input.value.trim(); if(!text) return;
+  openPanel('chat-panel');
   input.value=''; sendBtn.disabled=true; typing.style.display='block';
   setFace('thinking');
   addMsg('user', text);
@@ -205,6 +349,7 @@ async function send(){
 }
 
 async function quickCmd(text){
+  openPanel('chat-panel');
   if(!connected || !SERVER_BASE){
     addMsg('nova', 'Server not connected. Click Connect or start the server first.', {fallback: true});
     return;
@@ -247,6 +392,10 @@ async function tryConnect(){
         const status = await res.json();
         SERVER_BASE = url;
         setStatus(true);
+        const memoryPeople = document.getElementById('memoryPeople');
+        const memoryLessons = document.getElementById('memoryLessons');
+        if(memoryPeople) memoryPeople.textContent = String(status.people_count || 0);
+        if(memoryLessons) memoryLessons.textContent = String(status.lessons_count || 0);
         connected_to = url;
         addMsg('nova', `✅ Connected to Nova server at ${url}\nSession: ${status.session || 'active'}\nPeople: ${status.people_count || 0} | Lessons: ${status.lessons_count || 0}`, {});
         break;
