@@ -108,3 +108,68 @@ def test_planned_response_does_not_claim_navigation_already_happened():
 
     assert "Planned navigation to:" in result.response
     assert "Went to:" not in result.response
+
+
+def test_agent_creation_command_builds_full_operator_loop():
+    context = AppNavigationContext()
+
+    result = plan_app_navigation(
+        "make an agent that researches better LLM methods weekly",
+        context,
+    )
+
+    assert result.recognized is True
+    assert result.intent.target_surface == "agent_library"
+    assert result.intent.action == "create_agent"
+    assert result.intent.safety_level == SafetyLevel.SAFE_WRITE
+    assert [step.kind for step in result.steps] == [
+        "understand",
+        "navigate",
+        "create",
+        "fill",
+        "schedule",
+        "save",
+        "verify",
+    ]
+    assert result.verification["status"] == "planned"
+    assert context.last_surface == "agent_library"
+    assert context.verification_target == "agent_library"
+
+
+def test_check_if_it_works_uses_recent_context():
+    context = AppNavigationContext()
+    plan_app_navigation("open the builder", context)
+
+    result = plan_app_navigation("check if it works", context)
+
+    assert result.recognized is True
+    assert result.intent.target_surface == "app_builder"
+    assert result.intent.action == "verify"
+    assert any(step.kind == "verify" for step in result.steps)
+
+
+def test_resume_continues_last_blocker_or_pending_action():
+    context = AppNavigationContext(
+        last_surface="preview_area",
+        pending_action="open",
+        last_blocker="no active project is selected",
+    )
+
+    result = plan_app_navigation("resume", context)
+
+    assert result.recognized is True
+    assert result.blocked is True
+    assert result.intent.target_surface == "preview_area"
+    assert "no active project" in result.blocker
+    assert "choose a project" in result.next_safe_step.lower()
+
+
+def test_destructive_ambiguous_delete_requires_confirmation():
+    context = AppNavigationContext(last_surface="saved_projects")
+
+    result = plan_app_navigation("delete that draft", context)
+
+    assert result.recognized is True
+    assert result.intent.safety_level == SafetyLevel.CONFIRM_REQUIRED
+    assert result.blocked is True
+    assert "confirm" in result.next_safe_step.lower()

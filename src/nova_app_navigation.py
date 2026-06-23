@@ -115,6 +115,9 @@ OPERATOR_VERBS = (
 )
 
 DESTRUCTIVE_VERBS = ("delete", "remove", "clear")
+RESUME_COMMANDS = ("resume", "continue", "continue from where you left off")
+AGENT_CREATION_PHRASES = ("make an agent", "create an agent", "new agent")
+DESTRUCTIVE_CONTEXT_TERMS = ("draft", "project", "log", "memory", "settings")
 
 QUESTION_STARTERS = ("what ", "how ", "why ", "when ", "where ", "who ")
 EXPLAIN_REQUEST_STARTERS = ("can you explain", "could you explain", "would you explain")
@@ -125,29 +128,47 @@ def plan_app_navigation(text: str, context: AppNavigationContext | None = None) 
     context = context or AppNavigationContext()
     raw = "" if text is None else str(text)
     normalized = _normalize(raw)
+    action = _detect_action(normalized)
     target_surface = _detect_surface(normalized)
+
+    if target_surface is None and action == "create_agent":
+        target_surface = "agent_library"
+    if target_surface is None and action == "verify" and context.verification_target:
+        target_surface = context.verification_target
+    if target_surface is None and action == "resume" and context.last_surface:
+        target_surface = context.last_surface
+        action = context.pending_action or "resume"
+    if (
+        target_surface is None
+        and action == "delete"
+        and _is_contextual_delete_request(normalized)
+    ):
+        target_surface = context.last_surface or ("saved_projects" if "draft" in normalized else None)
+
     if target_surface is None:
         return NavigationResult(False, None)
 
-    action = _detect_action(normalized)
     safety = _safety_for(action, normalized)
-    intent = NavigationIntent(raw, target_surface, action, 0.86, safety)
-    steps = [
-        NavigationStep("understand", target_surface, f"Understood command: {raw.strip()}"),
-        NavigationStep("navigate", target_surface, f"Open {target_surface.replace('_', ' ')}."),
-        NavigationStep("verify", target_surface, f"Confirm {target_surface.replace('_', ' ')} is available."),
-    ]
-    response = _format_response(intent, steps, blocked=False, blocker=None, next_safe_step=None)
+    subject = _subject_for(normalized, action)
+    intent = NavigationIntent(raw, target_surface, action, 0.90, safety, subject=subject)
+    blocked, blocker, next_safe_step = _blocker_for(intent, context)
+    steps = _steps_for(intent, blocked=blocked, blocker=blocker)
+    response = _format_response(intent, steps, blocked=blocked, blocker=blocker, next_safe_step=next_safe_step)
     context.last_surface = target_surface
     context.pending_action = action
     context.verification_target = target_surface
-    context.last_blocker = None
+    context.last_blocker = blocker if blocked else None
+    if action == "create_agent" and subject:
+        context.active_agent = subject
     return NavigationResult(
         True,
         intent,
         steps,
         response,
-        verification={"method": "structured_navigation_plan", "status": "planned"},
+        verification={"method": "structured_navigation_plan", "status": "blocked" if blocked else "planned"},
+        blocked=blocked,
+        blocker=blocker,
+        next_safe_step=next_safe_step,
     )
 
 
@@ -164,8 +185,14 @@ def _detect_surface(normalized: str) -> str | None:
 
 
 def _detect_action(normalized: str) -> str:
+    if normalized in RESUME_COMMANDS:
+        return "resume"
     if _has_destructive_verb(normalized):
         return "delete"
+    if _is_agent_creation_command(normalized):
+        return "create_agent"
+    if "check if it works" in normalized:
+        return "verify"
     if re.search(r"\b(run|test|check|verify|prove)\b", normalized):
         return "verify"
     if re.search(r"\b(make|create|new)\b", normalized):
@@ -187,9 +214,85 @@ def _safety_for(action: str, normalized: str) -> SafetyLevel:
         or "clear memory" in normalized
     ):
         return SafetyLevel.CONFIRM_REQUIRED
-    if action in {"create", "save"}:
+    if action in {"create", "create_agent", "save"}:
         return SafetyLevel.SAFE_WRITE
     return SafetyLevel.READ_ONLY
+
+
+def _subject_for(normalized: str, action: str) -> str | None:
+    if action == "create_agent":
+        return "Weekly LLM Upgrade Scout" if "weekly" in normalized and "llm" in normalized else "Custom Agent"
+    if "draft" in normalized:
+        return "draft"
+    return None
+
+
+def _blocker_for(intent: NavigationIntent, context: AppNavigationContext) -> tuple[bool, str | None, str | None]:
+    normalized = _normalize(intent.raw_text)
+    if normalized in RESUME_COMMANDS and context.last_blocker:
+        return True, context.last_blocker, _next_safe_step_for_blocker(context.last_blocker, intent)
+    if intent.safety_level == SafetyLevel.CONFIRM_REQUIRED:
+        return (
+            True,
+            "destructive action requires explicit target confirmation",
+            "Confirm the exact draft or saved item to delete.",
+        )
+    if intent.action in {"open", "navigate", "resume"} and intent.target_surface == "preview_area" and not context.active_project:
+        return True, "no active project is selected", "Choose a project or ask me to create one."
+    return False, None, None
+
+
+def _steps_for(intent: NavigationIntent, *, blocked: bool, blocker: str | None) -> list[NavigationStep]:
+    steps = [
+        NavigationStep("understand", intent.target_surface, f"Understood command: {intent.raw_text.strip()}"),
+    ]
+    if intent.action == "create_agent":
+        return [
+            *steps,
+            NavigationStep("navigate", "agent_library", "Open Agent Library."),
+            NavigationStep("create", "agent_library", f"Create {intent.subject or 'Custom Agent'}."),
+            NavigationStep("fill", "agent_library", "Fill purpose and research topics from the command."),
+            NavigationStep("schedule", "scheduler", "Add weekly schedule."),
+            NavigationStep("save", "agent_library", "Save the agent draft."),
+            NavigationStep("verify", "agent_library", "Reload and verify the saved agent and weekly schedule."),
+        ]
+
+    steps.append(
+        NavigationStep(
+            "navigate",
+            intent.target_surface,
+            f"Open {intent.target_surface.replace('_', ' ')}.",
+        )
+    )
+    if intent.action == "verify":
+        steps.append(NavigationStep("verify", intent.target_surface, "Run the relevant check and inspect the result."))
+    elif intent.action == "delete":
+        steps.append(NavigationStep("confirm", intent.target_surface, blocker or "Confirm destructive action before continuing."))
+    else:
+        steps.append(
+            NavigationStep(
+                "verify",
+                intent.target_surface,
+                f"Confirm {intent.target_surface.replace('_', ' ')} is available.",
+            )
+        )
+    return steps
+
+
+def _next_safe_step_for_blocker(blocker: str, intent: NavigationIntent) -> str:
+    if intent.target_surface == "preview_area" or "no active project" in blocker.casefold():
+        return "Choose a project or clear the blocker, then ask me to resume."
+    return "Clear the blocker, then ask me to resume."
+
+
+def _is_agent_creation_command(normalized: str) -> bool:
+    return any(phrase in normalized for phrase in AGENT_CREATION_PHRASES)
+
+
+def _is_contextual_delete_request(normalized: str) -> bool:
+    if _is_question_like_non_command(normalized):
+        return False
+    return any(_matches_phrase(normalized, term) for term in DESTRUCTIVE_CONTEXT_TERMS)
 
 
 def _has_destructive_verb(normalized: str) -> bool:
