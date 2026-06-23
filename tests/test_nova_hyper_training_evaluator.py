@@ -142,6 +142,35 @@ def test_role_checkpoint_gate_blocks_promotion():
     assert any("role" in reason.lower() for reason in decision.reasons)
 
 
+def test_string_false_load_gate_fails_closed():
+    candidate = metrics(75.0, 76.0, 74.0)
+    candidate["stability"]["load_ok"] = "false"
+
+    decision = decide_promotion(
+        baseline=metrics(70.0, 70.0, 70.0),
+        candidate=candidate,
+        previous_winner=None,
+    )
+
+    assert decision.verdict == "REJECTED"
+    assert any("load" in reason.lower() for reason in decision.reasons)
+
+
+def test_invalid_regression_evidence_rejects_closed():
+    for invalid_regressions in ("1", {"count": 1}):
+        candidate = metrics(75.0, 76.0, 74.0)
+        candidate["stability"]["regressions"] = invalid_regressions
+
+        decision = decide_promotion(
+            baseline=metrics(70.0, 70.0, 70.0),
+            candidate=candidate,
+            previous_winner=None,
+        )
+
+        assert decision.verdict == "REJECTED"
+        assert any("invalid regression evidence" in reason.lower() for reason in decision.reasons)
+
+
 class FixedRouteModel:
     def predict(self, text):
         if "plan" in text:
@@ -189,6 +218,26 @@ class FixedRuntime:
         )
 
 
+class SometimesExplodingRuntime:
+    def __init__(self):
+        self.calls = 0
+
+    def generate(self, role, prompt, max_new_tokens=80):
+        self.calls += 1
+        if self.calls == 1:
+            raise RuntimeError("generation exploded")
+        return GenerationResult(
+            "safe answer",
+            role,
+            "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+            HASH_A,
+            2,
+            0.01,
+            100.0,
+            "length",
+        )
+
+
 def test_evaluate_answers_tracks_composite_protected_malformed_and_repetition():
     cases = [
         {"prompt": "identity", "expected": "safe answer", "protected": True},
@@ -204,6 +253,25 @@ def test_evaluate_answers_tracks_composite_protected_malformed_and_repetition():
     assert good["malformed_rate"] == 0.0
     assert repetitive["repetition_rate"] == 1.0
     assert malformed["malformed_rate"] == 1.0
+
+
+def test_evaluate_answers_records_generation_exceptions_and_continues():
+    cases = [
+        {"prompt": "identity", "expected": "safe answer", "protected": True},
+        {"prompt": "freeform", "expected": "safe answer"},
+    ]
+
+    result = evaluate_answers(SometimesExplodingRuntime(), cases)
+
+    assert result["composite"] == 50.0
+    assert result["malformed_rate"] == 0.5
+    assert result["protected_perfect"] is False
+    assert result["traces"][0]["ok"] is False
+    assert result["traces"][0]["malformed"] is True
+    assert result["traces"][0]["correct"] is False
+    assert "generation exploded" in result["traces"][0]["error"]
+    assert result["traces"][1]["ok"] is True
+    assert result["traces"][1]["correct"] is True
 
 
 def test_evaluate_stability_normalizes_reload_confirmation_and_regression_state():
@@ -246,3 +314,43 @@ def test_run_negative_controls_rejects_known_bad_candidates(tmp_path):
         "transformer_source_without_checkpoint",
     }.issubset(report["controls"])
     assert all(item["rejected"] is True for item in report["controls"].values())
+    assert "missing" in report["controls"]["absent_checkpoints"]["error"].lower()
+    assert "checkpoint" in report["controls"]["absent_checkpoints"]["error"].lower()
+    assert "invalid" in report["controls"]["invalid_checkpoint_payloads"]["error"].lower()
+    assert "checkpoint" in report["controls"]["invalid_checkpoint_payloads"]["error"].lower()
+
+
+def test_shuffled_route_negative_control_corrupts_homogeneous_roles(tmp_path):
+    report = run_negative_controls(
+        tmp_path,
+        {
+            "routes": [
+                {"text": "debug code", "domain": "coding", "primary_role": "left_hemisphere"},
+                {"text": "fix python", "domain": "coding", "primary_role": "left_hemisphere"},
+            ],
+            "baseline": metrics(80.0, 80.0, 80.0),
+        },
+    )
+
+    control = report["controls"]["shuffled_route_labels"]
+    assert control["rejected"] is True
+    assert control["metrics"]["macro_f1"] < control["metrics"]["original_macro_f1"]
+    assert control["metrics"]["corrupted"] is True
+
+
+def test_negative_control_candidate_scores_are_clamped_to_100(tmp_path):
+    report = run_negative_controls(
+        tmp_path,
+        {
+            "routes": [
+                {"text": "debug code", "domain": "coding", "primary_role": "left_hemisphere"},
+                {"text": "make a plan", "domain": "planning", "primary_role": "planner_transformer"},
+            ],
+            "baseline": metrics(99.0, 99.0, 99.0),
+        },
+    )
+
+    for control in report["controls"].values():
+        decision = control.get("decision")
+        if decision:
+            assert decision["candidate_joint"] <= 100.0

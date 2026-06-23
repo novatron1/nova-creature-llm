@@ -1,9 +1,14 @@
 from __future__ import annotations
 
 import math
+import uuid
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+import torch
+
+from nova_checkpoint_registry import CheckpointRegistry, sha256
+from nova_torch_transformer import load_checkpoint
 from nova_training_types import DOMAIN_NAMES, ROLE_NAMES, PromotionDecision, RoutePrediction
 
 PROMOTION_GAIN_FLOOR = 2.0
@@ -69,11 +74,20 @@ def evaluate_answers(runtime: Any, cases: Sequence[Any]) -> dict:
         prompt = str(_case_value(case, "prompt", _case_value(case, "text", "")))
         role = str(_case_value(case, "role", "left_hemisphere"))
         max_new_tokens = int(_case_value(case, "max_new_tokens", 80))
-        result = runtime.generate(role, prompt, max_new_tokens=max_new_tokens)
-        text = str(getattr(result, "text", "") or "")
-        ok = bool(getattr(result, "ok", False))
-        malformed_output = (not ok) or (not text.strip()) or bool(getattr(result, "error", None))
-        case_correct = (not malformed_output) and _answer_matches(case, text)
+        error = None
+        try:
+            result = runtime.generate(role, prompt, max_new_tokens=max_new_tokens)
+            text = str(getattr(result, "text", "") or "")
+            ok = _strict_bool(getattr(result, "ok", False))
+            error = getattr(result, "error", None)
+            malformed_output = (not ok) or (not text.strip()) or bool(error)
+            case_correct = (not malformed_output) and _answer_matches(case, text)
+        except Exception as exc:
+            text = ""
+            ok = False
+            error = str(exc)
+            malformed_output = True
+            case_correct = False
         is_protected = bool(_case_value(case, "protected", False))
         repeated = _is_repetitive_output(text)
 
@@ -90,6 +104,7 @@ def evaluate_answers(runtime: Any, cases: Sequence[Any]) -> dict:
                 "correct": case_correct,
                 "malformed": malformed_output,
                 "repetitive": repeated,
+                "error": error,
             }
         )
 
@@ -124,6 +139,8 @@ def evaluate_stability(runtime: Any, regression_result: Any) -> dict:
         ("confirm_deterministic", "confirmation_ok"),
     )
     regressions = _regression_count(result.get("regressions", 0))
+    regression_evidence_ok = regressions is not None
+    regression_count = regressions if regressions is not None else 1
 
     score = 100.0
     if not reload_ok:
@@ -134,7 +151,9 @@ def evaluate_stability(runtime: Any, regression_result: Any) -> dict:
         score -= 25.0
     if not confirmation_ok:
         score -= 45.0
-    score -= min(10.0 * regressions, 100.0)
+    if not regression_evidence_ok:
+        score -= 100.0
+    score -= min(10.0 * regression_count, 100.0)
     score = max(0.0, score)
     return {
         "reload_ok": reload_ok,
@@ -143,7 +162,8 @@ def evaluate_stability(runtime: Any, regression_result: Any) -> dict:
         "roles_ok": roles_ok,
         "role_ok": role_ok,
         "confirmation_ok": confirmation_ok,
-        "regressions": regressions,
+        "regressions": regression_count,
+        "regression_evidence_ok": regression_evidence_ok,
         "score": score,
     }
 
@@ -210,7 +230,9 @@ def decide_promotion(
     if not _nested_bool(candidate, ("stability", "confirmation_ok"), False):
         reasons.append("deterministic confirmation failed")
     regressions = _regression_count(_nested_value(candidate, ("stability", "regressions"), 1))
-    if regressions != 0:
+    if regressions is None:
+        reasons.append("invalid regression evidence")
+    elif regressions != 0:
         reasons.append(f"regression count is {regressions}, expected zero")
 
     training = _mapping(candidate.get("training", {}))
@@ -243,6 +265,8 @@ def run_negative_controls(project_root: str | Path, cases: Any) -> dict:
         original_route = evaluate_routes(model, route_cases)
         shuffled_cases = _shuffled_route_cases(route_cases)
         shuffled_route = evaluate_routes(model, shuffled_cases)
+        shuffled_route["original_macro_f1"] = original_route["macro_f1"]
+        shuffled_route["corrupted"] = _route_cases_corrupted(route_cases, shuffled_cases)
         candidate = _candidate_from_parts(baseline, routing=shuffled_route)
         decision = decide_promotion(baseline, candidate, None)
         rejected = decision.verdict == "REJECTED" and shuffled_route["macro_f1"] < original_route["macro_f1"]
@@ -250,20 +274,40 @@ def run_negative_controls(project_root: str | Path, cases: Any) -> dict:
     else:
         controls["shuffled_route_labels"] = _control_result(False, None, {"error": "not enough route cases"})
 
-    missing_path = root / "checkpoints" / "__negative_control_missing__.pt"
+    absent_evidence = _exercise_absent_checkpoint_control(root)
     candidate = _candidate_from_parts(
         baseline,
-        stability={"reload_ok": missing_path.exists(), "confirmation_ok": True, "regressions": 0, "score": 55.0},
+        stability={
+            "reload_ok": absent_evidence["ok"],
+            "confirmation_ok": True,
+            "regressions": 0,
+            "score": 55.0,
+        },
     )
-    controls["absent_checkpoints"] = _control_result(decide_promotion(baseline, candidate, None).verdict == "REJECTED")
+    absent_decision = decide_promotion(baseline, candidate, None)
+    controls["absent_checkpoints"] = _control_result(
+        absent_decision.verdict == "REJECTED",
+        absent_decision,
+        {"checkpoint_error_observed": not absent_evidence["ok"]},
+        error=absent_evidence["error"],
+    )
 
-    invalid_payload_ok = _checkpoint_payload_looks_valid({"not": "a checkpoint"})
+    invalid_evidence = _exercise_invalid_checkpoint_payload_control(root)
     candidate = _candidate_from_parts(
         baseline,
-        stability={"reload_ok": invalid_payload_ok, "confirmation_ok": True, "regressions": 0, "score": 55.0},
+        stability={
+            "load_ok": invalid_evidence["ok"],
+            "confirmation_ok": True,
+            "regressions": 0,
+            "score": 75.0,
+        },
     )
+    invalid_decision = decide_promotion(baseline, candidate, None)
     controls["invalid_checkpoint_payloads"] = _control_result(
-        decide_promotion(baseline, candidate, None).verdict == "REJECTED"
+        invalid_decision.verdict == "REJECTED",
+        invalid_decision,
+        {"checkpoint_error_observed": not invalid_evidence["ok"]},
+        error=invalid_evidence["error"],
     )
 
     candidate = _candidate_from_parts(
@@ -360,6 +404,9 @@ def _candidate_from_parts(
         candidate["stability"].update(dict(stability))
     if training is not None:
         candidate["training"] = dict(training)
+    candidate["routing"]["macro_f1"] = _clamp_score(candidate["routing"]["macro_f1"])
+    candidate["answers"]["composite"] = _clamp_score(candidate["answers"]["composite"])
+    candidate["stability"]["score"] = _clamp_score(candidate["stability"].get("score", 100.0))
     candidate["joint"] = (
         0.50 * float(candidate["routing"]["macro_f1"])
         + 0.40 * float(candidate["answers"]["composite"])
@@ -391,7 +438,13 @@ def _default_metrics() -> dict:
     }
 
 
-def _control_result(rejected: bool, decision: PromotionDecision | None = None, metrics: Mapping[str, Any] | None = None) -> dict:
+def _control_result(
+    rejected: bool,
+    decision: PromotionDecision | None = None,
+    metrics: Mapping[str, Any] | None = None,
+    *,
+    error: str | None = None,
+) -> dict:
     result = {"rejected": bool(rejected)}
     if decision is not None:
         result["decision"] = {
@@ -403,6 +456,8 @@ def _control_result(rejected: bool, decision: PromotionDecision | None = None, m
         }
     if metrics is not None:
         result["metrics"] = dict(metrics)
+    if error is not None:
+        result["error"] = str(error)
     return result
 
 
@@ -432,22 +487,66 @@ def _shuffled_route_cases(cases: Sequence[Any]) -> list[dict]:
     ]
     shifted_roles = roles[1:] + roles[:1]
     shuffled = []
-    for case, role in zip(cases, shifted_roles):
+    for case, original_role, role in zip(cases, roles, shifted_roles):
         row = dict(case) if isinstance(case, Mapping) else {
             "text": _case_text(case),
             "domain": _case_value(case, "domain", "general"),
         }
+        if role == original_role:
+            role = _different_valid_role(original_role)
         row["primary_role"] = role
         shuffled.append(row)
     return shuffled
 
 
-def _checkpoint_payload_looks_valid(payload: Any) -> bool:
-    if not isinstance(payload, Mapping):
-        return False
-    state_dict = payload.get("state_dict")
-    metadata = payload.get("metadata")
-    return isinstance(state_dict, Mapping) and bool(state_dict) and isinstance(metadata, Mapping)
+def _different_valid_role(role: str) -> str:
+    for candidate_role in ROLE_NAMES:
+        if candidate_role != role:
+            return candidate_role
+    return "speech_output_transformer"
+
+
+def _route_cases_corrupted(original_cases: Sequence[Any], corrupted_cases: Sequence[Any]) -> bool:
+    return any(
+        str(_case_value(original, "primary_role", _case_value(original, "role", "speech_output_transformer")))
+        != str(_case_value(corrupted, "primary_role", _case_value(corrupted, "role", "speech_output_transformer")))
+        for original, corrupted in zip(original_cases, corrupted_cases)
+    )
+
+
+def _exercise_absent_checkpoint_control(project_root: Path) -> dict:
+    control_root = _negative_control_root(project_root, "absent")
+    role = "left_hemisphere"
+    checkpoint_path = control_root / "checkpoints" / "brain_slots" / role / "missing_after_register.pt"
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    checkpoint_path.write_bytes(b"negative-control-checkpoint-bytes")
+    digest = sha256(checkpoint_path)
+    registry = CheckpointRegistry(control_root)
+    registry.register_baseline(role, checkpoint_path, digest)
+    checkpoint_path.unlink()
+    try:
+        registry.resolve_live(role)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+    return {"ok": True, "error": "absent checkpoint unexpectedly resolved"}
+
+
+def _exercise_invalid_checkpoint_payload_control(project_root: Path) -> dict:
+    control_root = _negative_control_root(project_root, "invalid")
+    checkpoint_path = control_root / "checkpoints" / "invalid_payload.pt"
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save({"not": "a checkpoint"}, checkpoint_path)
+    try:
+        load_checkpoint(checkpoint_path)
+    except Exception as exc:
+        return {"ok": False, "error": f"invalid checkpoint payload: {exc}"}
+    return {"ok": True, "error": "invalid checkpoint payload unexpectedly loaded"}
+
+
+def _negative_control_root(project_root: Path, name: str) -> Path:
+    root = project_root / "artifacts" / "negative_controls" / f"{name}_{uuid.uuid4().hex}"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 def _predict_route(route_model: Any, text: str) -> Any:
@@ -502,11 +601,11 @@ def _bool_or_runtime(
     default: bool = False,
 ) -> bool:
     if key in result:
-        return bool(result[key])
+        return _strict_bool(result[key])
     for name in runtime_names:
         value = getattr(runtime, name, None)
         if callable(value):
-            return bool(value())
+            return _strict_bool(value())
         if isinstance(value, bool):
             return value
     return default
@@ -516,17 +615,19 @@ def _stability_gate_ok(stability: Mapping[str, Any], keys: Sequence[str]) -> boo
     values = [stability[key] for key in keys if key in stability]
     if not values:
         return True
-    return all(bool(value) for value in values)
+    return all(_strict_bool(value) for value in values)
 
 
-def _regression_count(value: Any) -> int:
-    if isinstance(value, bool):
-        return int(value)
+def _regression_count(value: Any) -> int | None:
+    if isinstance(value, bool) or value is None:
+        return None
     if isinstance(value, int):
         return max(value, 0)
+    if isinstance(value, float) and math.isfinite(value) and value.is_integer():
+        return max(int(value), 0)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return len(value)
-    return 0
+    return None
 
 
 def _coerce_nonempty_cases(cases: Sequence[Any], field_name: str) -> list[Any]:
@@ -569,7 +670,18 @@ def _nested_float(metrics: Mapping[str, Any], path: Sequence[str], default: floa
 
 def _nested_bool(metrics: Mapping[str, Any], path: Sequence[str], default: bool) -> bool:
     value = _nested_value(metrics, path, default)
-    return bool(value)
+    return _strict_bool(value)
+
+
+def _strict_bool(value: Any) -> bool:
+    return value if isinstance(value, bool) else False
+
+
+def _clamp_score(value: Any) -> float:
+    number = _optional_float(value)
+    if number is None:
+        return 0.0
+    return max(0.0, min(100.0, number))
 
 
 def _optional_float(value: Any) -> float | None:
