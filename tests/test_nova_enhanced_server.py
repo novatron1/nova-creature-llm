@@ -236,3 +236,44 @@ def test_brain_route_answers_cincinnati_football_team_question(monkeypatch):
     assert "FC Cincinnati" in response
     assert trace["source"] == "sports_fact_router"
     assert trace["domain"] == "sports"
+
+
+def test_brain_route_learning_prompt_explains_natural_fact_input(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    response, trace = server.brain_route("CAN U LEARN SOMETHING FOR ME")
+
+    assert response.startswith("[LEARNING]")
+    assert "plain fact" in response
+    assert "dictionary" in response
+    assert trace["source"] == "learning_help_router"
+
+
+def test_brain_route_learns_natural_fact_into_dictionary_and_recalls(monkeypatch, tmp_path):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "DICT_PATH", str(tmp_path / "approved_answer_dictionary.json"))
+    monkeypatch.setattr(server, "DICT_HITS_PATH", str(tmp_path / "dictionary_hits.jsonl"))
+    monkeypatch.setattr(server, "DICT_INDEX", {})
+    monkeypatch.setattr(server, "MEMORY_FILE", str(tmp_path / "nova_memory.json"))
+    monkeypatch.setattr(server, "MEMORY", {"people": {}, "lessons": {}, "last_person": None})
+
+    learned_response, learned_trace = server.brain_route("THE CINCINNATI FOOTBALL TEAM NAME IS BENGALS")
+
+    assert learned_response.startswith("[LEARNING] Stored")
+    assert learned_trace["source"] == "natural_fact_learning"
+    assert learned_trace["domain"] == "dictionary"
+    assert "dictionary_write" in learned_trace["skills"]
+    assert server._dict_lookup("WHAT IS CINCINNATI FOOTBALL TEAM CALL?") == "The Cincinnati football team name is Bengals."
+
+    recall_response, recall_trace = server.brain_route("WHAT IS CINCINNATI FOOTBALL TEAM CALL?")
+
+    assert recall_response == "The Cincinnati football team name is Bengals."
+    assert recall_trace["source"] == "dictionary"
+    assert recall_trace["domain"] == "dictionary"
+    assert recall_trace["memory_event"] == "dictionary_hit"

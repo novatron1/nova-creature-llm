@@ -133,6 +133,179 @@ def _dict_lookup(text):
         return DICT_INDEX[key]
     return None
 
+def _dictionary_response(text):
+    answer = _dict_lookup(text)
+    if not answer:
+        return None
+    return answer, {
+        "roles": ["memory_transformer", "dictionary_system"],
+        "skills": ["dictionary_lookup", "fast_path"],
+        "confidence": 0.98,
+        "memory_event": "dictionary_hit",
+        "domain": "dictionary",
+        "source": "dictionary",
+        "route_path": ["memory_transformer", "dictionary_system"],
+        "verification": {
+            "method": "approved_dictionary_lookup",
+            "status": "hit",
+            "checks": ["canonical_key_match"],
+        },
+    }
+
+def _load_raw_dictionary():
+    try:
+        if os.path.exists(DICT_PATH):
+            with open(DICT_PATH, encoding="utf-8") as f:
+                raw = json.load(f)
+            return raw if isinstance(raw, dict) else {}
+    except Exception:
+        pass
+    return {}
+
+def _write_dictionary_entries(entries):
+    global DICT_INDEX
+    if not entries:
+        return []
+    raw = _load_raw_dictionary()
+    written = []
+    for question, answer in entries.items():
+        canonical = _canonical_key(question)
+        if not canonical:
+            continue
+        raw[question] = answer
+        DICT_INDEX[canonical] = answer
+        written.append(question)
+    os.makedirs(os.path.dirname(DICT_PATH), exist_ok=True)
+    with open(DICT_PATH, "w", encoding="utf-8") as f:
+        json.dump(raw, f, indent=2, ensure_ascii=True)
+        f.write("\n")
+    return written
+
+def _normalize_fact_words(value):
+    cleaned = _canonical_key(value)
+    known = {
+        "cincinnati": "Cincinnati",
+        "nfl": "NFL",
+        "mls": "MLS",
+        "fc": "FC",
+    }
+    return " ".join(known.get(word, word) for word in cleaned.split())
+
+def _normalize_fact_value(value):
+    cleaned = " ".join(str(value or "").strip(" ?!.:,;\"'").split())
+    if not cleaned:
+        return ""
+    if cleaned.isupper() or cleaned.islower():
+        return cleaned.title()
+    return cleaned
+
+def _natural_fact_from_text(text):
+    raw = " ".join(str(text or "").replace("\n", " ").split()).strip()
+    if not raw or raw.endswith("?"):
+        return None
+    lowered = raw.casefold().strip()
+    if re.match(r"^(?:what|who|how|when|where|why|can|could|should|would|do|does|is|are)\b", lowered):
+        return None
+    if re.match(r"^(?:my name is|i am|i'm|call me)\b", lowered):
+        return None
+    content = re.sub(
+        r"^(?:remember(?: that)?|save this|learn(?: this| that)?|nova learn)\s*:?\s+",
+        "",
+        raw,
+        flags=re.IGNORECASE,
+    ).strip()
+    match = re.match(r"^(?:the\s+)?(.{3,120}?)\s+(?:is|are)\s+(.{1,160})$", content, re.IGNORECASE)
+    if not match:
+        return None
+    subject = _normalize_fact_words(match.group(1))
+    value = _normalize_fact_value(match.group(2))
+    if not subject or not value:
+        return None
+    answer_subject = subject[:1].upper() + subject[1:]
+    answer = f"The {answer_subject} is {value}."
+    questions = {
+        f"what is {subject}",
+        f"what is the {subject}",
+    }
+    if subject.endswith(" name"):
+        stem = subject[:-5].strip()
+        if stem:
+            questions.update(
+                {
+                    f"what is {stem} name",
+                    f"what is the {stem} name",
+                    f"what is {stem} called",
+                    f"what is the {stem} called",
+                    f"what is {stem} call",
+                    f"what is the {stem} call",
+                }
+            )
+    return {
+        "subject": subject,
+        "value": value,
+        "answer": answer,
+        "questions": sorted(questions),
+    }
+
+def _learning_help_response(text):
+    key = _canonical_key(text).replace(" u ", " you ")
+    if key not in {
+        "learn",
+        "can you learn",
+        "can you learn something",
+        "can you learn something for me",
+        "will you learn something for me",
+        "i want you to learn something",
+    }:
+        return None
+    return (
+        "[LEARNING] Yes. Tell me a plain fact like: 'The Cincinnati football team name is Bengals.' "
+        "I will store it in dictionary memory and use it when you ask the same idea in different words."
+    ), {
+        "roles": ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["learning_help", "dictionary_guidance"],
+        "confidence": 0.95,
+        "domain": "learning",
+        "source": "learning_help_router",
+        "route_path": ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"],
+    }
+
+def _natural_fact_learning_response(text):
+    fact = _natural_fact_from_text(text)
+    if not fact:
+        return None
+    entries = {question: fact["answer"] for question in fact["questions"]}
+    written = _write_dictionary_entries(entries)
+    lid = "lesson_" + str(len(MEMORY.get("lessons", {})) + 1)
+    MEMORY.setdefault("lessons", {})[lid] = {
+        "text": fact["answer"],
+        "learned_at": datetime.now().isoformat(),
+        "session": SESSION_ID,
+        "source": "natural_fact",
+        "dictionary_questions": written,
+    }
+    MEMORY["last_lesson"] = lid
+    _save_memory()
+    sample_question = fact["questions"][0] if fact["questions"] else f"what is {fact['subject']}"
+    return (
+        f"[LEARNING] Stored this in dictionary memory: {fact['answer']}\n"
+        f"Ask me: \"{sample_question}\""
+    ), {
+        "roles": ["memory_transformer", "dictionary_system", "critic_conscience_transformer"],
+        "skills": ["natural_fact_learning", "dictionary_write", "memory_lock"],
+        "confidence": 0.94,
+        "memory_event": "lesson_created:" + lid,
+        "domain": "dictionary",
+        "source": "natural_fact_learning",
+        "route_path": ["memory_transformer", "dictionary_system", "critic_conscience_transformer"],
+        "dictionary_questions": written,
+        "verification": {
+            "method": "dictionary_write",
+            "status": "stored",
+            "checks": ["fact_parse", "question_variants", "dictionary_index_update"],
+        },
+    }
+
 def _weather_request_location(text):
     raw = " ".join(str(text or "").replace("\n", " ").split()).strip()
     if not raw:
@@ -610,10 +783,40 @@ def brain_route(text, context=None):
                 + "  status | help | mock voice/text | mock camera/text\\n"
                 + "  Learn this: [fact] | Test yourself | Deep learn | My name is ..."), trace
 
+    dictionary_result = _dictionary_response(text)
+    if dictionary_result:
+        response, dictionary_trace = dictionary_result
+        trace.update(dictionary_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
     math_result = _simple_math_response(text)
     if math_result:
         response, math_trace = math_result
         trace.update(math_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
+    learning_help_result = _learning_help_response(text)
+    if learning_help_result:
+        response, learning_help_trace = learning_help_result
+        trace.update(learning_help_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
+    natural_fact_result = _natural_fact_learning_response(text)
+    if natural_fact_result:
+        response, natural_fact_trace = natural_fact_result
+        trace.update(natural_fact_trace)
         if _CONV_ENGINE_AVAIL:
             try: _CONV_ENGINE.add_exchange(text, response)
             except: pass
