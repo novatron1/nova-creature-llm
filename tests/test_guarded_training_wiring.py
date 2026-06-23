@@ -2,6 +2,7 @@ from pathlib import Path
 import importlib.util
 import json
 import sys
+import threading
 
 import pytest
 
@@ -62,22 +63,69 @@ def test_server_start_training_uses_single_guarded_thread(monkeypatch):
     assert created_threads[0].daemon is True
 
 
+def test_server_start_training_is_locked_against_parallel_callers(monkeypatch):
+    import nova_enhanced_server as server
+
+    real_thread = threading.Thread
+    created_threads = []
+    caller_count = 8
+    ready = threading.Barrier(caller_count)
+    observed_false = threading.Barrier(caller_count)
+    results = []
+    results_lock = threading.Lock()
+
+    class RaceFalse:
+        def __bool__(self):
+            try:
+                observed_false.wait(timeout=0.25)
+            except threading.BrokenBarrierError:
+                pass
+            return False
+
+    class FakeThread:
+        def __init__(self, target, daemon):
+            self.target = target
+            self.daemon = daemon
+            created_threads.append(self)
+
+        def start(self):
+            pass
+
+    def call_start_training():
+        ready.wait(timeout=1)
+        result = server._start_training()
+        with results_lock:
+            results.append(result)
+
+    server._TRAINING_RUNNING = RaceFalse()
+    server._TRAINING_RUN_ID = None
+    monkeypatch.setattr(server.threading, "Thread", FakeThread)
+
+    callers = [real_thread(target=call_start_training) for _ in range(caller_count)]
+    for caller in callers:
+        caller.start()
+    for caller in callers:
+        caller.join(timeout=2)
+
+    assert not any(caller.is_alive() for caller in callers)
+    assert sum(1 for started, _ in results if started) == 1
+    assert len(created_threads) == 1
+
+
 def test_deep_learn_reports_guarded_run_id_without_starting_second_run(monkeypatch):
     import nova_enhanced_server as server
 
     calls = []
-    server._TRAINING_RUNNING = True
-    server._TRAINING_RUN_ID = "active-run"
 
-    def fail_if_started():
-        calls.append("started")
-        raise AssertionError("started a second guarded training run")
+    def already_running():
+        calls.append("start_checked")
+        return False, "active-run"
 
-    monkeypatch.setattr(server, "_start_training", fail_if_started)
+    monkeypatch.setattr(server, "_start_training", already_running)
 
     response, trace = server.brain_route("deep learn")
 
-    assert calls == []
+    assert calls == ["start_checked"]
     assert "active-run" in response
     assert trace["memory_event"] == "deep_learn"
 

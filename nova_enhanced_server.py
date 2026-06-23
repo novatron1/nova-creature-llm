@@ -51,17 +51,19 @@ except Exception as e:
 # ── Background Training ────────────────────────────────────────────────────
 _TRAINING_RUNNING = False
 _TRAINING_RUN_ID = None
+_TRAINING_LOCK = threading.Lock()
 _TRAINING_LOG = []
 
 def _start_training():
     global _TRAINING_RUNNING, _TRAINING_RUN_ID
-    if _TRAINING_RUNNING:
-        return False, _TRAINING_RUN_ID
-    _TRAINING_RUNNING = True
-    _TRAINING_RUN_ID = "hypertrain_" + uuid.uuid4().hex[:8]
-    t = threading.Thread(target=_run_guarded_training, daemon=True)
-    t.start()
-    return True, _TRAINING_RUN_ID
+    with _TRAINING_LOCK:
+        if _TRAINING_RUNNING:
+            return False, _TRAINING_RUN_ID
+        _TRAINING_RUNNING = True
+        _TRAINING_RUN_ID = "hypertrain_" + uuid.uuid4().hex[:8]
+        t = threading.Thread(target=_run_guarded_training, daemon=True)
+        t.start()
+        return True, _TRAINING_RUN_ID
 
 def _run_guarded_training():
     global _TRAINING_RUNNING, _TRAINING_RUN_ID
@@ -75,7 +77,8 @@ def _run_guarded_training():
     except Exception as exc:
         _TRAINING_LOG.append(f"[HYPERTRAIN] BLOCKED {type(exc).__name__}: {exc}")
     finally:
-        _TRAINING_RUNNING = False
+        with _TRAINING_LOCK:
+            _TRAINING_RUNNING = False
 
 # ── Dictionary ──────────────────────────────────────────────────────────────
 DICT_PATH = os.path.join(ROOT, "data", "dictionary_memory", "approved_answer_dictionary.json")
@@ -274,12 +277,6 @@ def brain_route(text, context=None):
         trace["roles"]=["left_hemisphere","right_hemisphere","memory_transformer","planner_transformer",
                         "critic_conscience_transformer","dream_simulation_transformer","speech_output_transformer"]
         trace["skills"]=["transformer_training"]; trace["confidence"]=0.85; trace["memory_event"]="deep_learn"
-        if _TRAINING_RUNNING:
-            run_id = _TRAINING_RUN_ID or "active"
-            return (
-                "[DEEP LEARN] Guarded hyper-training is already running "
-                f"(run ID: {run_id}).\nSay 'training status' to check progress."
-            ), trace
         started, run_id = _start_training()
         if started:
             return (
