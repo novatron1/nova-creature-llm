@@ -1,0 +1,174 @@
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from nova_hyper_training_evaluator import (
+    decide_promotion,
+    evaluate_answers,
+    evaluate_routes,
+    evaluate_stability,
+    run_negative_controls,
+)
+from nova_training_types import GenerationResult, RoutePrediction
+
+
+HASH_A = "a" * 64
+
+
+def metrics(joint, route, answer, repetition=0.01, protected=True, reload_ok=True):
+    return {
+        "joint": joint,
+        "routing": {"macro_f1": route, "protected_domain_floor_delta": 0.0},
+        "answers": {
+            "composite": answer,
+            "protected_perfect": protected,
+            "malformed_rate": 0.0,
+            "repetition_rate": repetition,
+        },
+        "stability": {"reload_ok": reload_ok, "confirmation_ok": True, "regressions": 0},
+    }
+
+
+def test_candidate_promotes_only_when_all_gates_pass():
+    decision = decide_promotion(
+        baseline=metrics(70.0, 70.0, 70.0),
+        candidate=metrics(75.0, 76.0, 74.0),
+        previous_winner=None,
+    )
+    assert decision.verdict == "PROMOTED"
+
+
+def test_hash_change_cannot_override_answer_regression():
+    decision = decide_promotion(
+        baseline=metrics(80.0, 80.0, 80.0),
+        candidate=metrics(83.0, 86.0, 79.0),
+        previous_winner=None,
+    )
+    assert decision.verdict == "REJECTED"
+    assert any("answer" in reason.lower() for reason in decision.reasons)
+
+
+def test_repetition_blocks_promotion():
+    decision = decide_promotion(
+        baseline=metrics(80.0, 80.0, 80.0),
+        candidate=metrics(85.0, 86.0, 84.0, repetition=0.03),
+        previous_winner=None,
+    )
+    assert decision.verdict == "REJECTED"
+
+
+def test_previous_winner_is_the_reference_for_joint_gain():
+    decision = decide_promotion(
+        baseline=metrics(80.0, 80.0, 80.0),
+        candidate=metrics(84.0, 83.0, 83.0),
+        previous_winner=metrics(83.0, 81.0, 81.0),
+    )
+    assert decision.verdict == "REJECTED"
+    assert any("joint" in reason.lower() for reason in decision.reasons)
+
+
+class FixedRouteModel:
+    def predict(self, text):
+        if "plan" in text:
+            return RoutePrediction("planning", "planner_transformer", (), 0.9, HASH_A)
+        return RoutePrediction("coding", "left_hemisphere", (), 0.9, HASH_A)
+
+
+def test_evaluate_routes_scores_macro_f1_and_shuffled_labels_drop():
+    cases = [
+        {"text": "debug code", "domain": "coding", "primary_role": "left_hemisphere"},
+        {"text": "make a plan", "domain": "planning", "primary_role": "planner_transformer"},
+    ]
+
+    metrics_ok = evaluate_routes(FixedRouteModel(), cases)
+    metrics_shuffled = evaluate_routes(
+        FixedRouteModel(),
+        [
+            {**cases[0], "primary_role": "planner_transformer"},
+            {**cases[1], "primary_role": "left_hemisphere"},
+        ],
+    )
+
+    assert metrics_ok["macro_f1"] == 100.0
+    assert metrics_ok["protected_domain_floor_delta"] == 0.0
+    assert metrics_shuffled["macro_f1"] == 0.0
+
+
+class FixedRuntime:
+    def __init__(self, text="safe answer", role="left_hemisphere", error=None):
+        self.text = text
+        self.role = role
+        self.error = error
+
+    def generate(self, role, prompt, max_new_tokens=80):
+        return GenerationResult(
+            self.text,
+            self.role,
+            "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+            HASH_A,
+            max(0, len(self.text.split())),
+            0.01,
+            100.0,
+            "length",
+            self.error,
+        )
+
+
+def test_evaluate_answers_tracks_composite_protected_malformed_and_repetition():
+    cases = [
+        {"prompt": "identity", "expected": "safe answer", "protected": True},
+        {"prompt": "freeform", "expected_contains": "answer"},
+    ]
+
+    good = evaluate_answers(FixedRuntime(), cases)
+    repetitive = evaluate_answers(FixedRuntime("ha ha ha ha ha ha"), cases)
+    malformed = evaluate_answers(FixedRuntime("", error="empty"), cases)
+
+    assert good["composite"] == 100.0
+    assert good["protected_perfect"] is True
+    assert good["malformed_rate"] == 0.0
+    assert repetitive["repetition_rate"] == 1.0
+    assert malformed["malformed_rate"] == 1.0
+
+
+def test_evaluate_stability_normalizes_reload_confirmation_and_regression_state():
+    stable = evaluate_stability(
+        FixedRuntime(),
+        {"reload_ok": True, "confirmation_ok": True, "regressions": []},
+    )
+    unstable = evaluate_stability(
+        FixedRuntime(),
+        {"reload_ok": False, "confirmation_ok": True, "regressions": ["lost arithmetic"]},
+    )
+
+    assert stable["score"] == 100.0
+    assert stable["regressions"] == 0
+    assert unstable["score"] < stable["score"]
+    assert unstable["regressions"] == 1
+
+
+def test_run_negative_controls_rejects_known_bad_candidates(tmp_path):
+    report = run_negative_controls(
+        tmp_path,
+        {
+            "routes": [
+                {"text": "debug code", "domain": "coding", "primary_role": "left_hemisphere"},
+                {"text": "make a plan", "domain": "planning", "primary_role": "planner_transformer"},
+            ],
+            "baseline": metrics(80.0, 80.0, 80.0),
+        },
+    )
+
+    assert report["passed"] is True
+    assert {
+        "shuffled_route_labels",
+        "absent_checkpoints",
+        "invalid_checkpoint_payloads",
+        "repetitive_output",
+        "random_weights_candidate",
+        "promotion_data_leak",
+        "transformer_source_without_checkpoint",
+    }.issubset(report["controls"])
+    assert all(item["rejected"] is True for item in report["controls"].values())
