@@ -15,6 +15,10 @@ def test_chat_payload_accepts_message_field():
     assert server._chat_text_from_body({"message": "Help me debug a Python loop"}) == "Help me debug a Python loop"
 
 
+def test_chat_payload_preserves_present_text_over_message():
+    assert server._chat_text_from_body({"text": "", "message": "fallback"}) == ""
+
+
 def test_brain_route_exposes_transformer_evidence_from_hybrid_router(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(

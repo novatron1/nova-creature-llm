@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +22,7 @@ def test_transformer_only_prompts_produce_checkpoint_evidence():
         response, trace = route_and_respond(prompt, transformer_only=True)
         assert response.strip()
         assert trace["source"] == "transformer"
-        assert trace["route_model_hash"]
-        assert trace["checkpoint_hash"]
+        assert re.fullmatch(r"[0-9a-fA-F]{64}", trace["route_model_hash"])
+        assert re.fullmatch(r"[0-9a-fA-F]{64}", trace["checkpoint_hash"])
         assert trace["generation"]["ok"] is True
         assert "fallback" not in trace.get("skills", [])

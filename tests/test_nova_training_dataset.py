@@ -7,7 +7,13 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from nova_training_dataset import build_dataset, clean_record, grouped_split
+from nova_torch_transformer import ModelConfig
+from nova_training_dataset import (
+    ROLE_TRAINING_BLOCK_SIZE,
+    build_dataset,
+    clean_record,
+    grouped_split,
+)
 
 
 EXPECTED_ACCEPTED_KEYS = {
@@ -43,8 +49,19 @@ def test_truncated_answer_is_quarantined():
     assert reason == "truncated_answer"
 
 
+def test_role_training_prompt_boundary_comes_from_model_config():
+    assert ROLE_TRAINING_BLOCK_SIZE == ModelConfig().block_size
+
+
+def test_role_training_prompt_that_preserves_sep_is_accepted_at_boundary():
+    prompt = "x" * (ModelConfig().block_size - 2)
+    cleaned, reason = clean_record({"prompt": prompt, "answer": "Short answer.", "source": "unit"})
+    assert reason is None
+    assert cleaned is not None
+
+
 def test_role_training_prompt_too_long_to_keep_sep_is_quarantined():
-    prompt = "x" * 127
+    prompt = "x" * (ModelConfig().block_size - 1)
     cleaned, reason = clean_record({"prompt": prompt, "answer": "Short answer.", "source": "unit"})
     assert cleaned is None
     assert reason == "prompt_too_long_for_role_training"

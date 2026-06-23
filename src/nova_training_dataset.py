@@ -8,6 +8,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from nova_torch_transformer import ModelConfig
 from nova_training_types import DOMAIN_NAMES, ROLE_NAMES
 
 DEFAULT_SEED = 20260622
@@ -103,7 +104,7 @@ TRUNCATED_FRAGMENTS = {
     "woul",
 }
 ALLOWED_SHORT_FINAL_WORDS = {"def"}
-ROLE_TRAINING_BLOCK_SIZE = 128
+ROLE_TRAINING_BLOCK_SIZE = ModelConfig().block_size
 
 
 def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:

@@ -138,7 +138,9 @@ _LAST_NOVA_RESPONSE = ""
 def _chat_text_from_body(body):
     if not isinstance(body, dict):
         return ""
-    return body.get("text") or body.get("message") or ""
+    if "text" in body:
+        return body.get("text")
+    return body.get("message") or ""
 
 def _apply_hybrid_trace(trace, hybrid_trace):
     if not isinstance(hybrid_trace, dict):
