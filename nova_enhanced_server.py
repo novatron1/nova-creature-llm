@@ -72,7 +72,11 @@ def _run_guarded_training():
         result = run_hyper_training(Path(ROOT))
         _TRAINING_RUN_ID = result.get("run_id", _TRAINING_RUN_ID)
         _TRAINING_LOG.append(
-            f"[HYPERTRAIN] {result['verdict']} joint={result.get('candidate_joint')}"
+            f"[HYPERTRAIN] {result['verdict']} "
+            f"run_id={result.get('run_id')} "
+            f"joint={result.get('candidate_joint')} "
+            f"json={result.get('json_report')} "
+            f"md={result.get('markdown_report')}"
         )
     except Exception as exc:
         _TRAINING_LOG.append(f"[HYPERTRAIN] BLOCKED {type(exc).__name__}: {exc}")
@@ -281,17 +285,21 @@ def brain_route(text, context=None):
         if started:
             return (
                 "[DEEP LEARN] Started guarded hyper-training in background "
-                f"(run ID: {run_id}).\nSay 'training status' to check progress."
+                f"(job ID: {run_id}).\nSay 'training status' to check progress."
             ), trace
         return (
             "[DEEP LEARN] Guarded hyper-training is already running "
-            f"(run ID: {run_id}).\nSay 'training status' to check progress."
+            f"(job ID: {run_id}).\nSay 'training status' to check progress."
         ), trace
 
     # ─── Training Status ───
     if q in ("brain status","learning status","training status","routing stats","training logs"):
         lines = ["[BRAIN STATUS]"]
         lines.append("  Training: " + ("RUNNING" if _TRAINING_RUNNING else "IDLE"))
+        if _TRAINING_RUNNING and _TRAINING_RUN_ID:
+            lines.append("  Background job ID: " + str(_TRAINING_RUN_ID))
+        elif _TRAINING_RUN_ID:
+            lines.append("  Last report run ID: " + str(_TRAINING_RUN_ID))
         if _TRAINING_LOG:
             lines.append("  Logs:")
             for log in _TRAINING_LOG[-5:]:

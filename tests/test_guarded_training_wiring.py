@@ -126,8 +126,64 @@ def test_deep_learn_reports_guarded_run_id_without_starting_second_run(monkeypat
     response, trace = server.brain_route("deep learn")
 
     assert calls == ["start_checked"]
+    assert "job ID" in response
     assert "active-run" in response
     assert trace["memory_event"] == "deep_learn"
+
+
+def test_deep_learn_started_response_labels_immediate_id_as_job_id(monkeypatch):
+    import nova_enhanced_server as server
+
+    monkeypatch.setattr(server, "_start_training", lambda: (True, "hypertrain_job_123"))
+
+    response, trace = server.brain_route("deep learn")
+
+    assert "job ID: hypertrain_job_123" in response
+    assert "run ID" not in response
+    assert trace["memory_event"] == "deep_learn"
+
+
+def test_training_status_shows_active_background_job_id():
+    import nova_enhanced_server as server
+
+    server._TRAINING_RUNNING = True
+    server._TRAINING_RUN_ID = "hypertrain_job_active"
+    server._TRAINING_LOG = []
+
+    response, trace = server.brain_route("training status")
+
+    assert "Training: RUNNING" in response
+    assert "Background job ID: hypertrain_job_active" in response
+    assert trace["skills"] == ["training_monitor"]
+
+
+def test_guarded_training_log_includes_actual_report_run_and_paths(monkeypatch):
+    import nova_enhanced_server as server
+    import nova_hyper_training_orchestrator as orchestrator
+
+    server._TRAINING_RUNNING = True
+    server._TRAINING_RUN_ID = "hypertrain_job_queued"
+    server._TRAINING_LOG = []
+
+    def fake_run(project_root):
+        return {
+            "run_id": "report-run-456",
+            "verdict": "PROMOTED",
+            "candidate_joint": 91.25,
+            "json_report": "reports/transformer_hyper_training_report-run-456.json",
+            "markdown_report": "reports/transformer_hyper_training_report-run-456.md",
+        }
+
+    monkeypatch.setattr(orchestrator, "run_hyper_training", fake_run)
+
+    server._run_guarded_training()
+
+    assert server._TRAINING_RUNNING is False
+    assert server._TRAINING_RUN_ID == "report-run-456"
+    log_text = "\n".join(server._TRAINING_LOG)
+    assert "run_id=report-run-456" in log_text
+    assert "json=reports/transformer_hyper_training_report-run-456.json" in log_text
+    assert "md=reports/transformer_hyper_training_report-run-456.md" in log_text
 
 
 def test_transformer_hyper_training_cli_delegates_and_returns_success(monkeypatch, capsys):
