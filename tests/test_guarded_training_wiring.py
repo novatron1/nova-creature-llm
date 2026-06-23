@@ -1,0 +1,102 @@
+from pathlib import Path
+import importlib.util
+import json
+import sys
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
+
+
+def test_assisted_bridge_disables_role_only_finetune():
+    import v055_assisted_learning_bridge as bridge
+
+    with pytest.raises(ValueError, match="role-only promotion is disabled"):
+        bridge.run_finetune("memory_transformer")
+
+
+def test_assisted_bridge_delegates_global_finetune_to_guarded_orchestrator(monkeypatch):
+    import nova_hyper_training_orchestrator as orchestrator
+    import v055_assisted_learning_bridge as bridge
+
+    calls = []
+
+    def fake_run(project_root):
+        calls.append(Path(project_root))
+        return {"run_id": "run-bridge", "verdict": "REJECTED"}
+
+    monkeypatch.setattr(orchestrator, "run_hyper_training", fake_run)
+
+    assert bridge.run_finetune() == {"run_id": "run-bridge", "verdict": "REJECTED"}
+    assert calls == [ROOT]
+
+
+def test_server_start_training_uses_single_guarded_thread(monkeypatch):
+    import nova_enhanced_server as server
+
+    created_threads = []
+    server._TRAINING_RUNNING = False
+    server._TRAINING_RUN_ID = None
+
+    class FakeThread:
+        def __init__(self, target, daemon):
+            self.target = target
+            self.daemon = daemon
+            created_threads.append(self)
+
+        def start(self):
+            pass
+
+    monkeypatch.setattr(server.threading, "Thread", FakeThread)
+
+    first = server._start_training()
+    second = server._start_training()
+
+    assert first[0] is True
+    assert second[0] is False
+    assert first[1] == second[1]
+    assert len(created_threads) == 1
+    assert created_threads[0].target is server._run_guarded_training
+    assert created_threads[0].daemon is True
+
+
+def test_deep_learn_reports_guarded_run_id_without_starting_second_run(monkeypatch):
+    import nova_enhanced_server as server
+
+    calls = []
+    server._TRAINING_RUNNING = True
+    server._TRAINING_RUN_ID = "active-run"
+
+    def fail_if_started():
+        calls.append("started")
+        raise AssertionError("started a second guarded training run")
+
+    monkeypatch.setattr(server, "_start_training", fail_if_started)
+
+    response, trace = server.brain_route("deep learn")
+
+    assert calls == []
+    assert "active-run" in response
+    assert trace["memory_event"] == "deep_learn"
+
+
+def test_transformer_hyper_training_cli_delegates_and_returns_success(monkeypatch, capsys):
+    script = ROOT / "scripts" / "run_transformer_hyper_training.py"
+    spec = importlib.util.spec_from_file_location("run_transformer_hyper_training", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    calls = []
+
+    def fake_run(project_root, seed, route_epochs, role_epochs):
+        calls.append((Path(project_root), seed, route_epochs, role_epochs))
+        return {"run_id": "cli-run", "verdict": "REJECTED", "candidate_joint": 69.0}
+
+    monkeypatch.setattr(module, "run_hyper_training", fake_run)
+
+    exit_code = module.main(["--seed", "7", "--route-epochs", "2", "--role-epochs", "1"])
+
+    assert exit_code == 0
+    assert calls == [(ROOT, 7, 2, 1)]
+    assert json.loads(capsys.readouterr().out)["run_id"] == "cli-run"

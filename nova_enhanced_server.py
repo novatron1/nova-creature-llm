@@ -15,6 +15,7 @@ Usage: python3 nova_enhanced_server.py [port]
 import json, sys, os, uuid, time, threading, re, traceback
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse
 
@@ -49,42 +50,32 @@ except Exception as e:
 
 # ── Background Training ────────────────────────────────────────────────────
 _TRAINING_RUNNING = False
+_TRAINING_RUN_ID = None
 _TRAINING_LOG = []
 
 def _start_training():
-    global _TRAINING_RUNNING
-    if _TRAINING_RUNNING: return
+    global _TRAINING_RUNNING, _TRAINING_RUN_ID
+    if _TRAINING_RUNNING:
+        return False, _TRAINING_RUN_ID
     _TRAINING_RUNNING = True
-    t = threading.Thread(target=_training_loop, daemon=True)
+    _TRAINING_RUN_ID = "hypertrain_" + uuid.uuid4().hex[:8]
+    t = threading.Thread(target=_run_guarded_training, daemon=True)
     t.start()
+    return True, _TRAINING_RUN_ID
 
-def _training_loop():
-    global _TRAINING_RUNNING, _TRAINING_LOG
-    import time as _t; _t.sleep(5)
+def _run_guarded_training():
+    global _TRAINING_RUNNING, _TRAINING_RUN_ID
     try:
-        from nova_brain_trainer import ConversationTrainer
-        trainer = ConversationTrainer()
-        _TRAINING_LOG.append("[BGTRAIN] Trainer ready")
-    except Exception as e:
-        _TRAINING_LOG.append(f"[BGTRAIN] Init error: {e}")
-        _TRAINING_RUNNING = False; return
-    ROLES = ['left_hemisphere','right_hemisphere','memory_transformer','planner_transformer',
-             'critic_conscience_transformer','dream_simulation_transformer','speech_output_transformer']
-    last = 0
-    while _TRAINING_RUNNING:
-        _t.sleep(45)
-        try:
-            pairs = trainer.get_training_data()
-            if len(pairs) >= 10 and len(pairs) > last + 10:
-                _TRAINING_LOG.append(f"[BGTRAIN] Training {len(pairs)} conversations")
-                for role in ROLES:
-                    try:
-                        r = trainer.train_role(role, lr=0.0005, epochs=1)
-                        if 'error' not in r:
-                            _TRAINING_LOG.append(f"[BGTRAIN] {role}: loss={r.get('loss',0):.4f}")
-                    except: pass
-                last = len(pairs)
-        except: pass
+        from nova_hyper_training_orchestrator import run_hyper_training
+        result = run_hyper_training(Path(ROOT))
+        _TRAINING_RUN_ID = result.get("run_id", _TRAINING_RUN_ID)
+        _TRAINING_LOG.append(
+            f"[HYPERTRAIN] {result['verdict']} joint={result.get('candidate_joint')}"
+        )
+    except Exception as exc:
+        _TRAINING_LOG.append(f"[HYPERTRAIN] BLOCKED {type(exc).__name__}: {exc}")
+    finally:
+        _TRAINING_RUNNING = False
 
 # ── Dictionary ──────────────────────────────────────────────────────────────
 DICT_PATH = os.path.join(ROOT, "data", "dictionary_memory", "approved_answer_dictionary.json")
@@ -216,12 +207,10 @@ def brain_route(text, context=None):
             lid = "lesson_" + str(len(MEMORY["lessons"])+1)
             MEMORY["lessons"][lid] = {"text": lt, "learned_at": datetime.now().isoformat(), "session": SESSION_ID}
             MEMORY["last_lesson"] = lid; _save_memory()
-            if not _TRAINING_RUNNING: _start_training()
             trace["roles"]=["rapid_learning","self_test","critic"]; trace["skills"]=["learning_intake","memory_lock"]
             trace["confidence"]=0.91; trace["memory_event"]="lesson_created:"+lid
             msg = "[LEARNING] Lesson stored: '" + lt + "'"
-            if _TRAINING_RUNNING:
-                msg += "\\n[BRAIN TUNE] Auto-training active."
+            msg += "\\n[BRAIN TUNE] Queued for guarded hyper-training. Say 'deep learn' to run the promotion gate."
             msg += "\\nAsk 'Test yourself' to see my state."
             return msg, trace
 
@@ -285,32 +274,22 @@ def brain_route(text, context=None):
         trace["roles"]=["left_hemisphere","right_hemisphere","memory_transformer","planner_transformer",
                         "critic_conscience_transformer","dream_simulation_transformer","speech_output_transformer"]
         trace["skills"]=["transformer_training"]; trace["confidence"]=0.85; trace["memory_event"]="deep_learn"
-        if not _TRAINING_RUNNING: _start_training()
-        # Launch full training in background
-        def _run_dl():
-            lines = []
-            ROLES = ['left_hemisphere','right_hemisphere','memory_transformer','planner_transformer',
-                     'critic_conscience_transformer','dream_simulation_transformer','speech_output_transformer']
-            try:
-                from nova_brain_trainer import ConversationTrainer
-                t = ConversationTrainer()
-                pairs = t.get_training_data()
-                lines.append("[DEEPLEARN] Data: " + str(len(pairs)) + " conversations")
-                for role in ROLES:
-                    try:
-                        r = t.train_role(role, lr=0.0005, epochs=2)
-                        if 'error' not in r:
-                            lines.append("[DEEPLEARN] " + chr(0x2713) + " " + role + ": loss=" + str(round(r.get('loss',0),4)))
-                        else:
-                            lines.append("[DEEPLEARN] " + chr(0x00b7) + " " + role + ": " + str(r.get('error','')))
-                    except Exception as e:
-                        lines.append("[DEEPLEARN] " + chr(0x00b7) + " " + role + ": " + str(e))
-            except Exception as e:
-                lines.append("[DEEPLEARN] Error: " + str(e))
-            _TRAINING_LOG.extend(lines)
-        t = threading.Thread(target=_run_dl, daemon=True)
-        t.start()
-        return "[DEEP LEARN] Started full brain training in background.\nSay 'training status' to check progress.", trace
+        if _TRAINING_RUNNING:
+            run_id = _TRAINING_RUN_ID or "active"
+            return (
+                "[DEEP LEARN] Guarded hyper-training is already running "
+                f"(run ID: {run_id}).\nSay 'training status' to check progress."
+            ), trace
+        started, run_id = _start_training()
+        if started:
+            return (
+                "[DEEP LEARN] Started guarded hyper-training in background "
+                f"(run ID: {run_id}).\nSay 'training status' to check progress."
+            ), trace
+        return (
+            "[DEEP LEARN] Guarded hyper-training is already running "
+            f"(run ID: {run_id}).\nSay 'training status' to check progress."
+        ), trace
 
     # ─── Training Status ───
     if q in ("brain status","learning status","training status","routing stats","training logs"):
@@ -444,7 +423,7 @@ def brain_route(text, context=None):
 HTML_PATH = os.path.join(ROOT, "nova_chat_web.html")
 WEB_HTML = None
 if os.path.exists(HTML_PATH):
-    with open(HTML_PATH) as f:
+    with open(HTML_PATH, encoding="utf-8") as f:
         WEB_HTML = f.read()
         print(f"[HTML] Loaded from {HTML_PATH}")
 else:
