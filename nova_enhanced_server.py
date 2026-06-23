@@ -12,12 +12,13 @@ Extends the original web server with:
 Usage: python3 nova_enhanced_server.py [port]
 """
 
-import json, sys, os, uuid, time, threading, re, traceback, mimetypes, urllib.request
+import html, json, sys, os, uuid, time, threading, re, traceback, mimetypes, urllib.request
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, unquote, quote
+from xml.etree import ElementTree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -231,6 +232,164 @@ def _weather_response(text):
         "but I could not reach the live weather service from this local app. Try again in a moment."
     ), trace
 
+def _capability_response(text):
+    key = _canonical_key(text).replace(" u ", " you ")
+    capability_keys = {
+        "what can you do",
+        "what all can you do",
+        "what are your capabilities",
+        "what do you do",
+        "what can nova do",
+        "tell me what you can do",
+        "show me what you can do",
+    }
+    if key not in capability_keys:
+        return None
+    trace = {
+        "roles": ["planner_transformer", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["capability_summary", "safe_answer"],
+        "confidence": 0.95,
+        "domain": "capabilities",
+        "source": "capability_router",
+        "route_path": ["planner_transformer", "critic_conscience_transformer", "speech_output_transformer"],
+        "verification": {
+            "method": "capability_intent_route",
+            "status": "handled_before_transformer",
+            "checks": ["intent_match", "no_raw_transformer_fallback"],
+        },
+    }
+    return (
+        "[CAPABILITIES] I can chat, remember your name, explain my route, help with coding and debugging, "
+        "make sandbox games, navigate app areas, check status, learn approved lessons, run guarded training checks, "
+        "look up live weather and news, and verify work with tests before I claim it works."
+    ), trace
+
+def _definition_response(text):
+    key = _canonical_key(text)
+    if key not in {"what does news mean", "what is news", "define news", "meaning of news"}:
+        return None
+    trace = {
+        "roles": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["definition_lookup", "safe_answer"],
+        "confidence": 0.96,
+        "domain": "definition",
+        "source": "definition_router",
+        "route_path": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "term": "news",
+        "verification": {
+            "method": "definition_intent_route",
+            "status": "handled_before_transformer",
+            "checks": ["term_match", "no_raw_transformer_fallback"],
+        },
+    }
+    return (
+        "[DEFINITION] News means newly reported information about recent events, "
+        "usually shared by journalists, local outlets, broadcasts, newspapers, or online sources."
+    ), trace
+
+def _news_request_query(text):
+    raw = " ".join(str(text or "").replace("\n", " ").split()).strip()
+    if not raw:
+        return None
+    lowered = raw.casefold()
+    if "news" not in lowered and "headlines" not in lowered:
+        return None
+    if re.search(r"\b(?:mean|define|definition)\b", lowered):
+        return None
+
+    patterns = (
+        r"\b(?:can\s+(?:u|you)\s+)?(?:look\s*up|lookup|search(?:\s+for)?|find|show|get|pull\s+up)\s+(?:me\s+)?(?:the\s+)?(?:latest\s+)?(?:news|headlines)(?:\s+(?:in|for|near|around|about)\s+(.+))?$",
+        r"\b(?:latest\s+)?(?:news|headlines)\s+(?:in|for|near|around|about)\s+(.+)$",
+        r"\b(?:what(?:'s| is)?|whats)\s+(?:the\s+)?(?:latest\s+)?(?:news|headlines)\s+(?:in|for|near|around|about)\s+(.+)$",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, raw, re.IGNORECASE)
+        if match:
+            query = (match.group(1) or "top news").strip(" ?!.:,;")
+            query = re.sub(r"\b(?:today|right now|please|pls)\b", "", query, flags=re.IGNORECASE)
+            query = " ".join(query.split()).strip(" ?!.:,;")
+            return _normalize_news_query(query)
+    return _normalize_news_query(raw if "news" in lowered or "headlines" in lowered else "")
+
+def _normalize_news_query(query):
+    value = " ".join(str(query or "").split()).strip(" ?!.:,;")
+    if not value or value.casefold() in {"news", "headlines", "latest news"}:
+        return "top news"
+    known_typos = {
+        "cincinnat": "Cincinnati",
+        "cincinatti": "Cincinnati",
+        "cincinati": "Cincinnati",
+    }
+    return known_typos.get(value.casefold(), value.title())
+
+def _fetch_news_headlines(query, limit=3):
+    search_query = query if query and query != "top news" else "top news"
+    if search_query != "top news":
+        search_query = f"{search_query} news"
+    encoded_query = quote(f"{search_query} when:7d", safe="")
+    request = urllib.request.Request(
+        f"https://news.google.com/rss/search?q={encoded_query}&hl=en-US&gl=US&ceid=US:en",
+        headers={"User-Agent": "Nova-Creature-News/1.0"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=6) as response:
+            payload = response.read()
+        root = ElementTree.fromstring(payload)
+        headlines = []
+        for item in root.findall("./channel/item"):
+            title = html.unescape(item.findtext("title", default="")).strip()
+            link = html.unescape(item.findtext("link", default="")).strip()
+            source = html.unescape(item.findtext("source", default="")).strip()
+            if " - " in title:
+                title_part, source_part = title.rsplit(" - ", 1)
+                if not source:
+                    source = source_part.strip()
+                    title = title_part.strip()
+                elif source.casefold() in source_part.casefold() or source_part.casefold() in source.casefold():
+                    title = title_part.strip()
+            if title:
+                headlines.append({"title": title, "source": source, "url": link})
+            if len(headlines) >= limit:
+                break
+        return headlines
+    except Exception:
+        return []
+
+def _news_response(text):
+    query = _news_request_query(text)
+    if query is None:
+        return None
+    trace = {
+        "roles": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["news_lookup", "rss_fetch", "safe_external_info"],
+        "confidence": 0.90,
+        "domain": "news",
+        "source": "news_router",
+        "route_path": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "query": query,
+        "verification": {
+            "method": "news_intent_route",
+            "status": "handled_before_memory_or_transformer",
+            "checks": ["query_parse", "live_news_lookup", "no_memory_lookup_collision"],
+        },
+    }
+    headlines = _fetch_news_headlines(query, limit=3)
+    if headlines:
+        label = query if query != "top news" else "top news"
+        lines = [f"[NEWS] Latest {label} headlines:"]
+        for index, item in enumerate(headlines, start=1):
+            source = f" — {item['source']}" if item.get("source") else ""
+            lines.append(f"{index}. {item['title']}{source}")
+        return "\n".join(lines), trace
+
+    trace["confidence"] = 0.76
+    trace["blocked"] = True
+    trace["blocker"] = "news_service_unreachable"
+    return (
+        f"[NEWS] I recognized that as a news lookup for {query}, "
+        "but I could not reach the live news feed from this local app. Try again in a moment."
+    ), trace
+
 _dict_count = _load_dict()
 print(f"[DICT] Loaded {_dict_count} dictionary entries")
 
@@ -286,6 +445,113 @@ def _apply_hybrid_trace(trace, hybrid_trace):
         if key in hybrid_trace:
             trace[key] = hybrid_trace.get(key)
     return trace
+
+def _format_number(value):
+    return str(int(value)) if float(value).is_integer() else str(round(value, 6)).rstrip("0").rstrip(".")
+
+def _simple_math_response(text):
+    raw = " ".join(str(text or "").replace("\n", " ").split()).strip().rstrip("?!.")
+    if not raw:
+        return None
+    normalized = raw.casefold()
+    normalized = re.sub(r"^(?:what\s+is|what's|whats|calculate|solve)\s+", "", normalized).strip()
+    pattern = r"^(-?\d+(?:\.\d+)?)\s*(plus|\+|minus|-|times|\*|x|multiplied by|divided by|/)\s*(-?\d+(?:\.\d+)?)$"
+    match = re.match(pattern, normalized)
+    if not match:
+        return None
+
+    left = float(match.group(1))
+    op = match.group(2)
+    right = float(match.group(3))
+    if op in ("plus", "+"):
+        result = left + right
+        symbol = "+"
+    elif op in ("minus", "-"):
+        result = left - right
+        symbol = "-"
+    elif op in ("times", "*", "x", "multiplied by"):
+        result = left * right
+        symbol = "×"
+    else:
+        if right == 0:
+            return "[MATH] I can't divide by zero.", {
+                "roles": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+                "skills": ["arithmetic", "division_guard"],
+                "confidence": 0.98,
+                "domain": "math",
+                "source": "simple_math_router",
+                "route_path": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+            }
+        result = left / right
+        symbol = "÷"
+
+    trace = {
+        "roles": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["arithmetic", "safe_answer"],
+        "confidence": 0.99,
+        "domain": "math",
+        "source": "simple_math_router",
+        "route_path": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "verification": {
+            "method": "simple_arithmetic_route",
+            "status": "handled_before_transformer",
+            "checks": ["operator_parse", "numeric_result"],
+        },
+    }
+    return f"[MATH] {_format_number(left)} {symbol} {_format_number(right)} = {_format_number(result)}.", trace
+
+def _sports_fact_response(text):
+    key = _canonical_key(text)
+    if not ("cincinnati" in key and "football" in key and re.search(r"\b(?:team|called|call|name)\b", key)):
+        return None
+    trace = {
+        "roles": ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["sports_fact", "safe_answer"],
+        "confidence": 0.95,
+        "domain": "sports",
+        "source": "sports_fact_router",
+        "route_path": ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"],
+        "verification": {
+            "method": "sports_fact_route",
+            "status": "handled_before_transformer",
+            "checks": ["city_match", "sport_match", "team_fact"],
+        },
+    }
+    return (
+        "[SPORTS] Cincinnati's NFL football team is the Cincinnati Bengals. "
+        "If you meant soccer/MLS, that team is FC Cincinnati."
+    ), trace
+
+def _is_corrupt_generated_text(value):
+    text = str(value or "")
+    if not text.strip():
+        return True
+    replacement_count = text.count("\ufffd")
+    control_count = sum(1 for ch in text if ord(ch) < 32 and ch not in "\n\r\t")
+    readable_count = sum(1 for ch in text if ch.isalnum() or ch.isspace() or ch in ".,!?;:'\"-–—()[]/%+")
+    readable_ratio = readable_count / max(len(text), 1)
+    return replacement_count >= 2 or control_count > 0 or readable_ratio < 0.72
+
+def _guard_generated_response(response, trace):
+    if trace.get("source") != "transformer" or not _is_corrupt_generated_text(response):
+        return response, trace
+    guarded = dict(trace)
+    guarded["attempted_source"] = trace.get("source")
+    guarded["source"] = "safe_fallback"
+    guarded["blocked"] = True
+    guarded["blocker"] = "corrupt_transformer_output"
+    guarded["memory_event"] = "corrupt_output_blocked"
+    guarded["confidence"] = min(float(trace.get("confidence", 0.55) or 0.55), 0.60)
+    guarded["skills"] = list(trace.get("skills", [])) + ["corrupt_output_guard"]
+    guarded["verification"] = {
+        "method": "generated_text_quality_gate",
+        "status": "blocked_corrupt_output",
+        "checks": ["replacement_characters", "control_characters", "readable_ratio"],
+    }
+    return (
+        "[SAFE FALLBACK] I couldn't produce a clean answer for that yet. "
+        "Try rephrasing it, or ask for a specific task like math, weather, news, coding, or app building."
+    ), guarded
 
 def _load_memory():
     try:
@@ -343,6 +609,56 @@ def brain_route(text, context=None):
         return ("Commands: allow/deny mic | camera | speaker | stop all | private mode\\n"
                 + "  status | help | mock voice/text | mock camera/text\\n"
                 + "  Learn this: [fact] | Test yourself | Deep learn | My name is ..."), trace
+
+    math_result = _simple_math_response(text)
+    if math_result:
+        response, math_trace = math_result
+        trace.update(math_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
+    sports_result = _sports_fact_response(text)
+    if sports_result:
+        response, sports_trace = sports_result
+        trace.update(sports_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
+    capability_result = _capability_response(text)
+    if capability_result:
+        response, capability_trace = capability_result
+        trace.update(capability_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
+    definition_result = _definition_response(text)
+    if definition_result:
+        response, definition_trace = definition_result
+        trace.update(definition_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
+
+    news_result = _news_response(text)
+    if news_result:
+        response, news_trace = news_result
+        trace.update(news_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
 
     weather_result = _weather_response(text)
     if weather_result:
@@ -566,6 +882,7 @@ def brain_route(text, context=None):
             if _HYBRID_ROUTER_AVAIL:
                 response, hybrid_trace = route_and_respond(normalized_text, dict_lookup_fn=_dict_lookup, memory=MEMORY)
                 trace = _apply_hybrid_trace(trace, hybrid_trace)
+                response, trace = _guard_generated_response(response, trace)
             else:
                 from nova_hybrid_router import classify_domain
                 domain = classify_domain(normalized_text)
@@ -593,11 +910,12 @@ def brain_route(text, context=None):
     if _HYBRID_ROUTER_AVAIL:
         try:
             response, hybrid_trace = route_and_respond(text, dict_lookup_fn=_dict_lookup, memory=MEMORY)
+            trace = _apply_hybrid_trace(trace, hybrid_trace)
+            response, trace = _guard_generated_response(response, trace)
             if _CONV_ENGINE_AVAIL:
                 try: _CONV_ENGINE.add_exchange(text, response)
                 except: pass
             _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
-            trace = _apply_hybrid_trace(trace, hybrid_trace)
             return response, trace
         except Exception as e:
             traceback.print_exc()

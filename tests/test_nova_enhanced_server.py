@@ -123,3 +123,116 @@ def test_brain_route_handles_temperature_question_before_transformer(monkeypatch
     assert trace["domain"] == "weather"
     assert trace["location"] == "Cincinnati"
     assert "weather_lookup" in trace["skills"]
+
+
+def test_brain_route_looks_up_news_before_memory_or_transformer(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(
+        server,
+        "_fetch_news_headlines",
+        lambda query, limit=3: [
+            {"title": "Cincinnati riverfront project advances", "source": "Local 12", "url": "https://example.test/riverfront"},
+            {"title": "Reds announce community event", "source": "WCPO", "url": "https://example.test/reds"},
+        ],
+    )
+
+    response, trace = server.brain_route("CAN U LOOK UP THE NEWS IN CINCINNATI")
+
+    assert response.startswith("[NEWS] Latest Cincinnati headlines:")
+    assert "Cincinnati riverfront project advances" in response
+    assert "Reds announce community event" in response
+    assert trace["source"] == "news_router"
+    assert trace["domain"] == "news"
+    assert trace["query"] == "Cincinnati"
+    assert "news_lookup" in trace["skills"]
+
+
+def test_brain_route_defines_news_before_transformer(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    response, trace = server.brain_route("WHAT DOES NEWS MEAN")
+
+    assert response.startswith("[DEFINITION] News means")
+    assert "recent events" in response
+    assert trace["source"] == "definition_router"
+    assert trace["domain"] == "definition"
+    assert trace["term"] == "news"
+
+
+def test_brain_route_answers_capability_question_before_transformer(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    response, trace = server.brain_route("WHAT ALL CAN U DO")
+
+    assert response.startswith("[CAPABILITIES]")
+    assert "make sandbox games" in response
+    assert "look up live weather and news" in response
+    assert trace["source"] == "capability_router"
+    assert trace["domain"] == "capabilities"
+
+
+def test_brain_route_solves_simple_plus_before_transformer(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    response, trace = server.brain_route("4 PLUS 4")
+
+    assert response == "[MATH] 4 + 4 = 8."
+    assert trace["source"] == "simple_math_router"
+    assert trace["domain"] == "math"
+    assert "arithmetic" in trace["skills"]
+
+
+def test_brain_route_blocks_corrupt_transformer_output(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", True)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    def corrupt_route(text, dict_lookup_fn=None, memory=None):
+        return (
+            "\"b\u001f\ufffdvLN\ufffd\ufffd#P\ufffd{\u0012|\ufffd\ufffd",
+            {
+                "source": "transformer",
+                "roles": ["speech_output_transformer", "memory_transformer"],
+                "domain": "general",
+                "skills": ["transformer_inference"],
+                "confidence": 0.55,
+            },
+        )
+
+    monkeypatch.setattr(server, "route_and_respond", corrupt_route)
+
+    response, trace = server.brain_route("WHAT IS WAS THAT")
+
+    assert response.startswith("[SAFE FALLBACK]")
+    assert "couldn't produce a clean answer" in response
+    assert trace["source"] == "safe_fallback"
+    assert trace["blocked"] is True
+    assert trace["blocker"] == "corrupt_transformer_output"
+
+
+def test_brain_route_answers_cincinnati_football_team_question(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    response, trace = server.brain_route("WHAT IS CINCINNATI FOOTBALL TEAM CALL?")
+
+    assert response.startswith("[SPORTS]")
+    assert "Cincinnati Bengals" in response
+    assert "FC Cincinnati" in response
+    assert trace["source"] == "sports_fact_router"
+    assert trace["domain"] == "sports"
