@@ -12,12 +12,12 @@ Extends the original web server with:
 Usage: python3 nova_enhanced_server.py [port]
 """
 
-import json, sys, os, uuid, time, threading, re, traceback, mimetypes
+import json, sys, os, uuid, time, threading, re, traceback, mimetypes, urllib.request
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from socketserver import ThreadingMixIn
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse, unquote, quote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -132,6 +132,105 @@ def _dict_lookup(text):
         return DICT_INDEX[key]
     return None
 
+def _weather_request_location(text):
+    raw = " ".join(str(text or "").replace("\n", " ").split()).strip()
+    if not raw:
+        return None
+    lowered = raw.casefold()
+    if not re.search(r"\b(?:weather|temp|temperature|forecast|degrees|hot|cold)\b", lowered):
+        return None
+
+    patterns = (
+        r"\b(?:what(?:'s| is)?|whats)?\s*(?:is\s+)?(?:the\s+)?(?:weather|temp|temperature)\s+(?:in|at|for)\s+(.+)$",
+        r"\b(?:how\s+(?:hot|cold)\s+(?:is\s+it\s+)?)(?:in|at|for)\s+(.+)$",
+        r"\b(?:weather|temp|temperature|forecast)\s+(?:in|at|for)\s+(.+)$",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, raw, re.IGNORECASE)
+        if match:
+            location = match.group(1).strip(" ?!.:,;")
+            location = re.sub(r"\b(?:right now|today|please|pls)\b", "", location, flags=re.IGNORECASE)
+            location = " ".join(location.split()).strip(" ?!.:,;")
+            return location.title() if location else ""
+    return ""
+
+def _fetch_weather_summary(location):
+    if not location:
+        return None
+    safe_location = quote(location, safe="")
+    request = urllib.request.Request(
+        f"https://wttr.in/{safe_location}?format=j1",
+        headers={"User-Agent": "Nova-Creature-Weather/1.0"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+        current = payload.get("current_condition", [{}])[0]
+        area = payload.get("nearest_area", [{}])[0]
+        area_name = area.get("areaName", [{}])[0].get("value") or location
+        region = area.get("region", [{}])[0].get("value") or ""
+        country = area.get("country", [{}])[0].get("value") or ""
+        place_bits = [bit for bit in (area_name, region, country) if bit]
+        display_place = ", ".join(place_bits[:3]) or location
+        temp_f = current.get("temp_F")
+        temp_c = current.get("temp_C")
+        feels_f = current.get("FeelsLikeF")
+        desc = current.get("weatherDesc", [{}])[0].get("value") or "current conditions"
+        humidity = current.get("humidity")
+        wind_mph = current.get("windspeedMiles")
+        if temp_f is None:
+            return None
+        summary = f"{display_place}: {temp_f}°F"
+        if temp_c is not None:
+            summary += f" ({temp_c}°C)"
+        if feels_f is not None:
+            summary += f", feels like {feels_f}°F"
+        summary += f", {desc}"
+        if humidity:
+            summary += f", humidity {humidity}%"
+        if wind_mph:
+            summary += f", wind {wind_mph} mph"
+        return summary + "."
+    except Exception:
+        return None
+
+def _weather_response(text):
+    location = _weather_request_location(text)
+    if location is None:
+        return None
+
+    trace = {
+        "roles": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "skills": ["weather_lookup", "location_parse", "safe_external_info"],
+        "confidence": 0.92,
+        "domain": "weather",
+        "source": "weather_router",
+        "route_path": ["left_hemisphere", "critic_conscience_transformer", "speech_output_transformer"],
+        "location": location,
+        "verification": {
+            "method": "weather_intent_route",
+            "status": "handled_before_transformer",
+            "checks": ["location_parse", "no_raw_transformer_fallback"],
+        },
+    }
+    if not location:
+        trace["confidence"] = 0.80
+        trace["blocked"] = True
+        trace["blocker"] = "missing_location"
+        return "[WEATHER] I can check the temperature, but I need a city or place first.", trace
+
+    summary = _fetch_weather_summary(location)
+    if summary:
+        return f"[WEATHER] {summary}", trace
+
+    trace["confidence"] = 0.78
+    trace["blocked"] = True
+    trace["blocker"] = "weather_service_unreachable"
+    return (
+        f"[WEATHER] I recognized that as a weather question for {location}, "
+        "but I could not reach the live weather service from this local app. Try again in a moment."
+    ), trace
+
 _dict_count = _load_dict()
 print(f"[DICT] Loaded {_dict_count} dictionary entries")
 
@@ -244,6 +343,16 @@ def brain_route(text, context=None):
         return ("Commands: allow/deny mic | camera | speaker | stop all | private mode\\n"
                 + "  status | help | mock voice/text | mock camera/text\\n"
                 + "  Learn this: [fact] | Test yourself | Deep learn | My name is ..."), trace
+
+    weather_result = _weather_response(text)
+    if weather_result:
+        response, weather_trace = weather_result
+        trace.update(weather_trace)
+        if _CONV_ENGINE_AVAIL:
+            try: _CONV_ENGINE.add_exchange(text, response)
+            except: pass
+        _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+        return response, trace
 
     # Sandbox game builder
     if _GAME_BUILDER_AVAIL and is_pacman_game_request(text):

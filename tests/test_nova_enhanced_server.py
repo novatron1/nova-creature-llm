@@ -103,3 +103,23 @@ def test_brain_route_builds_pacman_game_preview(monkeypatch, tmp_path):
     assert trace["project_name"] == "Nova Pac Runner"
     assert trace["project_url"] == "/sandbox/app_builder_projects/Nova_Pac_Runner/index.html"
     assert (tmp_path / "Nova_Pac_Runner" / "index.html").exists()
+
+
+def test_brain_route_handles_temperature_question_before_transformer(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(
+        server,
+        "_fetch_weather_summary",
+        lambda location: f"{location}: 72°F, feels like 74°F, clear.",
+    )
+
+    response, trace = server.brain_route("WHAT THE TEMP IN CINCINNATI")
+
+    assert response == "[WEATHER] Cincinnati: 72°F, feels like 74°F, clear."
+    assert trace["source"] == "weather_router"
+    assert trace["domain"] == "weather"
+    assert trace["location"] == "Cincinnati"
+    assert "weather_lookup" in trace["skills"]
