@@ -8,8 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from nova_checkpoint_registry import CheckpointRegistry
+from nova_route_model import RouteExample, train_route_model
 from nova_torch_transformer import ModelConfig, NovaCausalLM, save_checkpoint
-from nova_transformer_runtime import NovaTransformerRuntime
+from nova_transformer_runtime import NovaTransformerRuntime, load_promoted_route_model
 from nova_training_types import GenerationResult, RoutePrediction
 
 HASH_A = "a" * 64
@@ -119,6 +120,28 @@ def test_route_model_exception_falls_back_with_error_provenance(tmp_path):
 
     assert route.source == "baseline_fallback"
     assert runtime.last_route_error == "route boom"
+
+
+def test_unpromoted_route_model_file_is_not_loaded_as_live_router(tmp_path):
+    stale_path = tmp_path / "checkpoints" / "route_model" / "route_model.pt"
+    _write_route_classifier(stale_path)
+
+    model = load_promoted_route_model(tmp_path)
+    route = model.predict("debug this python code")
+
+    assert route.source == "baseline_fallback"
+
+
+def test_corrupt_promoted_route_model_falls_back_with_load_error(tmp_path):
+    promoted_path = tmp_path / "checkpoints" / "route_model" / "promoted.pt"
+    promoted_path.parent.mkdir(parents=True)
+    promoted_path.write_bytes(b"not a valid route model")
+
+    runtime = NovaTransformerRuntime(tmp_path)
+    route, route_error = runtime.route_with_evidence("debug this code")
+
+    assert route.source == "baseline_fallback"
+    assert "promoted route model failed to load" in route_error
 
 
 def test_route_with_evidence_returns_error_without_shared_runtime_state(tmp_path):
@@ -342,3 +365,21 @@ def test_fallback_response_uses_prediction_domain_when_legacy_domain_differs(mon
     assert "science training covers physics" in response
     assert "programming knowledge" not in response
     assert trace["domain"] == "science"
+
+
+def _write_route_classifier(path: Path) -> str:
+    examples = [
+        RouteExample("debug python code", "coding", "left_hemisphere"),
+        RouteExample("make a release plan", "planning", "planner_transformer"),
+    ]
+    _, metadata = train_route_model(
+        examples,
+        validation_examples=examples,
+        output_path=path,
+        epochs=1,
+        hidden_size=8,
+        block_size=16,
+        batch_size=2,
+        seed=17,
+    )
+    return metadata["model_hash"]

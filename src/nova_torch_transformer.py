@@ -167,7 +167,7 @@ def save_checkpoint(
 
 
 def load_checkpoint(path: str | Path) -> tuple[NovaCausalLM, dict[str, Any]]:
-    payload = torch.load(Path(path), map_location="cpu", weights_only=False)
+    payload = torch.load(Path(path), map_location="cpu", weights_only=True)
     payload = _validate_checkpoint_payload(payload)
     try:
         config = ModelConfig(**payload["config"])

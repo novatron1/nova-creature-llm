@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import time
 from pathlib import Path
@@ -26,6 +27,7 @@ class NovaTransformerRuntime:
         self.registry = CheckpointRegistry(self.project_root)
         self.tokenizer = NovaByteTokenizer()
         self.route_model = route_model or load_promoted_route_model(self.project_root)
+        self.route_load_error = getattr(self.route_model, "load_error", None)
         self.models: dict[tuple[str, str], NovaCausalLM] = {}
         self.last_route_error: str | None = None
 
@@ -46,7 +48,7 @@ class NovaTransformerRuntime:
                 prediction = model.route(text)
             else:
                 prediction = _BaselineRouteModel().predict(text)
-            return _ensure_route_prediction(prediction), None
+            return _ensure_route_prediction(prediction), getattr(model, "load_error", None)
         except Exception as exc:
             return _BaselineRouteModel().predict(text), str(exc)
 
@@ -150,18 +152,24 @@ class NovaTransformerRuntime:
 
 def load_promoted_route_model(project_root: str | Path):
     root = Path(project_root)
-    candidates = (
-        root / "checkpoints" / "route_model" / "promoted.pt",
-        root / "checkpoints" / "route_model" / "route_model.pt",
-        root / "checkpoints" / "routes" / "promoted_route_model.pt",
-    )
-    for path in candidates:
-        if path.exists():
-            try:
-                model, _ = load_route_model(path)
-                return _RouteModelAdapter(model)
-            except Exception:
-                continue
+    path = root / "checkpoints" / "route_model" / "promoted.pt"
+    if not path.exists():
+        return _BaselineRouteModel()
+    sidecar = path.with_suffix(f"{path.suffix}.json")
+    if not sidecar.exists():
+        return _BaselineRouteModel(f"promoted route model failed to load: missing sidecar {sidecar}")
+    try:
+        sidecar_metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+        if not isinstance(sidecar_metadata, dict):
+            raise ValueError("promoted route sidecar must contain a JSON object")
+        model, metadata = load_route_model(path)
+        sidecar_hash = sidecar_metadata.get("model_hash")
+        payload_hash = metadata.get("model_hash")
+        if sidecar_hash != payload_hash:
+            raise ValueError("promoted route sidecar model_hash does not match checkpoint metadata")
+        return _RouteModelAdapter(model)
+    except Exception as exc:
+        return _BaselineRouteModel(f"promoted route model failed to load: {exc}")
     return _BaselineRouteModel()
 
 
@@ -176,6 +184,9 @@ class _RouteModelAdapter:
 
 class _BaselineRouteModel:
     model_hash = hashlib.sha256(b"nova-baseline-route-model-v1").hexdigest()
+
+    def __init__(self, load_error: str | None = None) -> None:
+        self.load_error = load_error
 
     _DOMAIN_ROLES = {
         "coding": ("left_hemisphere", ("planner_transformer", "critic_conscience_transformer"), 0.76),

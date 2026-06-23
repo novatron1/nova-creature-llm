@@ -11,10 +11,9 @@ Architecture:
   4. Learning Loop: Each route is logged, routing weights adjust over time
 """
 
-import json, os, sys, time, hashlib, re, traceback
+import json, sys, re
 from pathlib import Path
 from datetime import datetime
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -255,7 +254,6 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
     fallback = fallback_responses.get(fallback_domain, fallback_responses["general"])
     if fallback_domain == "general" and memory:
         pcount = len(memory.get("people", {}))
-        lcount = len(memory.get("lessons", {}))
         fallback = fallback % f"{pcount}"
     
     trace["roles"] = ["memory_transformer", "speech_output_transformer"]

@@ -21,8 +21,8 @@ def resolve_checkpoint(role: str) -> dict:
     try:
         registry = CheckpointRegistry(root())
         resolved = registry.resolve_live(role)
-    except LookupError:
-        return _missing_checkpoint_result(role)
+    except (LookupError, FileNotFoundError, ValueError, OSError, json.JSONDecodeError) as exc:
+        return _missing_checkpoint_result(role, str(exc))
 
     exists = resolved.path.exists()
     try:
@@ -41,7 +41,7 @@ def resolve_checkpoint(role: str) -> dict:
     }
 
 
-def _missing_checkpoint_result(role: str) -> dict:
+def _missing_checkpoint_result(role: str, error: str | None = None) -> dict:
     return {
         "role": role,
         "selected_checkpoint": None,
@@ -51,6 +51,7 @@ def _missing_checkpoint_result(role: str) -> dict:
         "sha256": None,
         "fallback_used": True,
         "promote_ready": False,
+        "error": error or "checkpoint is missing",
     }
 
 

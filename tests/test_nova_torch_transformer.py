@@ -85,6 +85,30 @@ def test_checkpoint_round_trip_preserves_logits(tmp_path):
     assert torch.equal(expected, actual)
 
 
+def test_load_checkpoint_uses_weights_only_deserialization(monkeypatch, tmp_path):
+    model = NovaCausalLM(_small_config()).eval()
+    payload = {
+        "format_version": 1,
+        "config": model.config.__dict__,
+        "model_state": model.state_dict(),
+        "metadata": {},
+    }
+    seen = {}
+
+    def fake_load(path, *, map_location, weights_only):
+        seen["path"] = path
+        seen["map_location"] = map_location
+        seen["weights_only"] = weights_only
+        return payload
+
+    monkeypatch.setattr(torch, "load", fake_load)
+
+    load_checkpoint(tmp_path / "model.pt")
+
+    assert seen["map_location"] == "cpu"
+    assert seen["weights_only"] is True
+
+
 def test_save_checkpoint_uses_unique_temp_path_without_colliding_with_simple_tmp(tmp_path):
     model = NovaCausalLM(_small_config()).eval()
     path = tmp_path / "model.pt"

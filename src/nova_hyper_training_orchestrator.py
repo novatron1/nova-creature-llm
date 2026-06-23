@@ -31,6 +31,7 @@ from nova_training_types import ROLE_NAMES, PromotionDecision
 from nova_transformer_runtime import NovaTransformerRuntime
 
 DEFAULT_SEED = 20260622
+PROMOTION_BANK_PATH = Path("benchmark_lab/test_banks/transformer_route_promotion_bank.json")
 
 
 def apply_decision(
@@ -539,7 +540,10 @@ def _markdown_report(verdict: str, context: Mapping[str, Any]) -> str:
 
 
 def _promotion_rows(project_root: Path, dataset_manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
-    return _split_rows(project_root, dataset_manifest, "promotion")
+    return [
+        *_split_rows(project_root, dataset_manifest, "promotion"),
+        *_promotion_bank_rows(project_root),
+    ]
 
 
 def _split_rows(project_root: Path, dataset_manifest: Mapping[str, Any], split: str) -> list[dict[str, Any]]:
@@ -572,14 +576,62 @@ def _answer_cases(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for row in rows:
         if row.get("task_type") == "route":
             continue
-        if not row.get("answer"):
+        if not row.get("answer") and not row.get("required_terms"):
             continue
         case = dict(row)
-        case["expected"] = row.get("answer")
+        case["role"] = row.get("role") or row.get("primary_role") or "left_hemisphere"
+        if row.get("answer"):
+            case["expected"] = row.get("answer")
         cases.append(case)
     if not cases:
         raise ValueError("promotion split has no answer cases")
     return cases
+
+
+def _promotion_bank_rows(project_root: Path) -> list[dict[str, Any]]:
+    path = project_root / PROMOTION_BANK_PATH
+    if not path.exists():
+        return []
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError(f"promotion bank must contain a case list: {path}")
+    rows: list[dict[str, Any]] = []
+    for index, item in enumerate(raw):
+        if not isinstance(item, Mapping):
+            raise ValueError(f"promotion bank case {index} must be an object")
+        prompt = _required_nonblank(item, "prompt", index)
+        domain = _required_nonblank(item, "domain", index)
+        primary_role = _required_nonblank(item, "primary_role", index)
+        required_terms = item.get("required_terms")
+        if not isinstance(required_terms, list) or not all(isinstance(term, str) and term.strip() for term in required_terms):
+            raise ValueError(f"promotion bank case {index} must include non-empty required_terms")
+        if item.get("protected") is not True:
+            raise ValueError(f"promotion bank case {index} must be protected")
+        rows.append(
+            {
+                "id": str(item.get("id") or f"promotion-bank-{index}"),
+                "source": "promotion_bank",
+                "intent_group": f"promotion_bank:{item.get('id') or index}",
+                "domain": domain,
+                "primary_role": primary_role,
+                "support_roles": list(item.get("support_roles") or ()),
+                "prompt": prompt,
+                "text": prompt,
+                "answer": "",
+                "required_terms": [term.strip() for term in required_terms],
+                "quality_flags": ["sealed_promotion_bank"],
+                "task_type": "answer",
+                "protected": True,
+            }
+        )
+    return rows
+
+
+def _required_nonblank(item: Mapping[str, Any], key: str, index: int) -> str:
+    value = item.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"promotion bank case {index} missing {key}")
+    return value.strip()
 
 
 def _role_rows(rows: list[dict[str, Any]], role: str) -> list[dict[str, Any]]:

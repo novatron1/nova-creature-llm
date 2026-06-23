@@ -134,6 +134,31 @@ def test_run_hyper_training_follows_guarded_order_and_writes_reports(tmp_path, m
     assert markdown_report.read_text(encoding="utf-8").splitlines()[0] == "# REJECTED"
 
 
+def test_promotion_rows_include_sealed_promotion_bank_only_for_evaluation(tmp_path):
+    promotion_path = tmp_path / "artifacts" / "transformer_training" / "dataset" / "promotion.jsonl"
+    promotion_path.parent.mkdir(parents=True)
+    promotion_path.write_text(
+        '{"prompt":"normal promotion","answer":"ok","domain":"speech","primary_role":"speech_output_transformer","task_type":"answer"}\n',
+        encoding="utf-8",
+    )
+    bank_path = tmp_path / "benchmark_lab" / "test_banks" / "transformer_route_promotion_bank.json"
+    bank_path.parent.mkdir(parents=True)
+    bank_path.write_text(
+        '[{"id":"sealed-1","prompt":"sealed bank prompt","domain":"critic","primary_role":"critic_conscience_transformer","required_terms":["sealed","evidence"],"protected":true}]',
+        encoding="utf-8",
+    )
+    manifest = {"outputs": {"promotion": "artifacts/transformer_training/dataset/promotion.jsonl"}}
+
+    split_rows = orchestrator._split_rows(tmp_path, manifest, "promotion")
+    evaluation_rows = orchestrator._promotion_rows(tmp_path, manifest)
+
+    assert {row["prompt"] for row in split_rows} == {"normal promotion"}
+    sealed = next(row for row in evaluation_rows if row["prompt"] == "sealed bank prompt")
+    assert sealed["protected"] is True
+    assert sealed["required_terms"] == ["sealed", "evidence"]
+    assert sealed["source"] == "promotion_bank"
+
+
 def test_blocked_preflight_writes_reports_without_mutating_registry(tmp_path, monkeypatch):
     events = []
 

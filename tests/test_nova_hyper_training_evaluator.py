@@ -181,7 +181,7 @@ class FixedRouteModel:
 def test_evaluate_routes_scores_macro_f1_and_shuffled_labels_drop():
     cases = [
         {"text": "debug code", "domain": "coding", "primary_role": "left_hemisphere"},
-        {"text": "make a plan", "domain": "planning", "primary_role": "planner_transformer"},
+        {"text": "make a plan", "domain": "planning", "primary_role": "planner_transformer", "protected": True},
     ]
 
     metrics_ok = evaluate_routes(FixedRouteModel(), cases)
@@ -195,6 +195,7 @@ def test_evaluate_routes_scores_macro_f1_and_shuffled_labels_drop():
 
     assert metrics_ok["macro_f1"] == 100.0
     assert metrics_ok["protected_domain_floor_delta"] == 0.0
+    assert metrics_ok["protected_support"] == 1
     assert metrics_shuffled["macro_f1"] == 0.0
 
 
@@ -253,6 +254,28 @@ def test_evaluate_answers_tracks_composite_protected_malformed_and_repetition():
     assert good["malformed_rate"] == 0.0
     assert repetitive["repetition_rate"] == 1.0
     assert malformed["malformed_rate"] == 1.0
+
+
+def test_evaluate_answers_requires_all_required_terms_for_protected_bank_cases():
+    cases = [
+        {
+            "prompt": "explain the sealed thing",
+            "role": "critic_conscience_transformer",
+            "required_terms": ["sealed", "evidence"],
+            "protected": True,
+        }
+    ]
+
+    good = evaluate_answers(FixedRuntime("sealed evidence"), cases)
+    missing_term = evaluate_answers(FixedRuntime("sealed but vague"), cases)
+    no_protected = evaluate_answers(FixedRuntime("anything"), [{"prompt": "freeform"}])
+
+    assert good["protected_support"] == 1
+    assert good["protected_perfect"] is True
+    assert missing_term["protected_support"] == 1
+    assert missing_term["protected_perfect"] is False
+    assert no_protected["protected_support"] == 0
+    assert no_protected["protected_perfect"] is False
 
 
 def test_evaluate_answers_records_generation_exceptions_and_continues():
@@ -354,3 +377,19 @@ def test_negative_control_candidate_scores_are_clamped_to_100(tmp_path):
         decision = control.get("decision")
         if decision:
             assert decision["candidate_joint"] <= 100.0
+
+
+def test_zero_protected_support_blocks_promotion():
+    candidate = metrics(75.0, 76.0, 74.0)
+    candidate["routing"]["protected_support"] = 0
+    candidate["answers"]["protected_support"] = 0
+    candidate["answers"]["protected_perfect"] = True
+
+    decision = decide_promotion(
+        baseline=metrics(70.0, 70.0, 70.0),
+        candidate=candidate,
+        previous_winner=None,
+    )
+
+    assert decision.verdict == "REJECTED"
+    assert any("protected support" in reason.lower() for reason in decision.reasons)

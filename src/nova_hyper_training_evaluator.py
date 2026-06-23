@@ -24,6 +24,7 @@ def evaluate_routes(route_model: Any, cases: Sequence[Any]) -> dict:
     true_domains: list[str] = []
     predicted_domains: list[str] = []
     protected_deltas: list[float] = []
+    protected_support = 0
     errors: list[str] = []
 
     for index, case in enumerate(rows):
@@ -43,6 +44,7 @@ def evaluate_routes(route_model: Any, cases: Sequence[Any]) -> dict:
             errors.append(f"case {index}: {exc}")
 
         if _case_value(case, "protected", False):
+            protected_support += 1
             baseline_score = _optional_float(_case_value(case, "baseline_domain_score", None))
             if baseline_score is not None:
                 current_score = 100.0 if predicted_domains[-1] == str(expected_domain) else 0.0
@@ -56,6 +58,7 @@ def evaluate_routes(route_model: Any, cases: Sequence[Any]) -> dict:
         "primary_role_macro_f1": macro_f1,
         "domain_accuracy": domain_accuracy,
         "protected_domain_floor_delta": protected_delta,
+        "protected_support": protected_support,
         "support": len(rows),
         "errors": errors,
     }
@@ -111,7 +114,8 @@ def evaluate_answers(runtime: Any, cases: Sequence[Any]) -> dict:
     total = len(rows)
     return {
         "composite": 100.0 * correct / total,
-        "protected_perfect": protected_correct == protected_total,
+        "protected_perfect": protected_total > 0 and protected_correct == protected_total,
+        "protected_support": protected_total,
         "malformed_rate": malformed / total,
         "repetition_rate": repetitive / total,
         "support": total,
@@ -200,6 +204,12 @@ def decide_promotion(
     protected_delta = _nested_float(candidate, ("routing", "protected_domain_floor_delta"), float("-inf"))
     if protected_delta < PROTECTED_DOMAIN_FLOOR_DELTA:
         reasons.append(f"protected domain floor fell by {protected_delta:.2f} points")
+
+    if _nested_int(candidate, ("routing", "protected_support"), 1) <= 0:
+        reasons.append("route protected support is zero")
+
+    if _nested_int(candidate, ("answers", "protected_support"), 1) <= 0:
+        reasons.append("answer protected support is zero")
 
     if not _nested_bool(candidate, ("answers", "protected_perfect"), False):
         reasons.append("protected answer facts are not perfect")
@@ -382,6 +392,7 @@ def _candidate_from_parts(
         "answers": {
             "composite": baseline_answer + 3.0,
             "protected_perfect": True,
+            "protected_support": 1,
             "malformed_rate": _nested_float(baseline, ("answers", "malformed_rate"), 0.0),
             "repetition_rate": min(_nested_float(baseline, ("answers", "repetition_rate"), 0.0), 0.01),
         },
@@ -575,6 +586,11 @@ def _coerce_route_prediction(value: Any) -> RoutePrediction:
 
 
 def _answer_matches(case: Any, text: str) -> bool:
+    required_terms = _case_value(case, "required_terms", None)
+    terms = _string_sequence(required_terms)
+    if terms:
+        lowered = text.lower()
+        return all(term.lower() in lowered for term in terms)
     expected = _case_value(case, "expected", None)
     if expected is not None:
         return text.strip() == str(expected).strip()
@@ -618,6 +634,17 @@ def _stability_gate_ok(stability: Mapping[str, Any], keys: Sequence[str]) -> boo
     return all(_strict_bool(value) for value in values)
 
 
+def _nested_int(metrics: Mapping[str, Any], path: Sequence[str], default: int) -> int:
+    value = _nested_value(metrics, path, default)
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and math.isfinite(value) and value.is_integer():
+        return int(value)
+    return default
+
+
 def _regression_count(value: Any) -> int | None:
     if isinstance(value, bool) or value is None:
         return None
@@ -648,6 +675,14 @@ def _case_value(case: Any, key: str, default: Any = None) -> Any:
     if isinstance(case, Mapping):
         return case.get(key, default)
     return getattr(case, key, default)
+
+
+def _string_sequence(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return []
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:
