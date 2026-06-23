@@ -79,6 +79,21 @@ def test_surface_words_inside_normal_chat_are_not_claimed():
         assert result.trace()["source"] == "app_navigation_miss"
 
 
+def test_operator_words_inside_questions_do_not_trigger_navigation():
+    context = AppNavigationContext()
+    prompts = [
+        "what are open source tools for Python?",
+        "what are new research methods?",
+        "how do I save files safely in Python?",
+        "how do I clear memory in Python?",
+    ]
+
+    for prompt in prompts:
+        result = plan_app_navigation(prompt, context)
+        assert result.recognized is False, prompt
+        assert result.trace()["source"] == "app_navigation_miss"
+
+
 def test_destructive_terms_force_confirmation_even_when_check_is_present():
     result = plan_app_navigation("verify then delete logs", AppNavigationContext())
 

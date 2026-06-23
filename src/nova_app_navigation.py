@@ -103,6 +103,7 @@ OPERATOR_VERBS = (
     "show",
     "look",
     "view",
+    "navigate",
     "check",
     "run",
     "delete",
@@ -111,10 +112,13 @@ OPERATOR_VERBS = (
     "save",
     "make",
     "create",
-    "new",
 )
 
 DESTRUCTIVE_VERBS = ("delete", "remove", "clear")
+
+QUESTION_STARTERS = ("what ", "how ", "why ", "when ", "where ", "who ")
+EXPLAIN_REQUEST_STARTERS = ("can you explain", "could you explain", "would you explain")
+COMMAND_CONNECTORS = ("to", "the", "at", "my", "a", "an", "up", "into", "on")
 
 
 def plan_app_navigation(text: str, context: AppNavigationContext | None = None) -> NavigationResult:
@@ -151,10 +155,10 @@ def _detect_surface(normalized: str) -> str | None:
     for surface, aliases in SURFACE_ALIASES.items():
         if normalized in aliases:
             return surface
-    if not _has_operator_verb(normalized):
+    if _is_question_like_non_command(normalized):
         return None
     for surface, aliases in SURFACE_ALIASES.items():
-        if any(_matches_phrase(normalized, alias) for alias in aliases):
+        if any(_matches_command_surface(normalized, alias) for alias in aliases):
             return surface
     return None
 
@@ -170,7 +174,7 @@ def _detect_action(normalized: str) -> str:
         return "save"
     if re.search(r"\b(delete|remove|clear)\b", normalized):
         return "delete"
-    if re.search(r"\b(open|go|show|look|view)\b", normalized):
+    if re.search(r"\b(open|go|show|look|view|navigate)\b", normalized):
         return "navigate"
     return "navigate"
 
@@ -188,16 +192,30 @@ def _safety_for(action: str, normalized: str) -> SafetyLevel:
     return SafetyLevel.READ_ONLY
 
 
-def _has_operator_verb(normalized: str) -> bool:
-    return any(_matches_phrase(normalized, verb) for verb in OPERATOR_VERBS)
-
-
 def _has_destructive_verb(normalized: str) -> bool:
     return any(_matches_phrase(normalized, verb) for verb in DESTRUCTIVE_VERBS)
 
 
 def _matches_phrase(normalized: str, phrase: str) -> bool:
     return re.search(rf"(?<![a-z0-9_]){re.escape(phrase)}(?![a-z0-9_])", normalized) is not None
+
+
+def _is_question_like_non_command(normalized: str) -> bool:
+    return normalized.startswith(QUESTION_STARTERS) or normalized.startswith(EXPLAIN_REQUEST_STARTERS)
+
+
+def _matches_command_surface(normalized: str, alias: str) -> bool:
+    connector_pattern = "|".join(re.escape(connector) for connector in COMMAND_CONNECTORS)
+    alias_pattern = re.escape(alias)
+    for verb in OPERATOR_VERBS:
+        pattern = (
+            rf"(?<![a-z0-9_]){re.escape(verb)}"
+            rf"(?:\s+(?:{connector_pattern})){{0,3}}"
+            rf"\s+{alias_pattern}(?![a-z0-9_])"
+        )
+        if re.search(pattern, normalized):
+            return True
+    return False
 
 
 def _format_response(
