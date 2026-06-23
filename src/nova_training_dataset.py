@@ -103,6 +103,7 @@ TRUNCATED_FRAGMENTS = {
     "woul",
 }
 ALLOWED_SHORT_FINAL_WORDS = {"def"}
+ROLE_TRAINING_BLOCK_SIZE = 128
 
 
 def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
@@ -123,6 +124,11 @@ def clean_record(record: dict[str, Any]) -> tuple[dict[str, Any] | None, str | N
         return None, "high_repetition"
     if len(normalized["prompt"].strip()) < 1:
         return None, "empty_prompt"
+    if (
+        normalized["task_type"] != "route"
+        and len(normalized["prompt"].encode("utf-8")) + 2 > ROLE_TRAINING_BLOCK_SIZE
+    ):
+        return None, "prompt_too_long_for_role_training"
 
     return normalized, None
 

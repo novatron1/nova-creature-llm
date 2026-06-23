@@ -43,6 +43,13 @@ def test_truncated_answer_is_quarantined():
     assert reason == "truncated_answer"
 
 
+def test_role_training_prompt_too_long_to_keep_sep_is_quarantined():
+    prompt = "x" * 127
+    cleaned, reason = clean_record({"prompt": prompt, "answer": "Short answer.", "source": "unit"})
+    assert cleaned is None
+    assert reason == "prompt_too_long_for_role_training"
+
+
 def test_paraphrase_group_never_crosses_splits():
     rows = [
         {"id": "1", "intent_group": "creator_identity", "prompt": "Who made you?", "answer": "Mr. Novotron."},

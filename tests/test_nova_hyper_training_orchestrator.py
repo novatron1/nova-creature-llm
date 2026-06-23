@@ -33,6 +33,25 @@ def test_rejected_run_leaves_live_checkpoint_unchanged(tmp_path):
     assert registry.resolve_live("memory_transformer").sha256 == baseline_hash
 
 
+def test_role_candidate_output_path_preserves_checkpoint_evidence_contract(tmp_path):
+    path = orchestrator._role_candidate_output_path(
+        tmp_path,
+        "left_hemisphere",
+        "abcdef1234567890fedcba",
+        20260623,
+    )
+
+    assert path == (
+        tmp_path
+        / "checkpoints"
+        / "brain_slots"
+        / "left_hemisphere"
+        / "candidates"
+        / "abcdef1234567890"
+        / "left_hemisphere_20260623.pt"
+    )
+
+
 def test_run_hyper_training_follows_guarded_order_and_writes_reports(tmp_path, monkeypatch):
     events = []
 

@@ -135,6 +135,38 @@ SESSION_LOG = []
 _LAST_USER_TEXT = ""
 _LAST_NOVA_RESPONSE = ""
 
+def _chat_text_from_body(body):
+    if not isinstance(body, dict):
+        return ""
+    return body.get("text") or body.get("message") or ""
+
+def _apply_hybrid_trace(trace, hybrid_trace):
+    if not isinstance(hybrid_trace, dict):
+        return trace
+    generation = hybrid_trace.get("generation") if isinstance(hybrid_trace.get("generation"), dict) else {}
+    generation_role = generation.get("role")
+    if hybrid_trace.get("source") == "transformer" and generation_role:
+        trace["roles"] = [generation_role]
+    else:
+        trace["roles"] = hybrid_trace.get("roles", trace.get("roles", []))
+    trace["skills"] = hybrid_trace.get("skills", trace.get("skills", []))
+    trace["confidence"] = hybrid_trace.get("confidence", trace.get("confidence", 0.0))
+    trace["memory_event"] = hybrid_trace.get("memory_event", trace.get("memory_event"))
+    trace["domain"] = hybrid_trace.get("domain", trace.get("domain", "general"))
+    trace["route_path"] = hybrid_trace.get("route_path", hybrid_trace.get("roles", trace.get("route_path", [])))
+    for key in (
+        "source",
+        "route_source",
+        "route_model_hash",
+        "route_error",
+        "checkpoint_hash",
+        "checkpoint_path",
+        "generation",
+    ):
+        if key in hybrid_trace:
+            trace[key] = hybrid_trace.get(key)
+    return trace
+
 def _load_memory():
     try:
         if os.path.exists(MEMORY_FILE):
@@ -375,6 +407,7 @@ def brain_route(text, context=None):
             # Generate response via hybrid router
             if _HYBRID_ROUTER_AVAIL:
                 response, hybrid_trace = route_and_respond(normalized_text, dict_lookup_fn=_dict_lookup, memory=MEMORY)
+                trace = _apply_hybrid_trace(trace, hybrid_trace)
             else:
                 from nova_hybrid_router import classify_domain
                 domain = classify_domain(normalized_text)
@@ -406,12 +439,7 @@ def brain_route(text, context=None):
                 try: _CONV_ENGINE.add_exchange(text, response)
                 except: pass
             _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
-            trace["roles"] = hybrid_trace.get("roles", ["memory_transformer","speech_output_transformer"])
-            trace["skills"] = hybrid_trace.get("skills", ["hybrid_routing"])
-            trace["confidence"] = hybrid_trace.get("confidence", 0.80)
-            trace["memory_event"] = hybrid_trace.get("memory_event", None)
-            trace["domain"] = hybrid_trace.get("domain", "general")
-            trace["route_path"] = hybrid_trace.get("route_path", [])
+            trace = _apply_hybrid_trace(trace, hybrid_trace)
             return response, trace
         except Exception as e:
             traceback.print_exc()
@@ -547,7 +575,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             if parsed.path == '/api/chat':
                 length = int(self.headers.get('Content-Length', 0))
                 body = json.loads(self.rfile.read(length).decode()) if length else {}
-                text = body.get('text', '')
+                text = _chat_text_from_body(body)
                 response, trace = brain_route(text)
                 SESSION_LOG.append({"user": text, "response": response, "trace": trace})
                 data = {

@@ -311,14 +311,7 @@ def _train_role_candidate_for_orchestrator(
     train_rows = _role_rows(_split_rows(project_root, dataset_manifest, "train"), role)
     validation_rows = _role_rows(_split_rows(project_root, dataset_manifest, "validation"), role)
     fingerprint = str(dataset_manifest.get("content_fingerprint", "dataset"))[:16]
-    output_path = (
-        project_root
-        / "artifacts"
-        / "transformer_training"
-        / "role_candidates"
-        / fingerprint
-        / f"{role}_{seed}.pt"
-    )
+    output_path = _role_candidate_output_path(project_root, role, fingerprint, seed)
     protected_paths = [registry.resolve_live(protected_role).path for protected_role in ROLE_NAMES]
     result = train_role_candidate(
         role,
@@ -340,6 +333,18 @@ def _train_role_candidate_for_orchestrator(
         },
     )
     return result
+
+
+def _role_candidate_output_path(project_root: Path, role: str, fingerprint: str, seed: int) -> Path:
+    return (
+        project_root
+        / "checkpoints"
+        / "brain_slots"
+        / role
+        / "candidates"
+        / str(fingerprint)[:16]
+        / f"{role}_{seed}.pt"
+    )
 
 
 def _fresh_process_reload_check(
