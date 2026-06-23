@@ -1,0 +1,9 @@
+{
+  "name": "Nova Pac Runner",
+  "kind": "browser_game",
+  "entry": "index.html",
+  "autopilot": true,
+  "scoring": true,
+  "age_ticks": true,
+  "safe_sandbox": true
+}

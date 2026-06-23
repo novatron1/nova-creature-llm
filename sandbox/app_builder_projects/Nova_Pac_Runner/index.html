@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nova Pac Runner</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #172047 0, #070912 56%, #02030a 100%);
+      color: #f7f7ff;
+    }
+    .shell {
+      width: min(94vw, 760px);
+      border: 1px solid #263174;
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(7, 10, 28, 0.9);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(24px, 5vw, 38px); }
+    p { margin: 0 0 14px; color: #bfc7ff; }
+    .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .stat { border: 1px solid #303c90; border-radius: 12px; padding: 10px; background: #101743; }
+    .stat span { display: block; color: #8fa0ff; font-size: 12px; text-transform: uppercase; }
+    .stat strong { font-size: 22px; }
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 19 / 21;
+      border: 2px solid #3146d9;
+      border-radius: 16px;
+      background: #050817;
+    }
+    .notes { margin-top: 12px; font-size: 14px; color: #cbd1ff; }
+    kbd { background: #20295f; border-radius: 6px; padding: 2px 6px; border: 1px solid #3d4bb0; }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <h1>Nova Pac Runner</h1>
+    <p>Autopilot is on. The runner will move on its own, chase pellets, avoid ghosts, and keep score.</p>
+    <section class="hud" aria-label="Game stats">
+      <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+      <div class="stat"><span>Pellets</span><strong id="pellets">0</strong></div>
+      <div class="stat"><span>Age</span><strong id="age">0</strong></div>
+      <div class="stat"><span>Smart</span><strong id="smart">0</strong></div>
+    </section>
+    <canvas id="game" width="456" height="504" aria-label="Nova Pac Runner playfield"></canvas>
+    <p class="notes">Use <kbd>Arrow Keys</kbd> to take over. Stop pressing keys and Nova autopilot resumes.</p>
+  </main>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const tile = 24;
+    const maze = [
+      "###################",
+      "#........#........#",
+      "#.###.##.#.##.###.#",
+      "#.................#",
+      "#.###.#.###.#.###.#",
+      "#.....#..#..#.....#",
+      "#####.## # ##.#####",
+      "    #.#     #.#    ",
+      "#####.# ##  #.#####",
+      "#.........G.......#",
+      "#####.#  ## #.#####",
+      "    #.#     #.#    ",
+      "#####.#.###.#.#####",
+      "#........#........#",
+      "#.###.##.#.##.###.#",
+      "#...#.........#...#",
+      "###.#.#.###.#.#.###",
+      "#.....#..#..#.....#",
+      "#.#######.#######.#",
+      "#........P........#",
+      "###################"
+    ];
+
+    const dirs = [
+      { x: 1, y: 0, name: "right" },
+      { x: -1, y: 0, name: "left" },
+      { x: 0, y: 1, name: "down" },
+      { x: 0, y: -1, name: "up" }
+    ];
+    const state = {
+      pac: { x: 9, y: 19, dir: { x: 1, y: 0, name: "right" } },
+      ghosts: [{ x: 9, y: 9, dir: { x: 1, y: 0, name: "right" } }],
+      pellets: new Set(),
+      score: 0,
+      ageTicks: 0,
+      smartScore: 0,
+      autopilot: true,
+      running: true,
+      lastManualAt: 0
+    };
+
+    for (let y = 0; y < maze.length; y++) {
+      for (let x = 0; x < maze[y].length; x++) {
+        if (maze[y][x] === ".") state.pellets.add(`${x},${y}`);
+      }
+    }
+
+    function isWall(x, y) {
+      return y < 0 || y >= maze.length || x < 0 || x >= maze[y].length || maze[y][x] === "#";
+    }
+
+    function neighbors(pos) {
+      return dirs.map(dir => ({ x: pos.x + dir.x, y: pos.y + dir.y, dir })).filter(next => !isWall(next.x, next.y));
+    }
+
+    function nearestPelletDistance(x, y) {
+      let best = Infinity;
+      for (const key of state.pellets) {
+        const [px, py] = key.split(",").map(Number);
+        best = Math.min(best, Math.abs(px - x) + Math.abs(py - y));
+      }
+      return best;
+    }
+
+    function ghostDanger(x, y) {
+      return state.ghosts.reduce((danger, ghost) => {
+        const d = Math.abs(ghost.x - x) + Math.abs(ghost.y - y);
+        return danger + (d <= 1 ? 60 : d <= 3 ? 15 : 0);
+      }, 0);
+    }
+
+    function chooseAutoDirection() {
+      const choices = neighbors(state.pac);
+      choices.sort((a, b) => {
+        const scoreA = nearestPelletDistance(a.x, a.y) + ghostDanger(a.x, a.y);
+        const scoreB = nearestPelletDistance(b.x, b.y) + ghostDanger(b.x, b.y);
+        return scoreA - scoreB;
+      });
+      return choices[0]?.dir || state.pac.dir;
+    }
+
+    function moveEntity(entity, dir) {
+      const nx = entity.x + dir.x;
+      const ny = entity.y + dir.y;
+      if (!isWall(nx, ny)) {
+        entity.x = nx;
+        entity.y = ny;
+        entity.dir = dir;
+      }
+    }
+
+    function moveGhosts() {
+      for (const ghost of state.ghosts) {
+        const choices = neighbors(ghost);
+        choices.sort((a, b) => {
+          const da = Math.abs(a.x - state.pac.x) + Math.abs(a.y - state.pac.y);
+          const db = Math.abs(b.x - state.pac.x) + Math.abs(b.y - state.pac.y);
+          return da - db;
+        });
+        moveEntity(ghost, choices[0]?.dir || ghost.dir);
+      }
+    }
+
+    function eatPellet() {
+      const key = `${state.pac.x},${state.pac.y}`;
+      if (state.pellets.delete(key)) state.score += 10;
+    }
+
+    function resetIfCaught() {
+      if (state.ghosts.some(g => g.x === state.pac.x && g.y === state.pac.y)) {
+        state.score = Math.max(0, state.score - 25);
+        state.pac.x = 9;
+        state.pac.y = 19;
+      }
+    }
+
+    function tick() {
+      if (!state.running) return;
+      state.ageTicks += 1;
+      if (Date.now() - state.lastManualAt > 1400) {
+        state.autopilot = true;
+        state.pac.dir = chooseAutoDirection();
+      }
+      moveEntity(state.pac, state.pac.dir);
+      eatPellet();
+      if (state.ageTicks % 2 === 0) moveGhosts();
+      resetIfCaught();
+      if (state.pellets.size === 0) state.running = false;
+      state.smartScore = Math.min(100, Math.round((state.score / 6) + state.ageTicks / 8));
+      updateHud();
+    }
+
+    function updateHud() {
+      document.body.dataset.pacX = String(state.pac.x);
+      document.body.dataset.pacY = String(state.pac.y);
+      document.body.dataset.autopilot = String(state.autopilot);
+      document.getElementById("score").textContent = String(state.score);
+      document.getElementById("pellets").textContent = String(state.pellets.size);
+      document.getElementById("age").textContent = String(state.ageTicks);
+      document.getElementById("smart").textContent = String(state.smartScore);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < maze.length; y++) {
+        for (let x = 0; x < maze[y].length; x++) {
+          if (maze[y][x] === "#") {
+            ctx.fillStyle = "#1a38d8";
+            ctx.fillRect(x * tile, y * tile, tile, tile);
+          } else if (state.pellets.has(`${x},${y}`)) {
+            ctx.fillStyle = "#f7d66b";
+            ctx.beginPath();
+            ctx.arc(x * tile + tile / 2, y * tile + tile / 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.fillStyle = "#ffeb3b";
+      ctx.beginPath();
+      ctx.arc(state.pac.x * tile + tile / 2, state.pac.y * tile + tile / 2, 10, 0.2 * Math.PI, 1.8 * Math.PI);
+      ctx.lineTo(state.pac.x * tile + tile / 2, state.pac.y * tile + tile / 2);
+      ctx.fill();
+      for (const ghost of state.ghosts) {
+        ctx.fillStyle = "#ff4b6e";
+        ctx.beginPath();
+        ctx.arc(ghost.x * tile + tile / 2, ghost.y * tile + tile / 2, 10, Math.PI, 0);
+        ctx.lineTo(ghost.x * tile + tile - 2, ghost.y * tile + tile - 2);
+        ctx.lineTo(ghost.x * tile + 2, ghost.y * tile + tile - 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    const keyMap = { ArrowRight: dirs[0], ArrowLeft: dirs[1], ArrowDown: dirs[2], ArrowUp: dirs[3] };
+    addEventListener("keydown", event => {
+      if (keyMap[event.key]) {
+        state.pac.dir = keyMap[event.key];
+        state.autopilot = false;
+        state.lastManualAt = Date.now();
+        event.preventDefault();
+      }
+    });
+
+    window.NovaPacGame = {
+      getState() {
+        return {
+          pac: { ...state.pac },
+          score: state.score,
+          ageTicks: state.ageTicks,
+          smartScore: state.smartScore,
+          pelletsRemaining: state.pellets.size,
+          autopilot: state.autopilot,
+          running: state.running
+        };
+      },
+      forceTick: tick,
+      isRunning() { return state.running; }
+    };
+
+    updateHud();
+    setInterval(tick, 130);
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

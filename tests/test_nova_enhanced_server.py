@@ -81,3 +81,22 @@ def test_brain_route_returns_app_navigation_trace(monkeypatch):
     assert [step["kind"] for step in trace["steps"]] == ["understand", "navigate", "verify"]
     assert trace["verification"]["status"] == "planned"
     assert trace["verification"]["method"] == "structured_navigation_plan"
+
+
+def test_brain_route_builds_pacman_game_preview(monkeypatch, tmp_path):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "APP_BUILDER_PROJECTS_ROOT", tmp_path)
+
+    response, trace = server.brain_route("make a Pac-Man game that moves on its own and has scoring")
+
+    assert "Nova Pac Runner" in response
+    assert "Open:" in response
+    assert trace["source"] == "sandbox_game_builder"
+    assert trace["target_surface"] == "preview_area"
+    assert trace["action"] == "create_game"
+    assert trace["safety_level"] == "safe_write"
+    assert trace["project_name"] == "Nova Pac Runner"
+    assert trace["project_url"] == "/sandbox/app_builder_projects/Nova_Pac_Runner/index.html"
+    assert (tmp_path / "Nova_Pac_Runner" / "index.html").exists()

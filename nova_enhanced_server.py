@@ -12,12 +12,12 @@ Extends the original web server with:
 Usage: python3 nova_enhanced_server.py [port]
 """
 
-import json, sys, os, uuid, time, threading, re, traceback
+import json, sys, os, uuid, time, threading, re, traceback, mimetypes
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from socketserver import ThreadingMixIn
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -37,6 +37,15 @@ try:
     _PIPELINE_AVAIL = True
 except Exception as e:
     print(f"[PIPELINE] Not available: {e}")
+
+# ─── Sandbox Game Builder ─────────────────────────────────────────
+_GAME_BUILDER_AVAIL = False
+APP_BUILDER_PROJECTS_ROOT = Path(ROOT) / "sandbox" / "app_builder_projects"
+try:
+    from nova_sandbox_game_builder import build_pacman_game, is_pacman_game_request
+    _GAME_BUILDER_AVAIL = True
+except Exception as e:
+    print(f"[GAME_BUILDER] Not available: {e}")
 
 # ── Conversation Engine ────────────────────────────────────────────────────
 _CONV_ENGINE_AVAIL = False
@@ -235,6 +244,34 @@ def brain_route(text, context=None):
         return ("Commands: allow/deny mic | camera | speaker | stop all | private mode\\n"
                 + "  status | help | mock voice/text | mock camera/text\\n"
                 + "  Learn this: [fact] | Test yourself | Deep learn | My name is ..."), trace
+
+    # Sandbox game builder
+    if _GAME_BUILDER_AVAIL and is_pacman_game_request(text):
+        result = build_pacman_game(APP_BUILDER_PROJECTS_ROOT)
+        trace["roles"] = ["planner_transformer", "right_hemisphere", "critic_conscience_transformer"]
+        trace["skills"] = ["sandbox_game_builder", "browser_game", "playtest_ready"]
+        trace["confidence"] = 0.94
+        trace["domain"] = "game_builder"
+        trace["source"] = "sandbox_game_builder"
+        trace["route_path"] = ["planner_transformer", "right_hemisphere", "critic_conscience_transformer"]
+        trace["target_surface"] = "preview_area"
+        trace["action"] = "create_game"
+        trace["safety_level"] = "safe_write"
+        trace["project_name"] = result.project_name
+        trace["project_url"] = result.url_path
+        trace["project_dir"] = str(result.project_dir)
+        trace["entry_file"] = str(result.entry_file)
+        trace["verification"] = {
+            "method": "sandbox_project_files",
+            "status": "built_pending_browser_playtest",
+            "checks": ["autopilot", "score", "age_ticks", "preview_url"],
+        }
+        return (
+            "[APP BUILDER] Built Nova Pac Runner, a Pac-Man-style sandbox game.\n"
+            f"Open: {result.url_path}\n"
+            "Autopilot: ON. Scoring: ON. Age ticks: ON.\n"
+            "Next: open the preview and watch the runner move without keyboard input."
+        ), trace
 
     # ─── Follow-up Detection ───
     follow_words = {"yeah","yes","no","ok","okay","got it","i see","right","tell me more","more",
@@ -558,6 +595,21 @@ async function stopAll(){try{const r=await fetch('/api/chat',{method:'POST',head
 addMsg('nova','Hello! I am **Nova Creature** - a multi-brain AI.\\n\\nType anything or click buttons to test me!');
 </script></body></html>"""
 
+def _sandbox_static_file(request_path):
+    prefix = "/sandbox/app_builder_projects/"
+    if not request_path.startswith(prefix):
+        return None
+    rel = unquote(request_path[len(prefix):]).replace("\\", "/").lstrip("/")
+    if not rel or rel.endswith("/"):
+        rel = rel + "index.html"
+    root = Path(APP_BUILDER_PROJECTS_ROOT).resolve()
+    candidate = (root / rel).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return None
+    return candidate if candidate.is_file() else None
+
 class NovaHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -566,6 +618,17 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
             self.wfile.write(WEB_HTML.encode('utf-8'))
+        elif parsed.path.startswith('/sandbox/app_builder_projects/'):
+            static_file = _sandbox_static_file(parsed.path)
+            if static_file is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            content_type = mimetypes.guess_type(str(static_file))[0] or "application/octet-stream"
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.end_headers()
+            self.wfile.write(static_file.read_bytes())
         elif parsed.path == '/status':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')

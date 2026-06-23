@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "loads index.html",
+    "exposes window.NovaPacGame.getState()",
+    "autopilot moves the player without keyboard input",
+    "score increases when pellets are eaten",
+    "ageTicks increases over time"
+  ]
+}
