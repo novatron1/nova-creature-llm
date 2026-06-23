@@ -30,11 +30,15 @@ class NovaTransformerRuntime:
         self.last_route_error: str | None = None
 
     def route(self, text: str) -> RoutePrediction:
+        prediction, route_error = self.route_with_evidence(text)
+        self.last_route_error = route_error
+        return prediction
+
+    def route_with_evidence(self, text: str) -> tuple[RoutePrediction, str | None]:
         if not isinstance(text, str) or not text.strip():
             text = "general request"
 
         model = self.route_model or _BaselineRouteModel()
-        self.last_route_error = None
         try:
             if hasattr(model, "predict") and callable(model.predict):
                 prediction = model.predict(text)
@@ -42,10 +46,9 @@ class NovaTransformerRuntime:
                 prediction = model.route(text)
             else:
                 prediction = _BaselineRouteModel().predict(text)
-            return _ensure_route_prediction(prediction)
+            return _ensure_route_prediction(prediction), None
         except Exception as exc:
-            self.last_route_error = str(exc)
-            return _BaselineRouteModel().predict(text)
+            return _BaselineRouteModel().predict(text), str(exc)
 
     def generate(self, role: str, prompt: str, max_new_tokens: int = 80) -> GenerationResult:
         started = time.perf_counter()

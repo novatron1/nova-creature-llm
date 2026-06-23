@@ -121,6 +121,16 @@ def test_route_model_exception_falls_back_with_error_provenance(tmp_path):
     assert runtime.last_route_error == "route boom"
 
 
+def test_route_with_evidence_returns_error_without_shared_runtime_state(tmp_path):
+    runtime = NovaTransformerRuntime(tmp_path, route_model=ExplodingRouteModel())
+
+    route, route_error = runtime.route_with_evidence("debug this code")
+
+    assert route.source == "baseline_fallback"
+    assert route_error == "route boom"
+    assert runtime.last_route_error is None
+
+
 def test_hybrid_success_trace_is_json_safe_and_exposes_route_provenance(monkeypatch):
     import nova_hybrid_router as router
 
@@ -254,3 +264,81 @@ def test_non_transformer_fallback_keeps_attempted_transformer_failure_evidence(m
     assert trace["route_error"] == "route degraded"
     assert trace["generation"]["error"] == "generation boom"
     assert trace["checkpoint_hash"] == HASH_B
+
+
+def test_route_error_is_captured_per_call_before_shared_state_changes(monkeypatch):
+    import nova_hybrid_router as router
+
+    first_prediction = RoutePrediction("coding", "left_hemisphere", (), 0.8, HASH_A)
+    second_prediction = RoutePrediction("science", "memory_transformer", (), 0.7, HASH_A)
+    generation = GenerationResult(
+        "",
+        "left_hemisphere",
+        "checkpoints/brain_slots/left_hemisphere/left_hemisphere_baseline.pt",
+        HASH_B,
+        0,
+        0.1,
+        0.0,
+        "error",
+        "generation boom",
+    )
+
+    class FakeBrain:
+        last_route_error = None
+
+        def __init__(self):
+            self.calls = 0
+
+        def route_with_evidence(self, text):
+            self.calls += 1
+            if self.calls == 1:
+                self.last_route_error = "shared state overwritten after first route"
+                return first_prediction, "route error A"
+            return second_prediction, "route error B"
+
+        def generate(self, role, text, max_new_tokens=80):
+            if text == "first request":
+                self.route_with_evidence("second request")
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("first request", transformer_only=True)
+
+    assert "Transformer generation failed" in response
+    assert trace["route_error"] == "route error A"
+    assert trace["domain"] == "coding"
+
+
+def test_fallback_response_uses_prediction_domain_when_legacy_domain_differs(monkeypatch):
+    import nova_hybrid_router as router
+
+    prediction = RoutePrediction("science", "memory_transformer", (), 0.7, HASH_A)
+    generation = GenerationResult(
+        "",
+        "memory_transformer",
+        "checkpoints/brain_slots/memory_transformer/memory_transformer_baseline.pt",
+        HASH_B,
+        0,
+        0.1,
+        0.0,
+        "error",
+        "generation boom",
+    )
+
+    class FakeBrain:
+        def route_with_evidence(self, text):
+            return prediction, None
+
+        def generate(self, role, text, max_new_tokens=80):
+            return generation
+
+    monkeypatch.setattr(router, "BRAIN", FakeBrain())
+    monkeypatch.setattr(router, "_log_route", lambda *args: None)
+
+    response, trace = router.route_and_respond("debug python code")
+
+    assert "science training covers physics" in response
+    assert "programming knowledge" not in response
+    assert trace["domain"] == "science"

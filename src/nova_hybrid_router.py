@@ -107,14 +107,18 @@ def get_route_for_domain(domain):
 def generate_transformer_response(text, domain=None):
     """Generate a response using the live transformer runtime.
 
-    Returns (GenerationResult | None, RoutePrediction, GenerationResult).
+    Returns (GenerationResult | None, RoutePrediction, GenerationResult, route_error).
     """
     brain = _ensure_brain()
-    prediction = brain.route(text)
+    if hasattr(brain, "route_with_evidence") and callable(brain.route_with_evidence):
+        prediction, route_error = brain.route_with_evidence(text)
+    else:
+        prediction = brain.route(text)
+        route_error = getattr(brain, "last_route_error", None)
     result = brain.generate(prediction.primary_role, text, max_new_tokens=80)
     if not result.ok:
-        return None, prediction, result
-    return result, prediction, result
+        return None, prediction, result, route_error
+    return result, prediction, result, route_error
 
 def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: bool = False):
     """Main routing function — the hybrid brain.
@@ -179,10 +183,9 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
             return response, trace
     
     # ─── Transformer Path: Generate response ───
-    gen_result, prediction, attempted_generation = generate_transformer_response(text, domain)
+    gen_result, prediction, attempted_generation, route_error = generate_transformer_response(text, domain)
     route = _dedupe_roles([prediction.primary_role, *prediction.support_roles])
     generation_trace = attempted_generation.to_trace()
-    route_error = getattr(_ensure_brain(), "last_route_error", None)
 
     if gen_result:
         trace["roles"] = route
@@ -248,8 +251,9 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
         "general": "I'm Nova Creature with 7 brain roles, trained in coding, science, philosophy, psychology, and more. I have %s people in memory and learn new things when you teach me. Try: 'Learn this: [fact]' or ask me about any topic!",
     }
     
-    fallback = fallback_responses.get(domain, fallback_responses["general"])
-    if domain == "general" and memory:
+    fallback_domain = prediction.domain
+    fallback = fallback_responses.get(fallback_domain, fallback_responses["general"])
+    if fallback_domain == "general" and memory:
         pcount = len(memory.get("people", {}))
         lcount = len(memory.get("lessons", {}))
         fallback = fallback % f"{pcount}"
