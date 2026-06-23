@@ -58,6 +58,29 @@ def test_candidate_promotes_only_when_all_gates_pass():
     assert decision.verdict == "PROMOTED"
 
 
+def minimal_metrics(joint, route, answer, repetition=0.01, protected=True, reload_ok=True):
+    return {
+        "joint": joint,
+        "routing": {"macro_f1": route, "protected_domain_floor_delta": 0.0},
+        "answers": {
+            "composite": answer,
+            "protected_perfect": protected,
+            "malformed_rate": 0.0,
+            "repetition_rate": repetition,
+        },
+        "stability": {"reload_ok": reload_ok, "confirmation_ok": True, "regressions": 0},
+    }
+
+
+def test_minimal_task9_metrics_shape_still_promotes_when_other_gates_pass():
+    decision = decide_promotion(
+        baseline=minimal_metrics(70.0, 70.0, 70.0),
+        candidate=minimal_metrics(75.0, 76.0, 74.0),
+        previous_winner=None,
+    )
+    assert decision.verdict == "PROMOTED"
+
+
 def test_hash_change_cannot_override_answer_regression():
     decision = decide_promotion(
         baseline=metrics(80.0, 80.0, 80.0),

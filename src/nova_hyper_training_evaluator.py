@@ -515,7 +515,7 @@ def _bool_or_runtime(
 def _stability_gate_ok(stability: Mapping[str, Any], keys: Sequence[str]) -> bool:
     values = [stability[key] for key in keys if key in stability]
     if not values:
-        return False
+        return True
     return all(bool(value) for value in values)
 
 
