@@ -67,27 +67,56 @@ class NovaTokenizer:
                 self.word_ids.add(i)
     
     def encode(self, text):
-        """Tokenize text → list of token IDs"""
+        """Tokenize text → list of token IDs. Skip unknown tokens gracefully."""
         ids = [self.BOS_ID]
-        # Simple word-level + character fallback tokenization
-        words = text.strip().split()
+        stripped = text.strip()
+        # Remove punctuation-only lines
+        if not stripped or all(c in '.,!?;:-"\'()[]{}' for c in stripped):
+            return ids + [self.EOS_ID]
+            
+        words = stripped.split()
         for word in words:
+            # Try exact match first
             if word in self.token_to_id:
                 ids.append(self.token_to_id[word])
-            else:
-                # Try lowercase
-                word_lower = word.lower()
-                if word_lower in self.token_to_id:
-                    ids.append(self.token_to_id[word_lower])
-                else:
-                    # Character-level fallback
-                    for ch in word:
-                        if ch in self.token_to_id:
-                            ids.append(self.token_to_id[ch])
-                        elif ch.lower() in self.token_to_id:
-                            ids.append(self.token_to_id[ch.lower()])
-                        else:
-                            ids.append(self.UNK_ID)
+                continue
+            
+            # Try stripping trailing punctuation and re-check
+            clean_word = word.rstrip('.,!?;:)\']}""\'')
+            if clean_word != word and clean_word in self.token_to_id:
+                ids.append(self.token_to_id[clean_word])
+                # Add punctuation tokens back
+                punct_part = word[len(clean_word):]
+                for ch in punct_part:
+                    if ch in self.token_to_id:
+                        ids.append(self.token_to_id[ch])
+                continue
+            
+            # Try lowercase
+            lowered = clean_word.lower()
+            if lowered in self.token_to_id:
+                ids.append(self.token_to_id[lowered])
+                continue
+                
+            # Try capitalize
+            capped = clean_word.capitalize()
+            if capped in self.token_to_id:
+                ids.append(self.token_to_id[capped])
+                continue
+                
+            # Try uppercase
+            upped = clean_word.upper()
+            if upped in self.token_to_id:
+                ids.append(self.token_to_id[upped])
+                continue
+            
+            # Character-level fallback - skip unknown chars
+            for ch in word:
+                if ch in self.token_to_id:
+                    ids.append(self.token_to_id[ch])
+                elif ch.lower() in self.token_to_id:
+                    ids.append(self.token_to_id[ch.lower()])
+                # else: silently skip character not in vocabulary
                     ids.append(self.token_to_id.get(' ', self.UNK_ID))  # Add space
         ids.append(self.EOS_ID)
         return ids
@@ -445,6 +474,10 @@ class NovaTransformer:
             valid_vocab_size = self.tokenizer.vocab_size if self.tokenizer else len(last_logits)
             if valid_vocab_size < len(last_logits):
                 last_logits[valid_vocab_size:] = -1e9
+            # Also suppress UNK token (ID 3) - never generate <unk>
+            unk_id = self.tokenizer.UNK_ID if self.tokenizer else 3
+            if unk_id < len(last_logits):
+                last_logits[unk_id] = -1e9
             
             # Sample or greedy
             if temperature > 0:
@@ -540,7 +573,7 @@ class NovaBrain:
         for role in ROLE_NAMES:
             pt_path = self.checkpoint_dir / role / f'{role}_{checkpoint_version}.pt'
             if not pt_path.exists():
-                for ver in ['v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
+                for ver in ['v055_immaculate_trained', 'v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
                     pt_path = self.checkpoint_dir / role / f'{role}_{ver}.pt'
                     if pt_path.exists():
                         checkpoint_version = ver
@@ -569,7 +602,7 @@ class NovaBrain:
     
     def _select_best_version(self):
         """Select checkpoint version with unique per-role weights."""
-        for ver in ['v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
+        for ver in ['v055_immaculate_trained', 'v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
             hashes = set()
             all_exist = True
             for role in ROLE_NAMES:

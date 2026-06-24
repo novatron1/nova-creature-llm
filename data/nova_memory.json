@@ -17,8 +17,8 @@
     },
     "mr. novotron": {
       "name": "Mr. Novotron",
-      "introduced_at": "2026-06-22T14:08:33.948167",
-      "session": "103be630"
+      "introduced_at": "2026-06-24T01:44:23.335991",
+      "session": "f3511dc3"
     },
     "memory test user": {
       "name": "Memory Test User",
@@ -100,8 +100,38 @@
       "text": "hybrid routers combine dictionary lookup with transformer generation",
       "learned_at": "2026-06-22T14:11:06.375109",
       "session": "327e4de3"
+    },
+    "lesson_12": {
+      "text": "nova should explain its brain routes",
+      "learned_at": "2026-06-23T22:51:39.816925",
+      "session": "fdec32d8"
+    },
+    "lesson_13": {
+      "text": "nova is a helpful ai assistant",
+      "learned_at": "2026-06-23T22:52:26.116970",
+      "session": "3028b527"
+    },
+    "lesson_14": {
+      "text": "quality gate should show real transformer status",
+      "learned_at": "2026-06-23T22:53:24.472723",
+      "session": "c55b5fdd"
+    },
+    "lesson_15": {
+      "text": "nova should remember what i teach",
+      "learned_at": "2026-06-24T01:38:18.481335",
+      "session": "45993f38"
+    },
+    "lesson_16": {
+      "text": "nova should train more to get smarter",
+      "learned_at": "2026-06-24T01:42:23.462449",
+      "session": "f8eef17a"
+    },
+    "lesson_17": {
+      "text": "nova should train more to get smarter",
+      "learned_at": "2026-06-24T01:44:23.377868",
+      "session": "f3511dc3"
     }
   },
-  "last_person": "nova",
-  "last_lesson": "lesson_11"
+  "last_person": "mr. novotron",
+  "last_lesson": "lesson_17"
 }

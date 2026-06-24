@@ -19,7 +19,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-# ─── Imports (lazy) ─────────────────────────────────────────
+# ─── Brain Initialization (eager at import) ──────────────
 BRAIN = None
 TOKENIZER = None
 CONV_ENGINE = None
@@ -39,6 +39,9 @@ def _ensure_conv():
         from nova_conversation_engine import ConversationEngine
         CONV_ENGINE = ConversationEngine()
     return CONV_ENGINE
+
+# Pre-load brain at import time
+_ensure_brain()
 
 # ─── Routing Classification ──────────────────────────────────
 # Domain categories the router can classify into
@@ -111,72 +114,38 @@ def generate_transformer_response(text, domain=None):
     
     Uses actual trained checkpoint weights to generate responses.
     Returns (response_text, route_path, confidence, error_info).
-    Always returns a valid response, never None.
+    Speed-optimized: only tries the primary role once.
     """
     brain = _ensure_brain()
     
     if domain is None:
         domain = classify_domain(text)
     
-    # Get the route roles for this domain
+    # Get the route roles for this domain - only use primary role for speed
     route_roles = get_route_for_domain(domain)
+    primary_role = route_roles[0] if route_roles else "memory_transformer"
     
     # Build a prompt that includes domain context
     prompt = f"[{domain.upper()}] {text}"
     
-    best_response = None
-    best_confidence = 0.0
     errors = {}
-    ran_transformer = False
     
-    # Try each role in the route, pick the best response
-    for role in route_roles:
-        if role not in brain.models:
-            errors[role] = 'not_loaded'
-            continue
-        
+    # Try the primary role only (speed optimization)
+    if primary_role in brain.models:
         try:
-            gen_result = brain.infer(role, prompt, max_new_tokens=40, temperature=0.1)
+            gen_result = brain.infer(primary_role, prompt, max_new_tokens=20, temperature=0.0)
             gen_text, stats = gen_result
             
             if gen_text and stats.get('tokens_generated', 0) > 0:
-                ran_transformer = True
-            
-            if gen_text and len(gen_text) > len(prompt) + 3:
-                response = gen_text[len(prompt):].strip()
-                if response and len(response) > 2:
-                    conf = min(0.92, 0.5 + 0.04 * len(response))
-                    if conf > best_confidence:
-                        best_response = response
-                        best_confidence = conf
+                if gen_text and len(gen_text) > len(prompt) + 2:
+                    response = gen_text[len(prompt):].strip()
+                    if response and len(response) > 2:
+                        conf = min(0.92, 0.5 + 0.04 * len(response))
+                        return response, route_roles, conf, errors, True
         except Exception as e:
-            errors[role] = f"{type(e).__name__}: {str(e)[:80]}"
-            continue
+            errors[primary_role] = f"{type(e).__name__}: {str(e)[:80]}"
     
-    if best_response:
-        return best_response, route_roles, best_confidence, errors, True
-    
-    # Fallback: use the most domain-relevant role with lower temperature
-    primary_role = route_roles[0] if route_roles else "memory_transformer"
-    if not ran_transformer and primary_role in brain.models:
-        try:
-            gen_result = brain.infer(primary_role, prompt, max_new_tokens=25, temperature=0.0)
-            gen_text, stats = gen_result
-            if gen_text and stats.get('tokens_generated', 0) > 0:
-                ran_transformer = True
-            if gen_text and len(gen_text) > len(prompt) + 2:
-                response = gen_text[len(prompt):].strip()
-                if response and len(response) > 2:
-                    return response, route_roles, 0.6, {}, True
-        except Exception as e:
-            errors[primary_role] = f"Fallback error: {type(e).__name__}: {str(e)[:80]}"
-    
-    # Even if transformer ran but produced no usable output, generate a structured response
-    if ran_transformer:
-        # Transformer ran but output was empty/low quality - return with ran=True flag
-        return None, route_roles, 0.3, errors, True
-    
-    # Transformer did not run at all
+    # Transformer did not run or produced empty output
     return None, route_roles, 0.0, errors, False
 
 def route_and_respond(text, dict_lookup_fn=None, memory=None):
