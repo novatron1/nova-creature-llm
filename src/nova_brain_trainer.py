@@ -70,12 +70,26 @@ class NovaTransformer:
         self.d_head = self.d_model // self.n_heads
     
     @staticmethod
+    def _detect_archive_prefix(z):
+        names = z.namelist()
+        for n in names:
+            if n.endswith('/data.pkl'):
+                return n[:-len('/data.pkl')]
+        for n in names:
+            if '/' in n:
+                prefix = n[:n.index('/')]
+                if f'{prefix}/data.pkl' in names:
+                    return prefix
+        return 'creature_v032_bigfit_twenty_plain'
+    
+    @staticmethod
     def load_checkpoint(pt_path):
         """Load weights from .pt checkpoint. Returns dict of numpy arrays."""
         with zipfile.ZipFile(pt_path, 'r') as z:
+            prefix = NovaTransformer._detect_archive_prefix(z)
             storages = {}
             for sid in range(26):
-                name = f'creature_v032_bigfit_twenty_plain/data/{sid}'
+                name = f'{prefix}/data/{sid}'
                 try:
                     storages[sid] = np.frombuffer(z.read(name), dtype=np.float32).copy()
                 except KeyError:
@@ -124,67 +138,50 @@ class NovaTransformer:
         """Save weights to .pt checkpoint format. 
         Copies original file structure and replaces tensor data."""
         if original_pt_path is None:
-            original_pt_path = pt_path  # overwrite
+            original_pt_path = pt_path
         
-        # Read the original zip structure
+        # Detect prefix from original checkpoint
+        with zipfile.ZipFile(original_pt_path, 'r') as z_detect:
+            prefix = NovaTransformer._detect_archive_prefix(z_detect)
+        data_prefix = prefix + '/data/'
+        
         with zipfile.ZipFile(original_pt_path, 'r') as z_orig:
-            # Create new zip with same structure but updated tensors
-            os.makedirs(os.path.dirname(pt_path), exist_ok=True)
-            with zipfile.ZipFile(pt_path + '.tmp', 'w', zipfile.ZIP_STORED) as z_new:
+            os.makedirs(os.path.dirname(str(pt_path)), exist_ok=True)
+            with zipfile.ZipFile(str(pt_path) + '.tmp', 'w', zipfile.ZIP_STORED) as z_new:
                 for item in z_orig.infolist():
                     name = item.filename
-                    if name.startswith('creature_v032_bigfix_twenty_plain/data/') or \
-                       name.startswith('creature_v032_bigfit_twenty_plain/data/'):
-                        # Extract storage number
+                    if name.startswith(data_prefix):
                         parts = name.split('/')
                         storage_num = int(parts[-1])
-                        # Check if we have this storage
                         mapping = [
-                            ('token_embedding.weight', 0),
-                            ('position_embedding.weight', 1),
-                            ('blocks.0.ln1.weight', 2),
-                            ('blocks.0.ln1.bias', 3),
-                            ('blocks.0.attn.qkv.weight', 4),
-                            ('blocks.0.attn.proj.weight', 5),
-                            ('blocks.0.attn.proj.bias', 6),
-                            ('blocks.0.ln2.weight', 7),
-                            ('blocks.0.ln2.bias', 8),
-                            ('blocks.0.ff.net.0.weight', 9),
-                            ('blocks.0.ff.net.0.bias', 10),
-                            ('blocks.0.ff.net.1.weight', 11),
-                            ('blocks.0.ff.net.1.bias', 12),
-                            ('blocks.1.ln1.weight', 13),
-                            ('blocks.1.ln1.bias', 14),
-                            ('blocks.1.attn.qkv.weight', 15),
-                            ('blocks.1.attn.proj.weight', 16),
-                            ('blocks.1.attn.proj.bias', 17),
-                            ('blocks.1.ln2.weight', 18),
-                            ('blocks.1.ln2.bias', 19),
-                            ('blocks.1.ff.net.0.weight', 20),
-                            ('blocks.1.ff.net.0.bias', 21),
-                            ('blocks.1.ff.net.1.weight', 22),
-                            ('blocks.1.ff.net.1.bias', 23),
-                            ('ln_f.weight', 24),
-                            ('ln_f.bias', 25),
+                            ('token_embedding.weight', 0), ('position_embedding.weight', 1),
+                            ('blocks.0.ln1.weight', 2), ('blocks.0.ln1.bias', 3),
+                            ('blocks.0.attn.qkv.weight', 4), ('blocks.0.attn.proj.weight', 5),
+                            ('blocks.0.attn.proj.bias', 6), ('blocks.0.ln2.weight', 7),
+                            ('blocks.0.ln2.bias', 8), ('blocks.0.ff.net.0.weight', 9),
+                            ('blocks.0.ff.net.0.bias', 10), ('blocks.0.ff.net.1.weight', 11),
+                            ('blocks.0.ff.net.1.bias', 12), ('blocks.1.ln1.weight', 13),
+                            ('blocks.1.ln1.bias', 14), ('blocks.1.attn.qkv.weight', 15),
+                            ('blocks.1.attn.proj.weight', 16), ('blocks.1.attn.proj.bias', 17),
+                            ('blocks.1.ln2.weight', 18), ('blocks.1.ln2.bias', 19),
+                            ('blocks.1.ff.net.0.weight', 20), ('blocks.1.ff.net.0.bias', 21),
+                            ('blocks.1.ff.net.1.weight', 22), ('blocks.1.ff.net.1.bias', 23),
+                            ('ln_f.weight', 24), ('ln_f.bias', 25),
                         ]
                         param_for_storage = None
                         for pname, psid in mapping:
                             if psid == storage_num:
                                 param_for_storage = pname
                                 break
-                        
                         if param_for_storage and param_for_storage in params:
                             data = params[param_for_storage].ravel().astype(np.float32).tobytes()
                         else:
                             data = z_orig.read(name)
                         z_new.writestr(item, data)
                     else:
-                        # Copy unchanged
                         data = z_orig.read(name)
                         z_new.writestr(item, data)
-        
-        # Replace original with new
-        os.replace(pt_path + '.tmp', pt_path)
+        os.replace(str(pt_path) + '.tmp', str(pt_path))
     
     # ── Forward ──
     def _ln(self, x, w, b):

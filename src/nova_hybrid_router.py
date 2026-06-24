@@ -11,7 +11,7 @@ Architecture:
   4. Learning Loop: Each route is logged, routing weights adjust over time
 """
 
-import json, sys, re
+import hashlib, json, sys, re, time
 from pathlib import Path
 from datetime import datetime
 
@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from nova_app_navigation import AppNavigationContext, plan_app_navigation
+from nova_training_types import GenerationResult, RoutePrediction
 
 # ─── Imports (lazy) ─────────────────────────────────────────
 BRAIN = None
@@ -27,10 +28,19 @@ CONV_ENGINE = None
 APP_NAV_CONTEXT = AppNavigationContext()
 
 def _ensure_brain():
-    global BRAIN
+    global BRAIN, TOKENIZER
     if BRAIN is None:
-        from nova_transformer_runtime import NovaTransformerRuntime
-        BRAIN = NovaTransformerRuntime(ROOT)
+        try:
+            from nova_transformer_engine import NovaBrain, NovaTokenizer
+
+            TOKENIZER = NovaTokenizer()
+            BRAIN = NovaBrain()
+            if not BRAIN.load_all():
+                raise RuntimeError("NovaBrain found no compatible checkpoints")
+        except Exception:
+            from nova_transformer_runtime import NovaTransformerRuntime
+
+            BRAIN = NovaTransformerRuntime(ROOT)
     return BRAIN
 
 def _ensure_conv():
@@ -107,20 +117,153 @@ def get_route_for_domain(domain):
     return ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
 
 def generate_transformer_response(text, domain=None):
-    """Generate a response using the live transformer runtime.
+    """Generate a response using whichever live transformer brain is loaded.
 
     Returns (GenerationResult | None, RoutePrediction, GenerationResult, route_error).
     """
     brain = _ensure_brain()
-    if hasattr(brain, "route_with_evidence") and callable(brain.route_with_evidence):
-        prediction, route_error = brain.route_with_evidence(text)
-    else:
-        prediction = brain.route(text)
-        route_error = getattr(brain, "last_route_error", None)
-    result = brain.generate(prediction.primary_role, text, max_new_tokens=80)
-    if not result.ok:
-        return None, prediction, result, route_error
-    return result, prediction, result, route_error
+
+    if hasattr(brain, "generate") and (hasattr(brain, "route_with_evidence") or hasattr(brain, "route")):
+        if hasattr(brain, "route_with_evidence") and callable(brain.route_with_evidence):
+            prediction, route_error = brain.route_with_evidence(text)
+        else:
+            prediction = brain.route(text)
+            route_error = getattr(brain, "last_route_error", None)
+        result = brain.generate(prediction.primary_role, text, max_new_tokens=80)
+        if not result.ok:
+            return None, prediction, result, route_error
+        return result, prediction, result, route_error
+
+    return _generate_transformer_response_from_infer_brain(brain, text, domain)
+
+def _generate_transformer_response_from_infer_brain(brain, text, domain=None):
+    domain = domain or classify_domain(text)
+    route_roles = get_route_for_domain(domain)
+    primary_role = route_roles[0] if route_roles else "memory_transformer"
+    model_hash = _infer_route_model_hash(domain, primary_role)
+    prompt = f"[{domain.upper()}] {text}"
+    best = None
+    best_prediction = RoutePrediction(domain, primary_role, tuple(route_roles[1:]), 0.0, model_hash)
+    errors = {}
+
+    for role in route_roles:
+        if role not in getattr(brain, "models", {}):
+            errors[role] = 'not_loaded'
+            continue
+
+        try:
+            started = time.perf_counter()
+            gen_result = brain.infer(role, prompt, max_new_tokens=40, temperature=0.1)
+            gen_text, stats = gen_result
+            elapsed = max(time.perf_counter() - started, 0.0)
+            if gen_text and len(gen_text) > len(prompt) + 3:
+                response = gen_text[len(prompt):].strip()
+                if response and len(response) > 5 and not _too_many_unknown_tokens(response):
+                    conf = min(0.92, 0.5 + 0.04 * len(response))
+                    tokens_generated = _safe_int(stats.get("tokens_generated"), len(response.split()))
+                    stats_elapsed = _safe_float(stats.get("time") or stats.get("elapsed_seconds"), elapsed)
+                    tokens_per_second = _safe_float(
+                        stats.get("tokens_per_sec") or stats.get("tokens_per_second"),
+                        tokens_generated / stats_elapsed if stats_elapsed > 0 else 0.0,
+                    )
+                    result = GenerationResult(
+                        response,
+                        role,
+                        _infer_checkpoint_path(brain, role),
+                        _infer_checkpoint_hash(brain, role),
+                        tokens_generated,
+                        stats_elapsed,
+                        tokens_per_second,
+                        "length",
+                    )
+                    prediction = RoutePrediction(
+                        domain,
+                        role,
+                        tuple(r for r in route_roles if r != role),
+                        conf,
+                        model_hash,
+                    )
+                    if best is None or conf > best_prediction.confidence:
+                        best = result
+                        best_prediction = prediction
+        except Exception as e:
+            errors[role] = f"{type(e).__name__}: {str(e)[:80]}"
+            continue
+
+    if best is not None and best.ok:
+        return best, best_prediction, best, None
+
+    if primary_role in getattr(brain, "models", {}):
+        try:
+            started = time.perf_counter()
+            gen_result = brain.infer(primary_role, prompt, max_new_tokens=25, temperature=0.0)
+            gen_text, stats = gen_result
+            elapsed = max(time.perf_counter() - started, 0.0)
+            response = gen_text[len(prompt):].strip()
+            if response and len(response) > 3 and not _too_many_unknown_tokens(response):
+                tokens_generated = _safe_int(stats.get("tokens_generated"), len(response.split()))
+                stats_elapsed = _safe_float(stats.get("time") or stats.get("elapsed_seconds"), elapsed)
+                result = GenerationResult(
+                    response,
+                    primary_role,
+                    _infer_checkpoint_path(brain, primary_role),
+                    _infer_checkpoint_hash(brain, primary_role),
+                    tokens_generated,
+                    stats_elapsed,
+                    _safe_float(
+                        stats.get("tokens_per_sec") or stats.get("tokens_per_second"),
+                        tokens_generated / stats_elapsed if stats_elapsed > 0 else 0.0,
+                    ),
+                    "length",
+                )
+                prediction = RoutePrediction(domain, primary_role, tuple(route_roles[1:]), 0.6, model_hash)
+                if result.ok:
+                    return result, prediction, result, None
+        except Exception as e:
+            errors[primary_role] = f"Fallback error: {type(e).__name__}: {str(e)[:80]}"
+
+    error_text = "; ".join(f"{role}: {err}" for role, err in errors.items()) or "transformer generated no usable text"
+    failed = GenerationResult.failed(primary_role, error_text)
+    return None, best_prediction, failed, error_text
+
+def _too_many_unknown_tokens(text):
+    unk_count = str(text or "").count("<unk>")
+    total_chars = len(str(text or "").strip())
+    return total_chars > 0 and (unk_count * 5 > total_chars)
+
+def _safe_int(value, default=0):
+    try:
+        return max(0, int(value))
+    except Exception:
+        return max(0, int(default))
+
+def _safe_float(value, default=0.0):
+    try:
+        return max(0.0, float(value))
+    except Exception:
+        return max(0.0, float(default))
+
+def _infer_route_model_hash(domain, primary_role):
+    payload = f"nova-brain-infer-route:{domain}:{primary_role}".encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+def _infer_checkpoint_hash(brain, role):
+    hashes = getattr(brain, "hashes", {}) or {}
+    value = hashes.get(role)
+    if isinstance(value, str) and re.fullmatch(r"[0-9a-fA-F]{64}", value):
+        return value
+    return hashlib.sha256(f"nova-infer-checkpoint:{role}".encode("utf-8")).hexdigest()
+
+def _infer_checkpoint_path(brain, role):
+    checkpoint_dir = Path(getattr(brain, "checkpoint_dir", ROOT / "checkpoints" / "brain_slots"))
+    for version in ("v055_finetuned", "v055_numpy_trained", "v055_conversation_trained", "v054_specialized"):
+        candidate = checkpoint_dir / role / f"{role}_{version}.pt"
+        if candidate.exists():
+            try:
+                return candidate.resolve().relative_to(ROOT).as_posix()
+            except ValueError:
+                return candidate.resolve().as_posix()
+    return f"checkpoints/brain_slots/{role}/{role}_unknown.pt"
 
 def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: bool = False):
     """Main routing function — the hybrid brain.
@@ -222,6 +365,8 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only: 
             "checkpoint_hash": gen_result.checkpoint_hash,
             "checkpoint_path": gen_result.checkpoint_path,
             "generation": generation_trace,
+            "transformer_used": True,
+            "transformer_output_quality": "good",
         })
         _log_route(text, prediction.domain, route, prediction.confidence, "transformer")
         if CONV_ENGINE:
