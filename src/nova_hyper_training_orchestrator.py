@@ -34,6 +34,50 @@ DEFAULT_SEED = 20260622
 PROMOTION_BANK_PATH = Path("benchmark_lab/test_banks/transformer_route_promotion_bank.json")
 
 
+def decide_role_promotions(
+    baseline_metrics: Mapping[str, Any],
+    candidate_metrics: Mapping[str, Any],
+    *,
+    roles: tuple[str, ...] = ROLE_NAMES,
+    min_answer_gain: float = 0.0,
+) -> dict[str, PromotionDecision]:
+    decisions: dict[str, PromotionDecision] = {}
+    stability_reasons = _role_stability_reasons(candidate_metrics)
+    for role in roles:
+        baseline = _role_answer_summary(baseline_metrics, role)
+        candidate = _role_answer_summary(candidate_metrics, role)
+        reasons: list[str] = []
+        if baseline["support"] <= 0:
+            reasons.append("baseline has no answer cases for role")
+        if candidate["support"] <= 0:
+            reasons.append("candidate has no answer cases for role")
+        gain = candidate["composite"] - baseline["composite"]
+        if gain <= min_answer_gain:
+            reasons.append(
+                f"role answer composite did not improve ({candidate['composite']:.2f} <= {baseline['composite']:.2f})"
+            )
+        if candidate["malformed_rate"] > baseline["malformed_rate"]:
+            reasons.append(
+                f"malformed output rate increased ({candidate['malformed_rate']:.4f} > {baseline['malformed_rate']:.4f})"
+            )
+        if candidate["repetition_rate"] > baseline["repetition_rate"]:
+            reasons.append(
+                f"repetition rate increased ({candidate['repetition_rate']:.4f} > {baseline['repetition_rate']:.4f})"
+            )
+        if candidate["protected_support"] > 0 and not candidate["protected_perfect"]:
+            reasons.append("protected answer facts are not perfect for role")
+        reasons.extend(stability_reasons)
+        verdict = "REJECTED" if reasons else "PROMOTED"
+        decisions[role] = PromotionDecision(
+            verdict,
+            tuple(reasons or ("role answer gates passed",)),
+            baseline["composite"],
+            candidate["composite"],
+            None,
+        )
+    return decisions
+
+
 def apply_decision(
     registry: CheckpointRegistry,
     candidate_hashes: Mapping[str, str],
@@ -124,6 +168,10 @@ def run_hyper_training(
             reload_check,
         )
         context["candidate_metrics"] = candidate_metrics
+        context["role_decisions"] = {
+            role: _decision_dict(role_decision)
+            for role, role_decision in decide_role_promotions(baseline_metrics, candidate_metrics).items()
+        }
 
         negative_controls = _run_negative_controls(root, dataset_manifest, baseline_metrics)
         context["negative_controls"] = negative_controls
@@ -658,6 +706,55 @@ def _metrics(
     }
     result["joint"] = _joint_metric(result)
     return result
+
+
+def _role_answer_summary(metrics: Mapping[str, Any], role: str) -> dict[str, Any]:
+    answers = _nested(metrics, ("answers",), {})
+    traces = answers.get("traces") if isinstance(answers, Mapping) else None
+    role_traces = [
+        trace
+        for trace in traces or ()
+        if isinstance(trace, Mapping) and trace.get("role") == role
+    ]
+    support = len(role_traces)
+    correct = sum(1 for trace in role_traces if trace.get("correct") is True)
+    malformed = sum(1 for trace in role_traces if trace.get("malformed") is True)
+    repetitive = sum(1 for trace in role_traces if trace.get("repetitive") is True)
+    protected_traces = [trace for trace in role_traces if trace.get("protected") is True]
+    protected_correct = sum(1 for trace in protected_traces if trace.get("correct") is True)
+    return {
+        "support": support,
+        "composite": 100.0 * correct / support if support else 0.0,
+        "malformed_rate": malformed / support if support else 1.0,
+        "repetition_rate": repetitive / support if support else 1.0,
+        "protected_support": len(protected_traces),
+        "protected_perfect": bool(protected_traces) and protected_correct == len(protected_traces),
+    }
+
+
+def _role_stability_reasons(metrics: Mapping[str, Any]) -> list[str]:
+    stability = metrics.get("stability", {}) if isinstance(metrics, Mapping) else {}
+    stability = stability if isinstance(stability, Mapping) else {}
+    reasons: list[str] = []
+    if stability.get("reload_ok") is not True:
+        reasons.append("reload gate failed")
+    if stability.get("load_ok") is not True:
+        reasons.append("load gate failed")
+    if not all(stability.get(key) is True for key in ("role_checkpoints_ok", "roles_ok", "role_ok")):
+        reasons.append("role checkpoint gate failed")
+    if stability.get("confirmation_ok") is not True:
+        reasons.append("deterministic confirmation failed")
+    regressions = stability.get("regressions", 1)
+    if type(regressions) is int:
+        regression_count = regressions
+    elif isinstance(regressions, list):
+        regression_count = len(regressions)
+    else:
+        regression_count = 1
+        reasons.append("invalid regression evidence")
+    if regression_count != 0:
+        reasons.append(f"regression count is {regression_count}, expected zero")
+    return reasons
 
 
 def _joint_metric(metrics: Any) -> float:

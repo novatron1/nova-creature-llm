@@ -107,6 +107,7 @@ def evaluate_answers(runtime: Any, cases: Sequence[Any]) -> dict:
                 "correct": case_correct,
                 "malformed": malformed_output,
                 "repetitive": repeated,
+                "protected": is_protected,
                 "error": error,
             }
         )

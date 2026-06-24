@@ -256,6 +256,22 @@ def test_evaluate_answers_tracks_composite_protected_malformed_and_repetition():
     assert malformed["malformed_rate"] == 1.0
 
 
+def test_evaluate_answers_traces_include_role_and_protected_flag():
+    cases = [
+        {
+            "prompt": "identity",
+            "role": "memory_transformer",
+            "expected": "safe answer",
+            "protected": True,
+        }
+    ]
+
+    result = evaluate_answers(FixedRuntime(role="memory_transformer"), cases)
+
+    assert result["traces"][0]["role"] == "memory_transformer"
+    assert result["traces"][0]["protected"] is True
+
+
 def test_evaluate_answers_requires_all_required_terms_for_protected_bank_cases():
     cases = [
         {

@@ -102,6 +102,10 @@ class NovaTransformerRuntime:
             tokens_generated = len(generated_tokens)
             tokens_per_second = tokens_generated / elapsed if elapsed > 0 else 0.0
             text = self.tokenizer.decode(generated_tokens).strip()
+            clean_prefix = _readable_prefix_before_junk(text)
+            if clean_prefix != text:
+                text = clean_prefix
+                finish_reason = "eos"
             error = None
             if not text:
                 finish_reason = "error"
@@ -269,6 +273,38 @@ def _is_repetitive(text: str, tokens: list[int]) -> bool:
     if len(byte_tokens) >= 8 and len(set(byte_tokens[-8:])) <= 2:
         return True
     return False
+
+
+def _readable_prefix_before_junk(text: str) -> str:
+    if not text:
+        return text
+    stop_at = len(text)
+    for index, character in enumerate(text):
+        if character == "\ufffd":
+            stop_at = index
+            break
+        if ord(character) < 32 and character not in {"\n", "\r", "\t"}:
+            stop_at = index
+            break
+        if not (character.isprintable() or character.isspace()):
+            stop_at = index
+            break
+    if stop_at == len(text):
+        return text
+    prefix = text[:stop_at].strip()
+    if _has_useful_readable_text(prefix):
+        return prefix
+    return text
+
+
+def _has_useful_readable_text(text: str) -> bool:
+    stripped = text.strip()
+    if not stripped:
+        return False
+    if len(stripped) < 4:
+        return False
+    alphanumeric_count = sum(1 for character in stripped if character.isalnum())
+    return alphanumeric_count >= 3
 
 
 def _is_unreadable(text: str) -> bool:

@@ -52,6 +52,71 @@ def test_role_candidate_output_path_preserves_checkpoint_evidence_contract(tmp_p
     )
 
 
+def test_role_promotion_decisions_promote_only_clean_improving_roles():
+    baseline = {
+        "answers": {
+            "traces": [
+                _answer_trace("left_hemisphere", correct=False),
+                _answer_trace("left_hemisphere", correct=False),
+                _answer_trace("memory_transformer", correct=True),
+            ]
+        },
+        "stability": _stable_gates(),
+    }
+    candidate = {
+        "answers": {
+            "traces": [
+                _answer_trace("left_hemisphere", correct=True),
+                _answer_trace("left_hemisphere", correct=True),
+                _answer_trace("memory_transformer", correct=True),
+            ]
+        },
+        "stability": _stable_gates(),
+    }
+
+    decisions = orchestrator.decide_role_promotions(
+        baseline,
+        candidate,
+        roles=("left_hemisphere", "memory_transformer"),
+    )
+
+    assert decisions["left_hemisphere"].verdict == "PROMOTED"
+    assert decisions["memory_transformer"].verdict == "REJECTED"
+    assert any("did not improve" in reason for reason in decisions["memory_transformer"].reasons)
+
+
+def test_role_promotion_decisions_reject_malformed_or_unprotected_improvements():
+    baseline = {
+        "answers": {
+            "traces": [
+                _answer_trace("left_hemisphere", correct=False),
+                _answer_trace("memory_transformer", correct=False, protected=True),
+            ]
+        },
+        "stability": _stable_gates(),
+    }
+    candidate = {
+        "answers": {
+            "traces": [
+                _answer_trace("left_hemisphere", correct=True, malformed=True),
+                _answer_trace("memory_transformer", correct=False, protected=True),
+            ]
+        },
+        "stability": _stable_gates(),
+    }
+
+    decisions = orchestrator.decide_role_promotions(
+        baseline,
+        candidate,
+        roles=("left_hemisphere", "memory_transformer"),
+    )
+
+    assert decisions["left_hemisphere"].verdict == "REJECTED"
+    assert any("malformed" in reason for reason in decisions["left_hemisphere"].reasons)
+    assert decisions["memory_transformer"].verdict == "REJECTED"
+    assert any("protected" in reason for reason in decisions["memory_transformer"].reasons)
+
+
 def test_run_hyper_training_follows_guarded_order_and_writes_reports(tmp_path, monkeypatch):
     events = []
 
@@ -320,6 +385,35 @@ def test_promoted_candidates_store_joint_metrics_for_next_run(tmp_path, monkeypa
         assert stored["status"] == "promoted"
         assert stored["metrics"]["joint"] == 88.5
     assert orchestrator._previous_winner_metrics(registry) == {"joint": 88.5}
+
+
+def _answer_trace(
+    role: str,
+    *,
+    correct: bool,
+    malformed: bool = False,
+    repetitive: bool = False,
+    protected: bool = False,
+) -> dict:
+    return {
+        "role": role,
+        "correct": correct,
+        "malformed": malformed,
+        "repetitive": repetitive,
+        "protected": protected,
+    }
+
+
+def _stable_gates() -> dict:
+    return {
+        "reload_ok": True,
+        "load_ok": True,
+        "role_checkpoints_ok": True,
+        "roles_ok": True,
+        "role_ok": True,
+        "confirmation_ok": True,
+        "regressions": 0,
+    }
 
 
 def role_hash(role: str) -> str:

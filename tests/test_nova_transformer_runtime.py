@@ -96,6 +96,19 @@ def test_runtime_rejects_garbled_decoded_transformer_text(tmp_path, monkeypatch)
     assert "unreadable" in result.error
 
 
+def test_runtime_salvages_clean_prefix_before_unreadable_tail(tmp_path, monkeypatch):
+    _, digest = _register_left_checkpoint(tmp_path)
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(runtime, "_load_model", lambda role, sha256, path: DeterministicModel("safe answer.\x01\x02"))
+
+    result = runtime.generate("left_hemisphere", "debug this code", max_new_tokens=14)
+
+    assert result.ok is True
+    assert result.text == "safe answer."
+    assert result.checkpoint_hash == digest
+    assert result.finish_reason == "eos"
+
+
 def test_runtime_failure_after_resolve_preserves_checkpoint_evidence(tmp_path, monkeypatch):
     _, digest = _register_left_checkpoint(tmp_path)
     runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
