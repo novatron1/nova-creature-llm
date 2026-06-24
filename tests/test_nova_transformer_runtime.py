@@ -83,6 +83,19 @@ def test_runtime_success_result_is_ok_and_non_empty_with_controlled_model(tmp_pa
     assert result.to_trace()["ok"] is True
 
 
+def test_runtime_rejects_garbled_decoded_transformer_text(tmp_path, monkeypatch):
+    _, digest = _register_left_checkpoint(tmp_path)
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(runtime, "_load_model", lambda role, sha256, path: DeterministicModel("ÿÿ\x01\x02"))
+
+    result = runtime.generate("left_hemisphere", "debug this code", max_new_tokens=4)
+
+    assert result.ok is False
+    assert result.text == ""
+    assert result.checkpoint_hash == digest
+    assert "unreadable" in result.error
+
+
 def test_runtime_failure_after_resolve_preserves_checkpoint_evidence(tmp_path, monkeypatch):
     _, digest = _register_left_checkpoint(tmp_path)
     runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())

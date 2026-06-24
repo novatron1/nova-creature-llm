@@ -106,6 +106,9 @@ class NovaTransformerRuntime:
             if not text:
                 finish_reason = "error"
                 error = "transformer generated no decodable text"
+            elif _is_unreadable(text):
+                finish_reason = "error"
+                error = "transformer generated unreadable text"
             elif _is_repetitive(text, generated_tokens):
                 finish_reason = "error"
                 error = "transformer generated repetitive text"
@@ -266,6 +269,21 @@ def _is_repetitive(text: str, tokens: list[int]) -> bool:
     if len(byte_tokens) >= 8 and len(set(byte_tokens[-8:])) <= 2:
         return True
     return False
+
+
+def _is_unreadable(text: str) -> bool:
+    if not text.strip():
+        return True
+    replacement_count = text.count("\ufffd")
+    control_count = sum(
+        1
+        for character in text
+        if ord(character) < 32 and character not in {"\n", "\r", "\t"}
+    )
+    if replacement_count >= 2 or control_count:
+        return True
+    visible_count = sum(1 for character in text if character.isprintable() or character.isspace())
+    return visible_count / max(len(text), 1) < 0.9
 
 
 def _assert_contracts() -> None:
