@@ -1,0 +1,22 @@
+{
+  "profile_id": "nova_humanoid_sim_v1",
+  "execution_tier": "simulation",
+  "physical_output_locked": true,
+  "mass_kg": 48.0,
+  "height_m": 1.55,
+  "joints": {
+    "head_yaw": {"min": -60, "max": 60, "max_velocity": 90},
+    "head_pitch": {"min": -35, "max": 35, "max_velocity": 70},
+    "left_shoulder": {"min": -120, "max": 120, "max_velocity": 100},
+    "right_shoulder": {"min": -120, "max": 120, "max_velocity": 100},
+    "left_elbow": {"min": 0, "max": 145, "max_velocity": 120},
+    "right_elbow": {"min": 0, "max": 145, "max_velocity": 120},
+    "torso_yaw": {"min": -40, "max": 40, "max_velocity": 45},
+    "left_hip": {"min": -75, "max": 75, "max_velocity": 90},
+    "right_hip": {"min": -75, "max": 75, "max_velocity": 90},
+    "left_knee": {"min": 0, "max": 130, "max_velocity": 110},
+    "right_knee": {"min": 0, "max": 130, "max_velocity": 110}
+  },
+  "sensors": ["joint_state", "imu", "foot_contact", "collision", "proximity"],
+  "safe_zone": {"x_min": -4, "x_max": 4, "y_min": -2, "y_max": 2}
+}

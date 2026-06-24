@@ -102,7 +102,7 @@ class ConversationMemory:
 
         if "conversation memory" in msg or "hold a conversation" in msg:
             topic = "conversation memory loop"
-            goal = "make Nova remember the thread and understand follow-ups"
+            goal = "give Nova conversation memory so it remembers the thread and understands follow-ups"
         elif "fine tune" in msg or "finetune" in msg or "training" in msg:
             topic = "role-brain training"
             goal = "train separate specialized brain checkpoints"
