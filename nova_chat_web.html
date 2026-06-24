@@ -14,7 +14,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .header .status{font-size:10px;padding:2px 8px;border-radius:8px;margin-left:auto}
 .status.online{background:#2a4a2a;color:#4a8;border:1px solid #3a5a3a}
 .status.offline{background:#4a2a2a;color:#a44;border:1px solid #5a3a3a}
-.tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-top:1px solid #17172a;border-bottom:1px solid #242444;background:#10101c;scrollbar-width:thin}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;overflow-y:auto;padding:8px 12px;border-top:1px solid #17172a;border-bottom:1px solid #242444;background:#10101c;max-height:104px}
 .nav-tab{white-space:nowrap;border:1px solid #32325a;background:#17172a;color:#aeb0dc;border-radius:999px;padding:7px 11px;font-size:12px;cursor:pointer}
 .nav-tab:hover{border-color:#6a6aff;color:#fff}
 .nav-tab.active{background:#4a4a8a;color:#fff;border-color:#7c7cff;box-shadow:0 0 0 1px #7c7cff33 inset}
@@ -32,6 +32,35 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .status-list{display:grid;gap:8px}
 .status-row{display:flex;justify-content:space-between;gap:12px;border:1px solid #2e2e58;background:#141426;border-radius:10px;padding:9px 10px;font-size:12px;color:#cfd0ee}
 .status-row span:last-child{color:#7cffaa;text-align:right}
+.display-dashboard{display:grid;grid-template-columns:minmax(260px,1.1fr) minmax(260px,.9fr);gap:14px}
+.display-stage{position:relative;overflow:hidden;border:1px solid #37376a;background:radial-gradient(circle at 50% 12%,#2d2360 0,#16162b 42%,#0e0e19 100%);border-radius:18px;padding:18px;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.display-stage:before,.display-stage:after{content:"";position:absolute;border-radius:50%;border:1px solid #7777ff22;inset:28px;animation:displayPulse 4s infinite}
+.display-stage:after{inset:62px;animation-delay:1.1s}
+@keyframes displayPulse{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.03);opacity:1}}
+.display-avatar{position:relative;z-index:1;width:190px;height:190px;border-radius:42% 42% 46% 46%;background:linear-gradient(145deg,#23234e,#151527);border:2px solid #6a6aff66;box-shadow:0 0 34px #7c7cff28, inset 0 0 24px #0008;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:46px 36px 38px;margin-bottom:16px}
+.display-avatar:before{content:"";position:absolute;inset:20px;border-radius:inherit;background:linear-gradient(135deg,#ffffff12,#0000 55%);pointer-events:none}
+.display-eye{width:30px;height:30px;border-radius:50%;background:#8b8cff;box-shadow:0 0 18px #8b8cff;animation:pulse 2s infinite}
+.display-eye.right{animation-delay:.25s}
+.display-mouth{grid-column:1/3;width:72px;height:13px;border-radius:999px;background:#8b8cff;box-shadow:0 0 14px #8b8cff;transition:all .25s}
+.display-avatar.thinking .display-mouth{width:26px;height:26px;border-radius:50%}
+.display-avatar.talking .display-mouth{animation:talk .3s infinite}
+.display-avatar.happy .display-mouth{height:34px;border:4px solid transparent;border-bottom-color:#8b8cff;background:transparent;box-shadow:none;border-radius:50%;transform:rotate(0deg)}
+.display-mood{position:relative;z-index:1;color:#fff;font-size:18px;font-weight:700}
+.display-subtitle{position:relative;z-index:1;color:#bfc1ff;font-size:12px;margin-top:6px;line-height:1.35}
+.display-side{display:grid;gap:10px}
+.display-card{border:1px solid #2e2e58;background:linear-gradient(135deg,#141426,#21172b);border-radius:14px;padding:12px}
+.display-card h3{font-size:13px;color:#fff;margin-bottom:8px}
+.display-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.metric{border:1px solid #30305d;background:#101020;border-radius:12px;padding:10px}
+.metric strong{display:block;font-size:18px;color:#7cffaa;line-height:1.1}
+.metric span{font-size:11px;color:#aeb0dc}
+.brain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px}
+.brain-node{border:1px solid #30305d;background:#111122;border-radius:10px;padding:8px;font-size:11px;color:#bec0e8}
+.brain-node.active{border-color:#7cffaa;background:#14281e;color:#eafff2;box-shadow:0 0 0 1px #7cffaa22 inset}
+.action-loop{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:7px}
+.loop-step{border:1px solid #30305d;background:#101020;border-radius:10px;padding:8px;font-size:11px;color:#cfd0ee}
+.display-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.telemetry{font-size:12px;color:#cfd0ee;line-height:1.4;border:1px solid #30305d;background:#101020;border-radius:10px;padding:9px;min-height:40px}
 .chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
 .msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .msg.user{background:#2a2a4a;color:#e0e0e0;align-self:flex-end;border-bottom-right-radius:4px}
@@ -68,6 +97,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .perm-btn.on{border-color:#4a8;color:#4a8;background:#4a822}
 .perm-btn.danger{border-color:#a44;color:#a44}
 .perm-btn.server{background:#2a2a4a;color:#7c7cff;border-color:#4a4a8a}
+@media(max-width:760px){.display-dashboard{grid-template-columns:1fr}.display-stage{min-height:260px}.display-avatar{width:150px;height:150px;padding:36px 28px 30px}.display-eye{width:24px;height:24px}.display-mouth{width:58px}}
 @media(max-width:600px){.msg{max-width:95%;font-size:13px}.header h1{font-size:15px}.perm-btn{font-size:9px;padding:2px 8px}.workspace-panel{padding:12px}.nav-tab{font-size:11px;padding:6px 9px}}
 </style>
 </head>
@@ -115,12 +145,62 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 </div>
 </section>
 <section class="workspace-panel" id="display-panel">
-<h2 class="panel-title">Display Tab</h2>
-<p class="panel-note">Nova's face/status display lives here. The compact face remains above so you can see activity while using every panel.</p>
-<div class="status-list">
-<div class="status-row"><strong>Face display</strong><span>online in header</span></div>
-<div class="status-row"><strong>Live server</strong><span id="displayServerState">checking...</span></div>
-<div class="status-row"><strong>Route badges</strong><span>shown under answers</span></div>
+<h2 class="panel-title">Nova Display / Body</h2>
+<p class="panel-note">This is Nova's big display: face, brain routes, memory counts, permission state, and operator shortcuts in one place.</p>
+<div class="display-dashboard">
+<div class="display-stage">
+<div class="display-avatar" id="displayAvatar" aria-label="Nova live face">
+<span class="display-eye"></span>
+<span class="display-eye right"></span>
+<span class="display-mouth"></span>
+</div>
+<div class="display-mood" id="displayMoodState">Ready and watching</div>
+<div class="display-subtitle">The small face stays in the header. This tab shows the full creature display.</div>
+</div>
+<div class="display-side">
+<div class="display-card">
+<h3>Live Status</h3>
+<div class="display-metrics">
+<div class="metric"><strong id="displayServerState">checking...</strong><span>server</span></div>
+<div class="metric"><strong id="displaySessionState">-</strong><span>session</span></div>
+<div class="metric"><strong id="displayPeopleCount">-</strong><span>people memory</span></div>
+<div class="metric"><strong id="displayLessonsCount">-</strong><span>lessons</span></div>
+</div>
+</div>
+<div class="display-card">
+<h3>Brain Roles</h3>
+<div class="brain-grid">
+<div class="brain-node" data-role="left_hemisphere">Left hemisphere</div>
+<div class="brain-node" data-role="critic_conscience_transformer">Critic / conscience</div>
+<div class="brain-node" data-role="memory_transformer">Memory transformer</div>
+<div class="brain-node" data-role="planner_transformer">Planner</div>
+<div class="brain-node" data-role="coding_transformer">Coding</div>
+<div class="brain-node" data-role="imagination_transformer">Imagination</div>
+<div class="brain-node" data-role="speech_output_transformer">Speech output</div>
+</div>
+</div>
+<div class="display-card">
+<h3>Last Route Trace</h3>
+<div class="telemetry" id="displayRouteTrace">Waiting for the next Nova answer...</div>
+</div>
+</div>
+</div>
+<div class="display-card" style="margin-top:12px">
+<h3>Autonomous Action Loop</h3>
+<div class="action-loop">
+<div class="loop-step">1. Understand goal</div>
+<div class="loop-step">2. Pick app area</div>
+<div class="loop-step">3. Navigate</div>
+<div class="loop-step">4. Act</div>
+<div class="loop-step">5. Verify</div>
+<div class="loop-step">6. Fix and retest</div>
+</div>
+<div class="display-actions">
+<button class="panel-action" onclick="openPanel('agent-library-panel')">Agent Library</button>
+<button class="panel-action" onclick="openPanel('app-builder-panel')">App Builder</button>
+<button class="panel-action" onclick="openPanel('memory-panel')">Memory</button>
+<button class="panel-action" onclick="openPanel('debug-logs-panel')">Logs</button>
+</div>
 </div>
 </section>
 <section class="workspace-panel" id="agent-library-panel">
@@ -218,10 +298,14 @@ const statusTag=document.getElementById('statusTag'),sessionEl=document.getEleme
 const eyeL=document.getElementById('eyeL'),eyeR=document.getElementById('eyeR'),mouth=document.getElementById('mouth');
 const navTabs=[...document.querySelectorAll('.nav-tab')];
 const panels=[...document.querySelectorAll('.workspace-panel')];
+const displayAvatar=document.getElementById('displayAvatar'),displayMoodState=document.getElementById('displayMoodState'),displayRouteTrace=document.getElementById('displayRouteTrace');
+const displaySessionState=document.getElementById('displaySessionState'),displayPeopleCount=document.getElementById('displayPeopleCount'),displayLessonsCount=document.getElementById('displayLessonsCount');
+const brainNodes=[...document.querySelectorAll('.brain-node')];
 let SERVER_BASE = window.location.protocol === 'file:' ? null : window.location.origin;
 let connected = false;
 let sessionId = Math.random().toString(36).slice(2,8);
 sessionEl.textContent = 'Session: '+sessionId;
+if(displaySessionState) displaySessionState.textContent = sessionId;
 
 function openPanel(panelId){
   panels.forEach(panel => panel.classList.toggle('active', panel.id === panelId));
@@ -230,6 +314,31 @@ function openPanel(panelId){
 }
 
 navTabs.forEach(tab => tab.addEventListener('click', () => openPanel(tab.dataset.panel)));
+
+function updateDisplayCounts(status){
+  if(!status) return;
+  if(displayPeopleCount) displayPeopleCount.textContent = String(status.people_count || 0);
+  if(displayLessonsCount) displayLessonsCount.textContent = String(status.lessons_count || 0);
+  if(status.session && displaySessionState) displaySessionState.textContent = String(status.session).slice(0,8);
+}
+
+function normalizeRoles(meta){
+  if(!meta) return [];
+  const raw = meta.route_path || meta.roles || [];
+  if(!Array.isArray(raw)) return [];
+  return raw.flat ? raw.flat().filter(Boolean) : [].concat(...raw).filter(Boolean);
+}
+
+function updateDisplayTelemetry(meta, text){
+  const roles = normalizeRoles(meta);
+  brainNodes.forEach(node => node.classList.toggle('active', roles.includes(node.dataset.role)));
+  if(!displayRouteTrace || !meta) return;
+  const source = meta.source || meta.domain || 'nova';
+  const confidence = meta.confidence !== undefined ? ` | confidence ${Math.round(meta.confidence*100)}%` : '';
+  const memory = meta.memory_event ? ` | ${meta.memory_event}` : '';
+  const route = roles.length ? roles.join(' -> ') : 'direct response';
+  displayRouteTrace.textContent = `${source}: ${route}${confidence}${memory}`;
+}
 
 function setStatus(online){
   connected = online;
@@ -240,8 +349,14 @@ function setStatus(online){
 }
 
 function setFace(state){
+  eyeL.style.background = eyeR.style.background = '#7c7cff';
   eyeL.style.animation = eyeR.style.animation = 'pulse 2s infinite';
   mouth.className = 'mouth';
+  if(displayAvatar) displayAvatar.className = 'display-avatar' + (state ? ' ' + state : '');
+  if(displayMoodState){
+    const labels = {thinking:'Thinking...',talking:'Speaking answer',happy:'Answer ready',listening:'Listening',neutral:'Ready and watching'};
+    displayMoodState.textContent = labels[state] || 'Ready and watching';
+  }
   if(state === 'thinking'){ mouth.style.width = '8px'; mouth.style.height = '8px'; mouth.style.borderRadius = '50%'; }
   else if(state === 'talking'){ mouth.className = 'mouth talking'; }
   else if(state === 'happy'){ mouth.className = 'mouth happy'; }
@@ -262,6 +377,7 @@ function addMsg(role, text, meta){
     html += '</div>';
   }
   div.innerHTML = html; chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+  if(role === 'nova' && meta) updateDisplayTelemetry(meta, text);
 }
 
 async function callAPI(text){
@@ -396,6 +512,7 @@ async function tryConnect(){
         const memoryLessons = document.getElementById('memoryLessons');
         if(memoryPeople) memoryPeople.textContent = String(status.people_count || 0);
         if(memoryLessons) memoryLessons.textContent = String(status.lessons_count || 0);
+        updateDisplayCounts(status);
         connected_to = url;
         addMsg('nova', `✅ Connected to Nova server at ${url}\nSession: ${status.session || 'active'}\nPeople: ${status.people_count || 0} | Lessons: ${status.lessons_count || 0}`, {});
         break;

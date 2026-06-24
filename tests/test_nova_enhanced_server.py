@@ -303,3 +303,23 @@ def test_web_ui_exposes_whole_app_surfaces():
 
     assert "function openPanel" in server.WEB_HTML
     assert "Whole App Navigation" in server.WEB_HTML
+
+
+def test_web_ui_display_tab_shows_nova_body_and_live_status():
+    required_display_markers = [
+        'id="displayAvatar"',
+        'id="displayRouteTrace"',
+        'id="displaySessionState"',
+        'id="displayPeopleCount"',
+        'id="displayLessonsCount"',
+        'data-role="memory_transformer"',
+        'data-role="speech_output_transformer"',
+        "function updateDisplayTelemetry",
+        "function updateDisplayCounts",
+        "openPanel('agent-library-panel')",
+        "openPanel('app-builder-panel')",
+        "openPanel('debug-logs-panel')",
+    ]
+
+    for marker in required_display_markers:
+        assert marker in server.WEB_HTML
