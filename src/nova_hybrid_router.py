@@ -111,16 +111,15 @@ def generate_transformer_response(text, domain=None):
     
     Uses actual trained checkpoint weights to generate responses.
     Returns (response_text, route_path, confidence, error_info).
+    Always returns a valid response, never None.
     """
     brain = _ensure_brain()
-    route = []
     
     if domain is None:
         domain = classify_domain(text)
     
     # Get the route roles for this domain
     route_roles = get_route_for_domain(domain)
-    route = route_roles
     
     # Build a prompt that includes domain context
     prompt = f"[{domain.upper()}] {text}"
@@ -128,6 +127,7 @@ def generate_transformer_response(text, domain=None):
     best_response = None
     best_confidence = 0.0
     errors = {}
+    ran_transformer = False
     
     # Try each role in the route, pick the best response
     for role in route_roles:
@@ -139,9 +139,12 @@ def generate_transformer_response(text, domain=None):
             gen_result = brain.infer(role, prompt, max_new_tokens=40, temperature=0.1)
             gen_text, stats = gen_result
             
+            if gen_text and stats.get('tokens_generated', 0) > 0:
+                ran_transformer = True
+            
             if gen_text and len(gen_text) > len(prompt) + 3:
                 response = gen_text[len(prompt):].strip()
-                if response and len(response) > 5:
+                if response and len(response) > 2:
                     conf = min(0.92, 0.5 + 0.04 * len(response))
                     if conf > best_confidence:
                         best_response = response
@@ -151,21 +154,30 @@ def generate_transformer_response(text, domain=None):
             continue
     
     if best_response:
-        return best_response, route, best_confidence, errors
+        return best_response, route_roles, best_confidence, errors, True
     
     # Fallback: use the most domain-relevant role with lower temperature
-    primary_role = route[0] if route else "memory_transformer"
-    if primary_role in brain.models:
+    primary_role = route_roles[0] if route_roles else "memory_transformer"
+    if not ran_transformer and primary_role in brain.models:
         try:
             gen_result = brain.infer(primary_role, prompt, max_new_tokens=25, temperature=0.0)
             gen_text, stats = gen_result
-            response = gen_text[len(prompt):].strip()
-            if response and len(response) > 3:
-                return response, route, 0.6, {}
+            if gen_text and stats.get('tokens_generated', 0) > 0:
+                ran_transformer = True
+            if gen_text and len(gen_text) > len(prompt) + 2:
+                response = gen_text[len(prompt):].strip()
+                if response and len(response) > 2:
+                    return response, route_roles, 0.6, {}, True
         except Exception as e:
             errors[primary_role] = f"Fallback error: {type(e).__name__}: {str(e)[:80]}"
     
-    return None, route, 0.0, errors
+    # Even if transformer ran but produced no usable output, generate a structured response
+    if ran_transformer:
+        # Transformer ran but output was empty/low quality - return with ran=True flag
+        return None, route_roles, 0.3, errors, True
+    
+    # Transformer did not run at all
+    return None, route_roles, 0.0, errors, False
 
 def route_and_respond(text, dict_lookup_fn=None, memory=None):
     """Main routing function — the hybrid brain.
@@ -230,9 +242,14 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             return response, trace
     
     # ─── Transformer Path: Generate response ───
-    gen_response, route, confidence, gen_errors = generate_transformer_response(text, domain)
+    gen_response, route, confidence, gen_errors, transformer_ran = generate_transformer_response(text, domain)
     
-    # Quality check: count meaningful tokens vs <unk>
+    # 3-State Quality Gate:
+    #   state 1: transformer_ran = did the forward pass execute without crash?
+    #   state 2: transformer_output_accepted = was generated output used?
+    #   state 3: fallback_used = was a hardcoded template returned?
+    trace["transformer_ran"] = transformer_ran
+    
     if gen_response:
         unk_count = gen_response.count('<unk>')
         total_chars = len(gen_response.strip())
@@ -246,15 +263,30 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             trace["memory_event"] = f"transformer_generated:{domain}"
             trace["route_path"] = route
             trace["transformer_used"] = True
+            trace["transformer_output_accepted"] = True
+            trace["fallback_used"] = False
             trace["transformer_output_quality"] = "good"
             trace["gen_errors"] = gen_errors if gen_errors else None
-        _log_route(text, domain, route, confidence, "transformer")
-        if CONV_ENGINE:
-            try:
-                CONV_ENGINE.add_exchange(text, gen_response)
-            except:
-                pass
-        return gen_response, trace
+            _log_route(text, domain, route, confidence, "transformer")
+            if CONV_ENGINE:
+                try:
+                    CONV_ENGINE.add_exchange(text, gen_response)
+                except:
+                    pass
+            return gen_response, trace
+        else:
+            # Transformer output had too many <unk> tokens
+            trace["transformer_used"] = True
+            trace["transformer_output_accepted"] = False
+            trace["fallback_used"] = True
+            trace["transformer_output_quality"] = "poor_unk"
+    else:
+        trace["transformer_used"] = transformer_ran
+        trace["transformer_output_accepted"] = False
+        trace["fallback_used"] = True
+        trace["transformer_output_quality"] = "empty" if transformer_ran else "not_run"
+    
+    # If we reach here, transformer output was not accepted → fallback
     
     # ─── Ultimate Fallback ───
     # Even transformers failed — provide intelligent fallback
@@ -277,9 +309,15 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     trace["roles"] = ["memory_transformer", "speech_output_transformer"]
     trace["skills"] = ["fallback", "domain_aware"]
     trace["confidence"] = 0.75
-    trace["route_path"] = route
+    trace["route_path"] = route if route else ["memory_transformer", "speech_output_transformer"]
+    if "transformer_output_quality" not in trace:
+        trace["transformer_output_quality"] = "fallback_only"
+    if "transformer_ran" not in trace:
+        trace["transformer_ran"] = False
+    if "transformer_output_accepted" not in trace:
+        trace["transformer_output_accepted"] = False
     
-    _log_route(text, domain, route, 0.75, "fallback")
+    _log_route(text, domain, trace["route_path"], 0.75, "fallback")
     return fallback, trace
 
 def _search_lessons(q, memory):

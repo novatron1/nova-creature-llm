@@ -363,6 +363,10 @@ def brain_route(text, context=None):
                 trace["confidence"] = pipeline_result.get("confidence", 0.98)
                 trace["memory_event"] = "dictionary_hit"
                 trace["domain"] = "dictionary"
+                trace["transformer_ran"] = False
+                trace["transformer_output_accepted"] = False
+                trace["fallback_used"] = False
+                trace["transformer_output_quality"] = "dictionary_fast_path"
                 if _CONV_ENGINE_AVAIL:
                     try: _CONV_ENGINE.add_exchange(text, response)
                     except: pass
@@ -391,6 +395,12 @@ def brain_route(text, context=None):
             # Generate response via hybrid router
             if _HYBRID_ROUTER_AVAIL:
                 response, hybrid_trace = route_and_respond(normalized_text, dict_lookup_fn=_dict_lookup, memory=MEMORY)
+                # Merge quality gate fields from hybrid router
+                trace["transformer_ran"] = hybrid_trace.get("transformer_ran", False)
+                trace["transformer_output_accepted"] = hybrid_trace.get("transformer_output_accepted", False)
+                trace["fallback_used"] = hybrid_trace.get("fallback_used", True)
+                trace["transformer_output_quality"] = hybrid_trace.get("transformer_output_quality", "unknown")
+                trace["route_path"] = hybrid_trace.get("route_path", trace.get("route_path", []))
             else:
                 from nova_hybrid_router import classify_domain
                 domain = classify_domain(normalized_text)
@@ -403,6 +413,10 @@ def brain_route(text, context=None):
                     "general":"I'm Nova Creature with 7 brain roles. What's on your mind?",
                 }
                 response = fallbacks.get(domain, fallbacks["general"])
+                trace["transformer_ran"] = False
+                trace["transformer_output_accepted"] = False
+                trace["fallback_used"] = True
+                trace["transformer_output_quality"] = "no_router"
             
             if _CONV_ENGINE_AVAIL:
                 try: _CONV_ENGINE.add_exchange(text, response)
@@ -428,6 +442,10 @@ def brain_route(text, context=None):
             trace["memory_event"] = hybrid_trace.get("memory_event", None)
             trace["domain"] = hybrid_trace.get("domain", "general")
             trace["route_path"] = hybrid_trace.get("route_path", [])
+            trace["transformer_ran"] = hybrid_trace.get("transformer_ran", False)
+            trace["transformer_output_accepted"] = hybrid_trace.get("transformer_output_accepted", False)
+            trace["fallback_used"] = hybrid_trace.get("fallback_used", True)
+            trace["transformer_output_quality"] = hybrid_trace.get("transformer_output_quality", "unknown")
             return response, trace
         except Exception as e:
             traceback.print_exc()

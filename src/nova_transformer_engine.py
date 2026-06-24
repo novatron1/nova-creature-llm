@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class NovaTokenizer:
     """Character/word-level tokenizer for Nova Transformer"""
     
-    def __init__(self, tokenizer_path=None):
+    def __init__(self, tokenizer_path=None, add_spaces=True):
         self.PAD_ID = 0
         self.BOS_ID = 1
         self.EOS_ID = 2
@@ -47,6 +47,24 @@ class NovaTokenizer:
         
         self.vocab_size = len(vocab_list)
         print(f"  [Tokenizer] Loaded {self.vocab_size} tokens")
+        
+        self.add_spaces = add_spaces
+        # Build token classification for smarter decode spacing
+        self.punct_ids = set()
+        self.word_ids = set()
+        punct_chars = set()
+        for _c in ".", ",", "!", "?", ":", ";", "-": punct_chars.add(ord(_c[0]))
+        punct_chars.add(ord("'"))  # single quote
+        punct_chars.add(ord('"'))  # double quote
+        for _c in "(", ")", "[", "]", "{", "}": punct_chars.add(ord(_c[0]))
+        for i in range(self.vocab_size):
+            tok = self.id_to_token.get(i, '')
+            if i in (self.PAD_ID, self.BOS_ID, self.EOS_ID, self.UNK_ID):
+                continue
+            if len(tok) == 1 and tok in punct_chars:
+                self.punct_ids.add(i)
+            else:
+                self.word_ids.add(i)
     
     def encode(self, text):
         """Tokenize text → list of token IDs"""
@@ -75,15 +93,25 @@ class NovaTokenizer:
         return ids
     
     def decode(self, ids, skip_special=True):
-        """Convert token IDs back to text"""
+        """Convert token IDs back to text with intelligent spacing."""
         tokens = []
+        last_was_word = False
         for tid in ids:
             if skip_special and tid in (self.PAD_ID, self.BOS_ID, self.EOS_ID):
                 if tid == self.EOS_ID:
                     break
                 continue
             token = self.id_to_token.get(tid, '<unk>')
+            is_word = tid in self.word_ids
+            is_punct = tid in self.punct_ids
+            # Insert space between adjacent word tokens
+            if self.add_spaces and last_was_word and is_word:
+                tokens.append(' ')
+            # Insert space before a word that follows a non-word token (except punctuation)
+            if self.add_spaces and not last_was_word and not is_punct and is_word and tokens and tokens[-1] != ' ':
+                tokens.append(' ')
             tokens.append(token)
+            last_was_word = is_word
         return ''.join(tokens)
     
     def encode_training(self, text):
@@ -392,6 +420,8 @@ class NovaTransformer:
         generated = list(prompt_ids)
         start_time = time.time()
         
+        repetition_penalty = 1.2  # Penalize repeated tokens
+        
         for step in range(max_new_tokens):
             # Truncate to block_size
             ctx = np.array([generated[-self.block_size:]], dtype=np.int64)
@@ -400,30 +430,32 @@ class NovaTransformer:
             logits = self.forward(ctx, return_logits=True)
             
             # Get logits for the last token
-            last_logits = logits[0, -1, :]
+            last_logits = logits[0, -1, :].copy()
+            
+            # Apply repetition penalty: reduce logits for already-generated tokens
+            if repetition_penalty != 1.0:
+                for gid in set(generated):
+                    if gid < len(last_logits):
+                        if last_logits[gid] > 0:
+                            last_logits[gid] /= repetition_penalty
+                        else:
+                            last_logits[gid] *= repetition_penalty
+            
+            # Mask out-of-vocabulary tokens (IDs >= vocab_size)
+            valid_vocab_size = self.tokenizer.vocab_size if self.tokenizer else len(last_logits)
+            if valid_vocab_size < len(last_logits):
+                last_logits[valid_vocab_size:] = -1e9
             
             # Sample or greedy
             if temperature > 0:
                 # Apply temperature
                 last_logits = last_logits / temperature
-                # Mask out-of-vocabulary tokens (logit = -inf)
-                valid_vocab_size = self.tokenizer.vocab_size if self.tokenizer else len(last_logits)
-                if valid_vocab_size < len(last_logits):
-                    mask = np.zeros(len(last_logits), dtype=bool)
-                    mask[valid_vocab_size:] = True
-                    last_logits[mask] = -1e9
                 probs = np.exp(last_logits - last_logits.max())
                 probs /= probs.sum()
                 next_id = np.random.choice(len(probs), p=probs)
             else:
-                # Greedy with vocab masking
-                last_logits_safe = last_logits.copy()
-                valid_vocab_size = self.tokenizer.vocab_size if self.tokenizer else len(last_logits)
-                if valid_vocab_size < len(last_logits_safe):
-                    mask = np.zeros(len(last_logits_safe), dtype=bool)
-                    mask[valid_vocab_size:] = True
-                    last_logits_safe[mask] = -1e9
-                next_id = int(np.argmax(last_logits_safe))
+                # Greedy
+                next_id = int(np.argmax(last_logits))
             
             if print_progress:
                 if self.tokenizer:
