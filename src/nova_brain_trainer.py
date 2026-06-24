@@ -229,10 +229,14 @@ class NovaTransformer:
     
     def generate(self, tokenizer, prompt, max_tokens=30, temperature=0.0):
         ids = tokenizer.encode(prompt)
+        VALID_VOCAB_SIZE = min(560, tokenizer.vocab_size if hasattr(tokenizer, 'vocab_size') else 560)
         for _ in range(max_tokens):
             ctx = np.array([ids[-64:]], dtype=np.int64)
             logits = self.forward(ctx)
-            last = logits[0, -1, :]
+            last = logits[0, -1, :].copy()
+            # Mask out-of-vocabulary logits so model never outputs <unk>
+            if len(last) > VALID_VOCAB_SIZE:
+                last[VALID_VOCAB_SIZE:] = -1e9
             if temperature > 0:
                 last /= temperature
                 probs = np.exp(last - last.max())
@@ -240,7 +244,7 @@ class NovaTransformer:
                 nid = int(np.random.choice(len(probs), p=probs))
             else:
                 nid = int(np.argmax(last))
-            if nid == tokenizer.EOS:
+            if nid == tokenizer.EOS_ID:
                 break
             ids.append(nid)
         return tokenizer.decode(ids)
@@ -250,6 +254,10 @@ class NovaTransformer:
         B, T, V = logits.shape
         logits = logits.reshape(-1, V)
         targets = targets.reshape(-1)
+        # Mask out-of-vocabulary logits (IDs >= 560) so model never learns to predict them
+        VALID_VOCAB_SIZE = 560
+        if V > VALID_VOCAB_SIZE:
+            logits[:, VALID_VOCAB_SIZE:] = -1e9
         # Cross-entropy
         logits_max = logits.max(axis=-1, keepdims=True)
         log_probs = logits - logits_max - np.log(np.exp(logits - logits_max).sum(axis=-1, keepdims=True))
@@ -347,9 +355,11 @@ class NovaTransformer:
         
         # LM head
         logits = x_final @ p['lm_head.weight'].T  # (B,T,V)
-        
-        # Cross-entropy loss
         B, T, V = logits.shape
+        # Mask out-of-vocabulary logits (IDs >= 560) so model never learns to predict them
+        VALID_VOCAB_SIZE = 560
+        if V > VALID_VOCAB_SIZE:
+            logits[:, :, VALID_VOCAB_SIZE:] = -1e9
         logits_2d = logits.reshape(-1, V)
         targets_1d = targets.reshape(-1)
         
@@ -361,6 +371,9 @@ class NovaTransformer:
         d_logits = np.exp(log_probs)  # softmax
         d_logits[np.arange(len(targets_1d)), targets_1d] -= 1  # d_softmax - 1 for correct class
         d_logits = d_logits.reshape(B, T, V)
+        # Zero out gradients for invalid vocab
+        if V > VALID_VOCAB_SIZE:
+            d_logits[:, :, VALID_VOCAB_SIZE:] = 0.0
         d_logits = d_logits / (B * T)  # scale by batch size
         
         # Gradients for lm_head
