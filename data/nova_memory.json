@@ -17,8 +17,8 @@
     },
     "mr. novotron": {
       "name": "Mr. Novotron",
-      "introduced_at": "2026-06-25T14:21:15.746957",
-      "session": "885aa248"
+      "introduced_at": "2026-06-25T14:39:13.492845",
+      "session": "73ca0862"
     },
     "memory test user": {
       "name": "Memory Test User",
@@ -140,8 +140,13 @@
       "text": "nova should respond with full sentences",
       "learned_at": "2026-06-24T22:50:16.608397",
       "session": "b1e3c05e"
+    },
+    "lesson_19": {
+      "text": "nova has a local llm cortex connector",
+      "learned_at": "2026-06-25T14:39:13.640173",
+      "session": "73ca0862"
     }
   },
   "last_person": "mr. novotron",
-  "last_lesson": "lesson_18"
+  "last_lesson": "lesson_19"
 }
