@@ -210,6 +210,81 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
                     pass
             return response, trace
     
+    # ─── Local LLM Cortex Path ───
+    # If local LLM is configured and route is suitable, use it instead of local transformer
+    try:
+        from nova_llm_router_integration import should_use_local_llm, build_llm_context, run_local_llm_route, check_llm_output, handle_feedback
+        route_for_llm = get_route_for_domain(domain)
+        use_llm, llm_reason = should_use_local_llm(domain, route_for_llm, confidence if 'confidence' in dir() else 0.7)
+        
+        if use_llm:
+            # Build context with what Nova knows
+            dict_meanings = ""
+            if dict_lookup_fn:
+                try:
+                    dict_meanings = str(dict_lookup_fn(text))[:200]
+                except:
+                    pass
+            
+            memory_matches = ""
+            if memory:
+                lessons = _search_lessons(q, memory)
+                if lessons:
+                    memory_matches = "; ".join(lessons[:2])[:200]
+            
+            brain_votes_str = str(dict(list(DOMAINS.get(domain, {}).items())[:5])) if domain else ""
+            
+            llm_context = build_llm_context(
+                text, domain, route_for_llm, 0.8,
+                dict_meanings=dict_meanings,
+                memory_matches=memory_matches,
+                brain_votes=brain_votes_str,
+                route_trace=" -> ".join(route_for_llm)
+            )
+            
+            llm_response = run_local_llm_route(llm_context)
+            
+            if llm_response.local_llm_used:
+                # Critic check the output
+                critic_result = check_llm_output(llm_response.raw_output, text)
+                
+                if critic_result["accepted"]:
+                    final_output = critic_result["cleaned_output"]
+                    
+                    trace["local_llm_used"] = True
+                    trace["local_llm_provider"] = llm_response.provider
+                    trace["local_llm_model"] = llm_response.model
+                    trace["local_llm_url"] = llm_response.url
+                    trace["roles"] = route_for_llm + ["local_llm_cortex"]
+                    trace["skills"] = [f"local_llm_{domain}", "llm_cortex"]
+                    trace["confidence"] = 0.88
+                    trace["memory_event"] = f"local_llm:{domain}"
+                    trace["route_path"] = route_for_llm + ["local_llm_cortex", "critic", "speech_output"]
+                    trace["fallback_used"] = False
+                    trace["critic_result"] = "accepted"
+                    trace["prompt_sent"] = llm_response.prompt[:300]
+                    trace["raw_llm_output"] = llm_response.raw_output[:300]
+                    
+                    _log_route(text, domain, trace["route_path"], 0.88, "local_llm")
+                    if CONV_ENGINE:
+                        try:
+                            CONV_ENGINE.add_exchange(text, final_output)
+                        except:
+                            pass
+                    return final_output, trace
+                else:
+                    # Critic rejected output - fall through to transformer path
+                    trace["local_llm_used"] = True
+                    trace["critic_result"] = f"rejected: {critic_result['reason']}"
+            else:
+                # Local LLM not available - fall through to transformer path
+                trace["local_llm_used"] = False
+                trace["local_llm_fallback_reason"] = llm_response.fallback_reason
+    except Exception as llm_err:
+        # If local LLM integration fails, silently continue to transformer path
+        trace["local_llm_used"] = False
+        trace["local_llm_error"] = str(llm_err)[:100]
+    
     # ─── Transformer Path: Generate response ───
     gen_response, route, confidence, gen_errors, transformer_ran = generate_transformer_response(text, domain)
     

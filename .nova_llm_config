@@ -1,0 +1,23 @@
+# Nova Creature - Local LLM Cortex Configuration
+# Uncomment and set these to enable local LLM support
+
+# Enable local LLM
+# NOVA_USE_LOCAL_LLM=true
+
+# Provider: "ollama" or "lm_studio"
+# NOVA_LOCAL_LLM_PROVIDER=ollama
+
+# Model name
+# NOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b
+
+# API endpoint
+# NOVA_LOCAL_LLM_URL=http://127.0.0.1:11434/api/generate
+
+# Timeout in seconds
+# NOVA_LOCAL_LLM_TIMEOUT=30
+
+# Fallback to local behavior if LLM unavailable
+# NOVA_LOCAL_LLM_FALLBACK=true
+
+# Log all LLM prompts and outputs
+# NOVA_LOG_LOCAL_LLM_PROMPTS=true

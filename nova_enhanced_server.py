@@ -401,6 +401,12 @@ def brain_route(text, context=None):
                 trace["fallback_used"] = hybrid_trace.get("fallback_used", True)
                 trace["transformer_output_quality"] = hybrid_trace.get("transformer_output_quality", "unknown")
                 trace["route_path"] = hybrid_trace.get("route_path", trace.get("route_path", []))
+                trace["local_llm_used"] = hybrid_trace.get("local_llm_used", False)
+                trace["local_llm_provider"] = hybrid_trace.get("local_llm_provider", "")
+                trace["local_llm_model"] = hybrid_trace.get("local_llm_model", "")
+                trace["local_llm_url"] = hybrid_trace.get("local_llm_url", "")
+                trace["local_llm_fallback_reason"] = hybrid_trace.get("local_llm_fallback_reason", "")
+                trace["local_llm_error"] = hybrid_trace.get("local_llm_error", "")
             else:
                 from nova_hybrid_router import classify_domain
                 domain = classify_domain(normalized_text)
@@ -446,6 +452,13 @@ def brain_route(text, context=None):
             trace["transformer_output_accepted"] = hybrid_trace.get("transformer_output_accepted", False)
             trace["fallback_used"] = hybrid_trace.get("fallback_used", True)
             trace["transformer_output_quality"] = hybrid_trace.get("transformer_output_quality", "unknown")
+            # Local LLM trace fields
+            trace["local_llm_used"] = hybrid_trace.get("local_llm_used", False)
+            trace["local_llm_provider"] = hybrid_trace.get("local_llm_provider", "")
+            trace["local_llm_model"] = hybrid_trace.get("local_llm_model", "")
+            trace["local_llm_url"] = hybrid_trace.get("local_llm_url", "")
+            trace["local_llm_fallback_reason"] = hybrid_trace.get("local_llm_fallback_reason", "")
+            trace["local_llm_error"] = hybrid_trace.get("local_llm_error", "")
             return response, trace
         except Exception as e:
             traceback.print_exc()

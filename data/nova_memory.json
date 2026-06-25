@@ -17,8 +17,8 @@
     },
     "mr. novotron": {
       "name": "Mr. Novotron",
-      "introduced_at": "2026-06-24T01:44:23.335991",
-      "session": "f3511dc3"
+      "introduced_at": "2026-06-25T14:21:15.746957",
+      "session": "885aa248"
     },
     "memory test user": {
       "name": "Memory Test User",
@@ -43,6 +43,11 @@
       "name": "Nova",
       "introduced_at": "2026-06-24T10:52:20.210366",
       "session": "e76fc370"
+    },
+    "testuser": {
+      "name": "TestUser",
+      "introduced_at": "2026-06-24T22:50:16.600768",
+      "session": "b1e3c05e"
     }
   },
   "lessons": {
@@ -130,8 +135,13 @@
       "text": "nova should train more to get smarter",
       "learned_at": "2026-06-24T01:44:23.377868",
       "session": "f3511dc3"
+    },
+    "lesson_18": {
+      "text": "nova should respond with full sentences",
+      "learned_at": "2026-06-24T22:50:16.608397",
+      "session": "b1e3c05e"
     }
   },
-  "last_person": "nova",
-  "last_lesson": "lesson_17"
+  "last_person": "mr. novotron",
+  "last_lesson": "lesson_18"
 }
