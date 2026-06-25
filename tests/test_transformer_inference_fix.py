@@ -13,6 +13,21 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+ROLE_NAMES = ['left_hemisphere', 'right_hemisphere', 'memory_transformer',
+              'planner_transformer', 'critic_conscience_transformer',
+              'dream_simulation_transformer', 'speech_output_transformer']
+
+def require_v055_finetuned_checkpoints():
+    missing = [
+        role for role in ROLE_NAMES
+        if not (ROOT / 'checkpoints' / 'brain_slots' / role / f'{role}_v055_finetuned.pt').exists()
+    ]
+    if missing:
+        pytest.skip(
+            "v055_finetuned checkpoint assets are not present in this checkout "
+            f"(missing {len(missing)}/7 roles)"
+        )
+
 # ============================================================
 # Test A: Parameter Loader Correctness
 # ============================================================
@@ -138,6 +153,7 @@ class TestGeneration:
     
     def test_generation_returns_output(self):
         """Generation must produce text output (not None/empty)."""
+        require_v055_finetuned_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()
@@ -169,9 +185,7 @@ class TestCheckpointUniqueness:
     
     def test_v055_has_unique_weights(self):
         """v055_finetuned checkpoints must have unique per-role weights."""
-        roles = ['left_hemisphere', 'right_hemisphere', 'memory_transformer',
-                 'planner_transformer', 'critic_conscience_transformer',
-                 'dream_simulation_transformer', 'speech_output_transformer']
+        roles = ROLE_NAMES
         
         hashes = set()
         for role in roles:
@@ -184,6 +198,7 @@ class TestCheckpointUniqueness:
     
     def test_brain_selects_v055_finetuned(self):
         """Auto-select should prefer v055_finetuned over v054_specialized."""
+        require_v055_finetuned_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()
@@ -192,6 +207,7 @@ class TestCheckpointUniqueness:
     
     def test_brain_reports_unique_hashes(self):
         """Brain load should report unique hash detection."""
+        require_v055_finetuned_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()

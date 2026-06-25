@@ -6,19 +6,25 @@ echo   Starting Nova Server...
 echo ============================================================
 echo.
 
-REM Check for Python
-where python3 >nul 2>nul
+REM Find a Python command that actually runs. Windows Store aliases can appear
+REM in PATH even when Python is not installed through those commands.
+py -3 -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)" >nul 2>nul
 if %errorlevel% equ 0 (
-    set PYTHON=python3
+    set "PYTHON=py -3"
 ) else (
-    where python >nul 2>nul
+    python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)" >nul 2>nul
     if %errorlevel% equ 0 (
-        set PYTHON=python
+        set "PYTHON=python"
     ) else (
-        echo [ERROR] Python is not installed.
-        echo Please install Python 3.10+ from https://python.org
-        pause
-        exit /b 1
+        python3 -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)" >nul 2>nul
+        if %errorlevel% equ 0 (
+            set "PYTHON=python3"
+        ) else (
+            echo [ERROR] Python 3.10 or newer is not installed.
+            echo Please install Python from https://python.org
+            pause
+            exit /b 1
+        )
     )
 )
 

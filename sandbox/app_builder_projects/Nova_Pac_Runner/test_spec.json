@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "loads index.html",
+    "renders with Three.js WebGLRenderer",
+    "exposes window.NovaPacGame.getState()",
+    "autopilot moves the player without keyboard input",
+    "score increases when pellets are eaten",
+    "ageTicks increases over time",
+    "DOM HUD stays synchronized with simulation state"
+  ]
+}

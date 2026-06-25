@@ -15,6 +15,7 @@ env/
 # IDE
 .vscode/
 .idea/
+.worktrees/
 *.swp
 *.swo
 *~
@@ -27,6 +28,12 @@ Thumbs.db
 checkpoints/
 *.pt
 *.pth
+
+# Transformer hyper-training artifacts
+artifacts/transformer_training/
+artifacts/negative_controls/
+data/transformer_training_runs/
+*.registry.lock
 
 # Archives
 *.zip

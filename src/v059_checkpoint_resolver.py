@@ -1,69 +1,47 @@
 from __future__ import annotations
 
-import hashlib
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
-ROLES = [
-    "left_hemisphere",
-    "right_hemisphere",
-    "memory_transformer",
-    "planner_transformer",
-    "critic_conscience_transformer",
-    "dream_simulation_transformer",
-    "speech_output_transformer",
-]
+from nova_checkpoint_registry import CheckpointRegistry
+from nova_training_types import ROLE_NAMES
 
-BASE_CHECKPOINT_NAME = "creature_v032_bigfit_twenty_plain.pt"
-FALLBACK_CHECKPOINT_NAME = "creature_v019_proof_fallback.pt"
+ROLES = list(ROLE_NAMES)
 
 
 def root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
 def resolve_checkpoint(role: str) -> dict:
     """
-    Resolve the best available checkpoint for a role using priority order:
-
-    1. *_v055_finetuned.pt  (fine-tuned weights)
-    2. *_v054_specialized.pt  (base copy)
-    3. checkpoints/base/creature_v032_bigfit_twenty_plain.pt
-    4. checkpoints/base/creature_v019_proof_fallback.pt
+    Resolve the registry-controlled live checkpoint for a role.
     """
-    slot_dir = root() / "checkpoints" / "brain_slots" / role
+    try:
+        registry = CheckpointRegistry(root())
+        resolved = registry.resolve_live(role)
+    except (LookupError, FileNotFoundError, ValueError, OSError, json.JSONDecodeError) as exc:
+        return _missing_checkpoint_result(role, str(exc))
 
-    candidates = [
-        ("v055_finetuned", slot_dir / f"{role}_v055_finetuned.pt"),
-        ("v054_specialized", slot_dir / f"{role}_v054_specialized.pt"),
-        ("v032_base", root() / "checkpoints" / "base" / BASE_CHECKPOINT_NAME),
-        ("v019_fallback", root() / "checkpoints" / "base" / FALLBACK_CHECKPOINT_NAME),
-    ]
+    exists = resolved.path.exists()
+    try:
+        selected_checkpoint = resolved.path.relative_to(root()).as_posix()
+    except ValueError:
+        selected_checkpoint = resolved.path.as_posix()
+    return {
+        "role": role,
+        "selected_checkpoint": selected_checkpoint,
+        "checkpoint_version": resolved.status,
+        "exists": exists,
+        "size_bytes": resolved.path.stat().st_size if exists else 0,
+        "sha256": resolved.sha256,
+        "fallback_used": resolved.status == "baseline",
+        "promote_ready": resolved.status == "promoted",
+    }
 
-    for version_name, path in candidates:
-        if path.exists() and path.stat().st_size > 200:
-            file_hash = sha256(path)
-            return {
-                "role": role,
-                "selected_checkpoint": str(path.relative_to(root())),
-                "checkpoint_version": version_name,
-                "exists": True,
-                "size_bytes": path.stat().st_size,
-                "sha256": file_hash,
-                "fallback_used": version_name in ("v032_base", "v019_fallback"),
-                "promote_ready": version_name == "v055_finetuned",
-            }
 
-    # No checkpoint found at all
+def _missing_checkpoint_result(role: str, error: str | None = None) -> dict:
     return {
         "role": role,
         "selected_checkpoint": None,
@@ -73,6 +51,7 @@ def resolve_checkpoint(role: str) -> dict:
         "sha256": None,
         "fallback_used": True,
         "promote_ready": False,
+        "error": error or "checkpoint is missing",
     }
 
 

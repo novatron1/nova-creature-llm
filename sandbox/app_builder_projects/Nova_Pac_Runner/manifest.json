@@ -1,0 +1,12 @@
+{
+  "name": "Nova Pac Runner",
+  "kind": "browser_game",
+  "entry": "index.html",
+  "engine": "Three.js",
+  "renderer": "three-webgl",
+  "webgl": true,
+  "autopilot": true,
+  "scoring": true,
+  "age_ticks": true,
+  "safe_sandbox": true
+}
