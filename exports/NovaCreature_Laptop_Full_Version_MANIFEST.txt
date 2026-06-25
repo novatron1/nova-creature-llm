@@ -1,8 +1,8 @@
 NovaCreature_Laptop_Full_Version_MANIFEST.txt
-Date: 2026-06-20
+Date: 2026-06-24
 Package: NovaCreature_Laptop_Full_Version.zip
-Size: 183.9 MB
-Total files: 335+ (compressed)
+Branch: master (merged fix/tokenizer_decode_quality_v1)
+Version: v055_immaculate_trained (all 7 roles)
 
 CONTENTS:
 ========
@@ -11,52 +11,32 @@ Root launcher files:
   START_NOVA_MAC_LINUX.sh
   README_LAPTOP_INSTALL.md
   QUICK_START_LAPTOP.txt
-  nova_web_server.py (main server with inline web UI)
-  nova_server_android.py (Android-compatible server)
-  nova_chat_web.html (standalone chat UI)
+  nova_enhanced_server.py (main server with inline web UI)
 
-Brain modules (src/):
-  200+ Python modules including:
-  - Full brain routing system
-  - 7 role brains (left, right, memory, planner, critic, dream, speech)
-  - Rapid learning system
-  - People memory system
-  - Coding master system
-  - Science mastery system
-  - Creative display builder
-  - Live face display runtime
-  - Autonomous skill controller
-  - Voice/camera runtime
-  - Mobile phone bridge
-  - Benchmark/route trace lab
+Key directories:
+  src/                               - All brain modules
+  checkpoints/brain_slots/           - 7 role transformer checkpoints
+    left_hemisphere/                 - Coding, math, logic
+    right_hemisphere/                - Visual structure, UI, patterns
+    memory_transformer/              - Project history, facts, people
+    planner_transformer/             - Task plans, build order
+    critic_conscience_transformer/   - Truth checks, conflict checks
+    dream_simulation_transformer/    - Scenario replay, failure simulation
+    speech_output_transformer/       - Clean explanation, final answer
+  data/                              - Memory, lessons, people, dictionary
+  tokenizer/                         - 560-token vocabulary
+  reports/                           - All training and benchmark reports
+  exports/                           - Training sets, benchmarks, scorecards
 
-Checkpoints (trained brain data):
-  checkpoints/base/ - Core trained model
-  checkpoints/brain_slots/ - 7 role-specific trained brains:
-    left_hemisphere, right_hemisphere, memory_transformer,
-    planner_transformer, critic_conscience_transformer,
-    dream_simulation_transformer, speech_output_transformer
+Key improvements in this build:
+  - All 7 roles trained with immaculate (zero-UNK) data
+  - Tokenizer encode: capitalize fallback, punctuation stripping, skip unknown chars
+  - Generation: UNK token (ID 3) suppressed - never generates <unk>
+  - NovaBrain loads all 7 unique role checkpoints at startup
+  - Hybrid router with dictionary → memory → transformer → fallback
+  - 3-state quality gate (transformer_ran, accepted, fallback)
+  - People memory, rapid learning, self-test, benchmark systems
+  - HTTP server at port 3000 with web UI chat interface
+  - Full report history from v700 through current build
 
-Training data:
-  training_data/ - Lesson datasets for all roles
-
-Memory persistence:
-  data/nova_memory.json - Disk-persistent people memory and lessons
-
-Reports:
-  All final reports (v1000, v1150, v1200, v1350, v1400, v1500)
-  Scorecards, benchmarks, retention reports
-
-Training exports:
-  Best training lesson sets in JSONL format
-
-FIXES INCLUDED:
-  - Memory now persists to disk (names, lessons survive restarts)
-  - 'Learn this:' handler works correctly before broad keyword handlers
-  - 'Test yourself' routes to self-test (not coding)
-  - Name recall uses most recent person (not first)
-  - Multiple name patterns: 'my name is', 'i am', 'i'm', 'call me', 'name's'
-  - 'Do you know who I am?' triggers name recall
-  - Psychology questions route correctly (not to learning handler)
-  - Self-test shows actual stored people/lessons counts
-  - Disk persistence verified end-to-end
+Package size: ~184 MB compressed

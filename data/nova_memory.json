@@ -41,8 +41,8 @@
     },
     "nova": {
       "name": "Nova",
-      "introduced_at": "2026-06-22T14:11:09.954233",
-      "session": "327e4de3"
+      "introduced_at": "2026-06-24T10:52:20.210366",
+      "session": "e76fc370"
     }
   },
   "lessons": {
@@ -132,6 +132,6 @@
       "session": "f3511dc3"
     }
   },
-  "last_person": "mr. novotron",
+  "last_person": "nova",
   "last_lesson": "lesson_17"
 }
