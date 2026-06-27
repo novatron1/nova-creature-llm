@@ -1,0 +1,586 @@
+{"instruction": "define sun", "response": "The sun is the star at the center of our solar system, providing light and heat essential for life on Earth.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define moon", "response": "The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define star", "response": "A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define planet", "response": "A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define earth", "response": "Earth is the third planet from the sun and the only known planet to support life.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define air", "response": "Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wind", "response": "Wind is the natural movement of air caused by differences in atmospheric pressure.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fire", "response": "Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rain", "response": "Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define snow", "response": "Snow is frozen precipitation consisting of ice crystals that fall from clouds.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define ice", "response": "Ice is water frozen into a solid state, expanding and becoming less dense than liquid water.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cloud", "response": "A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define ocean", "response": "An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define river", "response": "A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define lake", "response": "A lake is a large body of freshwater or saltwater surrounded by land.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mountain", "response": "A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define forest", "response": "A forest is a large area covered with trees and undergrowth, forming a complex ecosystem.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define tree", "response": "A tree is a tall perennial woody plant with a trunk, branches, and leaves.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define flower", "response": "A flower is the reproductive structure of flowering plants, often colorful and fragrant.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define seed", "response": "A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define soil", "response": "Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rock", "response": "Rock is solid mineral material forming part of the Earth's crust, composed of various minerals.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mineral", "response": "A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define metal", "response": "Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define animal", "response": "An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mammal", "response": "A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define reptile", "response": "A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define amphibian", "response": "An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define insect", "response": "An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bird", "response": "A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fish", "response": "A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define dog", "response": "A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cat", "response": "A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define horse", "response": "A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cow", "response": "A cow is a large domesticated bovine mammal raised for milk, meat, and leather.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define pig", "response": "A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sheep", "response": "A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define goat", "response": "A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define chicken", "response": "A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define duck", "response": "A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define eagle", "response": "An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hawk", "response": "A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define owl", "response": "An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define snake", "response": "A snake is a long legless reptile that moves by slithering and can be venomous or constricting.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define turtle", "response": "A turtle is a reptile with a hard shell covering its body, living in water or on land.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define frog", "response": "A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define whale", "response": "A whale is a large marine mammal that breathes air through blowholes and gives birth to live young.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define dolphin", "response": "A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define shark", "response": "A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bear", "response": "A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wolf", "response": "A wolf is a wild carnivorous canine mammal that lives and hunts in packs.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fox", "response": "A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define deer", "response": "A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rabbit", "response": "A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define squirrel", "response": "A squirrel is a small rodent with a bushy tail that gathers and stores nuts.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mouse", "response": "A mouse is a handheld pointing device that detects motion and clicks for computer interaction.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rat", "response": "A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bat", "response": "A bat is the only flying mammal, using echolocation to navigate and hunt insects at night.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define monkey", "response": "A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define ape", "response": "An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define lion", "response": "A lion is a large wild cat with a mane in males, known as the king of the jungle.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define tiger", "response": "A tiger is the largest wild cat, with orange fur and black stripes, native to Asia.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define elephant", "response": "An elephant is the largest land animal, with a trunk, tusks, and large ears.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define giraffe", "response": "A giraffe is a tall African mammal with a very long neck and spotted coat.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define zebra", "response": "A zebra is an African wild horse with distinctive black and white stripes.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define kangaroo", "response": "A kangaroo is a large Australian marsupial with powerful hind legs for hopping.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define panda", "response": "A panda is a large black-and-white bear native to China, feeding mainly on bamboo.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define polar bear", "response": "A polar bear is a large white bear native to the Arctic, adapted to cold environments.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define penguin", "response": "A penguin is a flightless seabird with flippers for swimming, found in cold southern regions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define body", "response": "The body is the physical structure of a human or animal, consisting of cells, tissues, and organs.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define heart", "response": "The heart is a muscular organ that pumps blood through the circulatory system.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define brain", "response": "The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define lung", "response": "The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define liver", "response": "The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define kidney", "response": "The kidneys are organs that filter waste from the blood and produce urine.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define stomach", "response": "The stomach is a digestive organ that breaks down food using acid and enzymes.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define intestine", "response": "The intestine is the long tubular organ that absorbs nutrients from digested food.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bone", "response": "Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define muscle", "response": "Muscle is fibrous tissue that contracts to produce movement in the body.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define skin", "response": "Skin is the outer covering of the body, protecting against pathogens and regulating temperature.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define blood", "response": "Blood is the red fluid that circulates through the body, carrying oxygen and nutrients.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define nerve", "response": "A nerve is a bundle of fibers that transmits electrical signals between the brain and the body.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define eye", "response": "The eye is the organ of sight that detects light and converts it into electrical signals.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define ear", "response": "The ear is the organ of hearing that detects sound waves and helps maintain balance.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define nose", "response": "The nose is the organ of smell and a passageway for breathing.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mouth", "response": "The mouth is the opening through which food is taken in and speech is produced.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hand", "response": "The hand is the part of the body at the end of the arm, used for grasping and manipulation.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define foot", "response": "The foot is the part of the body at the end of the leg, used for standing and walking.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define emotion", "response": "Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define happiness", "response": "Happiness is a state of well-being, contentment, and joy.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sadness", "response": "Sadness is a state of sorrow, unhappiness, or grief.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define anger", "response": "Anger is a strong feeling of annoyance, displeasure, or hostility.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fear", "response": "Fear is an unpleasant emotion caused by the threat of danger, pain, or harm.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define love", "response": "Love is a complex set of emotions associated with strong affection, protectiveness, and warmth.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hate", "response": "Hate is an intense or passionate dislike for someone or something.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define joy", "response": "Joy is a feeling of great pleasure and happiness.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define surprise", "response": "Surprise is a feeling of astonishment caused by something unexpected.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define disgust", "response": "Disgust is a feeling of revulsion or strong disapproval.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define trust", "response": "Trust is a firm belief in the reliability, truth, or ability of someone or something.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define curiosity", "response": "Curiosity is a strong desire to learn or know something.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define courage", "response": "Courage is the ability to face danger, difficulty, or pain without fear.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define kindness", "response": "Kindness is the quality of being friendly, generous, and considerate.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define patience", "response": "Patience is the capacity to tolerate delay, trouble, or suffering without becoming annoyed.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define freedom", "response": "Freedom is the power or right to act, speak, or think without restraint.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define justice", "response": "Justice is fair and equitable treatment in accordance with moral rightness and law.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define truth", "response": "Truth is the quality of being in accordance with fact or reality.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define beauty", "response": "Beauty is a combination of qualities that pleases the senses or the mind.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define knowledge", "response": "Knowledge is information, understanding, and skill acquired through experience or education.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wisdom", "response": "Wisdom is the ability to make sound judgments based on knowledge and experience.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define power", "response": "Power is the capacity to influence, control, or direct the behavior of people or events.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define peace", "response": "Peace is a state of tranquility, harmony, and absence of conflict.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define war", "response": "War is a state of armed conflict between different nations, states, or groups.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define government", "response": "Government is the system by which a state or community is organized and controlled.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define democracy", "response": "Democracy is a system of government where citizens exercise power through elected representatives.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define economy", "response": "Economy is the system of production, distribution, and consumption of goods and services.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define society", "response": "Society is a group of individuals living together in an organized community.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define culture", "response": "Culture is the shared beliefs, customs, arts, and social behaviors of a group.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define religion", "response": "Religion is a system of faith and worship involving belief in a higher power or powers.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define science", "response": "Science is the systematic study of the natural world through observation and experimentation.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define philosophy", "response": "Philosophy is the study of fundamental questions about existence, knowledge, and ethics.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define history", "response": "History is the study of past events, particularly in human affairs.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define art", "response": "Art is the expression of creative skill and imagination, producing works appreciated for their beauty.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define food", "response": "Food is any substance consumed to provide nutritional support and energy for the body.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bread", "response": "Bread is a staple food made from flour, water, and yeast, baked into a loaf.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rice", "response": "Rice is a cereal grain that is a primary food source for more than half the world's population.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define pasta", "response": "Pasta is a type of food made from wheat flour and water, formed into various shapes.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cheese", "response": "Cheese is a dairy product made from milk by coagulating the proteins and aging the curds.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define milk", "response": "Milk is a nutrient-rich liquid produced by mammals to feed their young.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define egg", "response": "An egg is a food product from birds, consisting of a yolk and albumen inside a hard shell.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define meat", "response": "Meat is the flesh of animals used as food, rich in protein and essential nutrients.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fruit", "response": "Fruit is the sweet, fleshy product of a plant that contains seeds and is eaten as food.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define vegetable", "response": "A vegetable is an edible part of a plant, such as leaves, stems, or roots.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define apple", "response": "An apple is a round fruit with red, green, or yellow skin and crisp white flesh.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define banana", "response": "A banana is a long curved fruit with yellow skin and soft sweet flesh.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define orange", "response": "An orange is a round citrus fruit with a tough bright orange rind and juicy flesh.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define grape", "response": "A grape is a small round fruit that grows in clusters, used for eating and making wine.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define berry", "response": "A berry is a small pulpy fruit, typically edible and often used in desserts.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define corn", "response": "Corn is a cereal plant with yellow kernels on a cob, a major food crop worldwide.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wheat", "response": "Wheat is a cereal grain used to make flour for bread, pasta, and other baked goods.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sugar", "response": "Sugar is a sweet crystalline substance obtained from sugarcane or sugar beet.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define salt", "response": "Salt is a crystalline mineral compound used to season and preserve food.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define oil", "response": "Oil is a viscous liquid fat used for cooking, derived from plants or animals.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define butter", "response": "Butter is a dairy product made by churning cream, used as a spread and in cooking.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define chocolate", "response": "Chocolate is a sweet food made from cacao beans, sugar, and often milk.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define coffee", "response": "Coffee is a brewed drink made from roasted coffee beans, known for its stimulating effects.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define tea", "response": "Tea is a hot beverage made by steeping cured leaves of the tea plant in boiling water.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define juice", "response": "Juice is a drink made from the liquid extracted from fruits or vegetables.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define water", "response": "Water is a transparent, tasteless, odorless chemical substance composed of hydrogen and oxygen, essential for all known forms of life.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define technology", "response": "Technology is the application of scientific knowledge for practical purposes in industry and daily life.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define computer", "response": "A computer is an electronic device that processes data, performs calculations, and executes instructions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define software", "response": "Software is a set of instructions and data that tells a computer how to perform specific tasks.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hardware", "response": "Hardware is the physical components of a computer system, such as the processor, memory, and disk drives.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define internet", "response": "The internet is a global network of interconnected computers that communicate using standardized protocols.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define network", "response": "A network is a group of interconnected computers or devices that can communicate and share resources.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define database", "response": "A database is an organized collection of structured information or data stored electronically.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define server", "response": "A server is a computer or system that provides resources, data, or services to other computers over a network.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define website", "response": "A website is a collection of web pages and related content accessible through a web browser.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define email", "response": "Email is a method of exchanging digital messages between people using electronic devices.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define program", "response": "A program is a set of instructions that a computer follows to perform a specific task.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define code", "response": "Code is a set of instructions written in a programming language that a computer can execute.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define algorithm", "response": "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define data", "response": "Data is information processed or stored by a computer, consisting of facts, numbers, or symbols.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define file", "response": "A file is a collection of data stored on a computer under a single name and location.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define memory", "response": "Memory is the faculty of encoding, storing, and retrieving information and past experiences.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define processor", "response": "A processor is the central unit of a computer that performs calculations and executes instructions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define keyboard", "response": "A keyboard is an input device with keys for typing text and entering commands into a computer.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define screen", "response": "A screen is a display device that shows visual information from a computer or electronic device.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define robot", "response": "A robot is a machine capable of carrying out complex actions automatically, often programmable.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define artificial intelligence", "response": "Artificial intelligence is the simulation of human intelligence in machines that can learn and solve problems.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define number", "response": "A number is a mathematical object used to count, measure, and label.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define zero", "response": "Zero is the numerical digit representing the absence of quantity, equal to nothing.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define addition", "response": "Addition is the mathematical operation of combining two or more numbers to get a total sum.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define subtraction", "response": "Subtraction is the mathematical operation of taking one number away from another.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define multiplication", "response": "Multiplication is the mathematical operation of scaling one number by another, repeated addition.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define division", "response": "Division is the mathematical operation of splitting a number into equal parts.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define algebra", "response": "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating them.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define geometry", "response": "Geometry is a branch of mathematics dealing with shapes, sizes, and properties of space.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define calculus", "response": "Calculus is the branch of mathematics dealing with rates of change and accumulation.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define equation", "response": "An equation is a mathematical statement that asserts the equality of two expressions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fraction", "response": "A fraction is a part of a whole, expressed as one number divided by another.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define percentage", "response": "A percentage is a fraction expressed as parts per hundred, denoted by the % symbol.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define probability", "response": "Probability is the measure of how likely an event is to occur.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define statistics", "response": "Statistics is the science of collecting, analyzing, and interpreting data.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define run", "response": "To run is to move rapidly on foot, faster than walking.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define walk", "response": "To walk is to move at a regular pace by lifting and setting down each foot in turn.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define talk", "response": "To talk is to speak words and have a conversation with someone.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define listen", "response": "To listen is to give attention to sound or what someone is saying.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define read", "response": "To read is to look at and understand written or printed words.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define write", "response": "To write is to mark letters, words, or symbols on a surface with a pen, pencil, or keyboard.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define think", "response": "To think is to use the mind to consider ideas, reason, or form opinions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define learn", "response": "To learn is to gain knowledge or skill through study, experience, or teaching.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define teach", "response": "To teach is to impart knowledge or skill to someone through instruction.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define create", "response": "To create is to bring something into existence from imagination or skill.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define build", "response": "To build is to construct something by assembling parts or materials.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define help", "response": "To help is to assist someone by making a task easier or providing support.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define work", "response": "To work is to perform a task or job, especially for payment.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define play", "response": "To play is to engage in an activity for enjoyment, fun, or recreation.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define eat", "response": "To eat is to consume food by chewing and swallowing.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define drink", "response": "To drink is to swallow liquid for hydration or nourishment.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sleep", "response": "To sleep is to rest in a natural state of reduced consciousness and inactivity.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define dream", "response": "A dream is a series of thoughts, images, and sensations occurring during sleep.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sing", "response": "To sing is to produce musical sounds with the voice.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define dance", "response": "Dance is a performing art form consisting of purposefully selected sequences of human movement.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define draw", "response": "To draw is to create a picture or diagram by making marks on a surface.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define paint", "response": "To paint is to apply pigment to a surface to create a picture or decoration.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cook", "response": "To cook is to prepare food by applying heat.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define clean", "response": "Clean describes something free from dirt, marks, or unwanted substances.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wash", "response": "To wash is to clean something with water and often soap.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define drive", "response": "To drive is to operate and control a vehicle.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fly", "response": "To fly is to move through the air using wings or aircraft.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define swim", "response": "To swim is to move through water using the limbs.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define jump", "response": "To jump is to push off the ground with the feet to rise into the air.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fall", "response": "To fall is to drop downward freely under the force of gravity.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define climb", "response": "To climb is to go up or ascend something using hands and feet.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hide", "response": "To hide is to put or keep out of sight, or to conceal oneself.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define find", "response": "To find is to discover something by searching or encountering it.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define lose", "response": "To lose is to be unable to find something or to be deprived of it.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define give", "response": "To give is to freely transfer possession of something to someone.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define take", "response": "To take is to grasp, hold, or remove something from a place.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define make", "response": "To make is to create, build, or produce something.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define break", "response": "To break is to separate into pieces as a result of force or impact.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define open", "response": "To open is to move something to an accessible position, revealing the inside.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define close", "response": "To close is to move something to block an opening or seal a container.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define start", "response": "To start is to begin or commence an action or process.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define stop", "response": "To stop is to cease moving or operating, or to bring something to an end.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define change", "response": "To change is to make or become different in form, nature, or content.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define move", "response": "To move is to go from one place or position to another.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define grow", "response": "To grow is to increase in size, amount, or maturity over time.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define big", "response": "Big refers to something of considerable size, extent, or importance.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define small", "response": "Small refers to something of limited size or dimensions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hot", "response": "Hot describes something having a high temperature or producing heat.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cold", "response": "Cold describes something having a low temperature or lacking warmth.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define fast", "response": "Fast describes something moving or capable of moving at high speed.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define slow", "response": "Slow describes something moving at a low speed or taking more time.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define new", "response": "New describes something recently made, discovered, or not existing before.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define old", "response": "Old describes something having existed for a long time or being advanced in age.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define good", "response": "Good describes something of high quality, favorable, or morally right.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bad", "response": "Bad describes something of poor quality, unfavorable, or morally wrong.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define strong", "response": "Strong describes having great physical power, force, or intensity.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define weak", "response": "Weak describes lacking physical strength, force, or intensity.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define light", "response": "Light is electromagnetic radiation visible to the human eye, traveling in waves and as particles called photons.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define heavy", "response": "Heavy describes something of great weight, difficult to lift or move.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hard", "response": "Hard describes something solid, firm, or difficult to break or bend.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define soft", "response": "Soft describes something easy to mold, compress, or having a gentle texture.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sweet", "response": "Sweet describes a taste like sugar or honey, or having a pleasing quality.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sour", "response": "Sour describes a sharp tart taste like lemon or vinegar.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bitter", "response": "Bitter describes a sharp unpleasant taste, like coffee or dark chocolate.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define salty", "response": "Salty describes the taste of salt or containing a high salt content.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define dirty", "response": "Dirty describes something covered or marked with dirt, or unclean.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rich", "response": "Rich describes having a great deal of wealth or resources.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define poor", "response": "Poor describes lacking sufficient money or resources.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define young", "response": "Young describes being in the early stage of life or development.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define beautiful", "response": "Beautiful describes pleasing the senses or mind aesthetically.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define ugly", "response": "Ugly describes unpleasant or repulsive in appearance.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define brave", "response": "Brave describes having courage and readiness to face danger or pain.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define smart", "response": "Smart describes having intelligence, quick thinking, or sharp mental ability.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define kind", "response": "Kind describes being gentle, caring, and helpful toward others.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mean", "response": "Mean describes being unkind, unpleasant, or malicious toward others.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define funny", "response": "Funny describes causing amusement, laughter, or humor.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define serious", "response": "Serious describes being thoughtful, solemn, or showing deep concern.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define simple", "response": "Simple describes being easy to understand, not complicated or complex.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define complex", "response": "Complex describes consisting of many interconnected parts, not simple.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define possible", "response": "Possible describes something that can exist, happen, or be achieved.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define impossible", "response": "Impossible describes something that cannot exist, happen, or be achieved.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define important", "response": "Important describes having great significance, value, or consequence.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define necessary", "response": "Necessary describes something that must be done, required, or essential.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define different", "response": "Different describes something not the same as another, distinct or separate.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define same", "response": "Same describes something identical, not different, or unchanged.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define special", "response": "Special describes something better, greater, or otherwise different from what is usual.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define galaxy", "response": "A galaxy is a massive system of stars, gas, and dust held together by gravity, such as the Milky Way.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define solar system", "response": "The solar system is the collection of planets, moons, and other objects orbiting the Sun.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define asteroid", "response": "An asteroid is a small rocky body orbiting the Sun, found mainly in the asteroid belt.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define comet", "response": "A comet is an icy small body that develops a glowing tail as it approaches the Sun.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define nebula", "response": "A nebula is a cloud of gas and dust in space, often a region where stars are born.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define black hole", "response": "A black hole is a region of spacetime with such strong gravity that nothing, not even light, can escape.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define gravity", "response": "Gravity is the natural phenomenon by which all things with mass are brought toward one another.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define energy", "response": "Energy is the quantitative property that must be transferred to an object to perform work or heat it.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define matter", "response": "Matter is any substance that has mass and occupies space, consisting of atoms and molecules.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define atom", "response": "An atom is the smallest unit of ordinary matter that forms a chemical element. It consists of a nucleus of protons and neutrons surrounded by electrons.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define molecule", "response": "A molecule is a group of two or more atoms bonded together by chemical bonds.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define cell", "response": "A cell is the basic structural and functional unit of all living organisms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define dna", "response": "DNA (deoxyribonucleic acid) is a molecule that carries genetic instructions for all living organisms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define gene", "response": "A gene is a unit of heredity made of DNA that determines specific traits in organisms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define protein", "response": "A protein is a large molecule made of amino acids that performs essential functions in living organisms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define virus", "response": "A virus is a microscopic infectious agent that replicates inside living cells of organisms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bacteria", "response": "Bacteria are single-celled microorganisms that can be beneficial or cause disease.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define evolve", "response": "To evolve is to change gradually over generations through the process of natural selection.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define continent", "response": "A continent is a large continuous landmass, such as Africa, Asia, or North America.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define country", "response": "A country is a nation with its own government, territory, and borders.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define city", "response": "A city is a large permanent human settlement with dense population and infrastructure.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define village", "response": "A village is a small community of houses in a rural area, smaller than a town.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define desert", "response": "A desert is a barren area with little precipitation, few plants, and extreme temperatures.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define jungle", "response": "A jungle is a dense tropical forest with thick vegetation and high rainfall.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define island", "response": "An island is a land area completely surrounded by water, smaller than a continent.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define volcano", "response": "A volcano is an opening in Earth's crust through which molten rock, ash, and gases erupt.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define earthquake", "response": "An earthquake is a sudden shaking of the ground caused by tectonic plate movement.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define tsunami", "response": "A tsunami is a large ocean wave caused by an underwater earthquake or volcanic eruption.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hurricane", "response": "A hurricane is a powerful tropical storm with winds exceeding 74 miles per hour.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define tornado", "response": "A tornado is a violent rotating column of air extending from a thunderstorm to the ground.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define climate", "response": "Climate is the long-term pattern of weather conditions in a particular region.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define weather", "response": "Weather is the state of the atmosphere at a particular time, including temperature, precipitation, and wind.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define season", "response": "A season is a division of the year based on weather and daylight, such as spring, summer, fall, and winter.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define spring", "response": "A spring is an elastic device that stores mechanical energy when compressed or stretched.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define summer", "response": "Summer is the warmest season of the year, with the longest days.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define autumn", "response": "Autumn, also called fall, is the season between summer and winter when leaves change color.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define winter", "response": "Winter is the coldest season of the year, with the shortest days.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define consciousness", "response": "Consciousness is the state of being aware of and able to perceive one's surroundings, thoughts, and existence.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mind", "response": "The mind is the set of cognitive faculties including consciousness, perception, thinking, judgment, and memory.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define intelligence", "response": "Intelligence is the ability to acquire and apply knowledge and skills, including reasoning, learning, and problem-solving.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define imagination", "response": "Imagination is the ability to form new ideas, images, or concepts not present to the senses.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define perception", "response": "Perception is the ability to become aware of something through the senses, or the way something is interpreted.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define language", "response": "Language is a system of communication using sounds, symbols, or gestures with structured rules.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define music", "response": "Music is an art form combining vocal or instrumental sounds to create beauty of form, harmony, and expression.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define poetry", "response": "Poetry is a form of literary expression using aesthetic and rhythmic qualities of language.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define novel", "response": "A novel is a long fictional narrative describing characters and events in a prose format.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define myth", "response": "A myth is a traditional story explaining natural or social phenomena, often involving supernatural beings.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define legend", "response": "A legend is a traditional story about heroic deeds or historical events, often embellished over time.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define folk", "response": "Folk refers to the traditional culture, beliefs, and customs of a community passed through generations.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define spirit", "response": "Spirit is the non-physical part of a person often associated with consciousness, character, and soul.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define soul", "response": "The soul is the spiritual or immaterial essence of a person, often considered immortal.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define angel", "response": "An angel is a spiritual being believed to act as a messenger of God in various religions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define demon", "response": "A demon is an evil spirit or supernatural being in various religious traditions.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define ghost", "response": "A ghost is the spirit of a dead person believed to appear to the living.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define magic", "response": "Magic is the use of supernatural forces, rituals, or illusions to influence events.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define nightmare", "response": "A nightmare is a frightening or unpleasant dream causing distress.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define shadow", "response": "A shadow is a dark area or shape produced by an object blocking light.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mirror", "response": "A mirror is a reflective surface that forms an image of whatever is in front of it.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define window", "response": "A window is an opening in a wall or door fitted with glass to admit light and air.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define door", "response": "A door is a movable barrier used to close an entrance to a room or building.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define bridge", "response": "A bridge is a structure built to span a physical obstacle such as a river or road.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define tower", "response": "A tower is a tall narrow structure, often part of a larger building or standing alone.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define castle", "response": "A castle is a large fortified building from medieval times, typically with high walls and towers.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define palace", "response": "A palace is a large splendid residence for a ruler or dignitary.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define temple", "response": "A temple is a building devoted to religious worship and spiritual practices.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define church", "response": "A church is a building used for Christian worship and religious activities.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define school", "response": "A school is an institution for educating children and young people.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define university", "response": "A university is an institution of higher education for teaching and research.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define library", "response": "A library is a collection of books and informational resources for reading and borrowing.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define museum", "response": "A museum is a building where historical, scientific, or artistic objects are displayed.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define hospital", "response": "A hospital is a medical facility providing treatment and care for sick or injured people.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define prison", "response": "A prison is a facility where people are confined as punishment for crimes.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define factory", "response": "A factory is a building where goods are manufactured using machinery and labor.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define machine", "response": "A machine is a device using mechanical power to perform specific tasks.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define engine", "response": "An engine is a machine that converts energy into mechanical motion or power.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define motor", "response": "A motor is a machine that produces motion or power to drive a vehicle or device.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wheel", "response": "A wheel is a circular component that rotates on an axle to enable movement.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define gear", "response": "A gear is a toothed wheel that transmits motion and torque between machine parts.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define lever", "response": "A lever is a rigid bar pivoted on a fulcrum to lift or move loads with less effort.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define pulley", "response": "A pulley is a wheel with a groove for a rope used to lift heavy objects.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define screw", "response": "A screw is a threaded fastener with a helical ridge used to join materials.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define battery", "response": "A battery is a device that stores chemical energy and converts it to electrical energy.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wire", "response": "A wire is a thin flexible metal strand used to conduct electricity or tie things.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define circuit", "response": "A circuit is a complete path through which electricity flows.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define signal", "response": "A signal is a transmitted electrical impulse, sound, or light conveying information.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define frequency", "response": "Frequency is the rate at which something occurs or repeats over a particular period.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define wave", "response": "A wave is a disturbance that travels through space and matter transferring energy.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define sound", "response": "Sound is vibrations that travel through air or other media and can be heard.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define color", "response": "Color is the visual perception of different wavelengths of light.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define shape", "response": "A shape is the external form or outline of an object.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define size", "response": "Size is the overall dimensions or magnitude of an object.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define weight", "response": "Weight is the force exerted on an object due to gravity.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define mass", "response": "Mass is the amount of matter in an object, measured in kilograms.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define density", "response": "Density is the degree of compactness of a substance, mass per unit volume.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define volume", "response": "Volume is the amount of space occupied by a substance or object.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define pressure", "response": "Pressure is the force applied perpendicularly to a surface per unit area.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define temperature", "response": "Temperature is a measure of the average kinetic energy of particles in a substance.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define speed", "response": "Speed is the rate at which an object covers distance.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define velocity", "response": "Velocity is the speed of an object in a particular direction.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define acceleration", "response": "Acceleration is the rate of change of velocity over time.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define force", "response": "Force is an interaction that changes the motion of an object, measured in newtons.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define friction", "response": "Friction is the resistance force when two surfaces slide against each other.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define magnetism", "response": "Magnetism is a physical phenomenon produced by the motion of electric charge.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define electricity", "response": "Electricity is the flow of electric charge through a conductor.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define lightning", "response": "Lightning is a sudden electrostatic discharge during a thunderstorm.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define thunder", "response": "Thunder is the sound caused by lightning, produced by rapidly expanding air.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define rainbow", "response": "A rainbow is an optical phenomenon displaying a spectrum of colors in the sky after rain.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define python", "response": "Python is a high-level, interpreted programming language known for its readability, simplicity, and extensive libraries. It was created by Guido van Rossum.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "define javascript", "response": "JavaScript is a high-level programming language primarily used for creating interactive web pages and web applications.", "domain": "dictionary", "role": "memory_transformer"}
+{"instruction": "are suns friendly", "response": "Based on the definition: The sun is the star at the center of our solar system, providing light and heat essential for life on Earth.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a sun", "response": "The sun is the star at the center of our solar system, providing light and heat essential for life on Earth.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are moons friendly", "response": "Based on the definition: The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a moon", "response": "The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are stars friendly", "response": "Based on the definition: A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a star", "response": "A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are planets friendly", "response": "Based on the definition: A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a planet", "response": "A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are earths friendly", "response": "Yes. Earth is the third planet from the sun and the only known planet to support life.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a earth", "response": "Earth is the third planet from the sun and the only known planet to support life.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are airs friendly", "response": "Based on the definition: Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a air", "response": "Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are winds friendly", "response": "Based on the definition: Wind is the natural movement of air caused by differences in atmospheric pressure.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a wind", "response": "Wind is the natural movement of air caused by differences in atmospheric pressure.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are fires friendly", "response": "Based on the definition: Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a fire", "response": "Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are rains friendly", "response": "Based on the definition: Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a rain", "response": "Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are snows friendly", "response": "Based on the definition: Snow is frozen precipitation consisting of ice crystals that fall from clouds.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a snow", "response": "Snow is frozen precipitation consisting of ice crystals that fall from clouds.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are ices friendly", "response": "Based on the definition: Ice is water frozen into a solid state, expanding and becoming less dense than liquid water.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a ice", "response": "Ice is water frozen into a solid state, expanding and becoming less dense than liquid water.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are clouds friendly", "response": "Based on the definition: A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a cloud", "response": "A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are oceans friendly", "response": "Based on the definition: An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a ocean", "response": "An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are rivers friendly", "response": "Based on the definition: A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a river", "response": "A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are lakes friendly", "response": "Based on the definition: A lake is a large body of freshwater or saltwater surrounded by land.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a lake", "response": "A lake is a large body of freshwater or saltwater surrounded by land.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are mountains friendly", "response": "Based on the definition: A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a mountain", "response": "A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are forests friendly", "response": "Based on the definition: A forest is a large area covered with trees and undergrowth, forming a complex ecosystem.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a forest", "response": "A forest is a large area covered with trees and undergrowth, forming a complex ecosystem.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are trees friendly", "response": "Based on the definition: A tree is a tall perennial woody plant with a trunk, branches, and leaves.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a tree", "response": "A tree is a tall perennial woody plant with a trunk, branches, and leaves.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are flowers friendly", "response": "Based on the definition: A flower is the reproductive structure of flowering plants, often colorful and fragrant.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a flower", "response": "A flower is the reproductive structure of flowering plants, often colorful and fragrant.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are seeds friendly", "response": "Based on the definition: A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a seed", "response": "A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are soils friendly", "response": "Based on the definition: Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a soil", "response": "Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are rocks friendly", "response": "Based on the definition: Rock is solid mineral material forming part of the Earth's crust, composed of various minerals.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a rock", "response": "Rock is solid mineral material forming part of the Earth's crust, composed of various minerals.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are minerals friendly", "response": "Based on the definition: A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a mineral", "response": "A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are metals friendly", "response": "Based on the definition: Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a metal", "response": "Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are animals friendly", "response": "Based on the definition: An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a animal", "response": "An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are mammals friendly", "response": "Based on the definition: A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a mammal", "response": "A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are reptiles friendly", "response": "Based on the definition: A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a reptile", "response": "A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are amphibians friendly", "response": "Based on the definition: An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a amphibian", "response": "An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are insects friendly", "response": "Based on the definition: An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a insect", "response": "An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are birds friendly", "response": "Based on the definition: A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a bird", "response": "A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are fishs friendly", "response": "Based on the definition: A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a fish", "response": "A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are dogs friendly", "response": "Yes. A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a dog", "response": "A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are cats friendly", "response": "Based on the definition: A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a cat", "response": "A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are horses friendly", "response": "Based on the definition: A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a horse", "response": "A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are cows friendly", "response": "Based on the definition: A cow is a large domesticated bovine mammal raised for milk, meat, and leather.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a cow", "response": "A cow is a large domesticated bovine mammal raised for milk, meat, and leather.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are pigs friendly", "response": "Based on the definition: A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a pig", "response": "A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are sheeps friendly", "response": "Based on the definition: A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a sheep", "response": "A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are goats friendly", "response": "Based on the definition: A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a goat", "response": "A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are chickens friendly", "response": "Based on the definition: A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a chicken", "response": "A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are ducks friendly", "response": "Based on the definition: A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a duck", "response": "A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are eagles friendly", "response": "Based on the definition: An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a eagle", "response": "An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are hawks friendly", "response": "Yes. A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a hawk", "response": "A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are owls friendly", "response": "Based on the definition: An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a owl", "response": "An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are snakes friendly", "response": "Based on the definition: A snake is a long legless reptile that moves by slithering and can be venomous or constricting.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a snake", "response": "A snake is a long legless reptile that moves by slithering and can be venomous or constricting.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are turtles friendly", "response": "Based on the definition: A turtle is a reptile with a hard shell covering its body, living in water or on land.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a turtle", "response": "A turtle is a reptile with a hard shell covering its body, living in water or on land.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are frogs friendly", "response": "Based on the definition: A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a frog", "response": "A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are whales friendly", "response": "Based on the definition: A whale is a large marine mammal that breathes air through blowholes and gives birth to live young.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a whale", "response": "A whale is a large marine mammal that breathes air through blowholes and gives birth to live young.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are dolphins friendly", "response": "Yes. A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a dolphin", "response": "A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are sharks friendly", "response": "Based on the definition: A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a shark", "response": "A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are bears friendly", "response": "Based on the definition: A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a bear", "response": "A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are wolfs friendly", "response": "Based on the definition: A wolf is a wild carnivorous canine mammal that lives and hunts in packs.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a wolf", "response": "A wolf is a wild carnivorous canine mammal that lives and hunts in packs.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are foxs friendly", "response": "Based on the definition: A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a fox", "response": "A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are deers friendly", "response": "Yes. A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a deer", "response": "A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are rabbits friendly", "response": "Based on the definition: A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a rabbit", "response": "A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are squirrels friendly", "response": "Based on the definition: A squirrel is a small rodent with a bushy tail that gathers and stores nuts.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a squirrel", "response": "A squirrel is a small rodent with a bushy tail that gathers and stores nuts.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are mouses friendly", "response": "Based on the definition: A mouse is a handheld pointing device that detects motion and clicks for computer interaction.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a mouse", "response": "A mouse is a handheld pointing device that detects motion and clicks for computer interaction.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are rats friendly", "response": "Yes. A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a rat", "response": "A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are bats friendly", "response": "Based on the definition: A bat is the only flying mammal, using echolocation to navigate and hunt insects at night.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a bat", "response": "A bat is the only flying mammal, using echolocation to navigate and hunt insects at night.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are monkeys friendly", "response": "Yes. A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a monkey", "response": "A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are apes friendly", "response": "Based on the definition: An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a ape", "response": "An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are lions friendly", "response": "Yes. A lion is a large wild cat with a mane in males, known as the king of the jungle.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a lion", "response": "A lion is a large wild cat with a mane in males, known as the king of the jungle.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are tigers friendly", "response": "Based on the definition: A tiger is the largest wild cat, with orange fur and black stripes, native to Asia.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a tiger", "response": "A tiger is the largest wild cat, with orange fur and black stripes, native to Asia.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are elephants friendly", "response": "Based on the definition: An elephant is the largest land animal, with a trunk, tusks, and large ears.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a elephant", "response": "An elephant is the largest land animal, with a trunk, tusks, and large ears.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are giraffes friendly", "response": "Based on the definition: A giraffe is a tall African mammal with a very long neck and spotted coat.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a giraffe", "response": "A giraffe is a tall African mammal with a very long neck and spotted coat.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are zebras friendly", "response": "Based on the definition: A zebra is an African wild horse with distinctive black and white stripes.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a zebra", "response": "A zebra is an African wild horse with distinctive black and white stripes.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are kangaroos friendly", "response": "Based on the definition: A kangaroo is a large Australian marsupial with powerful hind legs for hopping.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a kangaroo", "response": "A kangaroo is a large Australian marsupial with powerful hind legs for hopping.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are pandas friendly", "response": "Based on the definition: A panda is a large black-and-white bear native to China, feeding mainly on bamboo.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a panda", "response": "A panda is a large black-and-white bear native to China, feeding mainly on bamboo.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are polar bears friendly", "response": "Based on the definition: A polar bear is a large white bear native to the Arctic, adapted to cold environments.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a polar bear", "response": "A polar bear is a large white bear native to the Arctic, adapted to cold environments.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are penguins friendly", "response": "Based on the definition: A penguin is a flightless seabird with flippers for swimming, found in cold southern regions.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a penguin", "response": "A penguin is a flightless seabird with flippers for swimming, found in cold southern regions.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are bodys friendly", "response": "Based on the definition: The body is the physical structure of a human or animal, consisting of cells, tissues, and organs.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a body", "response": "The body is the physical structure of a human or animal, consisting of cells, tissues, and organs.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are hearts friendly", "response": "Based on the definition: The heart is a muscular organ that pumps blood through the circulatory system.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a heart", "response": "The heart is a muscular organ that pumps blood through the circulatory system.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are brains friendly", "response": "Based on the definition: The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a brain", "response": "The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are lungs friendly", "response": "Based on the definition: The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a lung", "response": "The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are livers friendly", "response": "Based on the definition: The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a liver", "response": "The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are kidneys friendly", "response": "Based on the definition: The kidneys are organs that filter waste from the blood and produce urine.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a kidney", "response": "The kidneys are organs that filter waste from the blood and produce urine.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are stomachs friendly", "response": "Based on the definition: The stomach is a digestive organ that breaks down food using acid and enzymes.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a stomach", "response": "The stomach is a digestive organ that breaks down food using acid and enzymes.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are intestines friendly", "response": "Based on the definition: The intestine is the long tubular organ that absorbs nutrients from digested food.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a intestine", "response": "The intestine is the long tubular organ that absorbs nutrients from digested food.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are bones friendly", "response": "Based on the definition: Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a bone", "response": "Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are muscles friendly", "response": "Based on the definition: Muscle is fibrous tissue that contracts to produce movement in the body.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a muscle", "response": "Muscle is fibrous tissue that contracts to produce movement in the body.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are skins friendly", "response": "Based on the definition: Skin is the outer covering of the body, protecting against pathogens and regulating temperature.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a skin", "response": "Skin is the outer covering of the body, protecting against pathogens and regulating temperature.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are bloods friendly", "response": "Based on the definition: Blood is the red fluid that circulates through the body, carrying oxygen and nutrients.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a blood", "response": "Blood is the red fluid that circulates through the body, carrying oxygen and nutrients.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are nerves friendly", "response": "Based on the definition: A nerve is a bundle of fibers that transmits electrical signals between the brain and the body.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a nerve", "response": "A nerve is a bundle of fibers that transmits electrical signals between the brain and the body.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are eyes friendly", "response": "Based on the definition: The eye is the organ of sight that detects light and converts it into electrical signals.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a eye", "response": "The eye is the organ of sight that detects light and converts it into electrical signals.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are ears friendly", "response": "Based on the definition: The ear is the organ of hearing that detects sound waves and helps maintain balance.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a ear", "response": "The ear is the organ of hearing that detects sound waves and helps maintain balance.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are noses friendly", "response": "Based on the definition: The nose is the organ of smell and a passageway for breathing.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a nose", "response": "The nose is the organ of smell and a passageway for breathing.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are mouths friendly", "response": "Based on the definition: The mouth is the opening through which food is taken in and speech is produced.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a mouth", "response": "The mouth is the opening through which food is taken in and speech is produced.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are hands friendly", "response": "Based on the definition: The hand is the part of the body at the end of the arm, used for grasping and manipulation.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a hand", "response": "The hand is the part of the body at the end of the arm, used for grasping and manipulation.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are foots friendly", "response": "Based on the definition: The foot is the part of the body at the end of the leg, used for standing and walking.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a foot", "response": "The foot is the part of the body at the end of the leg, used for standing and walking.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are emotions friendly", "response": "Based on the definition: Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a emotion", "response": "Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are happinesss friendly", "response": "Based on the definition: Happiness is a state of well-being, contentment, and joy.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a happiness", "response": "Happiness is a state of well-being, contentment, and joy.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are sadnesss friendly", "response": "Based on the definition: Sadness is a state of sorrow, unhappiness, or grief.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a sadness", "response": "Sadness is a state of sorrow, unhappiness, or grief.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are angers friendly", "response": "Based on the definition: Anger is a strong feeling of annoyance, displeasure, or hostility.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a anger", "response": "Anger is a strong feeling of annoyance, displeasure, or hostility.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are fears friendly", "response": "Based on the definition: Fear is an unpleasant emotion caused by the threat of danger, pain, or harm.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a fear", "response": "Fear is an unpleasant emotion caused by the threat of danger, pain, or harm.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are loves friendly", "response": "Based on the definition: Love is a complex set of emotions associated with strong affection, protectiveness, and warmth.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a love", "response": "Love is a complex set of emotions associated with strong affection, protectiveness, and warmth.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are hates friendly", "response": "Based on the definition: Hate is an intense or passionate dislike for someone or something.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a hate", "response": "Hate is an intense or passionate dislike for someone or something.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are joys friendly", "response": "Based on the definition: Joy is a feeling of great pleasure and happiness.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a joy", "response": "Joy is a feeling of great pleasure and happiness.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are surprises friendly", "response": "Based on the definition: Surprise is a feeling of astonishment caused by something unexpected.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a surprise", "response": "Surprise is a feeling of astonishment caused by something unexpected.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are disgusts friendly", "response": "Based on the definition: Disgust is a feeling of revulsion or strong disapproval.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a disgust", "response": "Disgust is a feeling of revulsion or strong disapproval.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are trusts friendly", "response": "Based on the definition: Trust is a firm belief in the reliability, truth, or ability of someone or something.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a trust", "response": "Trust is a firm belief in the reliability, truth, or ability of someone or something.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "are curiositys friendly", "response": "Based on the definition: Curiosity is a strong desire to learn or know something.", "domain": "dictionary_followup", "role": "speech_output_transformer"}
+{"instruction": "what is a curiosity", "response": "Curiosity is a strong desire to learn or know something.", "domain": "dictionary_followup", "role": "memory_transformer"}
+{"instruction": "my name is John", "response": "I'll remember that your name is John.", "domain": "memory", "role": "memory_transformer"}
+{"instruction": "what is my name", "response": "Your name is John.", "domain": "memory", "role": "conversation"}
+{"instruction": "I live in Paris", "response": "I'll remember that you live in Paris.", "domain": "memory", "role": "memory_transformer"}
+{"instruction": "where do i live", "response": "You live in Paris.", "domain": "memory", "role": "conversation"}
+{"instruction": "my favorite food is pizza", "response": "I'll remember that your favorite food is pizza.", "domain": "memory", "role": "memory_transformer"}
+{"instruction": "what food do i like", "response": "Your favorite food is pizza.", "domain": "memory", "role": "conversation"}
+{"instruction": "long-term remember this: I was born in 1990", "response": "I'll remember long-term that you were born in 1990.", "domain": "memory", "role": "memory_transformer"}
+{"instruction": "when was i born", "response": "You were born in 1990.", "domain": "memory", "role": "conversation"}

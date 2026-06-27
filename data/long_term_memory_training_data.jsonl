@@ -1,0 +1,29 @@
+{"type": "save", "input": "long-term remember this: my favorite food is pizza", "slot": "favorite_food", "value": "pizza", "expected_answer": "Your favorite food is pizza."}
+{"type": "recall", "input": "what food do i like", "slot": "favorite_food", "value": "pizza", "expected_answer": "Your favorite food is pizza."}
+{"type": "save", "input": "always remember: I was born in 1980", "slot": "birth_year", "value": "1980", "expected_answer": "You were born in 1980."}
+{"type": "recall", "input": "when was i born", "slot": "birth_year", "value": "1980", "expected_answer": "You were born in 1980."}
+{"type": "save", "input": "remember this long term: I live in Cincinnati", "slot": "location", "value": "Cincinnati", "expected_answer": "You live in Cincinnati."}
+{"type": "recall", "input": "where do i live", "slot": "location", "value": "Cincinnati", "expected_answer": "You live in Cincinnati."}
+{"type": "save", "input": "long-term remember this: my dog name is Max", "slot": "dog_name", "value": "Max", "expected_answer": "Your dog name is Max."}
+{"type": "recall", "input": "what is my dog name", "slot": "dog_name", "value": "Max", "expected_answer": "Your dog name is Max."}
+{"type": "save", "input": "long-term remember this: my cat name is Shadow", "slot": "cat_name", "value": "Shadow", "expected_answer": "Your cat name is Shadow."}
+{"type": "recall", "input": "what is my cat name", "slot": "cat_name", "value": "Shadow", "expected_answer": "Your cat name is Shadow."}
+{"type": "save", "input": "long-term remember this: my favorite color is blue", "slot": "favorite_color", "value": "blue", "expected_answer": "Your favorite color is blue."}
+{"type": "recall", "input": "what is my favorite color", "slot": "favorite_color", "value": "blue", "expected_answer": "Your favorite color is blue."}
+{"type": "save", "input": "long-term remember this: I work at Novatron Production", "slot": "workplace", "value": "Novatron Production", "expected_answer": "You work at Novatron Production."}
+{"type": "recall", "input": "where do i work", "slot": "workplace", "value": "Novatron Production", "expected_answer": "You work at Novatron Production."}
+{"type": "save", "input": "permanently remember: my favorite drink is coffee", "slot": "favorite_drink", "value": "coffee", "expected_answer": "Your favorite drink is coffee."}
+{"type": "recall", "input": "what is my favorite drink", "slot": "favorite_drink", "value": "coffee", "expected_answer": "Your favorite drink is coffee."}
+{"type": "no_match", "input": "what is my bird name", "expected_answer": "I don't have your bird name saved in long-term memory yet."}
+{"type": "no_match", "input": "what is my favorite movie", "expected_answer": "I don't have your favorite movie saved in long-term memory yet."}
+{"type": "edit", "input": "edit long-term memory: favorite food is pizza -> favorite food is grapes", "old_value": "pizza", "new_value": "grapes", "expected_answer": "Your favorite food is grapes."}
+{"type": "edit", "input": "edit long-term memory: I work at Novatron Production -> I work at OpenAI", "old_value": "Novatron Production", "new_value": "OpenAI", "expected_answer": "You work at OpenAI."}
+{"type": "forget", "input": "forget long-term memory: favorite food", "expected_answer": "No saved answer for that."}
+{"type": "recall_after_forget", "input": "what food do i like", "expected_answer": "I don't have your favorite food saved in long-term memory yet."}
+{"type": "show", "input": "show long-term memory", "expected_contains": ["favorite", "birth", "location"]}
+{"type": "recall", "input": "what is my name", "slot": "name", "value": "Mr. Novotron", "expected_answer": "Your name is Mr. Novotron."}
+{"type": "save", "input": "long-term remember this: my name is Mr. Novotron", "slot": "name", "value": "Mr. Novotron", "expected_answer": "Your name is Mr. Novotron."}
+{"type": "recall", "input": "what is my dog name", "slot": "dog_name", "value": "Max", "expected_answer": "Your dog name is Max."}
+{"type": "wrong_match_test", "input": "what is my cat name", "wrong_slot": "dog_name", "wrong_value": "Max", "expected_slot": "cat_name"}
+{"type": "wrong_match_test", "input": "what is my favorite food", "wrong_slot": "favorite_color", "wrong_value": "blue", "expected_slot": "favorite_food"}
+{"type": "answer_format", "input": "what food do i like", "must_not_contain": ["memory_search", "saved knowledge", "raw_text", "extracted_slot", "memory_id", "I don't have your favorite food saved", "{\\"}], "description": "answer must use second-person and not contain debug labels"}

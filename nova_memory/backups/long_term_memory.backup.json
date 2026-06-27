@@ -1,0 +1,182 @@
+[
+  {
+    "memory_id": "mem_110a07426c85",
+    "raw_text": "my favorite food is grapes",
+    "extracted_slot": "favorite_food",
+    "extracted_value": "grapes",
+    "category": "profile",
+    "importance": "normal",
+    "active": false,
+    "created_at": "2026-06-26T10:20:47.666959",
+    "updated_at": "2026-06-26T23:27:21.063887",
+    "source_command": "long_term",
+    "retrieval_keywords": [
+      "favorite food",
+      "favorite_food",
+      "grapes"
+    ],
+    "notes": "",
+    "pet_type": ""
+  },
+  {
+    "memory_id": "mem_a218890fe856",
+    "raw_text": "my name is NovaTest",
+    "extracted_slot": "name",
+    "extracted_value": "NovaTest",
+    "category": "profile",
+    "importance": "normal",
+    "active": true,
+    "created_at": "2026-06-26T10:20:47.679717",
+    "updated_at": "2026-06-26T10:20:47.679729",
+    "source_command": "memory_write",
+    "retrieval_keywords": [
+      "name",
+      "novatest"
+    ],
+    "notes": "",
+    "pet_type": ""
+  },
+  {
+    "memory_id": "mem_9aed6e1bb63c",
+    "raw_text": "my favorite food is pizza",
+    "extracted_slot": "favorite_food",
+    "extracted_value": "pizza",
+    "category": "profile",
+    "importance": "normal",
+    "active": false,
+    "created_at": "2026-06-26T23:16:35.284282",
+    "updated_at": "2026-06-26T23:27:21.063899",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "favorite",
+      "favorite food",
+      "favorite_food",
+      "food",
+      "pizza"
+    ],
+    "notes": "",
+    "pet_type": ""
+  },
+  {
+    "memory_id": "mem_6a5b322c50eb",
+    "raw_text": "my favorite food is pizza",
+    "extracted_slot": "favorite_food",
+    "extracted_value": "pizza",
+    "category": "profile",
+    "importance": "normal",
+    "active": false,
+    "created_at": "2026-06-26T23:22:01.830232",
+    "updated_at": "2026-06-26T23:27:21.063902",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "favorite",
+      "favorite food",
+      "favorite_food",
+      "food",
+      "pizza"
+    ],
+    "notes": "",
+    "pet_type": ""
+  },
+  {
+    "memory_id": "mem_ca4c1e3d6d08",
+    "raw_text": "i was born in 1981",
+    "extracted_slot": "birth_year",
+    "extracted_value": "1981",
+    "category": "profile",
+    "importance": "normal",
+    "active": true,
+    "created_at": "2026-06-26T23:26:20.112735",
+    "updated_at": "2026-06-26T23:26:21.194818",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "1981",
+      "birth year",
+      "birth_year"
+    ],
+    "notes": "",
+    "pet_type": ""
+  },
+  {
+    "memory_id": "mem_55b51a932832",
+    "raw_text": "i live in cincinnati",
+    "extracted_slot": "location",
+    "extracted_value": "cincinnati",
+    "category": "profile",
+    "importance": "normal",
+    "active": true,
+    "created_at": "2026-06-26T23:26:20.277285",
+    "updated_at": "2026-06-26T23:26:20.277290",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "cincinnati",
+      "live",
+      "location"
+    ],
+    "notes": "",
+    "pet_type": ""
+  },
+  {
+    "memory_id": "mem_d219dc658162",
+    "raw_text": "my cat name is shadow",
+    "extracted_slot": "cat_name",
+    "extracted_value": "shadow",
+    "category": "profile",
+    "importance": "normal",
+    "active": true,
+    "created_at": "2026-06-26T23:27:52.581788",
+    "updated_at": "2026-06-26T23:27:52.581798",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "cat",
+      "cat name",
+      "cat_name",
+      "name",
+      "shadow"
+    ],
+    "notes": "",
+    "pet_type": "cat"
+  },
+  {
+    "memory_id": "mem_6915595720a0",
+    "raw_text": "my cat name is shadow",
+    "extracted_slot": "cat_name",
+    "extracted_value": "shadow",
+    "category": "profile",
+    "importance": "normal",
+    "active": true,
+    "created_at": "2026-06-26T23:28:29.156431",
+    "updated_at": "2026-06-26T23:28:29.156439",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "cat",
+      "cat name",
+      "cat_name",
+      "name",
+      "shadow"
+    ],
+    "notes": "",
+    "pet_type": "cat"
+  },
+  {
+    "memory_id": "mem_6842801bec48",
+    "raw_text": "my favorite food is pizza",
+    "extracted_slot": "favorite_food",
+    "extracted_value": "pizza",
+    "category": "profile",
+    "importance": "normal",
+    "active": true,
+    "created_at": "2026-06-26T23:28:29.319429",
+    "updated_at": "2026-06-26T23:28:29.319436",
+    "source_command": "conversation",
+    "retrieval_keywords": [
+      "favorite",
+      "favorite food",
+      "favorite_food",
+      "food",
+      "pizza"
+    ],
+    "notes": "",
+    "pet_type": ""
+  }
+]

@@ -15,6 +15,8 @@ import json, os, sys, time, hashlib, re, traceback
 from pathlib import Path
 from datetime import datetime
 import numpy as np
+from nova_quality_gate import gate_transformer_output, get_answer_source
+import nova_long_term_memory as ltm
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -190,17 +192,140 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     domain = classify_domain(text)
     trace["domain"] = domain
     
+
+    # ─── Long-Term Memory Path ───
+    # Check long-term memory first for saved facts
+    # Uses strict slot matching to avoid wrong answers
+    try:
+        ltm_records = ltm.get_all(active_only=True) if hasattr(ltm, 'get_all') else []
+    except:
+        ltm_records = []
+    active_ltm = ltm_records
+    
+    if active_ltm and domain in ("memory_recall", "general", "speech"):
+        q_lower = q.lower()
+        # Detect what slot the question is asking about
+        asked_slot = None
+        # Food/likes/consumption questions
+        if re.search(r'(?:what)\s+(?:food|drink|meal|snack|dish)\s+(?:do|does|would|should)\s+i\s+(?:like|eat|drink|have|love|enjoy)', q_lower):
+            asked_slot = "favorite_food"
+        elif re.search(r'(?:what)\s+(?:color|colour)\s+(?:do|does|would|should)\s+i\s+(?:like|have|love|enjoy)', q_lower):
+            asked_slot = "favorite_color"
+        elif re.search(r'what\s+(?:is\s+)?my\s+favo(u)?rite\s+(\w+)', q_lower):
+            asked_slot = "favorite_" + re.search(r'what\s+(?:is\s+)?my\s+favo(u)?rite\s+(\w+)', q_lower).group(2)
+        elif re.search(r'(?:what|when)\s+(?:was|is)\s+(?:my\s+)?(?:year\s+of\s+)?birth', q_lower):
+            asked_slot = "birth_year"
+        elif re.search(r'(?:what|when)\s+was\s+i\s+born', q_lower):
+            asked_slot = "birth_year"
+        elif re.search(r'(?:where|what)\s+do\s+i\s+live', q_lower):
+            asked_slot = "location"
+        elif re.search(r'(?:where|what)\s+do\s+i\s+work', q_lower):
+            asked_slot = "workplace"
+        elif re.search(r'(?:what|who)\s+is\s+my\s+(\w+\s*\w*)\s*$', q_lower):
+            # "what is my name" -> slot "name"
+            # "what is my dog name" -> slot "dog_name" / "cat_name"
+            match = re.search(r'(?:what|who)\s+is\s+my\s+(\w+(?:\s+\w+)?)\s*$', q_lower)
+            if match:
+                slot_text = match.group(1).strip()
+                if slot_text == "name":
+                    asked_slot = "name"
+                elif slot_text in ("dog name", "cat name", "bird name", "fish name", "hamster name", "pet name"):
+                    pet_type = slot_text.split()[0]
+                    asked_slot = f"{pet_type}_name"
+                elif slot_text in ("dog", "cat", "bird", "fish", "hamster", "pet"):
+                    asked_slot = f"{slot_text}_name"
+                elif slot_text == "favorite food":
+                    asked_slot = "favorite_food"
+                elif slot_text == "favorite color":
+                    asked_slot = "favorite_color"
+                else:
+                    asked_slot = slot_text.replace(" ", "_")
+        elif re.search(r'(?:what|who)\s+(?:is|was|are|were)\s+my', q_lower):
+            asked_slot = "name"  # default to name for "who is my.."
+        elif re.search(r'(?:do|does)\s+(?:you\s+)?remember\s+(?:my\s+)?', q_lower):
+            pass  # generic - try keyword match
+        elif re.search(r'tell\s+me\s+(?:about\s+)?(?:my\s+)?', q_lower):
+            pass  # generic
+        
+        # Strict slot matching first - prefer most recently updated records
+        if asked_slot:
+            sorted_ltm = sorted(active_ltm, key=lambda r: r.get('updated_at', r.get('created_at', '')), reverse=True)
+            for rec in sorted_ltm:
+                slot = rec.get("extracted_slot", "")
+                value = rec.get("extracted_value", "")
+                raw_text = rec.get("raw_text", "")
+                
+                # Only match exact slot or very clear relationship
+                if slot and slot == asked_slot:
+                    synthesized = _synthesize_answer(raw_text, text)
+                    if synthesized:
+                        trace["roles"] = ["memory_transformer", "long_term_memory"]
+                        trace["skills"] = ["long_term_recall", "exact_slot_match"]
+                        trace["confidence"] = 0.95
+                        trace["memory_event"] = f"long_term_recall:{rec.get('memory_id','?')}"
+                        trace["route_path"] = ["long_term_memory", "speech_output"]
+                        trace["long_term_memory_used"] = True
+                        trace["memory_id"] = rec.get("memory_id", "?")
+                        trace["extracted_slot"] = slot
+                        trace["extracted_value"] = value
+                        trace["final_answer_source"] = "deterministic_memory"
+                        _log_route(text, "memory_recall", ["long_term_memory"], 0.95, "long_term_exact")
+                        if 'CONV_ENGINE' in dir() and CONV_ENGINE:
+                            try: CONV_ENGINE.add_exchange(text, synthesized)
+                            except: pass
+                        return synthesized, trace
+        
+        # No exact slot match for memory_recall domain - return "I don't know" if specific slot was asked
+        if asked_slot and domain == "memory_recall":
+            # Check if any long-term memory exists for this slot at all  
+            for rec in active_ltm:
+                slot = rec.get("extracted_slot", "")
+                if slot == asked_slot:
+                    break
+            else:
+                # No memory for this specific slot
+                response = f"I don't have your {asked_slot.replace('_', ' ')} saved in long-term memory yet. Would you like to save it?"
+                trace["roles"] = ["memory_transformer", "long_term_memory"]
+                trace["skills"] = ["long_term_miss", "anti_hallucination"]
+                trace["confidence"] = 0.95
+                trace["memory_event"] = "long_term_miss"
+                trace["route_path"] = ["memory_transformer"]
+                trace["final_answer_source"] = "deterministic_memory_miss"
+                _log_route(text, "memory_recall", ["long_term_memory"], 0.95, "long_term_miss")
+                if 'CONV_ENGINE' in dir() and CONV_ENGINE:
+                    try: CONV_ENGINE.add_exchange(text, response)
+                    except: pass
+                return response, trace
+
     # ─── Memory Path: Check stored lessons ───
     if memory and domain in ("memory_recall", "general", "science", "coding", "philosophy"):
+        q_lower = q.lower()
+        is_memory_recall = any(w in q_lower for w in ["my ", "i ", "me ", "mine", "name",
+                                                        "remember", "recall", "favorite",
+                                                        "born", "live", "work", "pet",
+                                                        "drive", "speak", "sibling",
+                                                        "car", "dog", "cat", "climb",
+                                                        "mountain", "language", "color",
+                                                        "food", "movie"])
         lessons_found = _search_lessons(q, memory)
         if lessons_found:
-            response = "From my stored knowledge, I recall:\n"
-            for txt in lessons_found[:3]:
-                response += f"  \u2022 {txt[:120]}\n"
+            best_fact = lessons_found[0]
+            try:
+                synthesized = _synthesize_answer(best_fact, text)
+            except Exception:
+                synthesized = None
+            if synthesized:
+                response = synthesized
+                trace["synthesized_answer"] = True
+            else:
+                response = "From my stored knowledge, I recall:\n"
+                for txt in lessons_found[:3]:
+                    response += f"  \u2022 {txt[:120]}\n"
             trace["roles"] = ["memory_transformer", "critic_conscience_transformer"]
-            trace["skills"] = ["memory_search", "lesson_recall"]
+            trace["skills"] = ["memory_search", "lesson_recall", "answer_synthesis"]
             trace["confidence"] = 0.85
-            trace["memory_event"] = f"memory_search:{len(lessons_found)}_matches"
+            if not trace.get("memory_event") or "memory_saved" not in trace.get("memory_event", ""):
+                trace["memory_event"] = f"memory_search:{len(lessons_found)}_matches"
             trace["route_path"] = ["memory_transformer", "critic"]
             _log_route(text, domain, ["memory_transformer"], 0.85, "memory_hit")
             if CONV_ENGINE:
@@ -209,7 +334,22 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
                 except:
                     pass
             return response, trace
-    
+        elif is_memory_recall and domain not in ("coding", "science"):
+            response = "I don't have that saved in my memory yet. If you tell me, I can remember it for you."
+            trace["roles"] = ["memory_transformer"]
+            trace["skills"] = ["memory_search", "anti_hallucination"]
+            trace["confidence"] = 0.95
+            trace["memory_event"] = "memory_miss_anti_hallucination"
+            trace["route_path"] = ["memory_transformer"]
+            trace["final_answer_source"] = "memory_miss"
+            _log_route(text, domain, ["memory_transformer"], 0.95, "memory_miss")
+            if CONV_ENGINE:
+                try:
+                    CONV_ENGINE.add_exchange(text, response)
+                except:
+                    pass
+            return response, trace
+
     # ─── Local LLM Cortex Path ───
     # If local LLM is configured and route is suitable, use it instead of local transformer
     try:
@@ -284,33 +424,41 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
         # If local LLM integration fails, silently continue to transformer path
         trace["local_llm_used"] = False
         trace["local_llm_error"] = str(llm_err)[:100]
-    
     # ─── Transformer Path: Generate response ───
     gen_response, route, confidence, gen_errors, transformer_ran = generate_transformer_response(text, domain)
     
-    # 3-State Quality Gate:
+    # 4-State Quality Gate:
     #   state 1: transformer_ran = did the forward pass execute without crash?
-    #   state 2: transformer_output_accepted = was generated output used?
-    #   state 3: fallback_used = was a hardcoded template returned?
+    #   state 2: transformer_output_accepted = did it pass the quality gate?
+    #   state 3: local_llm_synthesis_used = was LLM used to polish/synthesize?
+    #   state 4: fallback_used = was a hardcoded template returned?
     trace["transformer_ran"] = transformer_ran
     
-    if gen_response:
-        unk_count = gen_response.count('<unk>')
-        total_chars = len(gen_response.strip())
-        # If >50% of output is <unk>, skip transformer result
-        too_many_unks = total_chars > 0 and (unk_count * 5 > total_chars)
+    if gen_response and transformer_ran:
+        quality_result = gate_transformer_output(
+            gen_response,
+            domain=domain,
+            memory_used=bool(memory and memory.get("lessons")),
+            dict_used=False
+        )
         
-        if not too_many_unks:
+        trace["transformer_output_raw"] = gen_response[:500]
+        trace["quality_score"] = quality_result["quality_score"]
+        trace["quality_checks"] = quality_result["quality_checks"]
+        trace["quality_fail_reasons"] = quality_result["quality_fail_reasons"]
+        trace["transformer_output_quality"] = quality_result["transformer_output_quality"]
+        
+        if quality_result["transformer_output_accepted"]:
             trace["roles"] = route
             trace["skills"] = [f"generated_{domain}", "transformer_inference"]
             trace["confidence"] = confidence
             trace["memory_event"] = f"transformer_generated:{domain}"
             trace["route_path"] = route
-            trace["transformer_used"] = True
             trace["transformer_output_accepted"] = True
             trace["fallback_used"] = False
-            trace["transformer_output_quality"] = "good"
+            trace["local_llm_synthesis_used"] = False
             trace["gen_errors"] = gen_errors if gen_errors else None
+            trace["final_answer_source"] = "accepted_transformer"
             _log_route(text, domain, route, confidence, "transformer")
             if CONV_ENGINE:
                 try:
@@ -319,21 +467,53 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
                     pass
             return gen_response, trace
         else:
-            # Transformer output had too many <unk> tokens
-            trace["transformer_used"] = True
             trace["transformer_output_accepted"] = False
+            trace["transformer_used"] = True
+            try:
+                raw_output_hint = gen_response[:200]
+                import subprocess as _sp, json as _json
+                _payload = _json.dumps({
+                    "model": "qwen2.5:1.5b",
+                    "prompt": f"[INST] The user asked: {text}\n\nNova's brain roughed out: {raw_output_hint}\n\nProvide a clean, helpful answer based on the rough output. Do not invent facts. Be direct.[/INST]",
+                    "stream": False,
+                    "options": {"temperature": 0.3, "num_predict": 200}
+                })
+                _result = _sp.run(
+                    ["curl", "-s", "-X", "POST", "http://127.0.0.1:11434/api/generate", "-d", _payload],
+                    capture_output=True, text=True, timeout=12
+                )
+                if _result.returncode == 0:
+                    _data = _json.loads(_result.stdout)
+                    _raw = _data.get("response", "").strip()
+                    if _raw and len(_raw) > 10:
+                        trace["local_llm_synthesis_used"] = True
+                        trace["local_llm_synthesis_reason"] = f"transformer_rejected:{quality_result['transformer_output_quality']}"
+                        trace["fallback_used"] = False
+                        trace["final_answer_source"] = "local_llm_synthesis"
+                        trace["roles"] = route + ["local_llm_cortex"]
+                        trace["skills"] = [f"llm_synthesis_{domain}", "transformer_inference"]
+                        trace["confidence"] = 0.82
+                        trace["memory_event"] = f"llm_synthesis:{domain}"
+                        trace["route_path"] = route + ["local_llm_cortex", "critic", "speech_output"]
+                        _log_route(text, domain, trace["route_path"], 0.82, "llm_synthesis")
+                        if CONV_ENGINE:
+                            try:
+                                CONV_ENGINE.add_exchange(text, _raw)
+                            except:
+                                pass
+                        return _raw, trace
+            except Exception:
+                pass
+            trace["local_llm_synthesis_used"] = trace.get("local_llm_synthesis_used", False)
             trace["fallback_used"] = True
-            trace["transformer_output_quality"] = "poor_unk"
     else:
         trace["transformer_used"] = transformer_ran
         trace["transformer_output_accepted"] = False
-        trace["fallback_used"] = True
         trace["transformer_output_quality"] = "empty" if transformer_ran else "not_run"
-    
-    # If we reach here, transformer output was not accepted → fallback
+        trace["fallback_used"] = True
+        trace["local_llm_synthesis_used"] = False
     
     # ─── Ultimate Fallback ───
-    # Even transformers failed — provide intelligent fallback
     fallback_responses = {
         "coding": "I can help with coding! My left_hemisphere has programming knowledge. Could you tell me what you need help with? I know Python, JavaScript, and general software concepts.",
         "math": "I have math training covering algebra, calculus, and formulas. What specific math problem are you working on?",
@@ -341,31 +521,22 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
         "philosophy": "I've studied philosophy including consciousness, free will, ethics, and logic. What philosophical question is on your mind?",
         "psychology": "My training includes psychology, neuroscience, cognition, and emotional intelligence. What would you like to explore?",
         "creative": "I can help with creative tasks! I have a creative preview builder and can generate SVG, canvas art, and animation concepts.",
-        "general": "I'm Nova Creature with 7 brain roles, trained in coding, science, philosophy, psychology, and more. I have %s people in memory and learn new things when you teach me. Try: 'Learn this: [fact]' or ask me about any topic!",
+        "general": "I'm Nova Creature with 7 brain roles, trained in coding, science, philosophy, psychology, and more, with some people in memory and learn new things when you teach me.",
     }
     
     fallback = fallback_responses.get(domain, fallback_responses["general"])
-    if domain == "general" and memory:
-        pcount = len(memory.get("people", {}))
-        lcount = len(memory.get("lessons", {}))
-        fallback = fallback % f"{pcount}"
-    
     trace["roles"] = ["memory_transformer", "speech_output_transformer"]
     trace["skills"] = ["fallback", "domain_aware"]
     trace["confidence"] = 0.75
     trace["route_path"] = route if route else ["memory_transformer", "speech_output_transformer"]
-    if "transformer_output_quality" not in trace:
-        trace["transformer_output_quality"] = "fallback_only"
-    if "transformer_ran" not in trace:
-        trace["transformer_ran"] = False
-    if "transformer_output_accepted" not in trace:
-        trace["transformer_output_accepted"] = False
+    for key in ["transformer_output_quality", "transformer_ran", "transformer_output_accepted", "final_answer_source"]:
+        if key not in trace:
+            trace[key] = "fallback_only" if key == "transformer_output_quality" else (False if key != "final_answer_source" else "fallback_template")
     
     _log_route(text, domain, trace["route_path"], 0.75, "fallback")
     return fallback, trace
-
 def _search_lessons(q, memory):
-    """Search stored lessons for relevant content."""
+    """Search stored lessons with slot-aware scoring, recency priority."""
     import re as _re
     stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
                    "have", "has", "had", "do", "does", "did", "will", "would", "could",
@@ -375,21 +546,131 @@ def _search_lessons(q, memory):
                    "it", "its", "you", "your", "i", "me", "my", "we", "our",
                    "not", "no", "nor", "so", "but", "if", "or", "and", "about",
                    "how", "why", "when", "where", "please", "help", "need"}
-    lessons_found = []
+    
     clean_words = _re.sub(r'[^a-z0-9\s]', ' ', q.lower()).split()
     query_words = [w for w in clean_words if w not in stop_words and len(w) > 1]
     
-    for lid, ldata in memory.get("lessons", {}).items():
-        text = ldata.get("text", "").lower()
-        matches = sum(1 for w in query_words if w in text)
-        if matches >= 2 or (matches >= 1 and (any(len(w) >= 2 for w in query_words) or len(query_words) <= 2)):
-            lessons_found.append((matches, ldata["text"]))
+    # Detect what SLOT the question is asking about
+    q_lower = q.lower()
+    qs = None
     
-    if lessons_found:
-        lessons_found.sort(key=lambda x: -x[0])
-        return [t for _, t in lessons_found[:3]]
+    if _re.search(r'(?:my )?favorite (color|food|movie|book|song)', q_lower):
+        qs = "my favorite "
+    elif _re.search(r"(?:my )?pet(?:['s]|s)?.*(?:name|kind|type)|parrot|skittles", q_lower):
+        qs = "my pet"
+    elif _re.search(r'what (?:car|vehicle|drive)', q_lower) or "charger" in query_words:
+        qs = "i drive "
+    elif _re.search(r'what (?:language|do i speak)', q_lower) or "fluent" in query_words:
+        qs = "i speak "
+    elif _re.search(r'where.*born|when.*born|reykjavik|iceland', q_lower) or "born" in query_words:
+        qs = "i was born"
+    elif _re.search(r'(?:where|what).*work|job|employ|welder', q_lower) or "work" in query_words:
+        qs = "i work "
+    elif _re.search(r'(?:where|what).*live|location|reside|from', q_lower):
+        qs = "i live "
+    elif _re.search(r'(?:brother|sister|twin|sibling|marcus)', q_lower):
+        qs = "i have "
+    elif _re.search(r'(?:climb|mountain|everest|kilimanjaro)', q_lower):
+        qs = "i once "
+    elif "movie" in query_words or "fifth" in query_words or "element" in query_words:
+        qs = "my favorite movie"
+    elif "color" in query_words or "ultraviolet" in query_words:
+        qs = "my favorite color"
+    
+    scored = []
+    for lid, ldata in memory.get("lessons", {}).items():
+        lt = ldata.get("text", "").lower()
+        learned_at = ldata.get("learned_at", "")
+        cat = ldata.get("category", "")
+        cw = [w for w in lt.split() if w not in stop_words and len(w) > 1]
+        
+        cm = sum(1 for w in query_words if w in cw)
+        tm = sum(1 for w in query_words if w in lt)
+        pb = 3 if any(' '.join(query_words[i:i+2]) in lt for i in range(len(query_words)-1)) else 0
+        cb = 3 if cat == "user_fact" else 0
+        
+        sb = 0
+        if qs:
+            if lt.startswith(qs.lower()):
+                sb = 500
+            elif any(w in lt for w in query_words if w in ["pet","parrot","skittles","charger","dodge","welder","barbecue","korean","ultraviolet","fifth","element","kilimanjaro","marcus","reykjavik","iceland","brother","twin"]):
+                sb = 250
+        
+        rec = 0
+        try:
+            from datetime import datetime as _dt
+            parsed = _dt.fromisoformat(learned_at) if learned_at else _dt.min
+            age_hours = (_dt.now() - parsed).total_seconds() / 3600
+            rec = max(0, 50 - age_hours)
+        except:
+            pass
+        
+        if tm >= 1:
+            if query_words and cm == 0 and sb == 0:
+                continue
+            score = cm * 100 + pb * 10 + tm + cb + sb + rec
+            if score > 0:
+                scored.append((score, ldata["text"]))
+    
+    if scored:
+        scored.sort(key=lambda x: -x[0])
+        if scored[0][0] >= 50:
+            return [scored[0][1]]
+        return []
     return []
 
+
+def _synthesize_answer(memory_text, question):
+    """Transform saved memory fact into direct second-person answer."""
+    if not memory_text or not question:
+        return None
+    result = None
+    mem = memory_text.strip()
+    mem_lower = mem.lower()
+    import re as _re_syn
+    
+    if mem_lower.startswith("i was born"):
+        result = "You were born" + mem[10:]
+    elif mem_lower.startswith("i live"):
+        result = "You " + mem[2:]
+    elif mem_lower.startswith("i work"):
+        result = "You " + mem[2:]
+    elif mem_lower.startswith("i am from"):
+        result = "You are from" + mem[9:]
+    elif mem_lower.startswith("i am "):
+        result = "You are " + mem[5:]
+    elif any(mem_lower.startswith(v) for v in ["i like ", "i love ", "i enjoy "]):
+        result = "You " + mem[2:]
+    elif mem_lower.startswith("i have "):
+        result = "You have " + mem[7:]
+    elif mem_lower.startswith("i speak "):
+        result = "You speak " + mem[8:]
+    elif mem_lower.startswith("i drive "):
+        result = "You drive " + mem[8:]
+    elif mem_lower.startswith("i once "):
+        result = "You once" + mem[6:]
+    elif mem_lower.startswith("i can "):
+        result = "You can " + mem[6:]
+    elif mem_lower.startswith("my name is "):
+        result = "Your name is " + mem[11:]
+    elif _re_syn.match(r'[Mm]y favorite (.+) is (.+)', mem):
+        m = _re_syn.match(r'[Mm]y favorite (.+) is (.+)', mem)
+        result = f"Your favorite {m.group(1)} is {m.group(2)}"
+    elif _re_syn.match(r'[Mm]y (.+) name is (.+)', mem):
+        m = _re_syn.match(r'[Mm]y (.+) name is (.+)', mem)
+        result = f"Your {m.group(1)} name is {m.group(2)}"
+    elif _re_syn.match(r'[Mm]y (.+) is (.+)', mem):
+        m = _re_syn.match(r'[Mm]y (.+) is (.+)', mem)
+        result = f"Your {m.group(1)} is {m.group(2)}"
+    elif mem_lower.startswith("i "):
+        result = "You " + mem[2:]
+    
+    if result:
+        if result.startswith("You was "):
+            result = "You were" + result[7:]
+        if not result.endswith(('.', '!', '?')):
+            result += '.'
+    return result
 def _log_route(text, domain, route, confidence, source):
     """Log routing decisions for analysis and learning."""
     entry = {

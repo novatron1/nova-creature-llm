@@ -1,0 +1,9 @@
+{
+  "slot": "right_hemisphere",
+  "checkpoint_path": "./right_hemisphere_v054_specialized.pt",
+  "checkpoint_status": "copied_from_available_base_checkpoint",
+  "source_checkpoint": "checkpoints/base/creature_v032_bigfit_twenty_plain.pt",
+  "source_priority": "1_base_priority",
+  "training_set": "exports/v053_training_sets/right_hemisphere_training_set.json",
+  "lesson_count": 2
+}

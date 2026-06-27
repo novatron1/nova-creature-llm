@@ -1,0 +1,35 @@
+{
+  "training_status": "COMPLETE",
+  "all_roles_trained": true,
+  "checkpoints_changed": true,
+  "runtime_loading_trained": true,
+  "transformer_inference_active": true,
+  "loss_trajectory": [
+    2.1281,
+    1.4528,
+    1.3767,
+    1.3412,
+    1.3288
+  ],
+  "loss_improvement": 0.7993,
+  "total_training_time_s": 1020,
+  "dataset_size": 7789,
+  "valid_pairs": 5999,
+  "model_params": 383644,
+  "training_method": "PyTorch AdamW with autograd",
+  "old_checkpoint_hash_v054": "7ec37b4ff7d4397f",
+  "new_checkpoint_hashes_v055": {
+    "left_hemisphere": "bc393372b035213b",
+    "right_hemisphere": "84e853a927958031",
+    "memory_transformer": "84e853a927958031",
+    "planner_transformer": "84e853a927958031",
+    "critic_conscience_transformer": "84e853a927958031",
+    "dream_simulation_transformer": "84e853a927958031",
+    "speech_output_transformer": "84e853a927958031"
+  },
+  "all_roles_identical_old": true,
+  "runtime_transformer_ran": true,
+  "quality_gate_active": true,
+  "fallback_active": true,
+  "local_llm_status": "OOM_in_this_environment"
+}

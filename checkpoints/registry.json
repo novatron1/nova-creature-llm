@@ -1,0 +1,154 @@
+{
+  "roles": {
+    "critic_conscience_transformer": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/critic_conscience_transformer/critic_conscience_transformer_v055_torch_converted.pt",
+        "sha256": "09dc083de54607b8100522e63268d53c37019c27eda34144750d3ac17a68ed32",
+        "status": "baseline"
+      },
+      "candidates": {
+        "c6baef15ac8ca8bd698808293ed88be5209526f0ab22d4a63bb4454249159406": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/critic_conscience_transformer_trained.pt",
+          "rollback_sha256": "09dc083de54607b8100522e63268d53c37019c27eda34144750d3ac17a68ed32",
+          "sha256": "c6baef15ac8ca8bd698808293ed88be5209526f0ab22d4a63bb4454249159406",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "c6baef15ac8ca8bd698808293ed88be5209526f0ab22d4a63bb4454249159406"
+    },
+    "dream_simulation_transformer": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v055_torch_converted.pt",
+        "sha256": "9aa5dccf56e4abe9611b36e5feb375aeb41ff081cbe28f7636858dcdc5f6774b",
+        "status": "baseline"
+      },
+      "candidates": {
+        "724b43a7477787d3db1c31d8f0c77a66d04171369f3384178dc49d7137b3fa98": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/dream_simulation_transformer_trained.pt",
+          "rollback_sha256": "9aa5dccf56e4abe9611b36e5feb375aeb41ff081cbe28f7636858dcdc5f6774b",
+          "sha256": "724b43a7477787d3db1c31d8f0c77a66d04171369f3384178dc49d7137b3fa98",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "724b43a7477787d3db1c31d8f0c77a66d04171369f3384178dc49d7137b3fa98"
+    },
+    "left_hemisphere": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_torch_converted.pt",
+        "sha256": "db6f76094e5eb7a7d219977b826ab1f72942b1d25ea638bbb47dcae3012adeac",
+        "status": "baseline"
+      },
+      "candidates": {
+        "66e28036f404f01f50ab406517dd0f741f67d345cafc8e024a3befaaaa90f646": {
+          "metrics": {
+            "loss": 2.0874457359313965
+          },
+          "path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_torch_converted.pt",
+          "rollback_sha256": "12df938409941574fc613993b9f9f5ba579b397ffdc89f91aa2eecc538628633",
+          "sha256": "66e28036f404f01f50ab406517dd0f741f67d345cafc8e024a3befaaaa90f646",
+          "status": "promoted"
+        },
+        "774a9ed9064a22481ff144aaf40f03342612cf5c7ca58062789c7f0a8f881767": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/left_hemisphere_trained.pt",
+          "rollback_sha256": "66e28036f404f01f50ab406517dd0f741f67d345cafc8e024a3befaaaa90f646",
+          "sha256": "774a9ed9064a22481ff144aaf40f03342612cf5c7ca58062789c7f0a8f881767",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "774a9ed9064a22481ff144aaf40f03342612cf5c7ca58062789c7f0a8f881767"
+    },
+    "memory_transformer": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/memory_transformer/memory_transformer_v055_torch_converted.pt",
+        "sha256": "169f444464c84f8608874517be6d4315ba9f94a5a554c55b62fe00c62ccfb6e1",
+        "status": "baseline"
+      },
+      "candidates": {
+        "51b88ffb186b666e15da518a104e9447c6f935fdb1906c6792e9fd3315790385": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/memory_transformer_trained.pt",
+          "rollback_sha256": "169f444464c84f8608874517be6d4315ba9f94a5a554c55b62fe00c62ccfb6e1",
+          "sha256": "51b88ffb186b666e15da518a104e9447c6f935fdb1906c6792e9fd3315790385",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "51b88ffb186b666e15da518a104e9447c6f935fdb1906c6792e9fd3315790385"
+    },
+    "planner_transformer": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/planner_transformer/planner_transformer_v055_torch_converted.pt",
+        "sha256": "12099dca9cac6a85eff03226310b074b94fddad4d2a5a1f25aaffd6b8d55c69f",
+        "status": "baseline"
+      },
+      "candidates": {
+        "9b91749f9b562d923d7e843e93d6034bd747a8304577f70f8e8a97d511885337": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/planner_transformer_trained.pt",
+          "rollback_sha256": "12099dca9cac6a85eff03226310b074b94fddad4d2a5a1f25aaffd6b8d55c69f",
+          "sha256": "9b91749f9b562d923d7e843e93d6034bd747a8304577f70f8e8a97d511885337",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "9b91749f9b562d923d7e843e93d6034bd747a8304577f70f8e8a97d511885337"
+    },
+    "right_hemisphere": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/right_hemisphere/right_hemisphere_v055_torch_converted.pt",
+        "sha256": "185c2851547f2baf8871b4f266c0b02df3c0ddd195e47c87c5eab3567665192d",
+        "status": "baseline"
+      },
+      "candidates": {
+        "512425b4ca8b8c5deb5f60887dd073171e97f6a0c5640c6009fe1fec9045c58b": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/right_hemisphere_trained.pt",
+          "rollback_sha256": "185c2851547f2baf8871b4f266c0b02df3c0ddd195e47c87c5eab3567665192d",
+          "sha256": "512425b4ca8b8c5deb5f60887dd073171e97f6a0c5640c6009fe1fec9045c58b",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "512425b4ca8b8c5deb5f60887dd073171e97f6a0c5640c6009fe1fec9045c58b"
+    },
+    "speech_output_transformer": {
+      "baseline": {
+        "metrics": {},
+        "path": "checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v055_torch_converted.pt",
+        "sha256": "946adb18a57ee46fa84274af291f1bdb18715d3238e9ccd0e228028a598733c5",
+        "status": "baseline"
+      },
+      "candidates": {
+        "5ac20b2e1c7d254b030aa1f4309cbbaca26da2ac9e7ff54dc9fbe84131a1e050": {
+          "metrics": {
+            "loss": 3.0
+          },
+          "path": "checkpoints/candidates/v1601_all_roles_trained/speech_output_transformer_trained.pt",
+          "rollback_sha256": "946adb18a57ee46fa84274af291f1bdb18715d3238e9ccd0e228028a598733c5",
+          "sha256": "5ac20b2e1c7d254b030aa1f4309cbbaca26da2ac9e7ff54dc9fbe84131a1e050",
+          "status": "candidate"
+        }
+      },
+      "live_sha256": "5ac20b2e1c7d254b030aa1f4309cbbaca26da2ac9e7ff54dc9fbe84131a1e050"
+    }
+  },
+  "version": 1
+}

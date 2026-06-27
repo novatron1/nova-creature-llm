@@ -1,0 +1,13 @@
+{
+  "version": "codex_v055_numpy",
+  "role": "left_hemisphere",
+  "created_at": "2026-06-20T11:59:30.920951",
+  "checkpoint_path": "/root/New Project (1)Nova LLM/checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_numpy_trained.pt",
+  "source_checkpoint": "/root/New Project (1)Nova LLM/checkpoints/brain_slots/left_hemisphere/left_hemisphere_v054_specialized.pt",
+  "before_sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+  "after_sha256": "4e259f122d64e7ceff150bd298f5770d938632b2176d3197b6220b5b021da886",
+  "weights_changed": true,
+  "training_set": "/root/New Project (1)Nova LLM/exports/v053_training_sets/left_hemisphere_training_set.json",
+  "lesson_count": 189,
+  "framework": "numpy"
+}

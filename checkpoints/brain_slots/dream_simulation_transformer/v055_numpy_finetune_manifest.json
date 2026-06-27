@@ -1,0 +1,13 @@
+{
+  "version": "codex_v055_numpy",
+  "role": "dream_simulation_transformer",
+  "created_at": "2026-06-20T11:59:31.504624",
+  "checkpoint_path": "/root/New Project (1)Nova LLM/checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v055_numpy_trained.pt",
+  "source_checkpoint": "/root/New Project (1)Nova LLM/checkpoints/brain_slots/dream_simulation_transformer/dream_simulation_transformer_v054_specialized.pt",
+  "before_sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+  "after_sha256": "75e089fdae11790c9cd1d0479291fddebcd657588167f9fdffe4edb6f7484236",
+  "weights_changed": true,
+  "training_set": "/root/New Project (1)Nova LLM/exports/v053_training_sets/dream_simulation_transformer_training_set.json",
+  "lesson_count": 15,
+  "framework": "numpy"
+}

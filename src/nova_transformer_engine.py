@@ -573,7 +573,7 @@ class NovaBrain:
         for role in ROLE_NAMES:
             pt_path = self.checkpoint_dir / role / f'{role}_{checkpoint_version}.pt'
             if not pt_path.exists():
-                for ver in ['v055_immaculate_trained', 'v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
+                for ver in ['v055_conversation_trained', 'v055_immaculate_trained', 'v055_finetuned', 'v055_numpy_trained', 'v054_specialized']:
                     pt_path = self.checkpoint_dir / role / f'{role}_{ver}.pt'
                     if pt_path.exists():
                         checkpoint_version = ver
@@ -602,7 +602,7 @@ class NovaBrain:
     
     def _select_best_version(self):
         """Select checkpoint version with unique per-role weights."""
-        for ver in ['v055_immaculate_trained', 'v055_finetuned', 'v055_numpy_trained', 'v055_conversation_trained', 'v054_specialized']:
+        for ver in ['v055_conversation_trained', 'v055_immaculate_trained', 'v055_finetuned', 'v055_numpy_trained', 'v054_specialized']:
             hashes = set()
             all_exist = True
             for role in ROLE_NAMES:

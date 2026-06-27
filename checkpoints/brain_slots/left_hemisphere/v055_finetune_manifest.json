@@ -1,0 +1,16 @@
+{
+  "version": "codex_cloud_v055",
+  "role": "left_hemisphere",
+  "created_at": "2026-06-20T09:42:13.543901",
+  "checkpoint_path": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_finetuned.pt",
+  "checkpoint_status": "finetuned_from_v054",
+  "source_checkpoint": "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v054_specialized.pt",
+  "source_before_sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+  "finetuned_sha256": "82a39d8ca3155d420d470ac2bcef159303ac930296e756e68790c5597aea05e0",
+  "weights_changed": true,
+  "training_set": "exports/v053_training_sets/left_hemisphere_training_set.json",
+  "lesson_count": 9,
+  "training_steps": 50,
+  "start_loss": 18.104366,
+  "final_loss": 11.52203
+}

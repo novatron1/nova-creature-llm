@@ -10,15 +10,10 @@
       "introduced_at": "2026-06-20T22:45:54.136655",
       "session": "bfa2ff58"
     },
-    "nova test": {
-      "name": "Nova Test",
-      "introduced_at": "2026-06-22T10:33:32.992213",
-      "session": "1e1cd3e5"
-    },
     "mr. novotron": {
       "name": "Mr. Novotron",
-      "introduced_at": "2026-06-25T14:39:13.492845",
-      "session": "73ca0862"
+      "introduced_at": "2026-06-26T23:22:02.231617",
+      "session": "c8f9698f"
     },
     "memory test user": {
       "name": "Memory Test User",
@@ -48,6 +43,26 @@
       "name": "TestUser",
       "introduced_at": "2026-06-24T22:50:16.600768",
       "session": "b1e3c05e"
+    },
+    "collegebot": {
+      "name": "CollegeBot",
+      "introduced_at": "2026-06-26T19:24:46.043711",
+      "session": "995538d9"
+    },
+    "mr. test": {
+      "name": "Mr. Test",
+      "introduced_at": "2026-06-26T23:27:52.428320",
+      "session": "d415aff1"
+    },
+    "ultimate tester": {
+      "name": "Ultimate Tester",
+      "introduced_at": "2026-06-26T23:28:29.002348",
+      "session": "0016acbd"
+    },
+    "novatest": {
+      "name": "NovaTest",
+      "introduced_at": "2026-06-26T23:53:39.095425",
+      "session": "08f65845"
     }
   },
   "lessons": {
@@ -145,8 +160,249 @@
       "text": "nova has a local llm cortex connector",
       "learned_at": "2026-06-25T14:39:13.640173",
       "session": "73ca0862"
+    },
+    "lesson_20": {
+      "text": "My favorite food is pizza",
+      "learned_at": "2026-06-25T23:02:07.965815",
+      "source": "conversation",
+      "category": "user_fact"
+    },
+    "lesson_21": {
+      "text": "I was born in 1980",
+      "learned_at": "2026-06-25T23:02:07.970619",
+      "source": "conversation",
+      "category": "user_fact"
+    },
+    "lesson_22": {
+      "text": "I live in Cincinnati",
+      "learned_at": "2026-06-25T23:02:07.978966",
+      "source": "conversation",
+      "category": "user_fact"
+    },
+    "lesson_24": {
+      "text": "I work at Google",
+      "learned_at": "2026-06-25T23:02:07.986883",
+      "source": "conversation",
+      "category": "user_fact"
+    },
+    "lesson_25": {
+      "text": "I am from Canada",
+      "learned_at": "2026-06-25T23:02:07.995670",
+      "source": "conversation",
+      "category": "user_fact"
+    },
+    "lesson_26": {
+      "text": "I like hiking",
+      "learned_at": "2026-06-25T23:02:08.000703",
+      "source": "conversation",
+      "category": "user_fact"
+    },
+    "lesson_27": {
+      "text": "my favorite color is ultraviolet",
+      "learned_at": "2026-06-26T21:20:31.296005",
+      "session": "713a3a82"
+    },
+    "lesson_28": {
+      "text": "i have a pet parrot named skittles",
+      "learned_at": "2026-06-26T21:20:31.297234",
+      "session": "713a3a82"
+    },
+    "lesson_29": {
+      "text": "i work as a deep sea welder",
+      "learned_at": "2026-06-26T21:20:31.297903",
+      "session": "713a3a82"
+    },
+    "lesson_30": {
+      "text": "my car is a 1969 dodge charger",
+      "learned_at": "2026-06-26T21:20:31.298529",
+      "session": "713a3a82"
+    },
+    "lesson_31": {
+      "text": "i was born in reykjavik, iceland",
+      "learned_at": "2026-06-26T21:20:31.300184",
+      "session": "713a3a82"
+    },
+    "lesson_32": {
+      "text": "my favorite movie is the fifth element",
+      "learned_at": "2026-06-26T21:20:31.306869",
+      "session": "713a3a82"
+    },
+    "lesson_33": {
+      "text": "i can speak three languages fluently",
+      "learned_at": "2026-06-26T21:20:31.307592",
+      "session": "713a3a82"
+    },
+    "lesson_34": {
+      "text": "my favorite food is korean barbecue",
+      "learned_at": "2026-06-26T21:20:31.308669",
+      "session": "713a3a82"
+    },
+    "lesson_35": {
+      "text": "i have a twin brother named marcus",
+      "learned_at": "2026-06-26T21:20:31.309271",
+      "session": "713a3a82"
+    },
+    "lesson_36": {
+      "text": "i once climbed mount kilimanjaro",
+      "learned_at": "2026-06-26T21:20:31.310200",
+      "session": "713a3a82"
+    },
+    "lesson_37": {
+      "text": "my favorite color is ultraviolet",
+      "learned_at": "2026-06-26T21:32:58.520779",
+      "session": "bc47fc17"
+    },
+    "lesson_38": {
+      "text": "i have a pet parrot named skittles",
+      "learned_at": "2026-06-26T21:32:58.522104",
+      "session": "bc47fc17"
+    },
+    "lesson_39": {
+      "text": "i work as a deep sea welder",
+      "learned_at": "2026-06-26T21:32:58.522888",
+      "session": "bc47fc17"
+    },
+    "lesson_40": {
+      "text": "my car is a 1969 dodge charger",
+      "learned_at": "2026-06-26T21:32:58.523630",
+      "session": "bc47fc17"
+    },
+    "lesson_41": {
+      "text": "i was born in reykjavik, iceland",
+      "learned_at": "2026-06-26T21:32:58.524898",
+      "session": "bc47fc17"
+    },
+    "lesson_42": {
+      "text": "my favorite movie is the fifth element",
+      "learned_at": "2026-06-26T21:32:58.525935",
+      "session": "bc47fc17"
+    },
+    "lesson_43": {
+      "text": "i can speak three languages fluently",
+      "learned_at": "2026-06-26T21:32:58.526900",
+      "session": "bc47fc17"
+    },
+    "lesson_44": {
+      "text": "my favorite food is korean barbecue",
+      "learned_at": "2026-06-26T21:32:58.527897",
+      "session": "bc47fc17"
+    },
+    "lesson_45": {
+      "text": "i have a twin brother named marcus",
+      "learned_at": "2026-06-26T21:32:58.528951",
+      "session": "bc47fc17"
+    },
+    "lesson_46": {
+      "text": "i once climbed mount kilimanjaro",
+      "learned_at": "2026-06-26T21:32:58.529752",
+      "session": "bc47fc17"
+    },
+    "lesson_47": {
+      "text": "my favorite color is ultraviolet",
+      "learned_at": "2026-06-26T21:35:23.397904",
+      "session": "2f927322"
+    },
+    "lesson_48": {
+      "text": "i have a pet parrot named skittles",
+      "learned_at": "2026-06-26T21:35:23.399165",
+      "session": "2f927322"
+    },
+    "lesson_49": {
+      "text": "i work as a deep sea welder",
+      "learned_at": "2026-06-26T21:35:23.400741",
+      "session": "2f927322"
+    },
+    "lesson_50": {
+      "text": "my favorite food is korean barbecue",
+      "learned_at": "2026-06-26T21:35:23.401848",
+      "session": "2f927322"
+    },
+    "lesson_51": {
+      "text": "i was born in reykjavik, iceland",
+      "learned_at": "2026-06-26T21:35:23.402593",
+      "session": "2f927322"
+    },
+    "lesson_52": {
+      "text": "my favorite color is ultraviolet",
+      "learned_at": "2026-06-26T21:35:53.393377",
+      "session": "18c4b593"
+    },
+    "lesson_53": {
+      "text": "i have a pet parrot named skittles",
+      "learned_at": "2026-06-26T21:35:53.394609",
+      "session": "18c4b593"
+    },
+    "lesson_54": {
+      "text": "i work as a deep sea welder",
+      "learned_at": "2026-06-26T21:35:53.395377",
+      "session": "18c4b593"
+    },
+    "lesson_55": {
+      "text": "my favorite food is korean barbecue",
+      "learned_at": "2026-06-26T21:35:53.396046",
+      "session": "18c4b593"
+    },
+    "lesson_56": {
+      "text": "i was born in reykjavik, iceland",
+      "learned_at": "2026-06-26T21:35:53.397157",
+      "session": "18c4b593"
+    },
+    "lesson_57": {
+      "text": "my favorite movie is the fifth element",
+      "learned_at": "2026-06-26T21:35:53.397873",
+      "session": "18c4b593"
+    },
+    "lesson_58": {
+      "text": "i can speak three languages fluently",
+      "learned_at": "2026-06-26T21:35:53.398544",
+      "session": "18c4b593"
+    },
+    "lesson_59": {
+      "text": "my favorite color is ultraviolet",
+      "learned_at": "2026-06-26T21:58:31.048099",
+      "session": "afd052c7"
+    },
+    "lesson_60": {
+      "text": "i was born in reykjavik, iceland",
+      "learned_at": "2026-06-26T21:58:31.049393",
+      "session": "afd052c7"
+    },
+    "lesson_61": {
+      "text": "my favorite food is korean barbecue",
+      "learned_at": "2026-06-26T21:58:31.050219",
+      "session": "afd052c7"
+    },
+    "lesson_62": {
+      "text": "my favorite color is ultraviolet",
+      "learned_at": "2026-06-26T21:59:14.226131",
+      "session": "41201b32"
+    },
+    "lesson_63": {
+      "text": "i was born in reykjavik, iceland",
+      "learned_at": "2026-06-26T21:59:14.227304",
+      "session": "41201b32"
+    },
+    "lesson_64": {
+      "text": "my favorite food is korean barbecue",
+      "learned_at": "2026-06-26T21:59:14.228094",
+      "session": "41201b32"
+    },
+    "lesson_65": {
+      "text": "i have a pet parrot named skittles",
+      "learned_at": "2026-06-26T21:59:14.228751",
+      "session": "41201b32"
+    },
+    "lesson_66": {
+      "text": "i work as a deep sea welder",
+      "learned_at": "2026-06-26T21:59:14.229386",
+      "session": "41201b32"
+    },
+    "lesson_67": {
+      "text": "nova remembers user preferences",
+      "learned_at": "2026-06-26T23:28:56.978658",
+      "session": "43becb35"
     }
   },
-  "last_person": "mr. novotron",
-  "last_lesson": "lesson_19"
+  "last_person": "novatest",
+  "last_lesson": "lesson_67"
 }

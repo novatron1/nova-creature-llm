@@ -1309,3 +1309,60 @@
 {"user": "Tell me about: \"microphone\": null,", "nova": "\"microphone\": null,"}
 {"user": "Tell me about: \"speaker_test\": null,", "nova": "\"speaker_test\": null,"}
 {"user": "Tell me about: \"screen_capture\": null", "nova": "\"screen_capture\": null"}
+{"user": "memory: My favorite food is pizza. question: what food do i like", "nova": "Your favorite food is pizza."}
+{"user": "memory: My favorite food is pizza. question: what is my favorite food", "nova": "Your favorite food is pizza."}
+{"user": "memory: My favorite food is sushi. question: what food do i like", "nova": "Your favorite food is sushi."}
+{"user": "memory: My favorite food is pasta. question: what is my favorite food", "nova": "Your favorite food is pasta."}
+{"user": "memory: I was born in 1980. question: when was i born", "nova": "You were born in 1980."}
+{"user": "memory: I was born in 1990. question: when was i born", "nova": "You were born in 1990."}
+{"user": "memory: I was born in 2000. question: when was i born", "nova": "You were born in 2000."}
+{"user": "memory: I was born on January 5th. question: when was i born", "nova": "You were born on January 5th."}
+{"user": "memory: I live in Cincinnati. question: where do i live", "nova": "You live in Cincinnati."}
+{"user": "memory: I live in New York. question: where do i live", "nova": "You live in New York."}
+{"user": "memory: I live in Los Angeles. question: where do i live", "nova": "You live in Los Angeles."}
+{"user": "memory: I live in Tokyo. question: where do i live", "nova": "You live in Tokyo."}
+{"user": "memory: My favorite color is blue. question: what is my favorite color", "nova": "Your favorite color is blue."}
+{"user": "memory: My favorite color is red. question: what is my favorite color", "nova": "Your favorite color is red."}
+{"user": "memory: My favorite color is green. question: what is my favorite color", "nova": "Your favorite color is green."}
+{"user": "memory: My dog name is Max. question: what is my dog name", "nova": "Your dog name is Max."}
+{"user": "memory: My dog name is Buddy. question: what is my dog name", "nova": "Your dog name is Buddy."}
+{"user": "memory: My cat name is Luna. question: what is my cat s name", "nova": "Your cat name is Luna."}
+{"user": "memory: I work at Novatron Production. question: where do i work", "nova": "You work at Novatron Production."}
+{"user": "memory: I work at Google. question: where do i work", "nova": "You work at Google."}
+{"user": "memory: I work at a hospital. question: where do i work", "nova": "You work at a hospital."}
+{"user": "memory: My name is Alice. question: what is my name", "nova": "Your name is Alice."}
+{"user": "memory: My name is Bob. question: what is my name", "nova": "Your name is Bob."}
+{"user": "memory: My name is Mr. Novotron. question: what is my name", "nova": "Your name is Mr. Novotron."}
+{"user": "memory: I am a teacher. question: what do i do", "nova": "You are a teacher."}
+{"user": "memory: I am a doctor. question: what do i do", "nova": "You are a doctor."}
+{"user": "memory: I am a software engineer. question: what do i do", "nova": "You are a software engineer."}
+{"user": "memory: I like hiking. question: what do i like", "nova": "You like hiking."}
+{"user": "memory: I like reading books. question: what do i like", "nova": "You like reading books."}
+{"user": "memory: I love pizza. question: what do i love", "nova": "You love pizza."}
+{"user": "memory: My phone number is 555-1234. question: what is my phone number", "nova": "Your phone number is 555-1234."}
+{"user": "memory: My birthday is June 15th. question: when is my birthday", "nova": "Your birthday is June 15th."}
+{"user": "memory: I have two brothers. question: how many brothers do i have", "nova": "You have two brothers."}
+{"user": "memory: I have one sister. question: how many sisters do i have", "nova": "You have one sister."}
+{"user": "memory: My favorite book is Dune. question: what is my favorite book", "nova": "Your favorite book is Dune."}
+{"user": "memory: My favorite movie is Inception. question: what is my favorite movie", "nova": "Your favorite movie is Inception."}
+{"user": "memory: I speak Spanish. question: what languages do i speak", "nova": "You speak Spanish."}
+{"user": "memory: I speak French and English. question: what languages do i speak", "nova": "You speak French and English."}
+{"user": "memory: I am from Canada. question: where am i from", "nova": "You are from Canada."}
+{"user": "memory: I am from Brazil. question: where am i from", "nova": "You are from Brazil."}
+{"user": "memory: My favorite music is jazz. question: what is my favorite music", "nova": "Your favorite music is jazz."}
+{"user": "memory: My wife name is Sarah. question: what is my wife name", "nova": "Your wife name is Sarah."}
+{"user": "memory: My husband name is John. question: what is my husband name", "nova": "Your husband name is John."}
+{"user": "memory: I have a degree in Computer Science. question: what degree do i have", "nova": "You have a degree in Computer Science."}
+{"user": "memory: I drive a Toyota. question: what car do i drive", "nova": "You drive a Toyota."}
+{"user": "memory: My favorite animal is dog. question: what is my favorite animal", "nova": "Your favorite animal is dog."}
+{"user": "memory: I have a pet parrot. question: what pet do i have", "nova": "You have a pet parrot."}
+{"user": "memory: I am left-handed. question: what hand do i use", "nova": "You are left-handed."}
+{"user": "memory: My favorite drink is coffee. question: what is my favorite drink", "nova": "Your favorite drink is coffee."}
+{"user": "my favorite food is pizza", "nova": "Saved: Your favorite food is pizza."}
+{"user": "what food do i like", "nova": "Your favorite food is pizza."}
+{"user": "i was born in 1980", "nova": "Saved: You were born in 1980."}
+{"user": "when was i born", "nova": "You were born in 1980."}
+{"user": "i live in Cincinnati", "nova": "Saved: You live in Cincinnati."}
+{"user": "where do i live", "nova": "You live in Cincinnati."}
+{"user": "my name is Alex", "nova": "Your name is Alex."}
+{"user": "what is my name", "nova": "Your name is Alex."}

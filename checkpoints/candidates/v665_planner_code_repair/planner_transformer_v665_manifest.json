@@ -1,0 +1,8 @@
+{
+  "version": "v665_candidate_checkpoint_builder_2",
+  "created_at": "2026-06-18T13:51:00.689444",
+  "torch_available": true,
+  "checkpoint_path": "/root/New Project (1)Nova LLM/checkpoints/candidates/v665_planner_code_repair/planner_transformer_v665_candidate.pt",
+  "manifest_path": "/root/New Project (1)Nova LLM/checkpoints/candidates/v665_planner_code_repair/planner_transformer_v665_manifest.json",
+  "candidate_status": "checkpoint_created"
+}

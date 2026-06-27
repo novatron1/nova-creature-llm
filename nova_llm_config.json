@@ -1,0 +1,8 @@
+{
+  "NOVA_LOCAL_LLM_URL": "http://127.0.0.1:11434/api/generate",
+  "NOVA_LOCAL_LLM_MODEL": "qwen2.5:1.5b",
+  "NOVA_LOCAL_LLM_PROVIDER": "ollama",
+  "NOVA_USE_LOCAL_LLM": true,
+  "NOVA_LOCAL_LLM_TIMEOUT": 30,
+  "NOVA_LOCAL_LLM_LOG_PROMPTS": true
+}

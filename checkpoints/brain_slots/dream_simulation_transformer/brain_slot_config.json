@@ -1,0 +1,7 @@
+{
+  "slot": "dream_simulation_transformer",
+  "checkpoint_status": "awaiting_checkpoint_or_v054_builder",
+  "checkpoint_path": "",
+  "role_layer": "installed",
+  "cloud_project": true
+}

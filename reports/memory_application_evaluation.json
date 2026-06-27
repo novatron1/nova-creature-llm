@@ -1,0 +1,142 @@
+{
+  "report_title": "Nova Creature - Memory Application Training Evaluation",
+  "date": "2026-06-25 23:19:56",
+  "version": "v1.0",
+  "summary": {
+    "synthesis_rules": 16,
+    "rules_passing": 16,
+    "rules_failing": 0,
+    "training_examples": 36,
+    "examples_verified": 36,
+    "runtime_tests_passing": true,
+    "anti_echo_clean": true,
+    "second_person_enforced": true
+  },
+  "synthesis_rules": [
+    {
+      "pattern": "I was born X",
+      "output": "You were born X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I live X",
+      "output": "You live X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I work X",
+      "output": "You work X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I am from X",
+      "output": "You are from X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I am X",
+      "output": "You are X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I like/love/enjoy X",
+      "output": "You like/love/enjoy X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I have X",
+      "output": "You have X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I speak X",
+      "output": "You speak X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I drive X",
+      "output": "You drive X",
+      "status": "pass"
+    },
+    {
+      "pattern": "I [verb] X",
+      "output": "You [verb] X",
+      "status": "pass"
+    },
+    {
+      "pattern": "My name is X",
+      "output": "Your name is X",
+      "status": "pass"
+    },
+    {
+      "pattern": "My favorite X is Y",
+      "output": "Your favorite X is Y",
+      "status": "pass"
+    },
+    {
+      "pattern": "My X name is Y",
+      "output": "Your X name is Y",
+      "status": "pass"
+    },
+    {
+      "pattern": "My X is Y (generic)",
+      "output": "Your X is Y",
+      "status": "pass"
+    },
+    {
+      "pattern": "Grammar fix: was->were",
+      "output": "You were...",
+      "status": "pass"
+    },
+    {
+      "pattern": "Period suffix",
+      "output": "Sentence ends with period",
+      "status": "pass"
+    }
+  ],
+  "search_improvements": [
+    {
+      "issue": "where am i from - all stop words",
+      "fix": "Extended fallback to handle 6+ clean words"
+    },
+    {
+      "issue": "what is my cat name - false positive",
+      "fix": "Orphan word detection rejects queries with words absent from all lessons"
+    },
+    {
+      "issue": "what is my dog name vs my name - wrong match",
+      "fix": "Content-match scoring (100x) prioritizes specific over generic matches"
+    },
+    {
+      "issue": "who am i - stop word",
+      "fix": "Identity bonus for who+name matching"
+    },
+    {
+      "issue": "Name case preservation",
+      "fix": "Use original text (not lowercased) for value extraction"
+    }
+  ],
+  "anti_echo_rules": [
+    "No 'memory_search' labels in final answer",
+    "No 'saved knowledge' labels in final answer",
+    "No debug labels in final answer",
+    "No raw JSON/memory dump in final answer",
+    "No repeating the user's question verbatim",
+    "No first-person (I) responses - always second person (You/Your)"
+  ],
+  "files_changed": [
+    "src/nova_hybrid_router.py - _search_lessons rewrite + synthesis rules + fact detection patterns",
+    "data/memory_application_training_data.jsonl - 36 training examples created"
+  ],
+  "known_issues": [
+    "Facts saved through LLM path don't show 'memory_saved' in route trace (minor display issue)",
+    "Some multi-word facts (e.g., 'I am from Earth') route through LLM instead of memory path",
+    "Case-sensitive matching for 'My X name is Y' requires exact [Mm]y capitalization"
+  ],
+  "next_recommendations": [
+    "Train transformers on memory_application_training_data.jsonl for generalization",
+    "Add synthesis-aware response formatting in the LLM path",
+    "Extend patterns to cover more relationship types (spouse, child, friend names)",
+    "Add batch fact import from conversation history"
+  ]
+}

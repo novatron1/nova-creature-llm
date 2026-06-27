@@ -229,7 +229,7 @@ class NovaTransformer:
     
     def generate(self, tokenizer, prompt, max_tokens=30, temperature=0.0):
         ids = tokenizer.encode(prompt)
-        VALID_VOCAB_SIZE = min(560, tokenizer.vocab_size if hasattr(tokenizer, 'vocab_size') else 560)
+        VALID_VOCAB_SIZE = min(796, tokenizer.vocab_size if hasattr(tokenizer, 'vocab_size') else 796)
         for _ in range(max_tokens):
             ctx = np.array([ids[-64:]], dtype=np.int64)
             logits = self.forward(ctx)
@@ -254,8 +254,8 @@ class NovaTransformer:
         B, T, V = logits.shape
         logits = logits.reshape(-1, V)
         targets = targets.reshape(-1)
-        # Mask out-of-vocabulary logits (IDs >= 560) so model never learns to predict them
-        VALID_VOCAB_SIZE = 560
+        # Mask out-of-vocabulary logits (IDs >= 796) so model never learns to predict them
+        VALID_VOCAB_SIZE = 796
         if V > VALID_VOCAB_SIZE:
             logits[:, VALID_VOCAB_SIZE:] = -1e9
         # Cross-entropy
@@ -356,8 +356,8 @@ class NovaTransformer:
         # LM head
         logits = x_final @ p['lm_head.weight'].T  # (B,T,V)
         B, T, V = logits.shape
-        # Mask out-of-vocabulary logits (IDs >= 560) so model never learns to predict them
-        VALID_VOCAB_SIZE = 560
+        # Mask out-of-vocabulary logits (IDs >= 796) so model never learns to predict them
+        VALID_VOCAB_SIZE = 796
         if V > VALID_VOCAB_SIZE:
             logits[:, :, VALID_VOCAB_SIZE:] = -1e9
         logits_2d = logits.reshape(-1, V)

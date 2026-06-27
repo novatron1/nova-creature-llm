@@ -1,0 +1,13 @@
+{
+  "version": "codex_v055_numpy",
+  "role": "speech_output_transformer",
+  "created_at": "2026-06-20T11:59:31.620445",
+  "checkpoint_path": "/root/New Project (1)Nova LLM/checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v055_numpy_trained.pt",
+  "source_checkpoint": "/root/New Project (1)Nova LLM/checkpoints/brain_slots/speech_output_transformer/speech_output_transformer_v054_specialized.pt",
+  "before_sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+  "after_sha256": "a3e1e82ffd79b9a4d32b3a1445685b5d79435cb7181c4c9477d5d00216a8f3cd",
+  "weights_changed": true,
+  "training_set": "/root/New Project (1)Nova LLM/exports/v053_training_sets/speech_output_transformer_training_set.json",
+  "lesson_count": 24,
+  "framework": "numpy"
+}

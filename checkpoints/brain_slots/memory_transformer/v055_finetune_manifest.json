@@ -1,0 +1,16 @@
+{
+  "version": "codex_cloud_v055",
+  "role": "memory_transformer",
+  "created_at": "2026-06-20T09:42:30.792570",
+  "checkpoint_path": "checkpoints/brain_slots/memory_transformer/memory_transformer_v055_finetuned.pt",
+  "checkpoint_status": "finetuned_from_v054",
+  "source_checkpoint": "checkpoints/brain_slots/memory_transformer/memory_transformer_v054_specialized.pt",
+  "source_before_sha256": "7ec37b4ff7d4397fe2f1327bb45a3521eff080af4935b8eb631037dcad435bd8",
+  "finetuned_sha256": "242cfb140bfb6c94cf159080b5396516d398e84cc7a3dc088e20d5fb97d30bbe",
+  "weights_changed": true,
+  "training_set": "exports/v053_training_sets/memory_transformer_training_set.json",
+  "lesson_count": 24,
+  "training_steps": 50,
+  "start_loss": 16.901602,
+  "final_loss": 11.114235
+}

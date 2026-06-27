@@ -24,10 +24,6 @@ env/
 .DS_Store
 Thumbs.db
 
-# Large model checkpoints
-checkpoints/
-*.pt
-*.pth
 
 # Transformer hyper-training artifacts
 artifacts/transformer_training/
@@ -47,3 +43,7 @@ exports/NovaCreature_Laptop_Full_Version.zip
 exports/NovaCreature_Laptop_Full_Version.tar.gz
 nova_creature_android_full.zip
 nova_creature_llm_lab_complete.zip
+
+# Large model checkpoints (exclude by default, force-add specific trained ones)
+*.pt
+*.pth

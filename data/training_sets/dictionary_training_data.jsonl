@@ -1,0 +1,1226 @@
+{"prompt": "define sun", "answer": "The sun is the star at the center of our solar system, providing light and heat essential for life on Earth."}
+{"prompt": "what is sun", "answer": "The sun is the star at the center of our solar system, providing light and heat essential for life on Earth."}
+{"prompt": "what does sun mean", "answer": "The sun is the star at the center of our solar system, providing light and heat essential for life on Earth."}
+{"prompt": "sun definition", "answer": "The sun is the star at the center of our solar system, providing light and heat essential for life on Earth."}
+{"prompt": "define moon", "answer": "The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases."}
+{"prompt": "what is moon", "answer": "The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases."}
+{"prompt": "what does moon mean", "answer": "The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases."}
+{"prompt": "moon definition", "answer": "The moon is Earth's natural satellite that orbits the planet and reflects sunlight, causing lunar phases."}
+{"prompt": "define star", "answer": "A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion."}
+{"prompt": "what is star", "answer": "A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion."}
+{"prompt": "what does star mean", "answer": "A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion."}
+{"prompt": "star definition", "answer": "A star is a massive, luminous sphere of plasma held together by gravity that produces energy through nuclear fusion."}
+{"prompt": "define planet", "answer": "A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter."}
+{"prompt": "what is planet", "answer": "A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter."}
+{"prompt": "what does planet mean", "answer": "A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter."}
+{"prompt": "planet definition", "answer": "A planet is a large celestial body orbiting a star, such as Earth, Mars, or Jupiter."}
+{"prompt": "define earth", "answer": "Earth is the third planet from the sun and the only known planet to support life."}
+{"prompt": "what is earth", "answer": "Earth is the third planet from the sun and the only known planet to support life."}
+{"prompt": "what does earth mean", "answer": "Earth is the third planet from the sun and the only known planet to support life."}
+{"prompt": "earth definition", "answer": "Earth is the third planet from the sun and the only known planet to support life."}
+{"prompt": "define air", "answer": "Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth."}
+{"prompt": "what is air", "answer": "Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth."}
+{"prompt": "what does air mean", "answer": "Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth."}
+{"prompt": "air definition", "answer": "Air is the invisible mixture of gases, primarily nitrogen and oxygen, that surrounds the Earth."}
+{"prompt": "define wind", "answer": "Wind is the natural movement of air caused by differences in atmospheric pressure."}
+{"prompt": "what is wind", "answer": "Wind is the natural movement of air caused by differences in atmospheric pressure."}
+{"prompt": "what does wind mean", "answer": "Wind is the natural movement of air caused by differences in atmospheric pressure."}
+{"prompt": "wind definition", "answer": "Wind is the natural movement of air caused by differences in atmospheric pressure."}
+{"prompt": "define fire", "answer": "Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion."}
+{"prompt": "what is fire", "answer": "Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion."}
+{"prompt": "what does fire mean", "answer": "Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion."}
+{"prompt": "fire definition", "answer": "Fire is a rapid chemical reaction producing heat, light, and flames, typically involving combustion."}
+{"prompt": "define rain", "answer": "Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface."}
+{"prompt": "what is rain", "answer": "Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface."}
+{"prompt": "what does rain mean", "answer": "Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface."}
+{"prompt": "rain definition", "answer": "Rain is water droplets that fall from clouds in the atmosphere to the Earth's surface."}
+{"prompt": "define snow", "answer": "Snow is frozen precipitation consisting of ice crystals that fall from clouds."}
+{"prompt": "what is snow", "answer": "Snow is frozen precipitation consisting of ice crystals that fall from clouds."}
+{"prompt": "what does snow mean", "answer": "Snow is frozen precipitation consisting of ice crystals that fall from clouds."}
+{"prompt": "snow definition", "answer": "Snow is frozen precipitation consisting of ice crystals that fall from clouds."}
+{"prompt": "define ice", "answer": "Ice is water frozen into a solid state, expanding and becoming less dense than liquid water."}
+{"prompt": "what is ice", "answer": "Ice is water frozen into a solid state, expanding and becoming less dense than liquid water."}
+{"prompt": "what does ice mean", "answer": "Ice is water frozen into a solid state, expanding and becoming less dense than liquid water."}
+{"prompt": "ice definition", "answer": "Ice is water frozen into a solid state, expanding and becoming less dense than liquid water."}
+{"prompt": "define cloud", "answer": "A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere."}
+{"prompt": "what is cloud", "answer": "A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere."}
+{"prompt": "what does cloud mean", "answer": "A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere."}
+{"prompt": "cloud definition", "answer": "A cloud is a visible mass of water droplets or ice crystals suspended in the atmosphere."}
+{"prompt": "define ocean", "answer": "An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins."}
+{"prompt": "what is ocean", "answer": "An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins."}
+{"prompt": "what does ocean mean", "answer": "An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins."}
+{"prompt": "ocean definition", "answer": "An ocean is a vast body of saltwater covering most of Earth's surface, divided into major ocean basins."}
+{"prompt": "define river", "answer": "A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river."}
+{"prompt": "what is river", "answer": "A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river."}
+{"prompt": "what does river mean", "answer": "A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river."}
+{"prompt": "river definition", "answer": "A river is a natural flowing watercourse that moves water toward an ocean, lake, or another river."}
+{"prompt": "define lake", "answer": "A lake is a large body of freshwater or saltwater surrounded by land."}
+{"prompt": "what is lake", "answer": "A lake is a large body of freshwater or saltwater surrounded by land."}
+{"prompt": "what does lake mean", "answer": "A lake is a large body of freshwater or saltwater surrounded by land."}
+{"prompt": "lake definition", "answer": "A lake is a large body of freshwater or saltwater surrounded by land."}
+{"prompt": "define mountain", "answer": "A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land."}
+{"prompt": "what is mountain", "answer": "A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land."}
+{"prompt": "what does mountain mean", "answer": "A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land."}
+{"prompt": "mountain definition", "answer": "A mountain is a large natural elevation of the Earth's surface rising steeply above the surrounding land."}
+{"prompt": "define forest", "answer": "A forest is a large area covered with trees and undergrowth, forming a complex ecosystem."}
+{"prompt": "what is forest", "answer": "A forest is a large area covered with trees and undergrowth, forming a complex ecosystem."}
+{"prompt": "what does forest mean", "answer": "A forest is a large area covered with trees and undergrowth, forming a complex ecosystem."}
+{"prompt": "forest definition", "answer": "A forest is a large area covered with trees and undergrowth, forming a complex ecosystem."}
+{"prompt": "define tree", "answer": "A tree is a tall perennial woody plant with a trunk, branches, and leaves."}
+{"prompt": "what is tree", "answer": "A tree is a tall perennial woody plant with a trunk, branches, and leaves."}
+{"prompt": "what does tree mean", "answer": "A tree is a tall perennial woody plant with a trunk, branches, and leaves."}
+{"prompt": "tree definition", "answer": "A tree is a tall perennial woody plant with a trunk, branches, and leaves."}
+{"prompt": "define flower", "answer": "A flower is the reproductive structure of flowering plants, often colorful and fragrant."}
+{"prompt": "what is flower", "answer": "A flower is the reproductive structure of flowering plants, often colorful and fragrant."}
+{"prompt": "what does flower mean", "answer": "A flower is the reproductive structure of flowering plants, often colorful and fragrant."}
+{"prompt": "flower definition", "answer": "A flower is the reproductive structure of flowering plants, often colorful and fragrant."}
+{"prompt": "define seed", "answer": "A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant."}
+{"prompt": "what is seed", "answer": "A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant."}
+{"prompt": "what does seed mean", "answer": "A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant."}
+{"prompt": "seed definition", "answer": "A seed is a small embryonic plant enclosed in a protective outer covering, capable of growing into a new plant."}
+{"prompt": "define soil", "answer": "Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms."}
+{"prompt": "what is soil", "answer": "Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms."}
+{"prompt": "what does soil mean", "answer": "Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms."}
+{"prompt": "soil definition", "answer": "Soil is the upper layer of Earth's surface composed of organic matter, minerals, and living organisms."}
+{"prompt": "define rock", "answer": "Rock is solid mineral material forming part of the Earth's crust, composed of various minerals."}
+{"prompt": "what is rock", "answer": "Rock is solid mineral material forming part of the Earth's crust, composed of various minerals."}
+{"prompt": "what does rock mean", "answer": "Rock is solid mineral material forming part of the Earth's crust, composed of various minerals."}
+{"prompt": "rock definition", "answer": "Rock is solid mineral material forming part of the Earth's crust, composed of various minerals."}
+{"prompt": "define mineral", "answer": "A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure."}
+{"prompt": "what is mineral", "answer": "A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure."}
+{"prompt": "what does mineral mean", "answer": "A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure."}
+{"prompt": "mineral definition", "answer": "A mineral is a naturally occurring inorganic solid with a definite chemical composition and crystal structure."}
+{"prompt": "define metal", "answer": "Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity."}
+{"prompt": "what is metal", "answer": "Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity."}
+{"prompt": "what does metal mean", "answer": "Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity."}
+{"prompt": "metal definition", "answer": "Metal is a solid material that is typically hard, shiny, malleable, and conducts heat and electricity."}
+{"prompt": "define animal", "answer": "An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily."}
+{"prompt": "what is animal", "answer": "An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily."}
+{"prompt": "what does animal mean", "answer": "An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily."}
+{"prompt": "animal definition", "answer": "An animal is a living organism that feeds on organic matter, has specialized senses, and can move voluntarily."}
+{"prompt": "define mammal", "answer": "A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands."}
+{"prompt": "what is mammal", "answer": "A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands."}
+{"prompt": "what does mammal mean", "answer": "A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands."}
+{"prompt": "mammal definition", "answer": "A mammal is a warm-blooded vertebrate that has hair or fur and feeds its young with milk from mammary glands."}
+{"prompt": "define reptile", "answer": "A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land."}
+{"prompt": "what is reptile", "answer": "A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land."}
+{"prompt": "what does reptile mean", "answer": "A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land."}
+{"prompt": "reptile definition", "answer": "A reptile is a cold-blooded vertebrate with scaly skin that typically lays eggs on land."}
+{"prompt": "define amphibian", "answer": "An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs."}
+{"prompt": "what is amphibian", "answer": "An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs."}
+{"prompt": "what does amphibian mean", "answer": "An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs."}
+{"prompt": "amphibian definition", "answer": "An amphibian is a cold-blooded vertebrate that lives in water as a larva and on land as an adult, like frogs."}
+{"prompt": "define insect", "answer": "An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings."}
+{"prompt": "what is insect", "answer": "An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings."}
+{"prompt": "what does insect mean", "answer": "An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings."}
+{"prompt": "insect definition", "answer": "An insect is a small arthropod with six legs, a three-part body, and usually two pairs of wings."}
+{"prompt": "define bird", "answer": "A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak."}
+{"prompt": "what is bird", "answer": "A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak."}
+{"prompt": "what does bird mean", "answer": "A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak."}
+{"prompt": "bird definition", "answer": "A bird is a warm-blooded egg-laying vertebrate with feathers, wings, and a beak."}
+{"prompt": "define fish", "answer": "A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water."}
+{"prompt": "what is fish", "answer": "A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water."}
+{"prompt": "what does fish mean", "answer": "A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water."}
+{"prompt": "fish definition", "answer": "A fish is a cold-blooded aquatic vertebrate with gills and fins, living entirely in water."}
+{"prompt": "define dog", "answer": "A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty."}
+{"prompt": "what is dog", "answer": "A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty."}
+{"prompt": "what does dog mean", "answer": "A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty."}
+{"prompt": "dog definition", "answer": "A dog is a domesticated carnivorous mammal commonly kept as a pet or for guarding, known for loyalty."}
+{"prompt": "define cat", "answer": "A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control."}
+{"prompt": "what is cat", "answer": "A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control."}
+{"prompt": "what does cat mean", "answer": "A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control."}
+{"prompt": "cat definition", "answer": "A cat is a small domesticated carnivorous mammal, often kept as a pet for companionship or pest control."}
+{"prompt": "define horse", "answer": "A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads."}
+{"prompt": "what is horse", "answer": "A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads."}
+{"prompt": "what does horse mean", "answer": "A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads."}
+{"prompt": "horse definition", "answer": "A horse is a large domesticated hoofed mammal used for riding, racing, and carrying loads."}
+{"prompt": "define cow", "answer": "A cow is a large domesticated bovine mammal raised for milk, meat, and leather."}
+{"prompt": "what is cow", "answer": "A cow is a large domesticated bovine mammal raised for milk, meat, and leather."}
+{"prompt": "what does cow mean", "answer": "A cow is a large domesticated bovine mammal raised for milk, meat, and leather."}
+{"prompt": "cow definition", "answer": "A cow is a large domesticated bovine mammal raised for milk, meat, and leather."}
+{"prompt": "define pig", "answer": "A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout."}
+{"prompt": "what is pig", "answer": "A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout."}
+{"prompt": "what does pig mean", "answer": "A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout."}
+{"prompt": "pig definition", "answer": "A pig is a domesticated omnivorous mammal with a stout body, short legs, and a snout."}
+{"prompt": "define sheep", "answer": "A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat."}
+{"prompt": "what is sheep", "answer": "A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat."}
+{"prompt": "what does sheep mean", "answer": "A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat."}
+{"prompt": "sheep definition", "answer": "A sheep is a domesticated ruminant mammal with a thick woolly coat, raised for wool and meat."}
+{"prompt": "define goat", "answer": "A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber."}
+{"prompt": "what is goat", "answer": "A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber."}
+{"prompt": "what does goat mean", "answer": "A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber."}
+{"prompt": "goat definition", "answer": "A goat is a hardy domesticated ruminant mammal with horns, raised for milk, meat, and fiber."}
+{"prompt": "define chicken", "answer": "A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head."}
+{"prompt": "what is chicken", "answer": "A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head."}
+{"prompt": "what does chicken mean", "answer": "A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head."}
+{"prompt": "chicken definition", "answer": "A chicken is a domesticated bird raised for its eggs and meat, with a comb on its head."}
+{"prompt": "define duck", "answer": "A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call."}
+{"prompt": "what is duck", "answer": "A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call."}
+{"prompt": "what does duck mean", "answer": "A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call."}
+{"prompt": "duck definition", "answer": "A duck is a waterbird with a broad flat bill, webbed feet, and a quacking call."}
+{"prompt": "define eagle", "answer": "An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak."}
+{"prompt": "what is eagle", "answer": "An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak."}
+{"prompt": "what does eagle mean", "answer": "An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak."}
+{"prompt": "eagle definition", "answer": "An eagle is a large bird of prey with powerful wings, keen eyesight, and a hooked beak."}
+{"prompt": "define hawk", "answer": "A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills."}
+{"prompt": "what is hawk", "answer": "A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills."}
+{"prompt": "what does hawk mean", "answer": "A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills."}
+{"prompt": "hawk definition", "answer": "A hawk is a medium-sized bird of prey known for its sharp vision and hunting skills."}
+{"prompt": "define owl", "answer": "An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call."}
+{"prompt": "what is owl", "answer": "An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call."}
+{"prompt": "what does owl mean", "answer": "An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call."}
+{"prompt": "owl definition", "answer": "An owl is a nocturnal bird of prey with large forward-facing eyes, a hooked beak, and a hooting call."}
+{"prompt": "define snake", "answer": "A snake is a long legless reptile that moves by slithering and can be venomous or constricting."}
+{"prompt": "what is snake", "answer": "A snake is a long legless reptile that moves by slithering and can be venomous or constricting."}
+{"prompt": "what does snake mean", "answer": "A snake is a long legless reptile that moves by slithering and can be venomous or constricting."}
+{"prompt": "snake definition", "answer": "A snake is a long legless reptile that moves by slithering and can be venomous or constricting."}
+{"prompt": "define turtle", "answer": "A turtle is a reptile with a hard shell covering its body, living in water or on land."}
+{"prompt": "what is turtle", "answer": "A turtle is a reptile with a hard shell covering its body, living in water or on land."}
+{"prompt": "what does turtle mean", "answer": "A turtle is a reptile with a hard shell covering its body, living in water or on land."}
+{"prompt": "turtle definition", "answer": "A turtle is a reptile with a hard shell covering its body, living in water or on land."}
+{"prompt": "define frog", "answer": "A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping."}
+{"prompt": "what is frog", "answer": "A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping."}
+{"prompt": "what does frog mean", "answer": "A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping."}
+{"prompt": "frog definition", "answer": "A frog is a small tailless amphibian with smooth moist skin and long hind legs for jumping."}
+{"prompt": "define whale", "answer": "A whale is a large marine mammal that breathes air through blowholes and gives birth to live young."}
+{"prompt": "what is whale", "answer": "A whale is a large marine mammal that breathes air through blowholes and gives birth to live young."}
+{"prompt": "what does whale mean", "answer": "A whale is a large marine mammal that breathes air through blowholes and gives birth to live young."}
+{"prompt": "whale definition", "answer": "A whale is a large marine mammal that breathes air through blowholes and gives birth to live young."}
+{"prompt": "define dolphin", "answer": "A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation."}
+{"prompt": "what is dolphin", "answer": "A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation."}
+{"prompt": "what does dolphin mean", "answer": "A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation."}
+{"prompt": "dolphin definition", "answer": "A dolphin is a highly intelligent marine mammal known for its playful behavior and echolocation."}
+{"prompt": "define shark", "answer": "A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth."}
+{"prompt": "what is shark", "answer": "A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth."}
+{"prompt": "what does shark mean", "answer": "A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth."}
+{"prompt": "shark definition", "answer": "A shark is a large predatory fish with a cartilaginous skeleton, multiple gills, and sharp teeth."}
+{"prompt": "define bear", "answer": "A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait."}
+{"prompt": "what is bear", "answer": "A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait."}
+{"prompt": "what does bear mean", "answer": "A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait."}
+{"prompt": "bear definition", "answer": "A bear is a large powerful mammal with thick fur, a short tail, and a plantigrade gait."}
+{"prompt": "define wolf", "answer": "A wolf is a wild carnivorous canine mammal that lives and hunts in packs."}
+{"prompt": "what is wolf", "answer": "A wolf is a wild carnivorous canine mammal that lives and hunts in packs."}
+{"prompt": "what does wolf mean", "answer": "A wolf is a wild carnivorous canine mammal that lives and hunts in packs."}
+{"prompt": "wolf definition", "answer": "A wolf is a wild carnivorous canine mammal that lives and hunts in packs."}
+{"prompt": "define fox", "answer": "A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation."}
+{"prompt": "what is fox", "answer": "A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation."}
+{"prompt": "what does fox mean", "answer": "A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation."}
+{"prompt": "fox definition", "answer": "A fox is a small to medium-sized omnivorous mammal with a pointed snout, bushy tail, and clever reputation."}
+{"prompt": "define deer", "answer": "A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement."}
+{"prompt": "what is deer", "answer": "A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement."}
+{"prompt": "what does deer mean", "answer": "A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement."}
+{"prompt": "deer definition", "answer": "A deer is a hoofed grazing mammal with antlers in males, known for its graceful movement."}
+{"prompt": "define rabbit", "answer": "A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs."}
+{"prompt": "what is rabbit", "answer": "A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs."}
+{"prompt": "what does rabbit mean", "answer": "A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs."}
+{"prompt": "rabbit definition", "answer": "A rabbit is a small burrowing mammal with long ears, a short fluffy tail, and strong hind legs."}
+{"prompt": "define squirrel", "answer": "A squirrel is a small rodent with a bushy tail that gathers and stores nuts."}
+{"prompt": "what is squirrel", "answer": "A squirrel is a small rodent with a bushy tail that gathers and stores nuts."}
+{"prompt": "what does squirrel mean", "answer": "A squirrel is a small rodent with a bushy tail that gathers and stores nuts."}
+{"prompt": "squirrel definition", "answer": "A squirrel is a small rodent with a bushy tail that gathers and stores nuts."}
+{"prompt": "define mouse", "answer": "A mouse is a handheld pointing device that detects motion and clicks for computer interaction."}
+{"prompt": "what is mouse", "answer": "A mouse is a handheld pointing device that detects motion and clicks for computer interaction."}
+{"prompt": "what does mouse mean", "answer": "A mouse is a handheld pointing device that detects motion and clicks for computer interaction."}
+{"prompt": "mouse definition", "answer": "A mouse is a handheld pointing device that detects motion and clicks for computer interaction."}
+{"prompt": "define rat", "answer": "A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence."}
+{"prompt": "what is rat", "answer": "A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence."}
+{"prompt": "what does rat mean", "answer": "A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence."}
+{"prompt": "rat definition", "answer": "A rat is a medium-sized rodent with a long tail, known for its adaptability and intelligence."}
+{"prompt": "define bat", "answer": "A bat is the only flying mammal, using echolocation to navigate and hunt insects at night."}
+{"prompt": "what is bat", "answer": "A bat is the only flying mammal, using echolocation to navigate and hunt insects at night."}
+{"prompt": "what does bat mean", "answer": "A bat is the only flying mammal, using echolocation to navigate and hunt insects at night."}
+{"prompt": "bat definition", "answer": "A bat is the only flying mammal, using echolocation to navigate and hunt insects at night."}
+{"prompt": "define monkey", "answer": "A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility."}
+{"prompt": "what is monkey", "answer": "A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility."}
+{"prompt": "what does monkey mean", "answer": "A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility."}
+{"prompt": "monkey definition", "answer": "A monkey is a primate with a tail, found in tropical regions, known for its intelligence and agility."}
+{"prompt": "define ape", "answer": "An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans."}
+{"prompt": "what is ape", "answer": "An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans."}
+{"prompt": "what does ape mean", "answer": "An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans."}
+{"prompt": "ape definition", "answer": "An ape is a large tailless primate, including gorillas, chimpanzees, and orangutans."}
+{"prompt": "define lion", "answer": "A lion is a large wild cat with a mane in males, known as the king of the jungle."}
+{"prompt": "what is lion", "answer": "A lion is a large wild cat with a mane in males, known as the king of the jungle."}
+{"prompt": "what does lion mean", "answer": "A lion is a large wild cat with a mane in males, known as the king of the jungle."}
+{"prompt": "lion definition", "answer": "A lion is a large wild cat with a mane in males, known as the king of the jungle."}
+{"prompt": "define tiger", "answer": "A tiger is the largest wild cat, with orange fur and black stripes, native to Asia."}
+{"prompt": "what is tiger", "answer": "A tiger is the largest wild cat, with orange fur and black stripes, native to Asia."}
+{"prompt": "what does tiger mean", "answer": "A tiger is the largest wild cat, with orange fur and black stripes, native to Asia."}
+{"prompt": "tiger definition", "answer": "A tiger is the largest wild cat, with orange fur and black stripes, native to Asia."}
+{"prompt": "define elephant", "answer": "An elephant is the largest land animal, with a trunk, tusks, and large ears."}
+{"prompt": "what is elephant", "answer": "An elephant is the largest land animal, with a trunk, tusks, and large ears."}
+{"prompt": "what does elephant mean", "answer": "An elephant is the largest land animal, with a trunk, tusks, and large ears."}
+{"prompt": "elephant definition", "answer": "An elephant is the largest land animal, with a trunk, tusks, and large ears."}
+{"prompt": "define giraffe", "answer": "A giraffe is a tall African mammal with a very long neck and spotted coat."}
+{"prompt": "what is giraffe", "answer": "A giraffe is a tall African mammal with a very long neck and spotted coat."}
+{"prompt": "what does giraffe mean", "answer": "A giraffe is a tall African mammal with a very long neck and spotted coat."}
+{"prompt": "giraffe definition", "answer": "A giraffe is a tall African mammal with a very long neck and spotted coat."}
+{"prompt": "define zebra", "answer": "A zebra is an African wild horse with distinctive black and white stripes."}
+{"prompt": "what is zebra", "answer": "A zebra is an African wild horse with distinctive black and white stripes."}
+{"prompt": "what does zebra mean", "answer": "A zebra is an African wild horse with distinctive black and white stripes."}
+{"prompt": "zebra definition", "answer": "A zebra is an African wild horse with distinctive black and white stripes."}
+{"prompt": "define kangaroo", "answer": "A kangaroo is a large Australian marsupial with powerful hind legs for hopping."}
+{"prompt": "what is kangaroo", "answer": "A kangaroo is a large Australian marsupial with powerful hind legs for hopping."}
+{"prompt": "what does kangaroo mean", "answer": "A kangaroo is a large Australian marsupial with powerful hind legs for hopping."}
+{"prompt": "kangaroo definition", "answer": "A kangaroo is a large Australian marsupial with powerful hind legs for hopping."}
+{"prompt": "define panda", "answer": "A panda is a large black-and-white bear native to China, feeding mainly on bamboo."}
+{"prompt": "what is panda", "answer": "A panda is a large black-and-white bear native to China, feeding mainly on bamboo."}
+{"prompt": "what does panda mean", "answer": "A panda is a large black-and-white bear native to China, feeding mainly on bamboo."}
+{"prompt": "panda definition", "answer": "A panda is a large black-and-white bear native to China, feeding mainly on bamboo."}
+{"prompt": "define polar bear", "answer": "A polar bear is a large white bear native to the Arctic, adapted to cold environments."}
+{"prompt": "what is polar bear", "answer": "A polar bear is a large white bear native to the Arctic, adapted to cold environments."}
+{"prompt": "what does polar bear mean", "answer": "A polar bear is a large white bear native to the Arctic, adapted to cold environments."}
+{"prompt": "polar bear definition", "answer": "A polar bear is a large white bear native to the Arctic, adapted to cold environments."}
+{"prompt": "define penguin", "answer": "A penguin is a flightless seabird with flippers for swimming, found in cold southern regions."}
+{"prompt": "what is penguin", "answer": "A penguin is a flightless seabird with flippers for swimming, found in cold southern regions."}
+{"prompt": "what does penguin mean", "answer": "A penguin is a flightless seabird with flippers for swimming, found in cold southern regions."}
+{"prompt": "penguin definition", "answer": "A penguin is a flightless seabird with flippers for swimming, found in cold southern regions."}
+{"prompt": "define body", "answer": "The body is the physical structure of a human or animal, consisting of cells, tissues, and organs."}
+{"prompt": "what is body", "answer": "The body is the physical structure of a human or animal, consisting of cells, tissues, and organs."}
+{"prompt": "what does body mean", "answer": "The body is the physical structure of a human or animal, consisting of cells, tissues, and organs."}
+{"prompt": "body definition", "answer": "The body is the physical structure of a human or animal, consisting of cells, tissues, and organs."}
+{"prompt": "define heart", "answer": "The heart is a muscular organ that pumps blood through the circulatory system."}
+{"prompt": "what is heart", "answer": "The heart is a muscular organ that pumps blood through the circulatory system."}
+{"prompt": "what does heart mean", "answer": "The heart is a muscular organ that pumps blood through the circulatory system."}
+{"prompt": "heart definition", "answer": "The heart is a muscular organ that pumps blood through the circulatory system."}
+{"prompt": "define brain", "answer": "The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions."}
+{"prompt": "what is brain", "answer": "The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions."}
+{"prompt": "what does brain mean", "answer": "The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions."}
+{"prompt": "brain definition", "answer": "The brain is the organ of the body that controls thought, memory, emotion, and all bodily functions."}
+{"prompt": "define lung", "answer": "The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood."}
+{"prompt": "what is lung", "answer": "The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood."}
+{"prompt": "what does lung mean", "answer": "The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood."}
+{"prompt": "lung definition", "answer": "The lungs are the pair of respiratory organs that exchange oxygen and carbon dioxide with the blood."}
+{"prompt": "define liver", "answer": "The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances."}
+{"prompt": "what is liver", "answer": "The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances."}
+{"prompt": "what does liver mean", "answer": "The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances."}
+{"prompt": "liver definition", "answer": "The liver is a large organ that processes nutrients, produces bile, and detoxifies harmful substances."}
+{"prompt": "define kidney", "answer": "The kidneys are organs that filter waste from the blood and produce urine."}
+{"prompt": "what is kidney", "answer": "The kidneys are organs that filter waste from the blood and produce urine."}
+{"prompt": "what does kidney mean", "answer": "The kidneys are organs that filter waste from the blood and produce urine."}
+{"prompt": "kidney definition", "answer": "The kidneys are organs that filter waste from the blood and produce urine."}
+{"prompt": "define stomach", "answer": "The stomach is a digestive organ that breaks down food using acid and enzymes."}
+{"prompt": "what is stomach", "answer": "The stomach is a digestive organ that breaks down food using acid and enzymes."}
+{"prompt": "what does stomach mean", "answer": "The stomach is a digestive organ that breaks down food using acid and enzymes."}
+{"prompt": "stomach definition", "answer": "The stomach is a digestive organ that breaks down food using acid and enzymes."}
+{"prompt": "define intestine", "answer": "The intestine is the long tubular organ that absorbs nutrients from digested food."}
+{"prompt": "what is intestine", "answer": "The intestine is the long tubular organ that absorbs nutrients from digested food."}
+{"prompt": "what does intestine mean", "answer": "The intestine is the long tubular organ that absorbs nutrients from digested food."}
+{"prompt": "intestine definition", "answer": "The intestine is the long tubular organ that absorbs nutrients from digested food."}
+{"prompt": "define bone", "answer": "Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body."}
+{"prompt": "what is bone", "answer": "Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body."}
+{"prompt": "what does bone mean", "answer": "Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body."}
+{"prompt": "bone definition", "answer": "Bone is rigid connective tissue that forms the skeleton, supporting and protecting the body."}
+{"prompt": "define muscle", "answer": "Muscle is fibrous tissue that contracts to produce movement in the body."}
+{"prompt": "what is muscle", "answer": "Muscle is fibrous tissue that contracts to produce movement in the body."}
+{"prompt": "what does muscle mean", "answer": "Muscle is fibrous tissue that contracts to produce movement in the body."}
+{"prompt": "muscle definition", "answer": "Muscle is fibrous tissue that contracts to produce movement in the body."}
+{"prompt": "define skin", "answer": "Skin is the outer covering of the body, protecting against pathogens and regulating temperature."}
+{"prompt": "what is skin", "answer": "Skin is the outer covering of the body, protecting against pathogens and regulating temperature."}
+{"prompt": "what does skin mean", "answer": "Skin is the outer covering of the body, protecting against pathogens and regulating temperature."}
+{"prompt": "skin definition", "answer": "Skin is the outer covering of the body, protecting against pathogens and regulating temperature."}
+{"prompt": "define blood", "answer": "Blood is the red fluid that circulates through the body, carrying oxygen and nutrients."}
+{"prompt": "what is blood", "answer": "Blood is the red fluid that circulates through the body, carrying oxygen and nutrients."}
+{"prompt": "what does blood mean", "answer": "Blood is the red fluid that circulates through the body, carrying oxygen and nutrients."}
+{"prompt": "blood definition", "answer": "Blood is the red fluid that circulates through the body, carrying oxygen and nutrients."}
+{"prompt": "define nerve", "answer": "A nerve is a bundle of fibers that transmits electrical signals between the brain and the body."}
+{"prompt": "what is nerve", "answer": "A nerve is a bundle of fibers that transmits electrical signals between the brain and the body."}
+{"prompt": "what does nerve mean", "answer": "A nerve is a bundle of fibers that transmits electrical signals between the brain and the body."}
+{"prompt": "nerve definition", "answer": "A nerve is a bundle of fibers that transmits electrical signals between the brain and the body."}
+{"prompt": "define eye", "answer": "The eye is the organ of sight that detects light and converts it into electrical signals."}
+{"prompt": "what is eye", "answer": "The eye is the organ of sight that detects light and converts it into electrical signals."}
+{"prompt": "what does eye mean", "answer": "The eye is the organ of sight that detects light and converts it into electrical signals."}
+{"prompt": "eye definition", "answer": "The eye is the organ of sight that detects light and converts it into electrical signals."}
+{"prompt": "define ear", "answer": "The ear is the organ of hearing that detects sound waves and helps maintain balance."}
+{"prompt": "what is ear", "answer": "The ear is the organ of hearing that detects sound waves and helps maintain balance."}
+{"prompt": "what does ear mean", "answer": "The ear is the organ of hearing that detects sound waves and helps maintain balance."}
+{"prompt": "ear definition", "answer": "The ear is the organ of hearing that detects sound waves and helps maintain balance."}
+{"prompt": "define nose", "answer": "The nose is the organ of smell and a passageway for breathing."}
+{"prompt": "what is nose", "answer": "The nose is the organ of smell and a passageway for breathing."}
+{"prompt": "what does nose mean", "answer": "The nose is the organ of smell and a passageway for breathing."}
+{"prompt": "nose definition", "answer": "The nose is the organ of smell and a passageway for breathing."}
+{"prompt": "define mouth", "answer": "The mouth is the opening through which food is taken in and speech is produced."}
+{"prompt": "what is mouth", "answer": "The mouth is the opening through which food is taken in and speech is produced."}
+{"prompt": "what does mouth mean", "answer": "The mouth is the opening through which food is taken in and speech is produced."}
+{"prompt": "mouth definition", "answer": "The mouth is the opening through which food is taken in and speech is produced."}
+{"prompt": "define hand", "answer": "The hand is the part of the body at the end of the arm, used for grasping and manipulation."}
+{"prompt": "what is hand", "answer": "The hand is the part of the body at the end of the arm, used for grasping and manipulation."}
+{"prompt": "what does hand mean", "answer": "The hand is the part of the body at the end of the arm, used for grasping and manipulation."}
+{"prompt": "hand definition", "answer": "The hand is the part of the body at the end of the arm, used for grasping and manipulation."}
+{"prompt": "define foot", "answer": "The foot is the part of the body at the end of the leg, used for standing and walking."}
+{"prompt": "what is foot", "answer": "The foot is the part of the body at the end of the leg, used for standing and walking."}
+{"prompt": "what does foot mean", "answer": "The foot is the part of the body at the end of the leg, used for standing and walking."}
+{"prompt": "foot definition", "answer": "The foot is the part of the body at the end of the leg, used for standing and walking."}
+{"prompt": "define emotion", "answer": "Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships."}
+{"prompt": "what is emotion", "answer": "Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships."}
+{"prompt": "what does emotion mean", "answer": "Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships."}
+{"prompt": "emotion definition", "answer": "Emotion is a natural instinctive state of mind derived from circumstances, mood, or relationships."}
+{"prompt": "define happiness", "answer": "Happiness is a state of well-being, contentment, and joy."}
+{"prompt": "what is happiness", "answer": "Happiness is a state of well-being, contentment, and joy."}
+{"prompt": "what does happiness mean", "answer": "Happiness is a state of well-being, contentment, and joy."}
+{"prompt": "happiness definition", "answer": "Happiness is a state of well-being, contentment, and joy."}
+{"prompt": "define sadness", "answer": "Sadness is a state of sorrow, unhappiness, or grief."}
+{"prompt": "what is sadness", "answer": "Sadness is a state of sorrow, unhappiness, or grief."}
+{"prompt": "what does sadness mean", "answer": "Sadness is a state of sorrow, unhappiness, or grief."}
+{"prompt": "sadness definition", "answer": "Sadness is a state of sorrow, unhappiness, or grief."}
+{"prompt": "define anger", "answer": "Anger is a strong feeling of annoyance, displeasure, or hostility."}
+{"prompt": "what is anger", "answer": "Anger is a strong feeling of annoyance, displeasure, or hostility."}
+{"prompt": "what does anger mean", "answer": "Anger is a strong feeling of annoyance, displeasure, or hostility."}
+{"prompt": "anger definition", "answer": "Anger is a strong feeling of annoyance, displeasure, or hostility."}
+{"prompt": "define fear", "answer": "Fear is an unpleasant emotion caused by the threat of danger, pain, or harm."}
+{"prompt": "what is fear", "answer": "Fear is an unpleasant emotion caused by the threat of danger, pain, or harm."}
+{"prompt": "what does fear mean", "answer": "Fear is an unpleasant emotion caused by the threat of danger, pain, or harm."}
+{"prompt": "fear definition", "answer": "Fear is an unpleasant emotion caused by the threat of danger, pain, or harm."}
+{"prompt": "define love", "answer": "Love is a complex set of emotions associated with strong affection, protectiveness, and warmth."}
+{"prompt": "what is love", "answer": "Love is a complex set of emotions associated with strong affection, protectiveness, and warmth."}
+{"prompt": "what does love mean", "answer": "Love is a complex set of emotions associated with strong affection, protectiveness, and warmth."}
+{"prompt": "love definition", "answer": "Love is a complex set of emotions associated with strong affection, protectiveness, and warmth."}
+{"prompt": "define hate", "answer": "Hate is an intense or passionate dislike for someone or something."}
+{"prompt": "what is hate", "answer": "Hate is an intense or passionate dislike for someone or something."}
+{"prompt": "what does hate mean", "answer": "Hate is an intense or passionate dislike for someone or something."}
+{"prompt": "hate definition", "answer": "Hate is an intense or passionate dislike for someone or something."}
+{"prompt": "define joy", "answer": "Joy is a feeling of great pleasure and happiness."}
+{"prompt": "what is joy", "answer": "Joy is a feeling of great pleasure and happiness."}
+{"prompt": "what does joy mean", "answer": "Joy is a feeling of great pleasure and happiness."}
+{"prompt": "joy definition", "answer": "Joy is a feeling of great pleasure and happiness."}
+{"prompt": "define surprise", "answer": "Surprise is a feeling of astonishment caused by something unexpected."}
+{"prompt": "what is surprise", "answer": "Surprise is a feeling of astonishment caused by something unexpected."}
+{"prompt": "what does surprise mean", "answer": "Surprise is a feeling of astonishment caused by something unexpected."}
+{"prompt": "surprise definition", "answer": "Surprise is a feeling of astonishment caused by something unexpected."}
+{"prompt": "define disgust", "answer": "Disgust is a feeling of revulsion or strong disapproval."}
+{"prompt": "what is disgust", "answer": "Disgust is a feeling of revulsion or strong disapproval."}
+{"prompt": "what does disgust mean", "answer": "Disgust is a feeling of revulsion or strong disapproval."}
+{"prompt": "disgust definition", "answer": "Disgust is a feeling of revulsion or strong disapproval."}
+{"prompt": "define trust", "answer": "Trust is a firm belief in the reliability, truth, or ability of someone or something."}
+{"prompt": "what is trust", "answer": "Trust is a firm belief in the reliability, truth, or ability of someone or something."}
+{"prompt": "what does trust mean", "answer": "Trust is a firm belief in the reliability, truth, or ability of someone or something."}
+{"prompt": "trust definition", "answer": "Trust is a firm belief in the reliability, truth, or ability of someone or something."}
+{"prompt": "define curiosity", "answer": "Curiosity is a strong desire to learn or know something."}
+{"prompt": "what is curiosity", "answer": "Curiosity is a strong desire to learn or know something."}
+{"prompt": "what does curiosity mean", "answer": "Curiosity is a strong desire to learn or know something."}
+{"prompt": "curiosity definition", "answer": "Curiosity is a strong desire to learn or know something."}
+{"prompt": "define courage", "answer": "Courage is the ability to face danger, difficulty, or pain without fear."}
+{"prompt": "what is courage", "answer": "Courage is the ability to face danger, difficulty, or pain without fear."}
+{"prompt": "what does courage mean", "answer": "Courage is the ability to face danger, difficulty, or pain without fear."}
+{"prompt": "courage definition", "answer": "Courage is the ability to face danger, difficulty, or pain without fear."}
+{"prompt": "define kindness", "answer": "Kindness is the quality of being friendly, generous, and considerate."}
+{"prompt": "what is kindness", "answer": "Kindness is the quality of being friendly, generous, and considerate."}
+{"prompt": "what does kindness mean", "answer": "Kindness is the quality of being friendly, generous, and considerate."}
+{"prompt": "kindness definition", "answer": "Kindness is the quality of being friendly, generous, and considerate."}
+{"prompt": "define patience", "answer": "Patience is the capacity to tolerate delay, trouble, or suffering without becoming annoyed."}
+{"prompt": "what is patience", "answer": "Patience is the capacity to tolerate delay, trouble, or suffering without becoming annoyed."}
+{"prompt": "what does patience mean", "answer": "Patience is the capacity to tolerate delay, trouble, or suffering without becoming annoyed."}
+{"prompt": "patience definition", "answer": "Patience is the capacity to tolerate delay, trouble, or suffering without becoming annoyed."}
+{"prompt": "define freedom", "answer": "Freedom is the power or right to act, speak, or think without restraint."}
+{"prompt": "what is freedom", "answer": "Freedom is the power or right to act, speak, or think without restraint."}
+{"prompt": "what does freedom mean", "answer": "Freedom is the power or right to act, speak, or think without restraint."}
+{"prompt": "freedom definition", "answer": "Freedom is the power or right to act, speak, or think without restraint."}
+{"prompt": "define justice", "answer": "Justice is fair and equitable treatment in accordance with moral rightness and law."}
+{"prompt": "what is justice", "answer": "Justice is fair and equitable treatment in accordance with moral rightness and law."}
+{"prompt": "what does justice mean", "answer": "Justice is fair and equitable treatment in accordance with moral rightness and law."}
+{"prompt": "justice definition", "answer": "Justice is fair and equitable treatment in accordance with moral rightness and law."}
+{"prompt": "define truth", "answer": "Truth is the quality of being in accordance with fact or reality."}
+{"prompt": "what is truth", "answer": "Truth is the quality of being in accordance with fact or reality."}
+{"prompt": "what does truth mean", "answer": "Truth is the quality of being in accordance with fact or reality."}
+{"prompt": "truth definition", "answer": "Truth is the quality of being in accordance with fact or reality."}
+{"prompt": "define beauty", "answer": "Beauty is a combination of qualities that pleases the senses or the mind."}
+{"prompt": "what is beauty", "answer": "Beauty is a combination of qualities that pleases the senses or the mind."}
+{"prompt": "what does beauty mean", "answer": "Beauty is a combination of qualities that pleases the senses or the mind."}
+{"prompt": "beauty definition", "answer": "Beauty is a combination of qualities that pleases the senses or the mind."}
+{"prompt": "define knowledge", "answer": "Knowledge is information, understanding, and skill acquired through experience or education."}
+{"prompt": "what is knowledge", "answer": "Knowledge is information, understanding, and skill acquired through experience or education."}
+{"prompt": "what does knowledge mean", "answer": "Knowledge is information, understanding, and skill acquired through experience or education."}
+{"prompt": "knowledge definition", "answer": "Knowledge is information, understanding, and skill acquired through experience or education."}
+{"prompt": "define wisdom", "answer": "Wisdom is the ability to make sound judgments based on knowledge and experience."}
+{"prompt": "what is wisdom", "answer": "Wisdom is the ability to make sound judgments based on knowledge and experience."}
+{"prompt": "what does wisdom mean", "answer": "Wisdom is the ability to make sound judgments based on knowledge and experience."}
+{"prompt": "wisdom definition", "answer": "Wisdom is the ability to make sound judgments based on knowledge and experience."}
+{"prompt": "define power", "answer": "Power is the capacity to influence, control, or direct the behavior of people or events."}
+{"prompt": "what is power", "answer": "Power is the capacity to influence, control, or direct the behavior of people or events."}
+{"prompt": "what does power mean", "answer": "Power is the capacity to influence, control, or direct the behavior of people or events."}
+{"prompt": "power definition", "answer": "Power is the capacity to influence, control, or direct the behavior of people or events."}
+{"prompt": "define peace", "answer": "Peace is a state of tranquility, harmony, and absence of conflict."}
+{"prompt": "what is peace", "answer": "Peace is a state of tranquility, harmony, and absence of conflict."}
+{"prompt": "what does peace mean", "answer": "Peace is a state of tranquility, harmony, and absence of conflict."}
+{"prompt": "peace definition", "answer": "Peace is a state of tranquility, harmony, and absence of conflict."}
+{"prompt": "define war", "answer": "War is a state of armed conflict between different nations, states, or groups."}
+{"prompt": "what is war", "answer": "War is a state of armed conflict between different nations, states, or groups."}
+{"prompt": "what does war mean", "answer": "War is a state of armed conflict between different nations, states, or groups."}
+{"prompt": "war definition", "answer": "War is a state of armed conflict between different nations, states, or groups."}
+{"prompt": "define government", "answer": "Government is the system by which a state or community is organized and controlled."}
+{"prompt": "what is government", "answer": "Government is the system by which a state or community is organized and controlled."}
+{"prompt": "what does government mean", "answer": "Government is the system by which a state or community is organized and controlled."}
+{"prompt": "government definition", "answer": "Government is the system by which a state or community is organized and controlled."}
+{"prompt": "define democracy", "answer": "Democracy is a system of government where citizens exercise power through elected representatives."}
+{"prompt": "what is democracy", "answer": "Democracy is a system of government where citizens exercise power through elected representatives."}
+{"prompt": "what does democracy mean", "answer": "Democracy is a system of government where citizens exercise power through elected representatives."}
+{"prompt": "democracy definition", "answer": "Democracy is a system of government where citizens exercise power through elected representatives."}
+{"prompt": "define economy", "answer": "Economy is the system of production, distribution, and consumption of goods and services."}
+{"prompt": "what is economy", "answer": "Economy is the system of production, distribution, and consumption of goods and services."}
+{"prompt": "what does economy mean", "answer": "Economy is the system of production, distribution, and consumption of goods and services."}
+{"prompt": "economy definition", "answer": "Economy is the system of production, distribution, and consumption of goods and services."}
+{"prompt": "define society", "answer": "Society is a group of individuals living together in an organized community."}
+{"prompt": "what is society", "answer": "Society is a group of individuals living together in an organized community."}
+{"prompt": "what does society mean", "answer": "Society is a group of individuals living together in an organized community."}
+{"prompt": "society definition", "answer": "Society is a group of individuals living together in an organized community."}
+{"prompt": "define culture", "answer": "Culture is the shared beliefs, customs, arts, and social behaviors of a group."}
+{"prompt": "what is culture", "answer": "Culture is the shared beliefs, customs, arts, and social behaviors of a group."}
+{"prompt": "what does culture mean", "answer": "Culture is the shared beliefs, customs, arts, and social behaviors of a group."}
+{"prompt": "culture definition", "answer": "Culture is the shared beliefs, customs, arts, and social behaviors of a group."}
+{"prompt": "define religion", "answer": "Religion is a system of faith and worship involving belief in a higher power or powers."}
+{"prompt": "what is religion", "answer": "Religion is a system of faith and worship involving belief in a higher power or powers."}
+{"prompt": "what does religion mean", "answer": "Religion is a system of faith and worship involving belief in a higher power or powers."}
+{"prompt": "religion definition", "answer": "Religion is a system of faith and worship involving belief in a higher power or powers."}
+{"prompt": "define science", "answer": "Science is the systematic study of the natural world through observation and experimentation."}
+{"prompt": "what is science", "answer": "Science is the systematic study of the natural world through observation and experimentation."}
+{"prompt": "what does science mean", "answer": "Science is the systematic study of the natural world through observation and experimentation."}
+{"prompt": "science definition", "answer": "Science is the systematic study of the natural world through observation and experimentation."}
+{"prompt": "define philosophy", "answer": "Philosophy is the study of fundamental questions about existence, knowledge, and ethics."}
+{"prompt": "what is philosophy", "answer": "Philosophy is the study of fundamental questions about existence, knowledge, and ethics."}
+{"prompt": "what does philosophy mean", "answer": "Philosophy is the study of fundamental questions about existence, knowledge, and ethics."}
+{"prompt": "philosophy definition", "answer": "Philosophy is the study of fundamental questions about existence, knowledge, and ethics."}
+{"prompt": "define history", "answer": "History is the study of past events, particularly in human affairs."}
+{"prompt": "what is history", "answer": "History is the study of past events, particularly in human affairs."}
+{"prompt": "what does history mean", "answer": "History is the study of past events, particularly in human affairs."}
+{"prompt": "history definition", "answer": "History is the study of past events, particularly in human affairs."}
+{"prompt": "define art", "answer": "Art is the expression of creative skill and imagination, producing works appreciated for their beauty."}
+{"prompt": "what is art", "answer": "Art is the expression of creative skill and imagination, producing works appreciated for their beauty."}
+{"prompt": "what does art mean", "answer": "Art is the expression of creative skill and imagination, producing works appreciated for their beauty."}
+{"prompt": "art definition", "answer": "Art is the expression of creative skill and imagination, producing works appreciated for their beauty."}
+{"prompt": "define food", "answer": "Food is any substance consumed to provide nutritional support and energy for the body."}
+{"prompt": "what is food", "answer": "Food is any substance consumed to provide nutritional support and energy for the body."}
+{"prompt": "what does food mean", "answer": "Food is any substance consumed to provide nutritional support and energy for the body."}
+{"prompt": "food definition", "answer": "Food is any substance consumed to provide nutritional support and energy for the body."}
+{"prompt": "define bread", "answer": "Bread is a staple food made from flour, water, and yeast, baked into a loaf."}
+{"prompt": "what is bread", "answer": "Bread is a staple food made from flour, water, and yeast, baked into a loaf."}
+{"prompt": "what does bread mean", "answer": "Bread is a staple food made from flour, water, and yeast, baked into a loaf."}
+{"prompt": "bread definition", "answer": "Bread is a staple food made from flour, water, and yeast, baked into a loaf."}
+{"prompt": "define rice", "answer": "Rice is a cereal grain that is a primary food source for more than half the world's population."}
+{"prompt": "what is rice", "answer": "Rice is a cereal grain that is a primary food source for more than half the world's population."}
+{"prompt": "what does rice mean", "answer": "Rice is a cereal grain that is a primary food source for more than half the world's population."}
+{"prompt": "rice definition", "answer": "Rice is a cereal grain that is a primary food source for more than half the world's population."}
+{"prompt": "define pasta", "answer": "Pasta is a type of food made from wheat flour and water, formed into various shapes."}
+{"prompt": "what is pasta", "answer": "Pasta is a type of food made from wheat flour and water, formed into various shapes."}
+{"prompt": "what does pasta mean", "answer": "Pasta is a type of food made from wheat flour and water, formed into various shapes."}
+{"prompt": "pasta definition", "answer": "Pasta is a type of food made from wheat flour and water, formed into various shapes."}
+{"prompt": "define cheese", "answer": "Cheese is a dairy product made from milk by coagulating the proteins and aging the curds."}
+{"prompt": "what is cheese", "answer": "Cheese is a dairy product made from milk by coagulating the proteins and aging the curds."}
+{"prompt": "what does cheese mean", "answer": "Cheese is a dairy product made from milk by coagulating the proteins and aging the curds."}
+{"prompt": "cheese definition", "answer": "Cheese is a dairy product made from milk by coagulating the proteins and aging the curds."}
+{"prompt": "define milk", "answer": "Milk is a nutrient-rich liquid produced by mammals to feed their young."}
+{"prompt": "what is milk", "answer": "Milk is a nutrient-rich liquid produced by mammals to feed their young."}
+{"prompt": "what does milk mean", "answer": "Milk is a nutrient-rich liquid produced by mammals to feed their young."}
+{"prompt": "milk definition", "answer": "Milk is a nutrient-rich liquid produced by mammals to feed their young."}
+{"prompt": "define egg", "answer": "An egg is a food product from birds, consisting of a yolk and albumen inside a hard shell."}
+{"prompt": "what is egg", "answer": "An egg is a food product from birds, consisting of a yolk and albumen inside a hard shell."}
+{"prompt": "what does egg mean", "answer": "An egg is a food product from birds, consisting of a yolk and albumen inside a hard shell."}
+{"prompt": "egg definition", "answer": "An egg is a food product from birds, consisting of a yolk and albumen inside a hard shell."}
+{"prompt": "define meat", "answer": "Meat is the flesh of animals used as food, rich in protein and essential nutrients."}
+{"prompt": "what is meat", "answer": "Meat is the flesh of animals used as food, rich in protein and essential nutrients."}
+{"prompt": "what does meat mean", "answer": "Meat is the flesh of animals used as food, rich in protein and essential nutrients."}
+{"prompt": "meat definition", "answer": "Meat is the flesh of animals used as food, rich in protein and essential nutrients."}
+{"prompt": "define fruit", "answer": "Fruit is the sweet, fleshy product of a plant that contains seeds and is eaten as food."}
+{"prompt": "what is fruit", "answer": "Fruit is the sweet, fleshy product of a plant that contains seeds and is eaten as food."}
+{"prompt": "what does fruit mean", "answer": "Fruit is the sweet, fleshy product of a plant that contains seeds and is eaten as food."}
+{"prompt": "fruit definition", "answer": "Fruit is the sweet, fleshy product of a plant that contains seeds and is eaten as food."}
+{"prompt": "define vegetable", "answer": "A vegetable is an edible part of a plant, such as leaves, stems, or roots."}
+{"prompt": "what is vegetable", "answer": "A vegetable is an edible part of a plant, such as leaves, stems, or roots."}
+{"prompt": "what does vegetable mean", "answer": "A vegetable is an edible part of a plant, such as leaves, stems, or roots."}
+{"prompt": "vegetable definition", "answer": "A vegetable is an edible part of a plant, such as leaves, stems, or roots."}
+{"prompt": "define apple", "answer": "An apple is a round fruit with red, green, or yellow skin and crisp white flesh."}
+{"prompt": "what is apple", "answer": "An apple is a round fruit with red, green, or yellow skin and crisp white flesh."}
+{"prompt": "what does apple mean", "answer": "An apple is a round fruit with red, green, or yellow skin and crisp white flesh."}
+{"prompt": "apple definition", "answer": "An apple is a round fruit with red, green, or yellow skin and crisp white flesh."}
+{"prompt": "define banana", "answer": "A banana is a long curved fruit with yellow skin and soft sweet flesh."}
+{"prompt": "what is banana", "answer": "A banana is a long curved fruit with yellow skin and soft sweet flesh."}
+{"prompt": "what does banana mean", "answer": "A banana is a long curved fruit with yellow skin and soft sweet flesh."}
+{"prompt": "banana definition", "answer": "A banana is a long curved fruit with yellow skin and soft sweet flesh."}
+{"prompt": "define orange", "answer": "An orange is a round citrus fruit with a tough bright orange rind and juicy flesh."}
+{"prompt": "what is orange", "answer": "An orange is a round citrus fruit with a tough bright orange rind and juicy flesh."}
+{"prompt": "what does orange mean", "answer": "An orange is a round citrus fruit with a tough bright orange rind and juicy flesh."}
+{"prompt": "orange definition", "answer": "An orange is a round citrus fruit with a tough bright orange rind and juicy flesh."}
+{"prompt": "define grape", "answer": "A grape is a small round fruit that grows in clusters, used for eating and making wine."}
+{"prompt": "what is grape", "answer": "A grape is a small round fruit that grows in clusters, used for eating and making wine."}
+{"prompt": "what does grape mean", "answer": "A grape is a small round fruit that grows in clusters, used for eating and making wine."}
+{"prompt": "grape definition", "answer": "A grape is a small round fruit that grows in clusters, used for eating and making wine."}
+{"prompt": "define berry", "answer": "A berry is a small pulpy fruit, typically edible and often used in desserts."}
+{"prompt": "what is berry", "answer": "A berry is a small pulpy fruit, typically edible and often used in desserts."}
+{"prompt": "what does berry mean", "answer": "A berry is a small pulpy fruit, typically edible and often used in desserts."}
+{"prompt": "berry definition", "answer": "A berry is a small pulpy fruit, typically edible and often used in desserts."}
+{"prompt": "define corn", "answer": "Corn is a cereal plant with yellow kernels on a cob, a major food crop worldwide."}
+{"prompt": "what is corn", "answer": "Corn is a cereal plant with yellow kernels on a cob, a major food crop worldwide."}
+{"prompt": "what does corn mean", "answer": "Corn is a cereal plant with yellow kernels on a cob, a major food crop worldwide."}
+{"prompt": "corn definition", "answer": "Corn is a cereal plant with yellow kernels on a cob, a major food crop worldwide."}
+{"prompt": "define wheat", "answer": "Wheat is a cereal grain used to make flour for bread, pasta, and other baked goods."}
+{"prompt": "what is wheat", "answer": "Wheat is a cereal grain used to make flour for bread, pasta, and other baked goods."}
+{"prompt": "what does wheat mean", "answer": "Wheat is a cereal grain used to make flour for bread, pasta, and other baked goods."}
+{"prompt": "wheat definition", "answer": "Wheat is a cereal grain used to make flour for bread, pasta, and other baked goods."}
+{"prompt": "define sugar", "answer": "Sugar is a sweet crystalline substance obtained from sugarcane or sugar beet."}
+{"prompt": "what is sugar", "answer": "Sugar is a sweet crystalline substance obtained from sugarcane or sugar beet."}
+{"prompt": "what does sugar mean", "answer": "Sugar is a sweet crystalline substance obtained from sugarcane or sugar beet."}
+{"prompt": "sugar definition", "answer": "Sugar is a sweet crystalline substance obtained from sugarcane or sugar beet."}
+{"prompt": "define salt", "answer": "Salt is a crystalline mineral compound used to season and preserve food."}
+{"prompt": "what is salt", "answer": "Salt is a crystalline mineral compound used to season and preserve food."}
+{"prompt": "what does salt mean", "answer": "Salt is a crystalline mineral compound used to season and preserve food."}
+{"prompt": "salt definition", "answer": "Salt is a crystalline mineral compound used to season and preserve food."}
+{"prompt": "define oil", "answer": "Oil is a viscous liquid fat used for cooking, derived from plants or animals."}
+{"prompt": "what is oil", "answer": "Oil is a viscous liquid fat used for cooking, derived from plants or animals."}
+{"prompt": "what does oil mean", "answer": "Oil is a viscous liquid fat used for cooking, derived from plants or animals."}
+{"prompt": "oil definition", "answer": "Oil is a viscous liquid fat used for cooking, derived from plants or animals."}
+{"prompt": "define butter", "answer": "Butter is a dairy product made by churning cream, used as a spread and in cooking."}
+{"prompt": "what is butter", "answer": "Butter is a dairy product made by churning cream, used as a spread and in cooking."}
+{"prompt": "what does butter mean", "answer": "Butter is a dairy product made by churning cream, used as a spread and in cooking."}
+{"prompt": "butter definition", "answer": "Butter is a dairy product made by churning cream, used as a spread and in cooking."}
+{"prompt": "define chocolate", "answer": "Chocolate is a sweet food made from cacao beans, sugar, and often milk."}
+{"prompt": "what is chocolate", "answer": "Chocolate is a sweet food made from cacao beans, sugar, and often milk."}
+{"prompt": "what does chocolate mean", "answer": "Chocolate is a sweet food made from cacao beans, sugar, and often milk."}
+{"prompt": "chocolate definition", "answer": "Chocolate is a sweet food made from cacao beans, sugar, and often milk."}
+{"prompt": "define coffee", "answer": "Coffee is a brewed drink made from roasted coffee beans, known for its stimulating effects."}
+{"prompt": "what is coffee", "answer": "Coffee is a brewed drink made from roasted coffee beans, known for its stimulating effects."}
+{"prompt": "what does coffee mean", "answer": "Coffee is a brewed drink made from roasted coffee beans, known for its stimulating effects."}
+{"prompt": "coffee definition", "answer": "Coffee is a brewed drink made from roasted coffee beans, known for its stimulating effects."}
+{"prompt": "define tea", "answer": "Tea is a hot beverage made by steeping cured leaves of the tea plant in boiling water."}
+{"prompt": "what is tea", "answer": "Tea is a hot beverage made by steeping cured leaves of the tea plant in boiling water."}
+{"prompt": "what does tea mean", "answer": "Tea is a hot beverage made by steeping cured leaves of the tea plant in boiling water."}
+{"prompt": "tea definition", "answer": "Tea is a hot beverage made by steeping cured leaves of the tea plant in boiling water."}
+{"prompt": "define juice", "answer": "Juice is a drink made from the liquid extracted from fruits or vegetables."}
+{"prompt": "what is juice", "answer": "Juice is a drink made from the liquid extracted from fruits or vegetables."}
+{"prompt": "what does juice mean", "answer": "Juice is a drink made from the liquid extracted from fruits or vegetables."}
+{"prompt": "juice definition", "answer": "Juice is a drink made from the liquid extracted from fruits or vegetables."}
+{"prompt": "define water", "answer": "Water is a transparent, tasteless, odorless chemical substance composed of hydrogen and oxygen, essential for all known forms of life."}
+{"prompt": "what is water", "answer": "Water is a transparent, tasteless, odorless chemical substance composed of hydrogen and oxygen, essential for all known forms of life."}
+{"prompt": "what does water mean", "answer": "Water is a transparent, tasteless, odorless chemical substance composed of hydrogen and oxygen, essential for all known forms of life."}
+{"prompt": "water definition", "answer": "Water is a transparent, tasteless, odorless chemical substance composed of hydrogen and oxygen, essential for all known forms of life."}
+{"prompt": "define technology", "answer": "Technology is the application of scientific knowledge for practical purposes in industry and daily life."}
+{"prompt": "what is technology", "answer": "Technology is the application of scientific knowledge for practical purposes in industry and daily life."}
+{"prompt": "what does technology mean", "answer": "Technology is the application of scientific knowledge for practical purposes in industry and daily life."}
+{"prompt": "technology definition", "answer": "Technology is the application of scientific knowledge for practical purposes in industry and daily life."}
+{"prompt": "define computer", "answer": "A computer is an electronic device that processes data, performs calculations, and executes instructions."}
+{"prompt": "what is computer", "answer": "A computer is an electronic device that processes data, performs calculations, and executes instructions."}
+{"prompt": "what does computer mean", "answer": "A computer is an electronic device that processes data, performs calculations, and executes instructions."}
+{"prompt": "computer definition", "answer": "A computer is an electronic device that processes data, performs calculations, and executes instructions."}
+{"prompt": "define software", "answer": "Software is a set of instructions and data that tells a computer how to perform specific tasks."}
+{"prompt": "what is software", "answer": "Software is a set of instructions and data that tells a computer how to perform specific tasks."}
+{"prompt": "what does software mean", "answer": "Software is a set of instructions and data that tells a computer how to perform specific tasks."}
+{"prompt": "software definition", "answer": "Software is a set of instructions and data that tells a computer how to perform specific tasks."}
+{"prompt": "define hardware", "answer": "Hardware is the physical components of a computer system, such as the processor, memory, and disk drives."}
+{"prompt": "what is hardware", "answer": "Hardware is the physical components of a computer system, such as the processor, memory, and disk drives."}
+{"prompt": "what does hardware mean", "answer": "Hardware is the physical components of a computer system, such as the processor, memory, and disk drives."}
+{"prompt": "hardware definition", "answer": "Hardware is the physical components of a computer system, such as the processor, memory, and disk drives."}
+{"prompt": "define internet", "answer": "The internet is a global network of interconnected computers that communicate using standardized protocols."}
+{"prompt": "what is internet", "answer": "The internet is a global network of interconnected computers that communicate using standardized protocols."}
+{"prompt": "what does internet mean", "answer": "The internet is a global network of interconnected computers that communicate using standardized protocols."}
+{"prompt": "internet definition", "answer": "The internet is a global network of interconnected computers that communicate using standardized protocols."}
+{"prompt": "define network", "answer": "A network is a group of interconnected computers or devices that can communicate and share resources."}
+{"prompt": "what is network", "answer": "A network is a group of interconnected computers or devices that can communicate and share resources."}
+{"prompt": "what does network mean", "answer": "A network is a group of interconnected computers or devices that can communicate and share resources."}
+{"prompt": "network definition", "answer": "A network is a group of interconnected computers or devices that can communicate and share resources."}
+{"prompt": "define database", "answer": "A database is an organized collection of structured information or data stored electronically."}
+{"prompt": "what is database", "answer": "A database is an organized collection of structured information or data stored electronically."}
+{"prompt": "what does database mean", "answer": "A database is an organized collection of structured information or data stored electronically."}
+{"prompt": "database definition", "answer": "A database is an organized collection of structured information or data stored electronically."}
+{"prompt": "define server", "answer": "A server is a computer or system that provides resources, data, or services to other computers over a network."}
+{"prompt": "what is server", "answer": "A server is a computer or system that provides resources, data, or services to other computers over a network."}
+{"prompt": "what does server mean", "answer": "A server is a computer or system that provides resources, data, or services to other computers over a network."}
+{"prompt": "server definition", "answer": "A server is a computer or system that provides resources, data, or services to other computers over a network."}
+{"prompt": "define website", "answer": "A website is a collection of web pages and related content accessible through a web browser."}
+{"prompt": "what is website", "answer": "A website is a collection of web pages and related content accessible through a web browser."}
+{"prompt": "what does website mean", "answer": "A website is a collection of web pages and related content accessible through a web browser."}
+{"prompt": "website definition", "answer": "A website is a collection of web pages and related content accessible through a web browser."}
+{"prompt": "define email", "answer": "Email is a method of exchanging digital messages between people using electronic devices."}
+{"prompt": "what is email", "answer": "Email is a method of exchanging digital messages between people using electronic devices."}
+{"prompt": "what does email mean", "answer": "Email is a method of exchanging digital messages between people using electronic devices."}
+{"prompt": "email definition", "answer": "Email is a method of exchanging digital messages between people using electronic devices."}
+{"prompt": "define program", "answer": "A program is a set of instructions that a computer follows to perform a specific task."}
+{"prompt": "what is program", "answer": "A program is a set of instructions that a computer follows to perform a specific task."}
+{"prompt": "what does program mean", "answer": "A program is a set of instructions that a computer follows to perform a specific task."}
+{"prompt": "program definition", "answer": "A program is a set of instructions that a computer follows to perform a specific task."}
+{"prompt": "define code", "answer": "Code is a set of instructions written in a programming language that a computer can execute."}
+{"prompt": "what is code", "answer": "Code is a set of instructions written in a programming language that a computer can execute."}
+{"prompt": "what does code mean", "answer": "Code is a set of instructions written in a programming language that a computer can execute."}
+{"prompt": "code definition", "answer": "Code is a set of instructions written in a programming language that a computer can execute."}
+{"prompt": "define algorithm", "answer": "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task."}
+{"prompt": "what is algorithm", "answer": "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task."}
+{"prompt": "what does algorithm mean", "answer": "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task."}
+{"prompt": "algorithm definition", "answer": "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task."}
+{"prompt": "define data", "answer": "Data is information processed or stored by a computer, consisting of facts, numbers, or symbols."}
+{"prompt": "what is data", "answer": "Data is information processed or stored by a computer, consisting of facts, numbers, or symbols."}
+{"prompt": "what does data mean", "answer": "Data is information processed or stored by a computer, consisting of facts, numbers, or symbols."}
+{"prompt": "data definition", "answer": "Data is information processed or stored by a computer, consisting of facts, numbers, or symbols."}
+{"prompt": "define file", "answer": "A file is a collection of data stored on a computer under a single name and location."}
+{"prompt": "what is file", "answer": "A file is a collection of data stored on a computer under a single name and location."}
+{"prompt": "what does file mean", "answer": "A file is a collection of data stored on a computer under a single name and location."}
+{"prompt": "file definition", "answer": "A file is a collection of data stored on a computer under a single name and location."}
+{"prompt": "define memory", "answer": "Memory is the faculty of encoding, storing, and retrieving information and past experiences."}
+{"prompt": "what is memory", "answer": "Memory is the faculty of encoding, storing, and retrieving information and past experiences."}
+{"prompt": "what does memory mean", "answer": "Memory is the faculty of encoding, storing, and retrieving information and past experiences."}
+{"prompt": "memory definition", "answer": "Memory is the faculty of encoding, storing, and retrieving information and past experiences."}
+{"prompt": "define processor", "answer": "A processor is the central unit of a computer that performs calculations and executes instructions."}
+{"prompt": "what is processor", "answer": "A processor is the central unit of a computer that performs calculations and executes instructions."}
+{"prompt": "what does processor mean", "answer": "A processor is the central unit of a computer that performs calculations and executes instructions."}
+{"prompt": "processor definition", "answer": "A processor is the central unit of a computer that performs calculations and executes instructions."}
+{"prompt": "define keyboard", "answer": "A keyboard is an input device with keys for typing text and entering commands into a computer."}
+{"prompt": "what is keyboard", "answer": "A keyboard is an input device with keys for typing text and entering commands into a computer."}
+{"prompt": "what does keyboard mean", "answer": "A keyboard is an input device with keys for typing text and entering commands into a computer."}
+{"prompt": "keyboard definition", "answer": "A keyboard is an input device with keys for typing text and entering commands into a computer."}
+{"prompt": "define screen", "answer": "A screen is a display device that shows visual information from a computer or electronic device."}
+{"prompt": "what is screen", "answer": "A screen is a display device that shows visual information from a computer or electronic device."}
+{"prompt": "what does screen mean", "answer": "A screen is a display device that shows visual information from a computer or electronic device."}
+{"prompt": "screen definition", "answer": "A screen is a display device that shows visual information from a computer or electronic device."}
+{"prompt": "define robot", "answer": "A robot is a machine capable of carrying out complex actions automatically, often programmable."}
+{"prompt": "what is robot", "answer": "A robot is a machine capable of carrying out complex actions automatically, often programmable."}
+{"prompt": "what does robot mean", "answer": "A robot is a machine capable of carrying out complex actions automatically, often programmable."}
+{"prompt": "robot definition", "answer": "A robot is a machine capable of carrying out complex actions automatically, often programmable."}
+{"prompt": "define artificial intelligence", "answer": "Artificial intelligence is the simulation of human intelligence in machines that can learn and solve problems."}
+{"prompt": "what is artificial intelligence", "answer": "Artificial intelligence is the simulation of human intelligence in machines that can learn and solve problems."}
+{"prompt": "what does artificial intelligence mean", "answer": "Artificial intelligence is the simulation of human intelligence in machines that can learn and solve problems."}
+{"prompt": "artificial intelligence definition", "answer": "Artificial intelligence is the simulation of human intelligence in machines that can learn and solve problems."}
+{"prompt": "define number", "answer": "A number is a mathematical object used to count, measure, and label."}
+{"prompt": "what is number", "answer": "A number is a mathematical object used to count, measure, and label."}
+{"prompt": "what does number mean", "answer": "A number is a mathematical object used to count, measure, and label."}
+{"prompt": "number definition", "answer": "A number is a mathematical object used to count, measure, and label."}
+{"prompt": "define zero", "answer": "Zero is the numerical digit representing the absence of quantity, equal to nothing."}
+{"prompt": "what is zero", "answer": "Zero is the numerical digit representing the absence of quantity, equal to nothing."}
+{"prompt": "what does zero mean", "answer": "Zero is the numerical digit representing the absence of quantity, equal to nothing."}
+{"prompt": "zero definition", "answer": "Zero is the numerical digit representing the absence of quantity, equal to nothing."}
+{"prompt": "define addition", "answer": "Addition is the mathematical operation of combining two or more numbers to get a total sum."}
+{"prompt": "what is addition", "answer": "Addition is the mathematical operation of combining two or more numbers to get a total sum."}
+{"prompt": "what does addition mean", "answer": "Addition is the mathematical operation of combining two or more numbers to get a total sum."}
+{"prompt": "addition definition", "answer": "Addition is the mathematical operation of combining two or more numbers to get a total sum."}
+{"prompt": "define subtraction", "answer": "Subtraction is the mathematical operation of taking one number away from another."}
+{"prompt": "what is subtraction", "answer": "Subtraction is the mathematical operation of taking one number away from another."}
+{"prompt": "what does subtraction mean", "answer": "Subtraction is the mathematical operation of taking one number away from another."}
+{"prompt": "subtraction definition", "answer": "Subtraction is the mathematical operation of taking one number away from another."}
+{"prompt": "define multiplication", "answer": "Multiplication is the mathematical operation of scaling one number by another, repeated addition."}
+{"prompt": "what is multiplication", "answer": "Multiplication is the mathematical operation of scaling one number by another, repeated addition."}
+{"prompt": "what does multiplication mean", "answer": "Multiplication is the mathematical operation of scaling one number by another, repeated addition."}
+{"prompt": "multiplication definition", "answer": "Multiplication is the mathematical operation of scaling one number by another, repeated addition."}
+{"prompt": "define division", "answer": "Division is the mathematical operation of splitting a number into equal parts."}
+{"prompt": "what is division", "answer": "Division is the mathematical operation of splitting a number into equal parts."}
+{"prompt": "what does division mean", "answer": "Division is the mathematical operation of splitting a number into equal parts."}
+{"prompt": "division definition", "answer": "Division is the mathematical operation of splitting a number into equal parts."}
+{"prompt": "define algebra", "answer": "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating them."}
+{"prompt": "what is algebra", "answer": "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating them."}
+{"prompt": "what does algebra mean", "answer": "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating them."}
+{"prompt": "algebra definition", "answer": "Algebra is a branch of mathematics dealing with symbols and the rules for manipulating them."}
+{"prompt": "define geometry", "answer": "Geometry is a branch of mathematics dealing with shapes, sizes, and properties of space."}
+{"prompt": "what is geometry", "answer": "Geometry is a branch of mathematics dealing with shapes, sizes, and properties of space."}
+{"prompt": "what does geometry mean", "answer": "Geometry is a branch of mathematics dealing with shapes, sizes, and properties of space."}
+{"prompt": "geometry definition", "answer": "Geometry is a branch of mathematics dealing with shapes, sizes, and properties of space."}
+{"prompt": "define calculus", "answer": "Calculus is the branch of mathematics dealing with rates of change and accumulation."}
+{"prompt": "what is calculus", "answer": "Calculus is the branch of mathematics dealing with rates of change and accumulation."}
+{"prompt": "what does calculus mean", "answer": "Calculus is the branch of mathematics dealing with rates of change and accumulation."}
+{"prompt": "calculus definition", "answer": "Calculus is the branch of mathematics dealing with rates of change and accumulation."}
+{"prompt": "define equation", "answer": "An equation is a mathematical statement that asserts the equality of two expressions."}
+{"prompt": "what is equation", "answer": "An equation is a mathematical statement that asserts the equality of two expressions."}
+{"prompt": "what does equation mean", "answer": "An equation is a mathematical statement that asserts the equality of two expressions."}
+{"prompt": "equation definition", "answer": "An equation is a mathematical statement that asserts the equality of two expressions."}
+{"prompt": "define fraction", "answer": "A fraction is a part of a whole, expressed as one number divided by another."}
+{"prompt": "what is fraction", "answer": "A fraction is a part of a whole, expressed as one number divided by another."}
+{"prompt": "what does fraction mean", "answer": "A fraction is a part of a whole, expressed as one number divided by another."}
+{"prompt": "fraction definition", "answer": "A fraction is a part of a whole, expressed as one number divided by another."}
+{"prompt": "define percentage", "answer": "A percentage is a fraction expressed as parts per hundred, denoted by the % symbol."}
+{"prompt": "what is percentage", "answer": "A percentage is a fraction expressed as parts per hundred, denoted by the % symbol."}
+{"prompt": "what does percentage mean", "answer": "A percentage is a fraction expressed as parts per hundred, denoted by the % symbol."}
+{"prompt": "percentage definition", "answer": "A percentage is a fraction expressed as parts per hundred, denoted by the % symbol."}
+{"prompt": "define probability", "answer": "Probability is the measure of how likely an event is to occur."}
+{"prompt": "what is probability", "answer": "Probability is the measure of how likely an event is to occur."}
+{"prompt": "what does probability mean", "answer": "Probability is the measure of how likely an event is to occur."}
+{"prompt": "probability definition", "answer": "Probability is the measure of how likely an event is to occur."}
+{"prompt": "define statistics", "answer": "Statistics is the science of collecting, analyzing, and interpreting data."}
+{"prompt": "what is statistics", "answer": "Statistics is the science of collecting, analyzing, and interpreting data."}
+{"prompt": "what does statistics mean", "answer": "Statistics is the science of collecting, analyzing, and interpreting data."}
+{"prompt": "statistics definition", "answer": "Statistics is the science of collecting, analyzing, and interpreting data."}
+{"prompt": "define run", "answer": "To run is to move rapidly on foot, faster than walking."}
+{"prompt": "what is run", "answer": "To run is to move rapidly on foot, faster than walking."}
+{"prompt": "what does run mean", "answer": "To run is to move rapidly on foot, faster than walking."}
+{"prompt": "run definition", "answer": "To run is to move rapidly on foot, faster than walking."}
+{"prompt": "define walk", "answer": "To walk is to move at a regular pace by lifting and setting down each foot in turn."}
+{"prompt": "what is walk", "answer": "To walk is to move at a regular pace by lifting and setting down each foot in turn."}
+{"prompt": "what does walk mean", "answer": "To walk is to move at a regular pace by lifting and setting down each foot in turn."}
+{"prompt": "walk definition", "answer": "To walk is to move at a regular pace by lifting and setting down each foot in turn."}
+{"prompt": "define talk", "answer": "To talk is to speak words and have a conversation with someone."}
+{"prompt": "what is talk", "answer": "To talk is to speak words and have a conversation with someone."}
+{"prompt": "what does talk mean", "answer": "To talk is to speak words and have a conversation with someone."}
+{"prompt": "talk definition", "answer": "To talk is to speak words and have a conversation with someone."}
+{"prompt": "define listen", "answer": "To listen is to give attention to sound or what someone is saying."}
+{"prompt": "what is listen", "answer": "To listen is to give attention to sound or what someone is saying."}
+{"prompt": "what does listen mean", "answer": "To listen is to give attention to sound or what someone is saying."}
+{"prompt": "listen definition", "answer": "To listen is to give attention to sound or what someone is saying."}
+{"prompt": "define read", "answer": "To read is to look at and understand written or printed words."}
+{"prompt": "what is read", "answer": "To read is to look at and understand written or printed words."}
+{"prompt": "what does read mean", "answer": "To read is to look at and understand written or printed words."}
+{"prompt": "read definition", "answer": "To read is to look at and understand written or printed words."}
+{"prompt": "define write", "answer": "To write is to mark letters, words, or symbols on a surface with a pen, pencil, or keyboard."}
+{"prompt": "what is write", "answer": "To write is to mark letters, words, or symbols on a surface with a pen, pencil, or keyboard."}
+{"prompt": "what does write mean", "answer": "To write is to mark letters, words, or symbols on a surface with a pen, pencil, or keyboard."}
+{"prompt": "write definition", "answer": "To write is to mark letters, words, or symbols on a surface with a pen, pencil, or keyboard."}
+{"prompt": "define think", "answer": "To think is to use the mind to consider ideas, reason, or form opinions."}
+{"prompt": "what is think", "answer": "To think is to use the mind to consider ideas, reason, or form opinions."}
+{"prompt": "what does think mean", "answer": "To think is to use the mind to consider ideas, reason, or form opinions."}
+{"prompt": "think definition", "answer": "To think is to use the mind to consider ideas, reason, or form opinions."}
+{"prompt": "define learn", "answer": "To learn is to gain knowledge or skill through study, experience, or teaching."}
+{"prompt": "what is learn", "answer": "To learn is to gain knowledge or skill through study, experience, or teaching."}
+{"prompt": "what does learn mean", "answer": "To learn is to gain knowledge or skill through study, experience, or teaching."}
+{"prompt": "learn definition", "answer": "To learn is to gain knowledge or skill through study, experience, or teaching."}
+{"prompt": "define teach", "answer": "To teach is to impart knowledge or skill to someone through instruction."}
+{"prompt": "what is teach", "answer": "To teach is to impart knowledge or skill to someone through instruction."}
+{"prompt": "what does teach mean", "answer": "To teach is to impart knowledge or skill to someone through instruction."}
+{"prompt": "teach definition", "answer": "To teach is to impart knowledge or skill to someone through instruction."}
+{"prompt": "define create", "answer": "To create is to bring something into existence from imagination or skill."}
+{"prompt": "what is create", "answer": "To create is to bring something into existence from imagination or skill."}
+{"prompt": "what does create mean", "answer": "To create is to bring something into existence from imagination or skill."}
+{"prompt": "create definition", "answer": "To create is to bring something into existence from imagination or skill."}
+{"prompt": "define build", "answer": "To build is to construct something by assembling parts or materials."}
+{"prompt": "what is build", "answer": "To build is to construct something by assembling parts or materials."}
+{"prompt": "what does build mean", "answer": "To build is to construct something by assembling parts or materials."}
+{"prompt": "build definition", "answer": "To build is to construct something by assembling parts or materials."}
+{"prompt": "define help", "answer": "To help is to assist someone by making a task easier or providing support."}
+{"prompt": "what is help", "answer": "To help is to assist someone by making a task easier or providing support."}
+{"prompt": "what does help mean", "answer": "To help is to assist someone by making a task easier or providing support."}
+{"prompt": "help definition", "answer": "To help is to assist someone by making a task easier or providing support."}
+{"prompt": "define work", "answer": "To work is to perform a task or job, especially for payment."}
+{"prompt": "what is work", "answer": "To work is to perform a task or job, especially for payment."}
+{"prompt": "what does work mean", "answer": "To work is to perform a task or job, especially for payment."}
+{"prompt": "work definition", "answer": "To work is to perform a task or job, especially for payment."}
+{"prompt": "define play", "answer": "To play is to engage in an activity for enjoyment, fun, or recreation."}
+{"prompt": "what is play", "answer": "To play is to engage in an activity for enjoyment, fun, or recreation."}
+{"prompt": "what does play mean", "answer": "To play is to engage in an activity for enjoyment, fun, or recreation."}
+{"prompt": "play definition", "answer": "To play is to engage in an activity for enjoyment, fun, or recreation."}
+{"prompt": "define eat", "answer": "To eat is to consume food by chewing and swallowing."}
+{"prompt": "what is eat", "answer": "To eat is to consume food by chewing and swallowing."}
+{"prompt": "what does eat mean", "answer": "To eat is to consume food by chewing and swallowing."}
+{"prompt": "eat definition", "answer": "To eat is to consume food by chewing and swallowing."}
+{"prompt": "define drink", "answer": "To drink is to swallow liquid for hydration or nourishment."}
+{"prompt": "what is drink", "answer": "To drink is to swallow liquid for hydration or nourishment."}
+{"prompt": "what does drink mean", "answer": "To drink is to swallow liquid for hydration or nourishment."}
+{"prompt": "drink definition", "answer": "To drink is to swallow liquid for hydration or nourishment."}
+{"prompt": "define sleep", "answer": "To sleep is to rest in a natural state of reduced consciousness and inactivity."}
+{"prompt": "what is sleep", "answer": "To sleep is to rest in a natural state of reduced consciousness and inactivity."}
+{"prompt": "what does sleep mean", "answer": "To sleep is to rest in a natural state of reduced consciousness and inactivity."}
+{"prompt": "sleep definition", "answer": "To sleep is to rest in a natural state of reduced consciousness and inactivity."}
+{"prompt": "define dream", "answer": "A dream is a series of thoughts, images, and sensations occurring during sleep."}
+{"prompt": "what is dream", "answer": "A dream is a series of thoughts, images, and sensations occurring during sleep."}
+{"prompt": "what does dream mean", "answer": "A dream is a series of thoughts, images, and sensations occurring during sleep."}
+{"prompt": "dream definition", "answer": "A dream is a series of thoughts, images, and sensations occurring during sleep."}
+{"prompt": "define sing", "answer": "To sing is to produce musical sounds with the voice."}
+{"prompt": "what is sing", "answer": "To sing is to produce musical sounds with the voice."}
+{"prompt": "what does sing mean", "answer": "To sing is to produce musical sounds with the voice."}
+{"prompt": "sing definition", "answer": "To sing is to produce musical sounds with the voice."}
+{"prompt": "define dance", "answer": "Dance is a performing art form consisting of purposefully selected sequences of human movement."}
+{"prompt": "what is dance", "answer": "Dance is a performing art form consisting of purposefully selected sequences of human movement."}
+{"prompt": "what does dance mean", "answer": "Dance is a performing art form consisting of purposefully selected sequences of human movement."}
+{"prompt": "dance definition", "answer": "Dance is a performing art form consisting of purposefully selected sequences of human movement."}
+{"prompt": "define draw", "answer": "To draw is to create a picture or diagram by making marks on a surface."}
+{"prompt": "what is draw", "answer": "To draw is to create a picture or diagram by making marks on a surface."}
+{"prompt": "what does draw mean", "answer": "To draw is to create a picture or diagram by making marks on a surface."}
+{"prompt": "draw definition", "answer": "To draw is to create a picture or diagram by making marks on a surface."}
+{"prompt": "define paint", "answer": "To paint is to apply pigment to a surface to create a picture or decoration."}
+{"prompt": "what is paint", "answer": "To paint is to apply pigment to a surface to create a picture or decoration."}
+{"prompt": "what does paint mean", "answer": "To paint is to apply pigment to a surface to create a picture or decoration."}
+{"prompt": "paint definition", "answer": "To paint is to apply pigment to a surface to create a picture or decoration."}
+{"prompt": "define cook", "answer": "To cook is to prepare food by applying heat."}
+{"prompt": "what is cook", "answer": "To cook is to prepare food by applying heat."}
+{"prompt": "what does cook mean", "answer": "To cook is to prepare food by applying heat."}
+{"prompt": "cook definition", "answer": "To cook is to prepare food by applying heat."}
+{"prompt": "define clean", "answer": "Clean describes something free from dirt, marks, or unwanted substances."}
+{"prompt": "what is clean", "answer": "Clean describes something free from dirt, marks, or unwanted substances."}
+{"prompt": "what does clean mean", "answer": "Clean describes something free from dirt, marks, or unwanted substances."}
+{"prompt": "clean definition", "answer": "Clean describes something free from dirt, marks, or unwanted substances."}
+{"prompt": "define wash", "answer": "To wash is to clean something with water and often soap."}
+{"prompt": "what is wash", "answer": "To wash is to clean something with water and often soap."}
+{"prompt": "what does wash mean", "answer": "To wash is to clean something with water and often soap."}
+{"prompt": "wash definition", "answer": "To wash is to clean something with water and often soap."}
+{"prompt": "define drive", "answer": "To drive is to operate and control a vehicle."}
+{"prompt": "what is drive", "answer": "To drive is to operate and control a vehicle."}
+{"prompt": "what does drive mean", "answer": "To drive is to operate and control a vehicle."}
+{"prompt": "drive definition", "answer": "To drive is to operate and control a vehicle."}
+{"prompt": "define fly", "answer": "To fly is to move through the air using wings or aircraft."}
+{"prompt": "what is fly", "answer": "To fly is to move through the air using wings or aircraft."}
+{"prompt": "what does fly mean", "answer": "To fly is to move through the air using wings or aircraft."}
+{"prompt": "fly definition", "answer": "To fly is to move through the air using wings or aircraft."}
+{"prompt": "define swim", "answer": "To swim is to move through water using the limbs."}
+{"prompt": "what is swim", "answer": "To swim is to move through water using the limbs."}
+{"prompt": "what does swim mean", "answer": "To swim is to move through water using the limbs."}
+{"prompt": "swim definition", "answer": "To swim is to move through water using the limbs."}
+{"prompt": "define jump", "answer": "To jump is to push off the ground with the feet to rise into the air."}
+{"prompt": "what is jump", "answer": "To jump is to push off the ground with the feet to rise into the air."}
+{"prompt": "what does jump mean", "answer": "To jump is to push off the ground with the feet to rise into the air."}
+{"prompt": "jump definition", "answer": "To jump is to push off the ground with the feet to rise into the air."}
+{"prompt": "define fall", "answer": "To fall is to drop downward freely under the force of gravity."}
+{"prompt": "what is fall", "answer": "To fall is to drop downward freely under the force of gravity."}
+{"prompt": "what does fall mean", "answer": "To fall is to drop downward freely under the force of gravity."}
+{"prompt": "fall definition", "answer": "To fall is to drop downward freely under the force of gravity."}
+{"prompt": "define climb", "answer": "To climb is to go up or ascend something using hands and feet."}
+{"prompt": "what is climb", "answer": "To climb is to go up or ascend something using hands and feet."}
+{"prompt": "what does climb mean", "answer": "To climb is to go up or ascend something using hands and feet."}
+{"prompt": "climb definition", "answer": "To climb is to go up or ascend something using hands and feet."}
+{"prompt": "define hide", "answer": "To hide is to put or keep out of sight, or to conceal oneself."}
+{"prompt": "what is hide", "answer": "To hide is to put or keep out of sight, or to conceal oneself."}
+{"prompt": "what does hide mean", "answer": "To hide is to put or keep out of sight, or to conceal oneself."}
+{"prompt": "hide definition", "answer": "To hide is to put or keep out of sight, or to conceal oneself."}
+{"prompt": "define find", "answer": "To find is to discover something by searching or encountering it."}
+{"prompt": "what is find", "answer": "To find is to discover something by searching or encountering it."}
+{"prompt": "what does find mean", "answer": "To find is to discover something by searching or encountering it."}
+{"prompt": "find definition", "answer": "To find is to discover something by searching or encountering it."}
+{"prompt": "define lose", "answer": "To lose is to be unable to find something or to be deprived of it."}
+{"prompt": "what is lose", "answer": "To lose is to be unable to find something or to be deprived of it."}
+{"prompt": "what does lose mean", "answer": "To lose is to be unable to find something or to be deprived of it."}
+{"prompt": "lose definition", "answer": "To lose is to be unable to find something or to be deprived of it."}
+{"prompt": "define give", "answer": "To give is to freely transfer possession of something to someone."}
+{"prompt": "what is give", "answer": "To give is to freely transfer possession of something to someone."}
+{"prompt": "what does give mean", "answer": "To give is to freely transfer possession of something to someone."}
+{"prompt": "give definition", "answer": "To give is to freely transfer possession of something to someone."}
+{"prompt": "define take", "answer": "To take is to grasp, hold, or remove something from a place."}
+{"prompt": "what is take", "answer": "To take is to grasp, hold, or remove something from a place."}
+{"prompt": "what does take mean", "answer": "To take is to grasp, hold, or remove something from a place."}
+{"prompt": "take definition", "answer": "To take is to grasp, hold, or remove something from a place."}
+{"prompt": "define make", "answer": "To make is to create, build, or produce something."}
+{"prompt": "what is make", "answer": "To make is to create, build, or produce something."}
+{"prompt": "what does make mean", "answer": "To make is to create, build, or produce something."}
+{"prompt": "make definition", "answer": "To make is to create, build, or produce something."}
+{"prompt": "define break", "answer": "To break is to separate into pieces as a result of force or impact."}
+{"prompt": "what is break", "answer": "To break is to separate into pieces as a result of force or impact."}
+{"prompt": "what does break mean", "answer": "To break is to separate into pieces as a result of force or impact."}
+{"prompt": "break definition", "answer": "To break is to separate into pieces as a result of force or impact."}
+{"prompt": "define open", "answer": "To open is to move something to an accessible position, revealing the inside."}
+{"prompt": "what is open", "answer": "To open is to move something to an accessible position, revealing the inside."}
+{"prompt": "what does open mean", "answer": "To open is to move something to an accessible position, revealing the inside."}
+{"prompt": "open definition", "answer": "To open is to move something to an accessible position, revealing the inside."}
+{"prompt": "define close", "answer": "To close is to move something to block an opening or seal a container."}
+{"prompt": "what is close", "answer": "To close is to move something to block an opening or seal a container."}
+{"prompt": "what does close mean", "answer": "To close is to move something to block an opening or seal a container."}
+{"prompt": "close definition", "answer": "To close is to move something to block an opening or seal a container."}
+{"prompt": "define start", "answer": "To start is to begin or commence an action or process."}
+{"prompt": "what is start", "answer": "To start is to begin or commence an action or process."}
+{"prompt": "what does start mean", "answer": "To start is to begin or commence an action or process."}
+{"prompt": "start definition", "answer": "To start is to begin or commence an action or process."}
+{"prompt": "define stop", "answer": "To stop is to cease moving or operating, or to bring something to an end."}
+{"prompt": "what is stop", "answer": "To stop is to cease moving or operating, or to bring something to an end."}
+{"prompt": "what does stop mean", "answer": "To stop is to cease moving or operating, or to bring something to an end."}
+{"prompt": "stop definition", "answer": "To stop is to cease moving or operating, or to bring something to an end."}
+{"prompt": "define change", "answer": "To change is to make or become different in form, nature, or content."}
+{"prompt": "what is change", "answer": "To change is to make or become different in form, nature, or content."}
+{"prompt": "what does change mean", "answer": "To change is to make or become different in form, nature, or content."}
+{"prompt": "change definition", "answer": "To change is to make or become different in form, nature, or content."}
+{"prompt": "define move", "answer": "To move is to go from one place or position to another."}
+{"prompt": "what is move", "answer": "To move is to go from one place or position to another."}
+{"prompt": "what does move mean", "answer": "To move is to go from one place or position to another."}
+{"prompt": "move definition", "answer": "To move is to go from one place or position to another."}
+{"prompt": "define grow", "answer": "To grow is to increase in size, amount, or maturity over time."}
+{"prompt": "what is grow", "answer": "To grow is to increase in size, amount, or maturity over time."}
+{"prompt": "what does grow mean", "answer": "To grow is to increase in size, amount, or maturity over time."}
+{"prompt": "grow definition", "answer": "To grow is to increase in size, amount, or maturity over time."}
+{"prompt": "define big", "answer": "Big refers to something of considerable size, extent, or importance."}
+{"prompt": "what is big", "answer": "Big refers to something of considerable size, extent, or importance."}
+{"prompt": "what does big mean", "answer": "Big refers to something of considerable size, extent, or importance."}
+{"prompt": "big definition", "answer": "Big refers to something of considerable size, extent, or importance."}
+{"prompt": "define small", "answer": "Small refers to something of limited size or dimensions."}
+{"prompt": "what is small", "answer": "Small refers to something of limited size or dimensions."}
+{"prompt": "what does small mean", "answer": "Small refers to something of limited size or dimensions."}
+{"prompt": "small definition", "answer": "Small refers to something of limited size or dimensions."}
+{"prompt": "define hot", "answer": "Hot describes something having a high temperature or producing heat."}
+{"prompt": "what is hot", "answer": "Hot describes something having a high temperature or producing heat."}
+{"prompt": "what does hot mean", "answer": "Hot describes something having a high temperature or producing heat."}
+{"prompt": "hot definition", "answer": "Hot describes something having a high temperature or producing heat."}
+{"prompt": "define cold", "answer": "Cold describes something having a low temperature or lacking warmth."}
+{"prompt": "what is cold", "answer": "Cold describes something having a low temperature or lacking warmth."}
+{"prompt": "what does cold mean", "answer": "Cold describes something having a low temperature or lacking warmth."}
+{"prompt": "cold definition", "answer": "Cold describes something having a low temperature or lacking warmth."}
+{"prompt": "define fast", "answer": "Fast describes something moving or capable of moving at high speed."}
+{"prompt": "what is fast", "answer": "Fast describes something moving or capable of moving at high speed."}
+{"prompt": "what does fast mean", "answer": "Fast describes something moving or capable of moving at high speed."}
+{"prompt": "fast definition", "answer": "Fast describes something moving or capable of moving at high speed."}
+{"prompt": "define slow", "answer": "Slow describes something moving at a low speed or taking more time."}
+{"prompt": "what is slow", "answer": "Slow describes something moving at a low speed or taking more time."}
+{"prompt": "what does slow mean", "answer": "Slow describes something moving at a low speed or taking more time."}
+{"prompt": "slow definition", "answer": "Slow describes something moving at a low speed or taking more time."}
+{"prompt": "define new", "answer": "New describes something recently made, discovered, or not existing before."}
+{"prompt": "what is new", "answer": "New describes something recently made, discovered, or not existing before."}
+{"prompt": "what does new mean", "answer": "New describes something recently made, discovered, or not existing before."}
+{"prompt": "new definition", "answer": "New describes something recently made, discovered, or not existing before."}
+{"prompt": "define old", "answer": "Old describes something having existed for a long time or being advanced in age."}
+{"prompt": "what is old", "answer": "Old describes something having existed for a long time or being advanced in age."}
+{"prompt": "what does old mean", "answer": "Old describes something having existed for a long time or being advanced in age."}
+{"prompt": "old definition", "answer": "Old describes something having existed for a long time or being advanced in age."}
+{"prompt": "define good", "answer": "Good describes something of high quality, favorable, or morally right."}
+{"prompt": "what is good", "answer": "Good describes something of high quality, favorable, or morally right."}
+{"prompt": "what does good mean", "answer": "Good describes something of high quality, favorable, or morally right."}
+{"prompt": "good definition", "answer": "Good describes something of high quality, favorable, or morally right."}
+{"prompt": "define bad", "answer": "Bad describes something of poor quality, unfavorable, or morally wrong."}
+{"prompt": "what is bad", "answer": "Bad describes something of poor quality, unfavorable, or morally wrong."}
+{"prompt": "what does bad mean", "answer": "Bad describes something of poor quality, unfavorable, or morally wrong."}
+{"prompt": "bad definition", "answer": "Bad describes something of poor quality, unfavorable, or morally wrong."}
+{"prompt": "define strong", "answer": "Strong describes having great physical power, force, or intensity."}
+{"prompt": "what is strong", "answer": "Strong describes having great physical power, force, or intensity."}
+{"prompt": "what does strong mean", "answer": "Strong describes having great physical power, force, or intensity."}
+{"prompt": "strong definition", "answer": "Strong describes having great physical power, force, or intensity."}
+{"prompt": "define weak", "answer": "Weak describes lacking physical strength, force, or intensity."}
+{"prompt": "what is weak", "answer": "Weak describes lacking physical strength, force, or intensity."}
+{"prompt": "what does weak mean", "answer": "Weak describes lacking physical strength, force, or intensity."}
+{"prompt": "weak definition", "answer": "Weak describes lacking physical strength, force, or intensity."}
+{"prompt": "define light", "answer": "Light is electromagnetic radiation visible to the human eye, traveling in waves and as particles called photons."}
+{"prompt": "what is light", "answer": "Light is electromagnetic radiation visible to the human eye, traveling in waves and as particles called photons."}
+{"prompt": "what does light mean", "answer": "Light is electromagnetic radiation visible to the human eye, traveling in waves and as particles called photons."}
+{"prompt": "light definition", "answer": "Light is electromagnetic radiation visible to the human eye, traveling in waves and as particles called photons."}
+{"prompt": "define heavy", "answer": "Heavy describes something of great weight, difficult to lift or move."}
+{"prompt": "what is heavy", "answer": "Heavy describes something of great weight, difficult to lift or move."}
+{"prompt": "what does heavy mean", "answer": "Heavy describes something of great weight, difficult to lift or move."}
+{"prompt": "heavy definition", "answer": "Heavy describes something of great weight, difficult to lift or move."}
+{"prompt": "define hard", "answer": "Hard describes something solid, firm, or difficult to break or bend."}
+{"prompt": "what is hard", "answer": "Hard describes something solid, firm, or difficult to break or bend."}
+{"prompt": "what does hard mean", "answer": "Hard describes something solid, firm, or difficult to break or bend."}
+{"prompt": "hard definition", "answer": "Hard describes something solid, firm, or difficult to break or bend."}
+{"prompt": "define soft", "answer": "Soft describes something easy to mold, compress, or having a gentle texture."}
+{"prompt": "what is soft", "answer": "Soft describes something easy to mold, compress, or having a gentle texture."}
+{"prompt": "what does soft mean", "answer": "Soft describes something easy to mold, compress, or having a gentle texture."}
+{"prompt": "soft definition", "answer": "Soft describes something easy to mold, compress, or having a gentle texture."}
+{"prompt": "define sweet", "answer": "Sweet describes a taste like sugar or honey, or having a pleasing quality."}
+{"prompt": "what is sweet", "answer": "Sweet describes a taste like sugar or honey, or having a pleasing quality."}
+{"prompt": "what does sweet mean", "answer": "Sweet describes a taste like sugar or honey, or having a pleasing quality."}
+{"prompt": "sweet definition", "answer": "Sweet describes a taste like sugar or honey, or having a pleasing quality."}
+{"prompt": "define sour", "answer": "Sour describes a sharp tart taste like lemon or vinegar."}
+{"prompt": "what is sour", "answer": "Sour describes a sharp tart taste like lemon or vinegar."}
+{"prompt": "what does sour mean", "answer": "Sour describes a sharp tart taste like lemon or vinegar."}
+{"prompt": "sour definition", "answer": "Sour describes a sharp tart taste like lemon or vinegar."}
+{"prompt": "define bitter", "answer": "Bitter describes a sharp unpleasant taste, like coffee or dark chocolate."}
+{"prompt": "what is bitter", "answer": "Bitter describes a sharp unpleasant taste, like coffee or dark chocolate."}
+{"prompt": "what does bitter mean", "answer": "Bitter describes a sharp unpleasant taste, like coffee or dark chocolate."}
+{"prompt": "bitter definition", "answer": "Bitter describes a sharp unpleasant taste, like coffee or dark chocolate."}
+{"prompt": "define salty", "answer": "Salty describes the taste of salt or containing a high salt content."}
+{"prompt": "what is salty", "answer": "Salty describes the taste of salt or containing a high salt content."}
+{"prompt": "what does salty mean", "answer": "Salty describes the taste of salt or containing a high salt content."}
+{"prompt": "salty definition", "answer": "Salty describes the taste of salt or containing a high salt content."}
+{"prompt": "define dirty", "answer": "Dirty describes something covered or marked with dirt, or unclean."}
+{"prompt": "what is dirty", "answer": "Dirty describes something covered or marked with dirt, or unclean."}
+{"prompt": "what does dirty mean", "answer": "Dirty describes something covered or marked with dirt, or unclean."}
+{"prompt": "dirty definition", "answer": "Dirty describes something covered or marked with dirt, or unclean."}
+{"prompt": "define rich", "answer": "Rich describes having a great deal of wealth or resources."}
+{"prompt": "what is rich", "answer": "Rich describes having a great deal of wealth or resources."}
+{"prompt": "what does rich mean", "answer": "Rich describes having a great deal of wealth or resources."}
+{"prompt": "rich definition", "answer": "Rich describes having a great deal of wealth or resources."}
+{"prompt": "define poor", "answer": "Poor describes lacking sufficient money or resources."}
+{"prompt": "what is poor", "answer": "Poor describes lacking sufficient money or resources."}
+{"prompt": "what does poor mean", "answer": "Poor describes lacking sufficient money or resources."}
+{"prompt": "poor definition", "answer": "Poor describes lacking sufficient money or resources."}
+{"prompt": "define young", "answer": "Young describes being in the early stage of life or development."}
+{"prompt": "what is young", "answer": "Young describes being in the early stage of life or development."}
+{"prompt": "what does young mean", "answer": "Young describes being in the early stage of life or development."}
+{"prompt": "young definition", "answer": "Young describes being in the early stage of life or development."}
+{"prompt": "define beautiful", "answer": "Beautiful describes pleasing the senses or mind aesthetically."}
+{"prompt": "what is beautiful", "answer": "Beautiful describes pleasing the senses or mind aesthetically."}
+{"prompt": "what does beautiful mean", "answer": "Beautiful describes pleasing the senses or mind aesthetically."}
+{"prompt": "beautiful definition", "answer": "Beautiful describes pleasing the senses or mind aesthetically."}
+{"prompt": "define ugly", "answer": "Ugly describes unpleasant or repulsive in appearance."}
+{"prompt": "what is ugly", "answer": "Ugly describes unpleasant or repulsive in appearance."}
+{"prompt": "what does ugly mean", "answer": "Ugly describes unpleasant or repulsive in appearance."}
+{"prompt": "ugly definition", "answer": "Ugly describes unpleasant or repulsive in appearance."}
+{"prompt": "define brave", "answer": "Brave describes having courage and readiness to face danger or pain."}
+{"prompt": "what is brave", "answer": "Brave describes having courage and readiness to face danger or pain."}
+{"prompt": "what does brave mean", "answer": "Brave describes having courage and readiness to face danger or pain."}
+{"prompt": "brave definition", "answer": "Brave describes having courage and readiness to face danger or pain."}
+{"prompt": "define smart", "answer": "Smart describes having intelligence, quick thinking, or sharp mental ability."}
+{"prompt": "what is smart", "answer": "Smart describes having intelligence, quick thinking, or sharp mental ability."}
+{"prompt": "what does smart mean", "answer": "Smart describes having intelligence, quick thinking, or sharp mental ability."}
+{"prompt": "smart definition", "answer": "Smart describes having intelligence, quick thinking, or sharp mental ability."}
+{"prompt": "define kind", "answer": "Kind describes being gentle, caring, and helpful toward others."}
+{"prompt": "what is kind", "answer": "Kind describes being gentle, caring, and helpful toward others."}
+{"prompt": "what does kind mean", "answer": "Kind describes being gentle, caring, and helpful toward others."}
+{"prompt": "kind definition", "answer": "Kind describes being gentle, caring, and helpful toward others."}
+{"prompt": "define mean", "answer": "Mean describes being unkind, unpleasant, or malicious toward others."}
+{"prompt": "what is mean", "answer": "Mean describes being unkind, unpleasant, or malicious toward others."}
+{"prompt": "what does mean mean", "answer": "Mean describes being unkind, unpleasant, or malicious toward others."}
+{"prompt": "mean definition", "answer": "Mean describes being unkind, unpleasant, or malicious toward others."}
+{"prompt": "define funny", "answer": "Funny describes causing amusement, laughter, or humor."}
+{"prompt": "what is funny", "answer": "Funny describes causing amusement, laughter, or humor."}
+{"prompt": "what does funny mean", "answer": "Funny describes causing amusement, laughter, or humor."}
+{"prompt": "funny definition", "answer": "Funny describes causing amusement, laughter, or humor."}
+{"prompt": "define serious", "answer": "Serious describes being thoughtful, solemn, or showing deep concern."}
+{"prompt": "what is serious", "answer": "Serious describes being thoughtful, solemn, or showing deep concern."}
+{"prompt": "what does serious mean", "answer": "Serious describes being thoughtful, solemn, or showing deep concern."}
+{"prompt": "serious definition", "answer": "Serious describes being thoughtful, solemn, or showing deep concern."}
+{"prompt": "define simple", "answer": "Simple describes being easy to understand, not complicated or complex."}
+{"prompt": "what is simple", "answer": "Simple describes being easy to understand, not complicated or complex."}
+{"prompt": "what does simple mean", "answer": "Simple describes being easy to understand, not complicated or complex."}
+{"prompt": "simple definition", "answer": "Simple describes being easy to understand, not complicated or complex."}
+{"prompt": "define complex", "answer": "Complex describes consisting of many interconnected parts, not simple."}
+{"prompt": "what is complex", "answer": "Complex describes consisting of many interconnected parts, not simple."}
+{"prompt": "what does complex mean", "answer": "Complex describes consisting of many interconnected parts, not simple."}
+{"prompt": "complex definition", "answer": "Complex describes consisting of many interconnected parts, not simple."}
+{"prompt": "define possible", "answer": "Possible describes something that can exist, happen, or be achieved."}
+{"prompt": "what is possible", "answer": "Possible describes something that can exist, happen, or be achieved."}
+{"prompt": "what does possible mean", "answer": "Possible describes something that can exist, happen, or be achieved."}
+{"prompt": "possible definition", "answer": "Possible describes something that can exist, happen, or be achieved."}
+{"prompt": "define impossible", "answer": "Impossible describes something that cannot exist, happen, or be achieved."}
+{"prompt": "what is impossible", "answer": "Impossible describes something that cannot exist, happen, or be achieved."}
+{"prompt": "what does impossible mean", "answer": "Impossible describes something that cannot exist, happen, or be achieved."}
+{"prompt": "impossible definition", "answer": "Impossible describes something that cannot exist, happen, or be achieved."}
+{"prompt": "define important", "answer": "Important describes having great significance, value, or consequence."}
+{"prompt": "what is important", "answer": "Important describes having great significance, value, or consequence."}
+{"prompt": "what does important mean", "answer": "Important describes having great significance, value, or consequence."}
+{"prompt": "important definition", "answer": "Important describes having great significance, value, or consequence."}
+{"prompt": "define necessary", "answer": "Necessary describes something that must be done, required, or essential."}
+{"prompt": "what is necessary", "answer": "Necessary describes something that must be done, required, or essential."}
+{"prompt": "what does necessary mean", "answer": "Necessary describes something that must be done, required, or essential."}
+{"prompt": "necessary definition", "answer": "Necessary describes something that must be done, required, or essential."}
+{"prompt": "define different", "answer": "Different describes something not the same as another, distinct or separate."}
+{"prompt": "what is different", "answer": "Different describes something not the same as another, distinct or separate."}
+{"prompt": "what does different mean", "answer": "Different describes something not the same as another, distinct or separate."}
+{"prompt": "different definition", "answer": "Different describes something not the same as another, distinct or separate."}
+{"prompt": "define same", "answer": "Same describes something identical, not different, or unchanged."}
+{"prompt": "what is same", "answer": "Same describes something identical, not different, or unchanged."}
+{"prompt": "what does same mean", "answer": "Same describes something identical, not different, or unchanged."}
+{"prompt": "same definition", "answer": "Same describes something identical, not different, or unchanged."}
+{"prompt": "define special", "answer": "Special describes something better, greater, or otherwise different from what is usual."}
+{"prompt": "what is special", "answer": "Special describes something better, greater, or otherwise different from what is usual."}
+{"prompt": "what does special mean", "answer": "Special describes something better, greater, or otherwise different from what is usual."}
+{"prompt": "special definition", "answer": "Special describes something better, greater, or otherwise different from what is usual."}
+{"prompt": "define galaxy", "answer": "A galaxy is a massive system of stars, gas, and dust held together by gravity, such as the Milky Way."}
+{"prompt": "what is galaxy", "answer": "A galaxy is a massive system of stars, gas, and dust held together by gravity, such as the Milky Way."}
+{"prompt": "what does galaxy mean", "answer": "A galaxy is a massive system of stars, gas, and dust held together by gravity, such as the Milky Way."}
+{"prompt": "galaxy definition", "answer": "A galaxy is a massive system of stars, gas, and dust held together by gravity, such as the Milky Way."}
+{"prompt": "define solar system", "answer": "The solar system is the collection of planets, moons, and other objects orbiting the Sun."}
+{"prompt": "what is solar system", "answer": "The solar system is the collection of planets, moons, and other objects orbiting the Sun."}
+{"prompt": "what does solar system mean", "answer": "The solar system is the collection of planets, moons, and other objects orbiting the Sun."}
+{"prompt": "solar system definition", "answer": "The solar system is the collection of planets, moons, and other objects orbiting the Sun."}
+{"prompt": "define asteroid", "answer": "An asteroid is a small rocky body orbiting the Sun, found mainly in the asteroid belt."}
+{"prompt": "what is asteroid", "answer": "An asteroid is a small rocky body orbiting the Sun, found mainly in the asteroid belt."}
+{"prompt": "what does asteroid mean", "answer": "An asteroid is a small rocky body orbiting the Sun, found mainly in the asteroid belt."}
+{"prompt": "asteroid definition", "answer": "An asteroid is a small rocky body orbiting the Sun, found mainly in the asteroid belt."}
+{"prompt": "define comet", "answer": "A comet is an icy small body that develops a glowing tail as it approaches the Sun."}
+{"prompt": "what is comet", "answer": "A comet is an icy small body that develops a glowing tail as it approaches the Sun."}
+{"prompt": "what does comet mean", "answer": "A comet is an icy small body that develops a glowing tail as it approaches the Sun."}
+{"prompt": "comet definition", "answer": "A comet is an icy small body that develops a glowing tail as it approaches the Sun."}
+{"prompt": "define nebula", "answer": "A nebula is a cloud of gas and dust in space, often a region where stars are born."}
+{"prompt": "what is nebula", "answer": "A nebula is a cloud of gas and dust in space, often a region where stars are born."}
+{"prompt": "what does nebula mean", "answer": "A nebula is a cloud of gas and dust in space, often a region where stars are born."}
+{"prompt": "nebula definition", "answer": "A nebula is a cloud of gas and dust in space, often a region where stars are born."}
+{"prompt": "define black hole", "answer": "A black hole is a region of spacetime with such strong gravity that nothing, not even light, can escape."}
+{"prompt": "what is black hole", "answer": "A black hole is a region of spacetime with such strong gravity that nothing, not even light, can escape."}
+{"prompt": "what does black hole mean", "answer": "A black hole is a region of spacetime with such strong gravity that nothing, not even light, can escape."}
+{"prompt": "black hole definition", "answer": "A black hole is a region of spacetime with such strong gravity that nothing, not even light, can escape."}
+{"prompt": "define gravity", "answer": "Gravity is the natural phenomenon by which all things with mass are brought toward one another."}
+{"prompt": "what is gravity", "answer": "Gravity is the natural phenomenon by which all things with mass are brought toward one another."}
+{"prompt": "what does gravity mean", "answer": "Gravity is the natural phenomenon by which all things with mass are brought toward one another."}
+{"prompt": "gravity definition", "answer": "Gravity is the natural phenomenon by which all things with mass are brought toward one another."}
+{"prompt": "define energy", "answer": "Energy is the quantitative property that must be transferred to an object to perform work or heat it."}
+{"prompt": "what is energy", "answer": "Energy is the quantitative property that must be transferred to an object to perform work or heat it."}
+{"prompt": "what does energy mean", "answer": "Energy is the quantitative property that must be transferred to an object to perform work or heat it."}
+{"prompt": "energy definition", "answer": "Energy is the quantitative property that must be transferred to an object to perform work or heat it."}
+{"prompt": "define matter", "answer": "Matter is any substance that has mass and occupies space, consisting of atoms and molecules."}
+{"prompt": "what is matter", "answer": "Matter is any substance that has mass and occupies space, consisting of atoms and molecules."}
+{"prompt": "what does matter mean", "answer": "Matter is any substance that has mass and occupies space, consisting of atoms and molecules."}
+{"prompt": "matter definition", "answer": "Matter is any substance that has mass and occupies space, consisting of atoms and molecules."}
+{"prompt": "define atom", "answer": "An atom is the smallest unit of ordinary matter that forms a chemical element. It consists of a nucleus of protons and neutrons surrounded by electrons."}
+{"prompt": "what is atom", "answer": "An atom is the smallest unit of ordinary matter that forms a chemical element. It consists of a nucleus of protons and neutrons surrounded by electrons."}
+{"prompt": "what does atom mean", "answer": "An atom is the smallest unit of ordinary matter that forms a chemical element. It consists of a nucleus of protons and neutrons surrounded by electrons."}
+{"prompt": "atom definition", "answer": "An atom is the smallest unit of ordinary matter that forms a chemical element. It consists of a nucleus of protons and neutrons surrounded by electrons."}
+{"prompt": "define molecule", "answer": "A molecule is a group of two or more atoms bonded together by chemical bonds."}
+{"prompt": "what is molecule", "answer": "A molecule is a group of two or more atoms bonded together by chemical bonds."}
+{"prompt": "what does molecule mean", "answer": "A molecule is a group of two or more atoms bonded together by chemical bonds."}
+{"prompt": "molecule definition", "answer": "A molecule is a group of two or more atoms bonded together by chemical bonds."}
+{"prompt": "define cell", "answer": "A cell is the basic structural and functional unit of all living organisms."}
+{"prompt": "what is cell", "answer": "A cell is the basic structural and functional unit of all living organisms."}
+{"prompt": "what does cell mean", "answer": "A cell is the basic structural and functional unit of all living organisms."}
+{"prompt": "cell definition", "answer": "A cell is the basic structural and functional unit of all living organisms."}
+{"prompt": "define dna", "answer": "DNA (deoxyribonucleic acid) is a molecule that carries genetic instructions for all living organisms."}
+{"prompt": "what is dna", "answer": "DNA (deoxyribonucleic acid) is a molecule that carries genetic instructions for all living organisms."}
+{"prompt": "what does dna mean", "answer": "DNA (deoxyribonucleic acid) is a molecule that carries genetic instructions for all living organisms."}
+{"prompt": "dna definition", "answer": "DNA (deoxyribonucleic acid) is a molecule that carries genetic instructions for all living organisms."}
+{"prompt": "define gene", "answer": "A gene is a unit of heredity made of DNA that determines specific traits in organisms."}
+{"prompt": "what is gene", "answer": "A gene is a unit of heredity made of DNA that determines specific traits in organisms."}
+{"prompt": "what does gene mean", "answer": "A gene is a unit of heredity made of DNA that determines specific traits in organisms."}
+{"prompt": "gene definition", "answer": "A gene is a unit of heredity made of DNA that determines specific traits in organisms."}
+{"prompt": "define protein", "answer": "A protein is a large molecule made of amino acids that performs essential functions in living organisms."}
+{"prompt": "what is protein", "answer": "A protein is a large molecule made of amino acids that performs essential functions in living organisms."}
+{"prompt": "what does protein mean", "answer": "A protein is a large molecule made of amino acids that performs essential functions in living organisms."}
+{"prompt": "protein definition", "answer": "A protein is a large molecule made of amino acids that performs essential functions in living organisms."}
+{"prompt": "define virus", "answer": "A virus is a microscopic infectious agent that replicates inside living cells of organisms."}
+{"prompt": "what is virus", "answer": "A virus is a microscopic infectious agent that replicates inside living cells of organisms."}
+{"prompt": "what does virus mean", "answer": "A virus is a microscopic infectious agent that replicates inside living cells of organisms."}
+{"prompt": "virus definition", "answer": "A virus is a microscopic infectious agent that replicates inside living cells of organisms."}
+{"prompt": "define bacteria", "answer": "Bacteria are single-celled microorganisms that can be beneficial or cause disease."}
+{"prompt": "what is bacteria", "answer": "Bacteria are single-celled microorganisms that can be beneficial or cause disease."}
+{"prompt": "what does bacteria mean", "answer": "Bacteria are single-celled microorganisms that can be beneficial or cause disease."}
+{"prompt": "bacteria definition", "answer": "Bacteria are single-celled microorganisms that can be beneficial or cause disease."}
+{"prompt": "define evolve", "answer": "To evolve is to change gradually over generations through the process of natural selection."}
+{"prompt": "what is evolve", "answer": "To evolve is to change gradually over generations through the process of natural selection."}
+{"prompt": "what does evolve mean", "answer": "To evolve is to change gradually over generations through the process of natural selection."}
+{"prompt": "evolve definition", "answer": "To evolve is to change gradually over generations through the process of natural selection."}
+{"prompt": "define continent", "answer": "A continent is a large continuous landmass, such as Africa, Asia, or North America."}
+{"prompt": "what is continent", "answer": "A continent is a large continuous landmass, such as Africa, Asia, or North America."}
+{"prompt": "what does continent mean", "answer": "A continent is a large continuous landmass, such as Africa, Asia, or North America."}
+{"prompt": "continent definition", "answer": "A continent is a large continuous landmass, such as Africa, Asia, or North America."}
+{"prompt": "define country", "answer": "A country is a nation with its own government, territory, and borders."}
+{"prompt": "what is country", "answer": "A country is a nation with its own government, territory, and borders."}
+{"prompt": "what does country mean", "answer": "A country is a nation with its own government, territory, and borders."}
+{"prompt": "country definition", "answer": "A country is a nation with its own government, territory, and borders."}
+{"prompt": "define city", "answer": "A city is a large permanent human settlement with dense population and infrastructure."}
+{"prompt": "what is city", "answer": "A city is a large permanent human settlement with dense population and infrastructure."}
+{"prompt": "what does city mean", "answer": "A city is a large permanent human settlement with dense population and infrastructure."}
+{"prompt": "city definition", "answer": "A city is a large permanent human settlement with dense population and infrastructure."}
+{"prompt": "define village", "answer": "A village is a small community of houses in a rural area, smaller than a town."}
+{"prompt": "what is village", "answer": "A village is a small community of houses in a rural area, smaller than a town."}
+{"prompt": "what does village mean", "answer": "A village is a small community of houses in a rural area, smaller than a town."}
+{"prompt": "village definition", "answer": "A village is a small community of houses in a rural area, smaller than a town."}
+{"prompt": "define desert", "answer": "A desert is a barren area with little precipitation, few plants, and extreme temperatures."}
+{"prompt": "what is desert", "answer": "A desert is a barren area with little precipitation, few plants, and extreme temperatures."}
+{"prompt": "what does desert mean", "answer": "A desert is a barren area with little precipitation, few plants, and extreme temperatures."}
+{"prompt": "desert definition", "answer": "A desert is a barren area with little precipitation, few plants, and extreme temperatures."}
+{"prompt": "define jungle", "answer": "A jungle is a dense tropical forest with thick vegetation and high rainfall."}
+{"prompt": "what is jungle", "answer": "A jungle is a dense tropical forest with thick vegetation and high rainfall."}
+{"prompt": "what does jungle mean", "answer": "A jungle is a dense tropical forest with thick vegetation and high rainfall."}
+{"prompt": "jungle definition", "answer": "A jungle is a dense tropical forest with thick vegetation and high rainfall."}
+{"prompt": "define island", "answer": "An island is a land area completely surrounded by water, smaller than a continent."}
+{"prompt": "what is island", "answer": "An island is a land area completely surrounded by water, smaller than a continent."}
+{"prompt": "what does island mean", "answer": "An island is a land area completely surrounded by water, smaller than a continent."}
+{"prompt": "island definition", "answer": "An island is a land area completely surrounded by water, smaller than a continent."}
+{"prompt": "define volcano", "answer": "A volcano is an opening in Earth's crust through which molten rock, ash, and gases erupt."}
+{"prompt": "what is volcano", "answer": "A volcano is an opening in Earth's crust through which molten rock, ash, and gases erupt."}
+{"prompt": "what does volcano mean", "answer": "A volcano is an opening in Earth's crust through which molten rock, ash, and gases erupt."}
+{"prompt": "volcano definition", "answer": "A volcano is an opening in Earth's crust through which molten rock, ash, and gases erupt."}
+{"prompt": "define earthquake", "answer": "An earthquake is a sudden shaking of the ground caused by tectonic plate movement."}
+{"prompt": "what is earthquake", "answer": "An earthquake is a sudden shaking of the ground caused by tectonic plate movement."}
+{"prompt": "what does earthquake mean", "answer": "An earthquake is a sudden shaking of the ground caused by tectonic plate movement."}
+{"prompt": "earthquake definition", "answer": "An earthquake is a sudden shaking of the ground caused by tectonic plate movement."}
+{"prompt": "define tsunami", "answer": "A tsunami is a large ocean wave caused by an underwater earthquake or volcanic eruption."}
+{"prompt": "what is tsunami", "answer": "A tsunami is a large ocean wave caused by an underwater earthquake or volcanic eruption."}
+{"prompt": "what does tsunami mean", "answer": "A tsunami is a large ocean wave caused by an underwater earthquake or volcanic eruption."}
+{"prompt": "tsunami definition", "answer": "A tsunami is a large ocean wave caused by an underwater earthquake or volcanic eruption."}
+{"prompt": "define hurricane", "answer": "A hurricane is a powerful tropical storm with winds exceeding 74 miles per hour."}
+{"prompt": "what is hurricane", "answer": "A hurricane is a powerful tropical storm with winds exceeding 74 miles per hour."}
+{"prompt": "what does hurricane mean", "answer": "A hurricane is a powerful tropical storm with winds exceeding 74 miles per hour."}
+{"prompt": "hurricane definition", "answer": "A hurricane is a powerful tropical storm with winds exceeding 74 miles per hour."}
+{"prompt": "define tornado", "answer": "A tornado is a violent rotating column of air extending from a thunderstorm to the ground."}
+{"prompt": "what is tornado", "answer": "A tornado is a violent rotating column of air extending from a thunderstorm to the ground."}
+{"prompt": "what does tornado mean", "answer": "A tornado is a violent rotating column of air extending from a thunderstorm to the ground."}
+{"prompt": "tornado definition", "answer": "A tornado is a violent rotating column of air extending from a thunderstorm to the ground."}
+{"prompt": "define climate", "answer": "Climate is the long-term pattern of weather conditions in a particular region."}
+{"prompt": "what is climate", "answer": "Climate is the long-term pattern of weather conditions in a particular region."}
+{"prompt": "what does climate mean", "answer": "Climate is the long-term pattern of weather conditions in a particular region."}
+{"prompt": "climate definition", "answer": "Climate is the long-term pattern of weather conditions in a particular region."}
+{"prompt": "define weather", "answer": "Weather is the state of the atmosphere at a particular time, including temperature, precipitation, and wind."}
+{"prompt": "what is weather", "answer": "Weather is the state of the atmosphere at a particular time, including temperature, precipitation, and wind."}
+{"prompt": "what does weather mean", "answer": "Weather is the state of the atmosphere at a particular time, including temperature, precipitation, and wind."}
+{"prompt": "weather definition", "answer": "Weather is the state of the atmosphere at a particular time, including temperature, precipitation, and wind."}
+{"prompt": "define season", "answer": "A season is a division of the year based on weather and daylight, such as spring, summer, fall, and winter."}
+{"prompt": "what is season", "answer": "A season is a division of the year based on weather and daylight, such as spring, summer, fall, and winter."}
+{"prompt": "what does season mean", "answer": "A season is a division of the year based on weather and daylight, such as spring, summer, fall, and winter."}
+{"prompt": "season definition", "answer": "A season is a division of the year based on weather and daylight, such as spring, summer, fall, and winter."}
+{"prompt": "define spring", "answer": "A spring is an elastic device that stores mechanical energy when compressed or stretched."}
+{"prompt": "what is spring", "answer": "A spring is an elastic device that stores mechanical energy when compressed or stretched."}
+{"prompt": "what does spring mean", "answer": "A spring is an elastic device that stores mechanical energy when compressed or stretched."}
+{"prompt": "spring definition", "answer": "A spring is an elastic device that stores mechanical energy when compressed or stretched."}
+{"prompt": "define summer", "answer": "Summer is the warmest season of the year, with the longest days."}
+{"prompt": "what is summer", "answer": "Summer is the warmest season of the year, with the longest days."}
+{"prompt": "what does summer mean", "answer": "Summer is the warmest season of the year, with the longest days."}
+{"prompt": "summer definition", "answer": "Summer is the warmest season of the year, with the longest days."}
+{"prompt": "my name is NovaTest", "answer": "I'll remember that your name is NovaTest."}
+{"prompt": "my favorite food is pizza", "answer": "I'll remember that your favorite food is pizza."}
+{"prompt": "i was born in 1980", "answer": "I'll remember that you were born in 1980."}
+{"prompt": "i live in Cincinnati", "answer": "I'll remember that you live in Cincinnati."}
+{"prompt": "what is my name", "answer": "Your name is NovaTest."}
+{"prompt": "what food do i like", "answer": "Your favorite food is pizza."}
+{"prompt": "when was i born", "answer": "You were born in 1980."}
+{"prompt": "where do i live", "answer": "You live in Cincinnati."}
+{"prompt": "hello", "answer": "Hello! How can I assist you today?"}
+{"prompt": "what can you do", "answer": "I am Nova Creature, a multi-brain AI with 7 brain roles, memory, dictionary, and learning capabilities."}

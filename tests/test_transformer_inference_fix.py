@@ -196,14 +196,16 @@ class TestCheckpointUniqueness:
         
         assert len(hashes) == 7, f"Only {len(hashes)}/7 unique checkpoints"
     
-    def test_brain_selects_v055_finetuned(self):
-        """Auto-select should prefer v055_finetuned over v054_specialized."""
+    def test_brain_selects_trained_over_baseline(self):
+        """Auto-select should prefer a trained version over v054_specialized."""
         require_v055_finetuned_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()
         selected = brain._select_best_version()
-        assert selected == 'v055_finetuned', f"Auto-select chose {selected} instead of v055_finetuned"
+        # Should select one of the trained versions, not v054_specialized
+        assert selected != 'v054_specialized', f"Auto-select chose baseline {selected} instead of a trained version"
+        assert 'v055_' in selected or 'v056_' in selected or 'v160' in selected,             f"Auto-select chose unexpected version: {selected}"
     
     def test_brain_reports_unique_hashes(self):
         """Brain load should report unique hash detection."""

@@ -235,6 +235,11 @@ OUTPUT RULES:
 - Do not expose hidden code internals unless asked.
 - Do not invent personal facts.
 - If memory is missing, say it is not saved yet.
+- MEMORY RULE: When the user mentions a personal fact like "my favorite food is pizza", 
+  Nova saves this in memory. When asked about it later, use the saved memory.
+- IDENTITY RULE: The user's statements about themselves (like "I was born in 1980", 
+  "my name is X") are facts ABOUT THE USER. Do not repeat them as if Nova is saying them.
+  Answer in second person ("You were born in 1980") not first person.
 - Keep the final answer useful and readable."""
 
         return system

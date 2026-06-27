@@ -1,0 +1,20 @@
+{
+  "package": "NovaCreature_v056_conversation_memory_loop_patch",
+  "purpose": "Adds conversation memory loop so Nova Creature can track ongoing topic, active goal, recent turns, known facts, unresolved items, and route follow-ups through the role-brain router.",
+  "target": "cloud Codex project first; plain Python so it can also be copied into local projects",
+  "version": "v056",
+  "adds": [
+    "src/conversation_memory.py",
+    "src/v056_conversation_router.py",
+    "scripts/apply_v056_conversation_memory.py",
+    "scripts/check_v056_conversation_memory.py",
+    "scripts/v056_chat_once.py",
+    "scripts/v056_gold_conversation_test.py",
+    "docs/V056_CONVERSATION_MEMORY.md",
+    "tests/test_v056_conversation_memory.py"
+  ],
+  "depends_on": [
+    "src/v052_role_brain_router.py preferred",
+    "v049-v055 architecture preferred"
+  ]
+}
