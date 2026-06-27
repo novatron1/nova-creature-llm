@@ -33,18 +33,42 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .status-row{display:flex;justify-content:space-between;gap:12px;border:1px solid #2e2e58;background:#141426;border-radius:10px;padding:9px 10px;font-size:12px;color:#cfd0ee}
 .status-row span:last-child{color:#7cffaa;text-align:right}
 .display-dashboard{display:grid;grid-template-columns:minmax(260px,1.1fr) minmax(260px,.9fr);gap:14px}
-.display-stage{position:relative;overflow:hidden;border:1px solid #37376a;background:radial-gradient(circle at 50% 12%,#2d2360 0,#16162b 42%,#0e0e19 100%);border-radius:18px;padding:18px;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.display-stage{position:relative;overflow:hidden;border:1px solid #37376a;background:radial-gradient(circle at 50% 12%,#2d2360 0,#16162b 42%,#0e0e19 100%);border-radius:18px;padding:18px;min-height:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .display-stage:before,.display-stage:after{content:"";position:absolute;border-radius:50%;border:1px solid #7777ff22;inset:28px;animation:displayPulse 4s infinite}
 .display-stage:after{inset:62px;animation-delay:1.1s}
 @keyframes displayPulse{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.03);opacity:1}}
-.display-avatar{position:relative;z-index:1;width:190px;height:190px;border-radius:42% 42% 46% 46%;background:linear-gradient(145deg,#23234e,#151527);border:2px solid #6a6aff66;box-shadow:0 0 34px #7c7cff28, inset 0 0 24px #0008;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:46px 36px 38px;margin-bottom:16px}
+.walk-space{position:relative;z-index:1;width:min(100%,360px);min-height:330px;border:1px solid #5353a655;border-radius:22px;background:linear-gradient(180deg,#1b1842 0%,#101020 58%,#121225 100%);box-shadow:inset 0 0 42px #0007,0 0 38px #7c7cff18;display:flex;align-items:flex-end;justify-content:center;margin-bottom:12px;overflow:hidden}
+.walk-space:before{content:"";position:absolute;left:-15%;right:-15%;bottom:-18%;height:44%;background:repeating-linear-gradient(90deg,#7777ff22 0 1px,transparent 1px 42px),repeating-linear-gradient(0deg,#7777ff22 0 1px,transparent 1px 28px);transform:perspective(220px) rotateX(58deg);border-top:1px solid #8b8cff33}
+.walk-space:after{content:"SIM WALK SPACE";position:absolute;top:12px;left:14px;font-size:10px;letter-spacing:.14em;color:#9ea0ff99}
+.display-avatar{position:absolute;z-index:2;right:16px;top:16px;width:76px;height:76px;border-radius:42% 42% 46% 46%;background:linear-gradient(145deg,#23234e,#151527);border:2px solid #6a6aff66;box-shadow:0 0 34px #7c7cff28, inset 0 0 24px #0008;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:18px 14px 15px;margin-bottom:0}
 .display-avatar:before{content:"";position:absolute;inset:20px;border-radius:inherit;background:linear-gradient(135deg,#ffffff12,#0000 55%);pointer-events:none}
-.display-eye{width:30px;height:30px;border-radius:50%;background:#8b8cff;box-shadow:0 0 18px #8b8cff;animation:pulse 2s infinite}
+.display-eye{width:12px;height:12px;border-radius:50%;background:#8b8cff;box-shadow:0 0 18px #8b8cff;animation:pulse 2s infinite}
 .display-eye.right{animation-delay:.25s}
-.display-mouth{grid-column:1/3;width:72px;height:13px;border-radius:999px;background:#8b8cff;box-shadow:0 0 14px #8b8cff;transition:all .25s}
+.display-mouth{grid-column:1/3;width:32px;height:6px;border-radius:999px;background:#8b8cff;box-shadow:0 0 14px #8b8cff;transition:all .25s}
 .display-avatar.thinking .display-mouth{width:26px;height:26px;border-radius:50%}
 .display-avatar.talking .display-mouth{animation:talk .3s infinite}
 .display-avatar.happy .display-mouth{height:34px;border:4px solid transparent;border-bottom-color:#8b8cff;background:transparent;box-shadow:none;border-radius:50%;transform:rotate(0deg)}
+.nova-full-body{position:relative;z-index:1;width:210px;max-width:70%;height:auto;margin-bottom:10px;filter:drop-shadow(0 0 24px #8b8cff66);transform-origin:50% 92%;animation:bodyIdle 3.2s ease-in-out infinite}
+.nova-full-body .limb,.nova-full-body .torso,.nova-full-body .head{stroke:#8b8cff;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.nova-full-body .core{fill:#17172f;stroke:#8b8cff;stroke-width:5}
+.nova-full-body .eye-dot,.nova-full-body .hand-dot,.nova-full-body .foot-dot{fill:#8b8cff;filter:drop-shadow(0 0 8px #8b8cff)}
+.nova-full-body .mouth-line{stroke:#8b8cff;stroke-width:5;stroke-linecap:round}
+.nova-full-body .body-label{fill:#cfd0ff;font-size:12px;letter-spacing:.08em}
+.nova-full-body #leftArm,.nova-full-body #rightArm,.nova-full-body #leftLeg,.nova-full-body #rightLeg{transform-box:fill-box;transform-origin:50% 5%}
+.nova-full-body.walk #leftLeg,.nova-full-body.walk #rightArm{animation:limbForward .55s ease-in-out infinite alternate}
+.nova-full-body.walk #rightLeg,.nova-full-body.walk #leftArm{animation:limbBack .55s ease-in-out infinite alternate}
+.nova-full-body.wave #rightArm{animation:waveArm .7s ease-in-out infinite alternate;transform-origin:10% 0}
+.nova-full-body.thinking{animation:bodyThink 1.6s ease-in-out infinite}
+.nova-full-body.talking .mouth-line{animation:mouthTalk .3s infinite}
+.nova-full-body.stop{animation:none}
+@keyframes bodyIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes bodyThink{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}
+@keyframes limbForward{from{transform:rotate(-11deg)}to{transform:rotate(13deg)}}
+@keyframes limbBack{from{transform:rotate(13deg)}to{transform:rotate(-11deg)}}
+@keyframes waveArm{from{transform:rotate(-10deg)}to{transform:rotate(-52deg)}}
+@keyframes mouthTalk{0%,100%{stroke-width:4}50%{stroke-width:9}}
+.walk-controls{position:relative;z-index:2;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:4px 0 8px}
+.walk-status{position:relative;z-index:2;font-size:11px;color:#aeb0dc;margin-bottom:4px}
 .display-mood{position:relative;z-index:1;color:#fff;font-size:18px;font-weight:700}
 .display-subtitle{position:relative;z-index:1;color:#bfc1ff;font-size:12px;margin-top:6px;line-height:1.35}
 .display-side{display:grid;gap:10px}
@@ -61,6 +85,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .loop-step{border:1px solid #30305d;background:#101020;border-radius:10px;padding:8px;font-size:11px;color:#cfd0ee}
 .display-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .telemetry{font-size:12px;color:#cfd0ee;line-height:1.4;border:1px solid #30305d;background:#101020;border-radius:10px;padding:9px;min-height:40px}
+.route-model{font-size:11px;color:#7cffaa;margin-bottom:7px;border:1px solid #29533d;background:#102018;border-radius:999px;padding:5px 8px;display:inline-flex}
 .chat{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
 .msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .msg.user{background:#2a2a4a;color:#e0e0e0;align-self:flex-end;border-bottom-right-radius:4px}
@@ -97,7 +122,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 .perm-btn.on{border-color:#4a8;color:#4a8;background:#4a822}
 .perm-btn.danger{border-color:#a44;color:#a44}
 .perm-btn.server{background:#2a2a4a;color:#7c7cff;border-color:#4a4a8a}
-@media(max-width:760px){.display-dashboard{grid-template-columns:1fr}.display-stage{min-height:260px}.display-avatar{width:150px;height:150px;padding:36px 28px 30px}.display-eye{width:24px;height:24px}.display-mouth{width:58px}}
+@media(max-width:760px){.display-dashboard{grid-template-columns:1fr}.display-stage{min-height:360px}.walk-space{min-height:300px}.display-avatar{width:68px;height:68px;padding:16px 12px 13px}.display-eye{width:10px;height:10px}.display-mouth{width:28px}.nova-full-body{width:185px}}
 @media(max-width:600px){.msg{max-width:95%;font-size:13px}.header h1{font-size:15px}.perm-btn{font-size:9px;padding:2px 8px}.workspace-panel{padding:12px}.nav-tab{font-size:11px;padding:6px 9px}}
 </style>
 </head>
@@ -149,13 +174,37 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 <p class="panel-note">This is Nova's big display: face, brain routes, memory counts, permission state, and operator shortcuts in one place.</p>
 <div class="display-dashboard">
 <div class="display-stage">
+<div class="walk-space" id="novaWalkSpace" aria-label="Nova full-body simulated walking space">
+<svg class="nova-full-body idle" id="novaFullBody" viewBox="0 0 220 330" role="img" aria-label="Nova full body walking avatar">
+<text class="body-label" x="110" y="24" text-anchor="middle">NOVA BODY</text>
+<g id="bodyRoot">
+<line class="limb" id="spine" x1="110" y1="108" x2="110" y2="192"></line>
+<ellipse class="core" id="torsoCore" cx="110" cy="162" rx="39" ry="58"></ellipse>
+<circle class="core head" id="headCore" cx="110" cy="76" r="38"></circle>
+<circle class="eye-dot" cx="96" cy="70" r="5"></circle>
+<circle class="eye-dot" cx="124" cy="70" r="5"></circle>
+<line class="mouth-line" x1="99" y1="91" x2="121" y2="91"></line>
+<g id="leftArm"><line class="limb" x1="78" y1="126" x2="48" y2="188"></line><circle class="hand-dot" cx="48" cy="188" r="8"></circle></g>
+<g id="rightArm"><line class="limb" x1="142" y1="126" x2="172" y2="188"></line><circle class="hand-dot" cx="172" cy="188" r="8"></circle></g>
+<g id="leftLeg"><line class="limb" x1="92" y1="214" x2="72" y2="294"></line><ellipse class="foot-dot" cx="67" cy="298" rx="14" ry="7"></ellipse></g>
+<g id="rightLeg"><line class="limb" x1="128" y1="214" x2="148" y2="294"></line><ellipse class="foot-dot" cx="153" cy="298" rx="14" ry="7"></ellipse></g>
+</g>
+</svg>
 <div class="display-avatar" id="displayAvatar" aria-label="Nova live face">
 <span class="display-eye"></span>
 <span class="display-eye right"></span>
 <span class="display-mouth"></span>
 </div>
+</div>
+<div class="walk-controls" aria-label="Nova simulated body controls">
+<button class="panel-action" data-motion="walk">Walk</button>
+<button class="panel-action" data-motion="wave">Wave</button>
+<button class="panel-action" data-motion="thinking">Think</button>
+<button class="panel-action" data-motion="stop">Stop</button>
+</div>
+<div class="walk-status" id="walkStatus">Body sim: standing in the walk space</div>
 <div class="display-mood" id="displayMoodState">Ready and watching</div>
-<div class="display-subtitle">The small face stays in the header. This tab shows the full creature display.</div>
+<div class="display-subtitle">Full-body sim only: Nova can walk, wave, think, and stop here without touching real hardware.</div>
 </div>
 <div class="display-side">
 <div class="display-card">
@@ -181,6 +230,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0a1
 </div>
 <div class="display-card">
 <h3>Last Route Trace</h3>
+<div class="route-model" id="displayRouteModel">Model: waiting</div>
 <div class="telemetry" id="displayRouteTrace">Waiting for the next Nova answer...</div>
 </div>
 </div>
@@ -298,8 +348,9 @@ const statusTag=document.getElementById('statusTag'),sessionEl=document.getEleme
 const eyeL=document.getElementById('eyeL'),eyeR=document.getElementById('eyeR'),mouth=document.getElementById('mouth');
 const navTabs=[...document.querySelectorAll('.nav-tab')];
 const panels=[...document.querySelectorAll('.workspace-panel')];
-const displayAvatar=document.getElementById('displayAvatar'),displayMoodState=document.getElementById('displayMoodState'),displayRouteTrace=document.getElementById('displayRouteTrace');
+const displayAvatar=document.getElementById('displayAvatar'),displayMoodState=document.getElementById('displayMoodState'),displayRouteTrace=document.getElementById('displayRouteTrace'),displayRouteModel=document.getElementById('displayRouteModel');
 const displaySessionState=document.getElementById('displaySessionState'),displayPeopleCount=document.getElementById('displayPeopleCount'),displayLessonsCount=document.getElementById('displayLessonsCount');
+const novaFullBody=document.getElementById('novaFullBody'),walkStatus=document.getElementById('walkStatus');
 const brainNodes=[...document.querySelectorAll('.brain-node')];
 let SERVER_BASE = window.location.protocol === 'file:' ? null : window.location.origin;
 let connected = false;
@@ -329,16 +380,71 @@ function normalizeRoles(meta){
   return raw.flat ? raw.flat().filter(Boolean) : [].concat(...raw).filter(Boolean);
 }
 
+function modelPrefix(meta){
+  const model = String(meta?.local_llm_model || meta?.model || '').toLowerCase();
+  if(model.includes('qwen')) return 'qwen';
+  if(model.includes('deepseek')) return 'deepseek';
+  return '';
+}
+
+function modelLabel(meta){
+  if(!meta) return 'Model: waiting';
+  const model = meta.local_llm_model || meta.model;
+  if(model) return 'Model: ' + model;
+  return meta.local_llm_synthesis_used ? 'Model: local LLM' : 'Model: Nova direct / tool route';
+}
+
+function formatRoutePath(meta){
+  let roles = normalizeRoles(meta);
+  const prefix = modelPrefix(meta);
+  if(prefix){
+    roles = roles.map(role => {
+      if(/^(qwen|deepseek|local_llm)_synthesis$/.test(role)) return prefix + '_synthesis';
+      if(/^(qwen|deepseek|local_llm)_planner$/.test(role)) return prefix + '_planner';
+      return role;
+    });
+  }
+  return roles.length ? roles.join(' -> ') : 'direct response';
+}
+
 function updateDisplayTelemetry(meta, text){
   const roles = normalizeRoles(meta);
-  brainNodes.forEach(node => node.classList.toggle('active', roles.includes(node.dataset.role)));
+  const activeRoles = new Set(roles);
+  if(roles.some(r => r.includes('planner'))) activeRoles.add('planner_transformer');
+  if(roles.some(r => r.includes('context') || r.includes('memory'))) activeRoles.add('memory_transformer');
+  if(roles.some(r => r.includes('critic'))) activeRoles.add('critic_conscience_transformer');
+  if(roles.some(r => r.includes('synthesis') || r.includes('speech'))) activeRoles.add('speech_output_transformer');
+  brainNodes.forEach(node => node.classList.toggle('active', activeRoles.has(node.dataset.role)));
   if(!displayRouteTrace || !meta) return;
   const source = meta.source || meta.domain || 'nova';
   const confidence = meta.confidence !== undefined ? ` | confidence ${Math.round(meta.confidence*100)}%` : '';
   const memory = meta.memory_event ? ` | ${meta.memory_event}` : '';
-  const route = roles.length ? roles.join(' -> ') : 'direct response';
+  const route = formatRoutePath(meta);
+  if(displayRouteModel) displayRouteModel.textContent = modelLabel(meta);
   displayRouteTrace.textContent = `${source}: ${route}${confidence}${memory}`;
 }
+
+function setBodyMotion(motion){
+  if(!novaFullBody) return;
+  const allowed = ['idle','walk','wave','thinking','talking','stop'];
+  const next = allowed.includes(motion) ? motion : 'idle';
+  novaFullBody.setAttribute('class', 'nova-full-body ' + next);
+  if(walkStatus){
+    const labels = {
+      idle:'Body sim: standing in the walk space',
+      walk:'Body sim: walking in place inside the safe space',
+      wave:'Body sim: waving',
+      thinking:'Body sim: thinking / scanning',
+      talking:'Body sim: speaking',
+      stop:'Body sim: stopped'
+    };
+    walkStatus.textContent = labels[next] || labels.idle;
+  }
+}
+
+document.querySelectorAll('[data-motion]').forEach(btn => {
+  btn.addEventListener('click', () => setBodyMotion(btn.dataset.motion));
+});
 
 function setStatus(online){
   connected = online;
@@ -357,6 +463,10 @@ function setFace(state){
     const labels = {thinking:'Thinking...',talking:'Speaking answer',happy:'Answer ready',listening:'Listening',neutral:'Ready and watching'};
     displayMoodState.textContent = labels[state] || 'Ready and watching';
   }
+  if(state === 'thinking') setBodyMotion('thinking');
+  else if(state === 'talking') setBodyMotion('talking');
+  else if(state === 'happy') setBodyMotion('wave');
+  else if(state === 'neutral') setBodyMotion('idle');
   if(state === 'thinking'){ mouth.style.width = '8px'; mouth.style.height = '8px'; mouth.style.borderRadius = '50%'; }
   else if(state === 'talking'){ mouth.className = 'mouth talking'; }
   else if(state === 'happy'){ mouth.className = 'mouth happy'; }

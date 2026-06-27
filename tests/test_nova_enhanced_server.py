@@ -22,6 +22,7 @@ def test_chat_payload_preserves_present_text_over_message():
 
 def test_brain_route_exposes_transformer_evidence_from_hybrid_router(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", False)
     monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
     monkeypatch.setattr(server, "_CONV_ENGINE", None)
     monkeypatch.setattr(
@@ -62,6 +63,81 @@ def test_brain_route_exposes_transformer_evidence_from_hybrid_router(monkeypatch
     assert trace["route_path"] == ["left_hemisphere", "planner_transformer"]
     assert "route_model_hash" in trace
     assert trace["checkpoint_hash"] == HASH_B
+
+
+def test_brain_route_prefers_cognitive_os_for_open_ended_chat(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", True)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(
+        server,
+        "pipeline_process",
+        lambda text, memory, dict_lookup_fn: {
+            "fast_path": False,
+            "normalized_text": text,
+            "intent": {"primary_intent": "coding_help"},
+            "route": ["left_hemisphere", "planner_transformer"],
+            "confidence": 0.90,
+            "memory_binding": {},
+        },
+    )
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+
+    def fake_cognitive_route(text, dict_lookup_fn=None, memory=None):
+        return (
+            "A loop repeats work until a stop condition is met.",
+            {
+                "source": "cognitive_os",
+                "cognitive_os": True,
+                "planner_used": "llm",
+                "planner_json_valid": True,
+                "plan_repair_used": False,
+                "validated_route": "coding_help",
+                "local_llm_synthesis_used": True,
+                "local_llm_model": "deepseek-r1:7b",
+                "critic_result": "passed",
+                "roles": ["deepseek_planner", "nova_context_builder", "deepseek_synthesis"],
+                "skills": ["llm_planner", "nova_validation", "llm_synthesis"],
+                "route_path": [
+                    "deepseek_planner",
+                    "nova_validator",
+                    "nova_context",
+                    "deepseek_synthesis",
+                    "critic",
+                    "speech_output",
+                ],
+                "domain": "coding_help",
+                "confidence": 0.88,
+                "fallback_used": False,
+                "academic_fallback_used": True,
+            },
+        )
+
+    def hybrid_should_not_run(*args, **kwargs):
+        raise AssertionError("hybrid router should not run before cognitive os")
+
+    monkeypatch.setattr(server, "cognitive_route", fake_cognitive_route, raising=False)
+    monkeypatch.setattr(server, "route_and_respond", hybrid_should_not_run)
+
+    response, trace = server.brain_route("Explain loops")
+
+    assert response == "A loop repeats work until a stop condition is met."
+    assert trace["source"] == "cognitive_os"
+    assert trace["cognitive_os"] is True
+    assert trace["planner_used"] == "llm"
+    assert trace["plan_repair_used"] is False
+    assert trace["local_llm_model"] == "deepseek-r1:7b"
+    assert trace["academic_fallback_used"] is True
+    assert trace["critic_result"] == "passed"
+    assert trace["route_path"] == [
+        "deepseek_planner",
+        "nova_validator",
+        "nova_context",
+        "deepseek_synthesis",
+        "critic",
+        "speech_output",
+    ]
 
 
 def test_brain_route_returns_app_navigation_trace(monkeypatch):
@@ -312,13 +388,21 @@ def test_web_ui_exposes_whole_app_surfaces():
 def test_web_ui_display_tab_shows_nova_body_and_live_status():
     required_display_markers = [
         'id="displayAvatar"',
+        'id="novaWalkSpace"',
+        'id="novaFullBody"',
+        'data-motion="walk"',
+        'data-motion="wave"',
+        'data-motion="stop"',
         'id="displayRouteTrace"',
+        'id="displayRouteModel"',
         'id="displaySessionState"',
         'id="displayPeopleCount"',
         'id="displayLessonsCount"',
         'data-role="memory_transformer"',
         'data-role="speech_output_transformer"',
         "function updateDisplayTelemetry",
+        "function setBodyMotion",
+        "function formatRoutePath",
         "function updateDisplayCounts",
         "openPanel('agent-library-panel')",
         "openPanel('app-builder-panel')",
@@ -327,3 +411,22 @@ def test_web_ui_display_tab_shows_nova_body_and_live_status():
 
     for marker in required_display_markers:
         assert marker in server.WEB_HTML
+
+
+def test_sandbox_project_static_path_resolves_preview_file():
+    resolved = server._resolve_sandbox_static_path(
+        "/sandbox/app_builder_projects/Nova_Pac_Runner/index.html"
+    )
+
+    assert resolved is not None
+    assert resolved.name == "index.html"
+    assert resolved.exists()
+    assert "Nova_Pac_Runner" in str(resolved)
+
+
+def test_sandbox_project_static_path_blocks_directory_escape():
+    resolved = server._resolve_sandbox_static_path(
+        "/sandbox/app_builder_projects/Nova_Pac_Runner/../../../../nova_llm_config.json"
+    )
+
+    assert resolved is None

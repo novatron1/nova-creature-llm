@@ -65,7 +65,8 @@ def build(user_message, plan, memory_result=None, dictionary_result=None,
 Rules:
 - Do NOT invent facts that are not in the memory or web context below.
 - Do NOT claim the user has information that is not in memory.
-- If memory context is "None", say you don't know rather than inventing.
+- If the user asks about saved personal information and memory context is "None", say it is not saved yet.
+- For general explanations, coding help, planning, and creative tasks, answer the user's general question normally.
 - Do NOT use phrases like "based on memory" or "from my saved knowledge".
 - Answer in second person (you/your) when answering about the user's saved information.
 - Be concise and natural.
