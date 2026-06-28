@@ -1,0 +1,16 @@
+{
+  "name": "Nova Stem Player",
+  "kind": "react_audio_workstation",
+  "entry": "index.html",
+  "engine": "React + Vite",
+  "audio": "Web Audio API",
+  "stem_controls": [
+    "vocals",
+    "drums",
+    "bass",
+    "other"
+  ],
+  "true_stem_mode": true,
+  "single_file_mode": "simulated stem shaping",
+  "safe_sandbox": true
+}

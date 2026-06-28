@@ -182,6 +182,28 @@ def test_brain_route_builds_pacman_game_preview(monkeypatch, tmp_path):
     assert (tmp_path / "Nova_Pac_Runner" / "index.html").exists()
 
 
+def test_brain_route_builds_stem_music_player_preview(monkeypatch, tmp_path):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "APP_BUILDER_PROJECTS_ROOT", tmp_path)
+
+    response, trace = server.brain_route("make me a music player app with stem control and all the latest features")
+
+    assert "Nova Stem Player" in response
+    assert "Open:" in response
+    assert trace["source"] == "sandbox_app_builder"
+    assert "React/Vite" in response
+    assert "stem_mixer" in trace["skills"]
+    assert "react_vite" in trace["verification"]["checks"]
+    assert trace["target_surface"] == "preview_area"
+    assert trace["action"] == "create_app"
+    assert trace["safety_level"] == "safe_write"
+    assert trace["project_name"] == "Nova Stem Player"
+    assert trace["project_url"] == "/sandbox/app_builder_projects/Nova_Stem_Player/index.html"
+    assert (tmp_path / "Nova_Stem_Player" / "src" / "App.tsx").exists()
+
+
 def test_brain_route_handles_temperature_question_before_transformer(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
     monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
@@ -383,6 +405,9 @@ def test_web_ui_exposes_whole_app_surfaces():
 
     assert "function openPanel" in server.WEB_HTML
     assert "Whole App Navigation" in server.WEB_HTML
+    assert "Open Nova Stem Player" in server.WEB_HTML
+    assert "Open Stem Player Preview" in server.WEB_HTML
+    assert "/sandbox/app_builder_projects/Nova_Stem_Player/index.html" in server.WEB_HTML
 
 
 def test_web_ui_display_tab_shows_nova_body_and_live_status():

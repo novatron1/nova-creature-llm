@@ -20,6 +20,13 @@ env/
 *.swo
 *~
 
+# Node app dependencies and local dev-server output
+node_modules/
+**/node_modules/
+**/vite-dev.log
+**/vite-dev.err.log
+**/vite-dev.pid
+
 # OS
 .DS_Store
 Thumbs.db

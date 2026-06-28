@@ -697,6 +697,38 @@ def brain_route(text, context=None):
                 except: pass
             trace = _set_final_answer_source(trace)
             return response, trace
+
+    # App Builder: music workstation requests must build before generic capability matching.
+    if (
+        _GAME_BUILDER_AVAIL
+        and hasattr(_game_builder, "is_stem_music_player_request")
+        and hasattr(_game_builder, "build_stem_music_player")
+        and _game_builder.is_stem_music_player_request(text)
+    ):
+        try:
+            result = _game_builder.build_stem_music_player(projects_root=APP_BUILDER_PROJECTS_ROOT)
+            project_name = result.project_name
+            project_url = result.url_path
+            trace["source"] = "sandbox_app_builder"
+            trace["target_surface"] = "preview_area"
+            trace["action"] = "create_app"
+            trace["safety_level"] = "safe_write"
+            trace["project_name"] = project_name
+            trace["project_url"] = project_url
+            trace["roles"] = ["right_hemisphere", "planner_transformer", "coding_master"]
+            trace["skills"] = ["react_vite", "web_audio", "stem_mixer", "app_builder"]
+            trace["verification"] = {"checks": ["react_vite", "web_audio", "stem_mixer", "sandbox_project_created"]}
+            trace["confidence"] = 0.93
+            trace["domain"] = "app_builder"
+            response = "[APP BUILDER] Created " + project_name + " using React/Vite and Web Audio.\nOpen: " + project_url + "\nFile: " + str(result.entry_file)
+            _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
+            if _CONV_ENGINE_AVAIL:
+                try: _CONV_ENGINE.add_exchange(text, response)
+                except: pass
+            trace = _set_final_answer_source(trace)
+            return response, trace
+        except Exception:
+            pass
     
     # Capabilities
     if any(w in q for w in ["what can you do", "what can u do", "capabilities", "what are you", "tell me about yourself", "abilities", "features", "what all can"]):
