@@ -1,0 +1,6 @@
+from nova.specialist_cortex.philosopher_cortex import PhilosopherCortex
+from nova.specialist_cortex.science_cortex import ScienceCortex
+from nova.specialist_cortex.math_measurement_cortex import MathMeasurementCortex
+from nova.specialist_cortex.knowledge_cortex import KnowledgeCortex
+from nova.specialist_cortex.code_skill_cortex import CodeSkillCortex
+from nova.specialist_cortex.world_systems_cortex import WorldSystemsCortex

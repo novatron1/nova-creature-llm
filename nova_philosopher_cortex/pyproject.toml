@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "nova-philosopher-cortex"
+version = "0.1.0"
+description = "Modular AI philosopher engine - grand-scale architecture prototype"
+authors = [{name = "Nova Team"}]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+    "requests>=2.28.0",
+]
