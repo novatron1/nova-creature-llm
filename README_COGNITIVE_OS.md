@@ -69,12 +69,12 @@ The main integration point. Wraps all modules into one function: `route(message,
 
 ```bash
 # Install Ollama
-ollama pull qwen2.5:1.5b
+ollama pull deepseek-r1:7b
 
 # Enable local LLM
 export NOVA_USE_LOCAL_LLM=true
 export NOVA_LOCAL_LLM_PROVIDER=ollama
-export NOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b
+export NOVA_LOCAL_LLM_MODEL=deepseek-r1:7b
 ```
 
 ## Trace Fields

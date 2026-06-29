@@ -27,6 +27,10 @@ def try_direct_answer(plan, memory_result, dictionary_result, math_result):
     slot_needed = plan.get("slot_needed")
 
     # ─── Memory recall: direct second-person answer ───
+    direct_answer = plan.get("_direct_answer") or plan.get("direct_answer")
+    if direct_answer:
+        return str(direct_answer).strip(), True
+
     if route == "memory_recall" and memory_result.get("found"):
         raw_text = memory_result.get("raw_text")
 

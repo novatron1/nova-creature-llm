@@ -12,14 +12,16 @@ Extends the original web server with:
 Usage: python3 nova_enhanced_server.py [port]
 """
 
-import json, sys, os, uuid, time, threading, re, traceback
+import json, sys, os, uuid, time, threading, re, traceback, mimetypes
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
 from socketserver import ThreadingMixIn
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "src"))
+SANDBOX_ROOT = Path(ROOT) / "sandbox"
 
 # ── Hybrid Router ───────────────────────────────────────────────────────────
 _HYBRID_ROUTER_AVAIL = False
@@ -29,6 +31,14 @@ try:
 except Exception as e:
     print(f"[ROUTER] Not available: {e}")
     route_and_respond = None
+
+_COGNITIVE_OS_AVAIL = False
+try:
+    from nova_cognitive_os import route as cognitive_route
+    _COGNITIVE_OS_AVAIL = True
+except Exception as e:
+    print(f"[COGNITIVE_OS] Not available: {e}")
+    cognitive_route = None
 
 # ── Meaning Pipeline ────────────────────────────────────────────────────────
 _PIPELINE_AVAIL = False
@@ -160,6 +170,34 @@ except Exception:
     pass
 
 # ── Mock data providers (for cloud/test mode) ──────────────────────────────
+def _resolve_sandbox_static_path(request_path):
+    """Return a safe static file path for /sandbox/* URLs, or None."""
+    parsed_path = unquote(urlparse(request_path).path)
+    prefix = "/sandbox/"
+    if not parsed_path.startswith(prefix):
+        return None
+
+    rel_path = parsed_path[len(prefix):].lstrip("/")
+    if not rel_path:
+        return None
+
+    sandbox_root = SANDBOX_ROOT.resolve()
+    candidate = (sandbox_root / rel_path).resolve()
+
+    try:
+        candidate.relative_to(sandbox_root)
+    except ValueError:
+        return None
+
+    if candidate.is_dir():
+        candidate = candidate / "index.html"
+
+    if not candidate.exists() or not candidate.is_file():
+        return None
+
+    return candidate
+
+
 def _fetch_weather_summary(location):
     """Return a plausible weather summary for a location."""
     if not location or not location.strip():
@@ -730,8 +768,42 @@ def brain_route(text, context=None):
             elif memory_bind.get("relevant_lessons"):
                 trace["memory_event"] = "memory_bind:lesson"
             
-            # Generate response via hybrid router
-            if _HYBRID_ROUTER_AVAIL:
+            response = None
+
+            # Generate response via Cognitive OS first: LLM planner → Nova validation/context → LLM synthesis → critic
+            if _COGNITIVE_OS_AVAIL and cognitive_route:
+                try:
+                    response, cognitive_trace = cognitive_route(normalized_text, dict_lookup_fn=_dict_lookup, memory=MEMORY)
+                    trace["source"] = cognitive_trace.get("source", "cognitive_os")
+                    trace["cognitive_os"] = cognitive_trace.get("cognitive_os", True)
+                    trace["planner_used"] = cognitive_trace.get("planner_used", trace.get("planner_used", False))
+                    trace["planner_json_valid"] = cognitive_trace.get("planner_json_valid", False)
+                    trace["plan_repair_used"] = cognitive_trace.get("plan_repair_used", False)
+                    trace["planner_validation_errors"] = cognitive_trace.get("planner_validation_errors", [])
+                    trace["validated_route"] = cognitive_trace.get("validated_route")
+                    trace["slot_needed"] = cognitive_trace.get("slot_needed")
+                    trace["long_term_memory_used"] = cognitive_trace.get("long_term_memory_used", False)
+                    trace["memory_id"] = cognitive_trace.get("memory_id")
+                    trace["memory_retrieved"] = cognitive_trace.get("memory_retrieved", False)
+                    trace["local_llm_synthesis_used"] = cognitive_trace.get("local_llm_synthesis_used", False)
+                    trace["local_llm_model"] = cognitive_trace.get("local_llm_model", "")
+                    trace["academic_fallback_used"] = cognitive_trace.get("academic_fallback_used", False)
+                    trace["critic_result"] = cognitive_trace.get("critic_result")
+                    trace["final_answer_clean"] = cognitive_trace.get("final_answer_clean", True)
+                    trace["training_log_saved"] = cognitive_trace.get("training_log_saved", False)
+                    trace["fallback_used"] = cognitive_trace.get("fallback_used", False)
+                    trace["route_path"] = cognitive_trace.get("route_path", trace.get("route_path", []))
+                    trace["roles"] = cognitive_trace.get("roles", trace.get("roles", []))
+                    trace["skills"] = list(dict.fromkeys(trace.get("skills", []) + cognitive_trace.get("skills", [])))
+                    trace["confidence"] = cognitive_trace.get("confidence", trace.get("confidence", pipeline_conf))
+                    trace["domain"] = cognitive_trace.get("domain", trace.get("domain", primary_intent))
+                    trace["memory_event"] = cognitive_trace.get("memory_event", trace.get("memory_event"))
+                except Exception as cog_err:
+                    trace["cognitive_os_error"] = str(cog_err)[:120]
+                    response = None
+
+            # Back up to the older hybrid router if Cognitive OS is unavailable or fails
+            if response is None and _HYBRID_ROUTER_AVAIL:
                 response, hybrid_trace = route_and_respond(normalized_text, dict_lookup_fn=_dict_lookup, memory=MEMORY)
                 # Merge quality gate fields from hybrid router
                 trace["source"] = hybrid_trace.get("source", "hybrid_router")
@@ -749,7 +821,7 @@ def brain_route(text, context=None):
                 trace["local_llm_url"] = hybrid_trace.get("local_llm_url", "")
                 trace["local_llm_fallback_reason"] = hybrid_trace.get("local_llm_fallback_reason", "")
                 trace["local_llm_error"] = hybrid_trace.get("local_llm_error", "")
-            else:
+            elif response is None:
                 from nova_hybrid_router import classify_domain
                 domain = classify_domain(normalized_text)
                 fallbacks = {
@@ -1125,7 +1197,7 @@ def brain_route(text, context=None):
 HTML_PATH = os.path.join(ROOT, "nova_chat_web.html")
 WEB_HTML = None
 if os.path.exists(HTML_PATH):
-    with open(HTML_PATH) as f:
+    with open(HTML_PATH, encoding="utf-8") as f:
         WEB_HTML = f.read()
         print(f"[HTML] Loaded from {HTML_PATH}")
 else:
@@ -1223,6 +1295,17 @@ class NovaHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
             self.wfile.write(WEB_HTML.encode('utf-8'))
+        elif parsed.path.startswith('/sandbox/'):
+            static_path = _resolve_sandbox_static_path(parsed.path)
+            if static_path is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            content_type = mimetypes.guess_type(str(static_path))[0] or "application/octet-stream"
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.end_headers()
+            self.wfile.write(static_path.read_bytes())
         elif parsed.path == '/status':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
