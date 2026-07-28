@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b18">
+  <title>Nova Companion</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/assets/nova_companion/companion-shell.css">
+</head>
+<body>
+  <main class="companion-shell" id="companionApp" aria-busy="true">
+    <header class="companion-topbar">
+      <a class="companion-wordmark" href="/companion" aria-label="Nova Companion home">Nova</a>
+      <button id="companionTrustButton" type="button" aria-controls="companionSheetHost">
+        <span aria-hidden="true" class="local-dot"></span>
+        <span id="companionTrustLabel">Checking privacy</span>
+      </button>
+    </header>
+    <section id="novaPresence" aria-labelledby="novaGreeting">
+      <div id="novaFace" aria-hidden="true">
+        <span class="nova-eye"></span><span class="nova-eye"></span><span class="nova-mouth"></span>
+      </div>
+      <h1 id="novaGreeting">Nova is here.</h1>
+      <p id="novaContinuityCue"></p>
+    </section>
+    <section id="conversationTimeline" aria-label="Conversation with Nova" aria-live="polite"></section>
+    <p id="companionLiveStatus" class="sr-only" role="status"></p>
+    <form id="companionComposer">
+      <label class="sr-only" for="companionInput">Talk to Nova</label>
+      <textarea id="companionInput" rows="1" maxlength="12000" placeholder="Talk to Nova…"></textarea>
+      <button id="companionSendButton" type="submit" aria-label="Send message">↑</button>
+    </form>
+    <button id="novaSparkButton" type="button" aria-expanded="false" aria-controls="companionSheetHost">
+      <span aria-hidden="true">✦</span><span class="sr-only">Open Nova Spark</span>
+    </button>
+    <div id="companionSheetBackdrop" hidden></div>
+    <section id="companionSheetHost" role="dialog" aria-modal="true" aria-label="Nova capabilities" hidden></section>
+    <a class="classic-fallback" href="/classic">Nova Classic</a>
+  </main>
+  <script src="/assets/nova_foundation_ui.js"></script>
+  <script type="module" src="/assets/nova_companion/companion-app.js"></script>
+</body>
+</html>
