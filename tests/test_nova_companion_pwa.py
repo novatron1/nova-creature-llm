@@ -64,7 +64,6 @@ function fakeResponse(marker, status = 200) {
 
 async function createRuntime({
   network = "ok",
-  seededPaths = [],
   existingCaches = [],
   runtimePutFailure = false,
 } = {}) {
@@ -152,13 +151,6 @@ async function createRuntime({
   };
   vm.runInNewContext(workerSource, context, { filename: "service-worker.js" });
 
-  const cache = await caches.open("test-seed");
-  for (const path of seededPaths) {
-    await cache.put(path, fakeResponse(`cache:${path}`));
-  }
-  seedComplete = true;
-  putCalls.length = 0;
-
   return {
     listeners,
     cacheStores,
@@ -166,6 +158,10 @@ async function createRuntime({
     putCalls,
     deleteCalls,
     fetchCalls,
+    completeSeeding() {
+      seedComplete = true;
+      putCalls.length = 0;
+    },
   };
 }
 
@@ -214,12 +210,41 @@ async function runFetch({
   seededPaths = ["/companion", "/offline.html"],
   originOverride = origin,
   runtimePutFailure = false,
+  conflictingFallbacks = false,
 }) {
   const runtime = await createRuntime({
     network,
-    seededPaths,
+    existingCaches: conflictingFallbacks ? ["unrelated-app-cache"] : [],
     runtimePutFailure,
   });
+  let installPending;
+  runtime.listeners.install({
+    waitUntil(value) {
+      installPending = Promise.resolve(value);
+    },
+  });
+  await installPending;
+  const currentCacheName = [...runtime.cacheStores.keys()].find(
+    name => name.startsWith("nova-shell-"),
+  );
+  if (!currentCacheName) throw new Error("worker did not create a Nova shell cache");
+  const currentStore = runtime.cacheStores.get(currentCacheName);
+  for (const seededPath of seededPaths) {
+    currentStore.set(
+      seededPath,
+      fakeResponse(`cache:current:${seededPath}`),
+    );
+  }
+  if (conflictingFallbacks) {
+    const unrelatedStore = runtime.cacheStores.get("unrelated-app-cache");
+    for (const seededPath of seededPaths) {
+      unrelatedStore.set(
+        seededPath,
+        fakeResponse(`cache:unrelated:${seededPath}`),
+      );
+    }
+  }
+  runtime.completeSeeding();
   const request = {
     method,
     mode,
@@ -260,6 +285,12 @@ async function runFetch({
       mode: "navigate",
       network: "throw",
     }),
+    companionConflictingCacheOffline: await runFetch({
+      path: "/companion?source=installed",
+      mode: "navigate",
+      network: "throw",
+      conflictingFallbacks: true,
+    }),
     companionCacheWriteFailure: await runFetch({
       path: "/companion?source=installed",
       mode: "navigate",
@@ -273,6 +304,12 @@ async function runFetch({
       path: "/classic",
       mode: "navigate",
       network: "throw",
+    }),
+    classicConflictingCacheOffline: await runFetch({
+      path: "/classic",
+      mode: "navigate",
+      network: "throw",
+      conflictingFallbacks: true,
     }),
     allowedAsset: await runFetch({
       path: "/assets/nova_companion/companion-app.js",
@@ -363,8 +400,17 @@ def test_companion_navigation_is_network_first_with_canonical_shell_fallback(
     assert online["marker"] == "network:/companion?source=installed"
     assert online["putCalls"] == ["/companion"]
     assert offline["handled"] is True
-    assert offline["marker"] == "cache:/companion"
+    assert offline["marker"] == "cache:current:/companion"
     assert offline["putCalls"] == []
+
+
+def test_companion_fallback_uses_only_the_current_nova_shell_cache(worker_report):
+    """Catch an unrelated same-origin cache overriding the Companion shell."""
+    result = worker_report["companionConflictingCacheOffline"]
+
+    assert result["handled"] is True
+    assert result["marker"] == "cache:current:/companion"
+    assert result["putCalls"] == []
 
 
 def test_successful_network_response_survives_cache_storage_write_failure(
@@ -385,8 +431,17 @@ def test_classic_is_never_cached_and_falls_back_to_public_offline_page(worker_re
 
     assert online["marker"] == "network:/classic?panel=settings"
     assert online["putCalls"] == []
-    assert offline["marker"] == "cache:/offline.html"
+    assert offline["marker"] == "cache:current:/offline.html"
     assert offline["putCalls"] == []
+
+
+def test_navigation_fallback_uses_only_the_current_nova_shell_cache(worker_report):
+    """Catch an unrelated same-origin cache overriding the offline recovery page."""
+    result = worker_report["classicConflictingCacheOffline"]
+
+    assert result["handled"] is True
+    assert result["marker"] == "cache:current:/offline.html"
+    assert result["putCalls"] == []
 
 
 def test_only_allowlisted_same_origin_gets_can_enter_runtime_cache(worker_report):
