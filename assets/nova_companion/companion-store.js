@@ -108,7 +108,10 @@ export function reduceCompanionState(state, event) {
         activeTool: null,
       });
     case "COMPLETED":
-      return freezeState({ ...state, phase: "completed", activeRequestId: "", activeTool: null });
+      return freezeState({
+        ...state, phase: "completed", activeRequestId: "", activeTool: null,
+        conversationTurnCount: state.conversationTurnCount + 1,
+      });
     case "FAILED":
       return freezeState({
         ...state, phase: "failed", activeRequestId: "", activeTool: null,

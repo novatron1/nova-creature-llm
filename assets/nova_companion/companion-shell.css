@@ -68,6 +68,14 @@ button, .classic-fallback { min-height: 44px; }
 
 #conversationTimeline { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.25rem; }
 
+.companion-message { max-width: 88%; margin: 0.5rem 0; padding: 0.75rem 0.875rem; border-radius: var(--radius); background: var(--surface); overflow-wrap: anywhere; }
+.companion-message--user { margin-left: auto; background: #37305e; }
+.companion-message--system { border: 1px solid var(--warning); color: var(--text-muted); }
+.companion-message__role, .companion-message__answer-status { margin: 0 0 0.35rem; color: var(--text-muted); font-size: 0.8125rem; }
+.companion-message__text { white-space: pre-wrap; }
+.companion-message__text a { color: var(--cyan); }
+.companion-retry button { min-height: 44px; border: 1px solid var(--violet); border-radius: 999px; padding: 0.5rem 0.875rem; background: transparent; color: var(--text); }
+
 #companionComposer { gap: 0.75rem; padding: 0.75rem 0 calc(0.75rem + var(--safe-area-bottom)); }
 #companionInput { flex: 1; min-width: 0; min-height: 44px; max-height: 12rem; resize: none; border: 1px solid transparent; border-radius: var(--radius); padding: 0.7rem 1rem; background: var(--surface); color: var(--text); }
 #companionSendButton, #novaSparkButton { width: 44px; padding: 0; }

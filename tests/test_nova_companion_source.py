@@ -40,3 +40,13 @@ def test_companion_shell_contains_modal_positioning_context():
         css,
         re.DOTALL,
     )
+
+
+def test_companion_conversation_keeps_model_text_in_safe_dom_nodes():
+    conversation = (ROOT / "assets/nova_companion/companion-conversation.js").read_text(encoding="utf-8")
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    assert "textContent" in conversation
+    assert ".innerHTML" not in conversation
+    assert "nova_companion_draft_v1" in app
+    assert "nova_companion_messages" not in app
+    assert "localStorage.setItem" not in conversation

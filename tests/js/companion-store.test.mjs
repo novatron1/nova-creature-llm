@@ -10,6 +10,8 @@ const importModule = async (path) => {
 
 const store = await importModule("../../assets/nova_companion/companion-store.js");
 const presence = await importModule("../../assets/nova_companion/companion-presence.js");
+const conversation = await importModule("../../assets/nova_companion/companion-conversation.js");
+const composer = await importModule("../../assets/nova_companion/companion-composer.js");
 
 const {
   COMPANION_EVENTS,
@@ -18,6 +20,44 @@ const {
   reduceCompanionState,
 } = store;
 const { presenceViewModel, renderPresence } = presence;
+const { appendMessage, beginStreamingMessage, appendStreamingDelta } = conversation;
+const { createComposerController } = composer;
+
+class FakeNode {
+  constructor(tagName = "div") {
+    this.tagName = tagName.toUpperCase();
+    this.children = [];
+    this.dataset = {};
+    this.attributes = {};
+    this.style = {};
+    this.listeners = new Map();
+    this._textContent = "";
+  }
+  append(...nodes) { this.children.push(...nodes); }
+  appendChild(node) { this.children.push(node); return node; }
+  setAttribute(name, value) { this.attributes[name] = String(value); }
+  addEventListener(type, listener) { this.listeners.set(type, listener); }
+  removeEventListener(type) { this.listeners.delete(type); }
+  focus() { this.focused = true; }
+  get textContent() { return this.children.length ? this.children.map((child) => child.textContent).join("") : this._textContent; }
+  set textContent(value) { this._textContent = String(value); this.children = []; }
+  querySelector(selector) {
+    const match = selector.match(/^\[data-([^\]]+)\]$/);
+    if (!match) return null;
+    const key = match[1].replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+    for (const child of this.children) {
+      if (child.dataset?.[key] !== undefined) return child;
+      const nested = child.querySelector?.(selector);
+      if (nested) return nested;
+    }
+    return null;
+  }
+}
+
+class FakeDocument {
+  createElement(tagName) { return new FakeNode(tagName); }
+  createTextNode(text) { const node = new FakeNode("#text"); node.textContent = text; return node; }
+}
 
 test("cancelled requests ignore late deltas", () => {
   const initial = createInitialCompanionState({ clientId: "phone", conversationId: "conv-1" });
@@ -47,6 +87,58 @@ test("presence labels match real phases", () => {
   assert.equal(thinking.label, "Nova is thinking");
   assert.equal(thinking.size, "compact");
   assert.equal(thinking.motion, "thinking");
+});
+
+test("adaptive presence remains full until Nova completes the first turn", () => {
+  const initial = createInitialCompanionState({});
+  assert.equal(presenceViewModel(initial, false).size, "full");
+  const submitted = reduceCompanionState(initial, { type: "SUBMIT", requestId: "r", text: "Hello" });
+  const completed = reduceCompanionState(submitted, { type: "COMPLETED", requestId: "r" });
+  assert.equal(presenceViewModel(completed, false).size, "compact");
+});
+
+test("conversation rendering keeps model markup inert while linking only safe URLs", () => {
+  const document = new FakeDocument();
+  const timeline = new FakeNode();
+  timeline.ownerDocument = document;
+  const message = appendMessage(timeline, {
+    id: "msg-1", role: "assistant", text: "<b>safe</b> https://nova.local/help ftp://unsafe.example", status: "completed",
+  });
+  const body = message.querySelector("[data-message-text]");
+  assert.equal(body.children.some((node) => node.tagName === "A" && node.href === "https://nova.local/help"), true);
+  assert.equal(body.children.some((node) => node.tagName === "A" && String(node.href).startsWith("ftp:")), false);
+  assert.equal(body.children.some((node) => node.textContent.includes("<b>safe</b>")), true);
+});
+
+test("streaming message rebuilds safe text once for every appended delta", () => {
+  const document = new FakeDocument();
+  const timeline = new FakeNode();
+  timeline.ownerDocument = document;
+  const message = beginStreamingMessage(timeline, "response-1");
+  appendStreamingDelta(message, "Nova ");
+  appendStreamingDelta(message, "responds.");
+  assert.equal(message.querySelector("[data-message-text]").textContent, "Nova responds.");
+});
+
+test("composer retains a draft until accepted server evidence clears it", async () => {
+  const storage = new Map([["nova_companion_draft_v1", "draft"]]);
+  const calls = [];
+  const form = new FakeNode("form");
+  const input = new FakeNode("textarea");
+  input.value = "draft";
+  input.scrollHeight = 48;
+  const sendButton = new FakeNode("button");
+  const controller = createComposerController({
+    form, input, sendButton,
+    storage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
+    onSubmit: async (text) => calls.push(text),
+  });
+  await controller.submit();
+  assert.equal(storage.get("nova_companion_draft_v1"), "draft");
+  controller.markRequestAccepted();
+  assert.equal(storage.has("nova_companion_draft_v1"), false);
+  assert.equal(input.value, "");
+  assert.deepEqual(calls, ["draft"]);
 });
 
 test("initial state has the documented immutable shape", () => {
