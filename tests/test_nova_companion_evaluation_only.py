@@ -8,6 +8,7 @@ import threading
 import pytest
 
 import nova_enhanced_server as server
+import nova_evaluation_policy as evaluation_policy
 from nova_gateway.adapters import openai_chat_to_nova, openai_response_to_nova
 from nova_gateway.auth import AuthContext, LOCAL_SAFE_SCOPES
 from nova_gateway.config import GatewayConfig
@@ -18,6 +19,61 @@ from nova_gateway.http import NovaGatewayHttpController
 from nova_gateway.providers import MockProvider
 from nova_gateway.router import RoutingDecision
 from nova_gateway.world_model import NovaWorldModel
+from nova_protocol import NovaStreamEvent
+
+
+LEGACY_MUTATING_COMMAND_ALIASES = (
+    "allow mic",
+    "enable mic",
+    "deny mic",
+    "disable mic",
+    "allow camera",
+    "enable camera",
+    "deny camera",
+    "disable camera",
+    "allow speaker",
+    "enable speaker",
+    "deny speaker",
+    "disable speaker",
+    "private mode",
+    "toggle private",
+    "stop all",
+    "emergency stop",
+    "can u train yourself",
+    "can you train yourself",
+    "do a full training",
+    "do all training",
+    "full training",
+    "run full training",
+    "train yourself",
+    "train urself",
+    "train everything",
+    "train all",
+    "train nova",
+    "make it smarter",
+    "make nova smarter",
+    "run training center",
+    "training center",
+    "deep learn",
+    "deep learn now",
+    "train transformers",
+    "train now",
+    "train all roles",
+    "learn this: persist me",
+    "remember this: persist me",
+    "save this: persist me",
+    "forget long-term memory: persist me",
+    "edit long-term memory: old -> new",
+    "my name is Eval Person",
+    "my girlfriend's name is Eval Person",
+    "my dog's name is Eval Pet",
+    "mock voice learn this: persist me",
+    "mock camera known person",
+    "run command dir",
+    "write file evaluation.txt",
+    "open application calculator",
+    "generate image of a test",
+)
 
 
 def _controller(core, config):
@@ -250,6 +306,164 @@ def test_normal_paid_request_still_calls_provider_and_records_cost():
     assert core._estimated_cloud_spend == pytest.approx(0.75)
 
 
+class _PaidTerminalStreamProvider(_CountingRouteProvider):
+    def __init__(self, terminal_events):
+        super().__init__(
+            local_or_remote="local",
+            cost_type="paid",
+            estimated_cost=0.6,
+        )
+        self.terminal_events = list(terminal_events)
+
+    def stream(self, request):
+        self.stream_calls += 1
+        self.calls.append(request)
+        for event in self.terminal_events:
+            yield event
+
+
+def _paid_stream_core(events, *, budget=10.0):
+    config = GatewayConfig(
+        allow_paid_tools=True,
+        monthly_cloud_budget=budget,
+        require_confirmation_over=10.0,
+    )
+    provider = _PaidTerminalStreamProvider(events)
+    core = NovaGatewayCore(
+        lambda text, context: ("existing local path", {}),
+        config=config,
+        register_ollama=False,
+    )
+    core.register_provider(provider, aliases={"ordinary-paid-stream": "mock-text"})
+    controller = _controller(core, config)
+    return core, provider, controller
+
+
+@pytest.mark.parametrize(
+    ("terminal_error", "actual_cost", "expected_actual"),
+    [
+        (None, 0.25, 0.25),
+        (None, None, 0.6),
+        ({"type": "provider_error", "message": "safe failure"}, 0.2, 0.2),
+    ],
+)
+def test_ordinary_paid_stream_records_cost_once_on_terminal_event(
+    terminal_error,
+    actual_cost,
+    expected_actual,
+):
+    terminal_metadata = {}
+    if actual_cost is not None:
+        terminal_metadata["actual_cost"] = actual_cost
+    events = [
+        NovaStreamEvent(
+            "content.delta",
+            "resp-paid",
+            0,
+            delta="partial",
+        ),
+        NovaStreamEvent(
+            "response.completed" if terminal_error is None else "error",
+            "resp-paid",
+            1,
+            error=terminal_error,
+            metadata=terminal_metadata,
+            done=True,
+        ),
+    ]
+    core, provider, controller = _paid_stream_core(events)
+    request = controller._native_request(
+        {
+            "text": "ordinary paid stream",
+            "model": "ordinary-paid-stream",
+            "stream": True,
+        },
+        _auth(),
+    )
+
+    output = list(core.stream(request))
+
+    assert provider.stream_calls == 1
+    assert core._estimated_cloud_spend == pytest.approx(0.6)
+    assert core._actual_cloud_spend == pytest.approx(expected_actual)
+    assert output[-1].metadata["cost"]["estimated_request"] == pytest.approx(0.6)
+    assert output[-1].metadata["cost"]["actual_request"] == pytest.approx(
+        expected_actual
+    )
+
+
+def test_paid_stream_duplicate_done_is_not_double_counted():
+    events = [
+        NovaStreamEvent(
+            "response.completed",
+            "resp-duplicate",
+            0,
+            metadata={"actual_cost": 0.3},
+            done=True,
+        ),
+        NovaStreamEvent(
+            "response.completed",
+            "resp-duplicate",
+            1,
+            metadata={"actual_cost": 0.3},
+            done=True,
+        ),
+    ]
+    core, provider, controller = _paid_stream_core(events)
+    request = controller._native_request(
+        {
+            "text": "ordinary duplicate terminal stream",
+            "model": "ordinary-paid-stream",
+            "stream": True,
+        },
+        _auth(),
+    )
+
+    output = list(core.stream(request))
+
+    assert provider.stream_calls == 1
+    assert len(output) == 2
+    assert core._estimated_cloud_spend == pytest.approx(0.6)
+    assert core._actual_cloud_spend == pytest.approx(0.3)
+    assert output[0].metadata["cost"] == output[1].metadata["cost"]
+
+
+def test_repeated_paid_stream_advances_budget_before_second_provider_call():
+    events = [
+        NovaStreamEvent(
+            "response.completed",
+            "resp-budget",
+            0,
+            done=True,
+        )
+    ]
+    core, provider, controller = _paid_stream_core(events, budget=1.0)
+    first = controller._native_request(
+        {
+            "text": "first paid stream",
+            "model": "ordinary-paid-stream",
+            "stream": True,
+        },
+        _auth(),
+    )
+    second = controller._native_request(
+        {
+            "text": "second paid stream",
+            "model": "ordinary-paid-stream",
+            "stream": True,
+        },
+        _auth(),
+    )
+
+    list(core.stream(first))
+    with pytest.raises(PermissionDeniedError, match="monthly cloud budget"):
+        list(core.stream(second))
+
+    assert provider.stream_calls == 1
+    assert core._estimated_cloud_spend == pytest.approx(0.6)
+    assert core._actual_cloud_spend == pytest.approx(0.6)
+
+
 @pytest.mark.parametrize(
     "prompt",
     [
@@ -304,6 +518,42 @@ def test_gateway_evaluation_rejects_declared_tools_before_provider():
     )
 
     with pytest.raises(PermissionDeniedError, match="(?i)tool"):
+        core.generate(request)
+
+    assert calls == []
+
+
+@pytest.mark.parametrize(
+    "context_field",
+    [
+        "adapter_only_mode",
+        "trained_adapter_only",
+        "trained_adapter_only_mode",
+        "use_lora_runtime",
+        "dolphin_adapter_only",
+        "allow_slow_dolphin_cpu",
+    ],
+)
+def test_gateway_evaluation_rejects_adapter_runtime_controls_before_provider(
+    context_field,
+):
+    calls = []
+    config = GatewayConfig()
+    core = NovaGatewayCore(
+        lambda text, context: calls.append((text, context)) or ("must not run", {}),
+        config=config,
+        register_ollama=False,
+    )
+    request = _controller(core, config)._native_request(
+        {
+            "text": "benign wording",
+            "evaluation_only": True,
+            context_field: True,
+        },
+        _auth(),
+    )
+
+    with pytest.raises(PermissionDeniedError, match="(?i)adapter"):
         core.generate(request)
 
     assert calls == []
@@ -508,6 +758,155 @@ def test_direct_brain_evaluation_blocks_mutation_before_legacy_branches(monkeypa
     assert "evaluation-only" in response.casefold()
     assert trace["source"] == "evaluation_mutation_guard"
     assert sentinels == []
+
+
+@pytest.mark.parametrize("command", LEGACY_MUTATING_COMMAND_ALIASES[:-4])
+def test_every_live_legacy_mutation_alias_is_blocked_without_state_change(
+    monkeypatch,
+    command,
+):
+    original_memory = deepcopy(server.MEMORY)
+    original_permissions = dict(server.PERMISSIONS)
+    original_private = server.PRIVATE_MODE
+    original_training = (
+        server._TRAINING_RUNNING,
+        server._TRAINING_RUN_ID,
+        list(server._TRAINING_LOG),
+        server._LAST_TRAINING_REPORT,
+    )
+    original_last_state = (
+        server._LAST_USER_TEXT,
+        server._LAST_NOVA_RESPONSE,
+        server._LAST_WEB_LOOKUP_TOPIC,
+        server._LAST_WEB_LOOKUP_KIND,
+        deepcopy(server._LAST_WEB_LOOKUP_ITEMS),
+    )
+    sentinels = []
+
+    if command.startswith(("allow ", "enable ")):
+        server.PERMISSIONS.update({"mic": False, "camera": False, "speaker": False})
+    elif command.startswith(("deny ", "disable ")) or command in {
+        "stop all",
+        "emergency stop",
+    }:
+        server.PERMISSIONS.update({"mic": True, "camera": True, "speaker": True})
+    if command.startswith("mock voice "):
+        server.PERMISSIONS["mic"] = True
+    if command.startswith("mock camera "):
+        server.PERMISSIONS["camera"] = True
+    server.PRIVATE_MODE = False
+
+    expected_memory = deepcopy(server.MEMORY)
+    expected_permissions = dict(server.PERMISSIONS)
+    expected_private = server.PRIVATE_MODE
+    expected_training = (
+        server._TRAINING_RUNNING,
+        server._TRAINING_RUN_ID,
+        list(server._TRAINING_LOG),
+        server._LAST_TRAINING_REPORT,
+    )
+    expected_last_state = (
+        server._LAST_USER_TEXT,
+        server._LAST_NOVA_RESPONSE,
+        server._LAST_WEB_LOOKUP_TOPIC,
+        server._LAST_WEB_LOOKUP_KIND,
+        deepcopy(server._LAST_WEB_LOOKUP_ITEMS),
+    )
+
+    monkeypatch.setattr(server, "_save_memory", lambda: sentinels.append("save-memory"))
+    monkeypatch.setattr(
+        server,
+        "_start_training",
+        lambda: sentinels.append("start-training") or (True, "blocked-job"),
+    )
+    monkeypatch.setattr(
+        server,
+        "_start_training_center_job",
+        lambda: sentinels.append("training-center") or {},
+    )
+    monkeypatch.setattr(
+        server,
+        "_run_full_training_suite",
+        lambda: sentinels.append("full-training-suite") or {"ok": True, "summary": {}},
+    )
+    monkeypatch.setattr(
+        server.ltm,
+        "add_memory",
+        lambda *args, **kwargs: sentinels.append("ltm-add") or {
+            "memory_id": "blocked",
+            "extracted_slot": "blocked",
+            "extracted_value": "blocked",
+        },
+    )
+    monkeypatch.setattr(
+        server.ltm,
+        "forget_by_query",
+        lambda *args, **kwargs: sentinels.append("ltm-forget") or 1,
+    )
+    monkeypatch.setattr(
+        server.ltm,
+        "edit_memory",
+        lambda *args, **kwargs: sentinels.append("ltm-edit") or {"updated": True},
+    )
+
+    try:
+        response, trace = server.brain_route(
+            command,
+            {
+                "nova_gateway": True,
+                "evaluation_only": True,
+                "memory_write_allowed": False,
+                "conversation_memory_allowed": False,
+            },
+        )
+
+        registered = {
+            alias
+            for aliases in evaluation_policy.LEGACY_MUTATING_COMMANDS.values()
+            for alias in aliases
+        }
+        assert command in registered or any(
+            command.startswith(prefix)
+            for prefix in evaluation_policy.LEGACY_MUTATING_PREFIXES
+        )
+        assert "evaluation-only" in response.casefold()
+        assert trace["source"] == "evaluation_mutation_guard"
+        assert sentinels == []
+        assert server.MEMORY == expected_memory
+        assert server.PERMISSIONS == expected_permissions
+        assert server.PRIVATE_MODE == expected_private
+        assert (
+            server._TRAINING_RUNNING,
+            server._TRAINING_RUN_ID,
+            list(server._TRAINING_LOG),
+            server._LAST_TRAINING_REPORT,
+        ) == expected_training
+        assert (
+            server._LAST_USER_TEXT,
+            server._LAST_NOVA_RESPONSE,
+            server._LAST_WEB_LOOKUP_TOPIC,
+            server._LAST_WEB_LOOKUP_KIND,
+            server._LAST_WEB_LOOKUP_ITEMS,
+        ) == expected_last_state
+    finally:
+        server.MEMORY.clear()
+        server.MEMORY.update(original_memory)
+        server.PERMISSIONS.clear()
+        server.PERMISSIONS.update(original_permissions)
+        server.PRIVATE_MODE = original_private
+        (
+            server._TRAINING_RUNNING,
+            server._TRAINING_RUN_ID,
+            server._TRAINING_LOG,
+            server._LAST_TRAINING_REPORT,
+        ) = original_training
+        (
+            server._LAST_USER_TEXT,
+            server._LAST_NOVA_RESPONSE,
+            server._LAST_WEB_LOOKUP_TOPIC,
+            server._LAST_WEB_LOOKUP_KIND,
+            server._LAST_WEB_LOOKUP_ITEMS,
+        ) = original_last_state
 
 
 def test_evaluation_and_ordinary_turns_are_serialized_without_state_leak(monkeypatch):

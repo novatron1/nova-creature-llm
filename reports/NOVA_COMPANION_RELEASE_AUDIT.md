@@ -74,16 +74,35 @@ The acceptance runner:
 - hashes `conversation_training_data.jsonl` before and after and fails the gate
   if the hash changes.
 
-Deterministic runner result: **PASS — 21 tests**.
+Deterministic runner result: **PASS — 22 tests**. The additional contract
+proves all 25 acceptance prompts remain benign under the same fail-closed
+classifier used by production evaluation requests.
 
 Evaluation-only propagation and non-retention result:
-**PASS — 23 tests**. The tests exercise both OpenAI adapters, the native HTTP
+**PASS — 80 tests**. The tests exercise both OpenAI adapters, the native HTTP
 adapter, provider context, gateway core, and existing `/api/chat` brain route.
 Invalid non-Boolean values and remote evaluation clients are rejected; nested
 metadata cannot forge the flag; remote/free and local/paid providers are not
-called; normal paid requests remain accounted; mutation commands do not invoke
-memory, training, tool, or permission actions; normal turns still retain
-state; and training data remains unchanged.
+called; normal paid requests remain accounted for in both generated and
+streamed responses; mutation commands do not invoke memory, training, adapter
+runtime control, tool, privacy, emergency, camera, microphone, speaker, or
+permission actions; normal turns still retain state; and training data remains
+unchanged.
+
+The mutation boundary is backed by a formal registry of every current exact
+legacy command alias plus every write/action prefix. Nested mock-voice routing
+preserves its evaluation context. Tests exercise the aliases against live
+Classic routing with sentinels and prove that memory, permissions, privacy,
+training state, all five legacy `_LAST_*` fields, and long-term-memory handlers
+remain unchanged.
+
+Paid streaming cost accounting is recorded exactly once at the first terminal
+event. Provider-reported actual cost is preferred; if absent, the routing
+estimate is used as a conservative actual-cost fallback. Success and error
+terminals are covered, duplicate terminal events reuse the same cost record,
+and a completed first stream advances the monthly budget before a repeated
+request can reach the provider. Evaluation streams are still rejected before
+any paid or remote provider call.
 
 Legacy turn-state concurrency uses one explicit re-entrant lock around the
 complete Classic/gateway turn. This serializes simultaneous model turns and
@@ -139,7 +158,7 @@ Automated source contracts cover:
 Task 11 automated results:
 
 - Companion source/loader/PWA/acceptance-runner pytest matrix:
-  **PASS — 70 passed**
+  **PASS — 128 passed**
 - Gateway core/adapter/firewall regression matrix:
   **PASS — 64 passed**
 - Gateway HTTP/security/portability/foundation regression matrix:

@@ -14,6 +14,7 @@ SCRIPT = ROOT / "tools" / "run_nova_companion_acceptance.py"
 sys.path.insert(0, str(ROOT / "src"))
 
 from nova_answer_firewall import GENERIC_FALLBACK_MARKERS as FIREWALL_GENERIC_MARKERS
+from nova_evaluation_policy import evaluation_mutation_reason
 
 
 def _load_runner():
@@ -147,6 +148,15 @@ def test_acceptance_runner_checks_required_routes_and_all_required_scenarios(tmp
         "reconnect",
     }
     assert report["summary"]["endpoint_checks_passed"] == 5
+
+
+def test_acceptance_prompts_remain_benign_under_fail_closed_evaluation_policy():
+    runner = _load_runner()
+
+    assert all(
+        evaluation_mutation_reason(case.prompt) is None
+        for case in runner.ACCEPTANCE_CASES
+    )
 
 
 def test_acceptance_runner_sends_bounded_ephemeral_history_without_reporting_content(tmp_path):
