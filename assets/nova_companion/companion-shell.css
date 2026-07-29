@@ -40,7 +40,7 @@ button, .classic-fallback { min-height: 44px; }
 
 .companion-topbar, #novaPresence, #companionComposer { display: flex; align-items: center; }
 
-.companion-topbar { justify-content: space-between; gap: var(--spacing); }
+.companion-topbar { min-width: 0; justify-content: space-between; gap: var(--spacing); }
 
 .companion-wordmark { color: var(--text); font-size: 1.25rem; font-weight: 800; text-decoration: none; }
 
@@ -52,7 +52,8 @@ button, .classic-fallback { min-height: 44px; }
   cursor: pointer;
 }
 
-#companionTrustButton { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; }
+#companionTrustButton { display: inline-flex; min-width: 0; max-width: min(72%, 18rem); align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; }
+#companionTrustLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .local-dot { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--success); }
 
 #novaPresence { flex-direction: column; justify-content: center; gap: 0.5rem; text-align: center; }
@@ -125,6 +126,30 @@ button, .classic-fallback { min-height: 44px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+@media (max-width: 30rem) {
+  #companionComposer {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 44px;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  #companionInput {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  #companionVoiceButton,
+  #companionVoiceOutputButton,
+  #companionVoiceStopButton,
+  #companionSendButton {
+    width: 100%;
+    min-width: 0;
+    padding: 0.45rem 0.4rem;
+    overflow-wrap: anywhere;
+  }
+}
 
 @media (min-width: 48rem) {
   .companion-shell { max-width: 48rem; margin: auto; box-shadow: var(--shadow); }

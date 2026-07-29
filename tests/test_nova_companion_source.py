@@ -33,6 +33,92 @@ def test_companion_css_has_mobile_accessibility_contract():
     assert "overflow-x: hidden" in css
 
 
+def test_companion_mobile_composer_uses_bounded_tracks_for_all_voice_controls():
+    css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
+    mobile = re.search(
+        r"@media\s*\(max-width:\s*30rem\)\s*\{(?P<body>.*?)\n\}",
+        css,
+        re.DOTALL,
+    )
+    assert mobile, "A phone-specific layout boundary is required."
+    body = mobile.group("body")
+    composer = re.search(r"#companionComposer\s*\{(?P<rule>[^}]*)\}", body, re.DOTALL)
+    assert composer
+    assert "display: grid" in composer.group("rule")
+    assert "minmax(0, 1fr)" in composer.group("rule")
+    assert "44px" in composer.group("rule")
+    assert re.search(
+        r"#companionInput\s*\{[^}]*grid-column:\s*1\s*/\s*-1;",
+        body,
+        re.DOTALL,
+    )
+    assert all(
+        control in body
+        for control in (
+            "#companionVoiceButton",
+            "#companionVoiceOutputButton",
+            "#companionVoiceStopButton",
+            "#companionSendButton",
+        )
+    )
+    assert re.search(r"min-width:\s*0;", body)
+
+
+def test_companion_source_keeps_sheet_openers_and_media_controls_accessible():
+    html = (ROOT / "nova_companion_web.html").read_text(encoding="utf-8")
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    for opener in ("companionTrustButton", "novaSparkButton"):
+        button = re.search(
+            rf"<button\b(?=[^>]*\bid=\"{opener}\")(?P<attributes>[^>]*)>",
+            html,
+        )
+        assert button
+        assert 'aria-controls="companionSheetHost"' in button.group("attributes")
+    assert re.search(
+        r'id="novaSparkButton"[^>]*>.*class="sr-only">[^<]+</span>',
+        html,
+        re.DOTALL,
+    )
+    for control in (
+        "voiceButton",
+        "voiceOutputButton",
+        "voiceStopButton",
+        "enable",
+        "facing",
+        "look",
+        "stop",
+    ):
+        assert f'const {control} = document.createElement("button");' in app
+        assert f'{control}.type = "button";' in app
+
+
+def test_companion_source_preserves_zoom_and_never_persists_or_logs_private_turn_content():
+    html = (ROOT / "nova_companion_web.html").read_text(encoding="utf-8")
+    assert "user-scalable=no" not in html
+    assert "maximum-scale=1" not in html
+    forbidden_storage_terms = {
+        "message",
+        "history",
+        "prompt",
+        "image",
+        "audio",
+        "memory",
+        "token",
+    }
+    for path in sorted((ROOT / "assets/nova_companion").glob("*.js")):
+        source = path.read_text(encoding="utf-8")
+        storage_keys = re.findall(
+            r'(?:const\s+\w+_KEY\s*=\s*|\.setItem\(\s*)["\']([^"\']+)["\']',
+            source,
+        )
+        assert not any(
+            forbidden in key.lower()
+            for key in storage_keys
+            for forbidden in forbidden_storage_terms
+        ), path.name
+        assert not re.search(r"console\.(?:log|debug|info|warn|error)\s*\(", source), path.name
+
+
 def test_companion_shell_contains_modal_positioning_context():
     css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
     assert re.search(
