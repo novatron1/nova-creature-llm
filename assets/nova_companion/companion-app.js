@@ -60,6 +60,73 @@ export async function loadSparkServerState(api) {
   return { capabilities, items, companion: freshStatus?.companion || {} };
 }
 
+export function createSelectedPictureVisionSubmitter({
+  api,
+  signal,
+  isCurrentSheet = () => true,
+  cameraIsActive = () => false,
+  onStatus = () => {},
+  onResult = () => {},
+} = {}) {
+  if (!api?.postPermissionCommand || !api?.postVision) {
+    throw new TypeError("Selected-picture vision requires the Companion API.");
+  }
+  let permissionGranted = false;
+  let pendingPermission = null;
+  const sheetIsCurrent = () => isCurrentSheet() && !signal?.aborted;
+  const browserCameraStatus = () => (
+    cameraIsActive() ? "Browser camera remains live." : "Browser camera remains off."
+  );
+  const setStatus = (text, isCurrentRequest = () => true) => {
+    if (sheetIsCurrent() && isCurrentRequest()) onStatus(text);
+  };
+  const ensurePermission = () => {
+    if (permissionGranted) return Promise.resolve(true);
+    if (pendingPermission) return pendingPermission;
+    setStatus("Enabling Nova’s local vision permission for this picture. This does not start or change the browser camera.");
+    let request;
+    request = Promise.resolve()
+      .then(() => api.postPermissionCommand("allow camera", { signal }))
+      .then((permission) => {
+        if (!sheetIsCurrent()) return false;
+        if (permission?.permissions?.camera === false) {
+          throw new NovaApiError("Nova could not enable local vision permission.", { code: "permission_denied" });
+        }
+        permissionGranted = true;
+        return true;
+      })
+      .finally(() => {
+        if (pendingPermission === request) pendingPermission = null;
+      });
+    pendingPermission = request;
+    return request;
+  };
+  return {
+    async submit(frame, prompt, { isCurrentRequest = () => true } = {}) {
+      const current = () => sheetIsCurrent() && isCurrentRequest();
+      if (!current()) return null;
+      try {
+        const permitted = await ensurePermission();
+        if (!permitted || !current()) return null;
+        setStatus(`Nova is inspecting the picture you chose. ${browserCameraStatus()}`, isCurrentRequest);
+        const result = await api.postVision(buildVisionPayload(frame, prompt), { signal });
+        if (!current()) return null;
+        onResult(result);
+        setStatus(
+          result?.ok === false
+            ? `Nova could not inspect that picture. ${browserCameraStatus()}`
+            : `Result added. ${browserCameraStatus()}`,
+          isCurrentRequest,
+        );
+        return result;
+      } catch (error) {
+        setStatus(`Nova could not inspect that picture. ${browserCameraStatus()}`, isCurrentRequest);
+        throw error;
+      }
+    },
+  };
+}
+
 function appendCompletionDetails(message, answerStatus, permissions) {
   if (!message) return;
   const document = message.ownerDocument;
@@ -275,6 +342,14 @@ export async function bootstrapCompanion(document = globalThis.document) {
       },
       onResult: (result) => { addVisionResult(result, isCurrentSheet); },
     });
+    const pictureSubmitter = createSelectedPictureVisionSubmitter({
+      api,
+      signal: sheetAbort.signal,
+      isCurrentSheet,
+      cameraIsActive: () => vision?.getState().active === true,
+      onStatus: (text) => { statusLine.textContent = text; },
+      onResult: (result) => { addVisionResult(result, isCurrentSheet); },
+    });
     const focusVisionControl = (index) => {
       const controls = [...host.querySelectorAll("button:not([disabled]), input:not([disabled]), textarea:not([disabled])")];
       const control = index < 0 ? controls.at(-1) : controls[index];
@@ -362,18 +437,21 @@ export async function bootstrapCompanion(document = globalThis.document) {
     look.addEventListener("click", async () => {
       if (!isCurrentSheet()) return;
       const requestGeneration = ++visionRequestGeneration;
+      const pictureForRequest = preparedPicture;
       try {
-        statusLine.textContent = "Nova is inspecting the frame you chose…";
-        if (preparedPicture) {
-          const result = await api.postVision(buildVisionPayload(preparedPicture, prompt.value), { signal: sheetAbort.signal });
-          if (!isCurrentSheet() || requestGeneration !== visionRequestGeneration) return;
-          addVisionResult(result, isCurrentSheet);
+        if (pictureForRequest) {
+          await pictureSubmitter.submit(pictureForRequest, prompt.value, {
+            isCurrentRequest: () => requestGeneration === visionRequestGeneration,
+          });
         } else {
+          statusLine.textContent = "Nova is inspecting the live frame you chose…";
           await vision?.look(prompt.value);
         }
       } catch (error) {
         if (!isCurrentSheet() || requestGeneration !== visionRequestGeneration) return;
-        statusLine.textContent = error instanceof Error ? error.message : "Nova could not inspect that frame.";
+        if (!pictureForRequest) {
+          statusLine.textContent = error instanceof Error ? error.message : "Nova could not inspect that frame.";
+        }
       }
     });
     stop.addEventListener("click", () => vision?.stopCamera());
