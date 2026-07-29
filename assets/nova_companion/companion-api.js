@@ -81,6 +81,7 @@ export class NovaCompanionApi {
   getStatus({ signal } = {}) { return this.getJson("/status", { signal }); }
   getHealth({ signal } = {}) { return this.getJson("/healthz", { signal }); }
   chat(body, { signal } = {}) { return this.postJson("/nova/v1/chat", body, { signal }); }
+  postPermissionCommand(text, { signal } = {}) { return this.postJson("/api/chat", { text: String(text || "") }, { signal }); }
   postVision(body, { signal } = {}) { return this.postJson("/api/vision", body, { signal }); }
   postTts(text, { signal, force = false } = {}) { return this.postJson("/api/tts", { text, force: Boolean(force) }, { signal }); }
 

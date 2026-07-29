@@ -157,13 +157,28 @@ export function createVisionController({
   prepareFrame = prepareVisionCanvas,
   facingMode = "environment",
 } = {}) {
-  if (!api?.chat) {
+  if (!api?.postPermissionCommand) {
     throw new TypeError("Nova vision requires the Companion API.");
   }
   let camera = visionStateAfter({ ...defaultVisionState, facingMode }, { type: "CAMERA_STOPPED" });
   let stream = null;
+  let operation = 0;
+  let pendingEnable = null;
+  let permissionAbort = null;
+  let visionAbort = null;
+  let destroyed = false;
   const emit = () => onStateChange({ ...camera });
+  const isCurrent = (token) => !destroyed && token === operation;
+  const abortPendingWork = () => {
+    permissionAbort?.abort();
+    permissionAbort = null;
+    visionAbort?.abort();
+    visionAbort = null;
+  };
   const stopCamera = () => {
+    operation += 1;
+    pendingEnable = null;
+    abortPendingWork();
     stopTracks(stream);
     stream = null;
     if (preview) preview.srcObject = null;
@@ -173,13 +188,18 @@ export function createVisionController({
     emit();
     return camera;
   };
-  const openStream = async () => {
+  const openStream = async (token) => {
     if (!mediaDevices?.getUserMedia) throw new TypeError("Camera access is not supported by this browser.");
     const next = await mediaDevices.getUserMedia({ video: { facingMode: camera.facingMode }, audio: false });
+    if (!isCurrent(token)) {
+      stopTracks(next);
+      return { ...camera };
+    }
     if (!hasLiveVideoTrack(next)) {
       stopTracks(next);
       throw new TypeError("The camera did not provide a live video track.");
     }
+    stopTracks(stream);
     stream = next;
     if (preview) preview.srcObject = stream;
     camera = visionStateAfter(camera, { type: "CAMERA_STREAM_LIVE" });
@@ -188,35 +208,54 @@ export function createVisionController({
   };
   return {
     getState: () => ({ ...camera }),
-    async enableCamera() {
-      if (camera.active) return { ...camera };
-      try {
-        const permission = await api.chat({ text: "allow camera" });
-        if (permission?.permissions?.camera === false) {
+    enableCamera() {
+      if (destroyed || camera.active) return Promise.resolve({ ...camera });
+      if (pendingEnable) return pendingEnable;
+      const token = ++operation;
+      const controller = new AbortController();
+      permissionAbort = controller;
+      let request;
+      request = Promise.resolve().then(async () => {
+        try {
+          const permission = await api.postPermissionCommand("allow camera", { signal: controller.signal });
+          if (!isCurrent(token)) return { ...camera };
+          if (permission?.permissions?.camera === false) {
+            camera = visionStateAfter(camera, { type: "CAMERA_PERMISSION_DENIED" });
+            emit();
+            return { ...camera };
+          }
+          camera = visionStateAfter(camera, { type: "CAMERA_PERMISSION_GRANTED" });
+          emit();
+          return await openStream(token);
+        } catch (error) {
+          if (!isCurrent(token)) return { ...camera };
           camera = visionStateAfter(camera, { type: "CAMERA_PERMISSION_DENIED" });
           emit();
-          return { ...camera };
+          throw error;
+        } finally {
+          if (pendingEnable === request) pendingEnable = null;
+          if (permissionAbort === controller) permissionAbort = null;
         }
-        camera = visionStateAfter(camera, { type: "CAMERA_PERMISSION_GRANTED" });
-        emit();
-        return await openStream();
-      } catch (error) {
-        camera = visionStateAfter(camera, { type: "CAMERA_PERMISSION_DENIED" });
-        emit();
-        throw error;
-      }
+      });
+      pendingEnable = request;
+      return request;
     },
     async changeFacingMode(nextFacingMode) {
       const requested = nextFacingMode === "user" ? "user" : "environment";
       stopCamera();
       camera = visionStateAfter(camera, { type: "CAMERA_FACING_CHANGED", facingMode: requested });
       emit();
-      if (camera.permission === "granted") return openStream();
+      if (destroyed) return { ...camera };
+      if (camera.permission === "granted") return openStream(++operation);
       return { ...camera };
     },
     async look(prompt = "What is in front of me?") {
       if (!camera.active || !stream) throw new TypeError("Enable a live camera before asking Nova to look.");
       if (typeof api.postVision !== "function") throw new TypeError("Nova vision requires the Companion API.");
+      visionAbort?.abort();
+      const token = operation;
+      const controller = new AbortController();
+      visionAbort = controller;
       const width = Number(preview?.videoWidth) || 0;
       const height = Number(preview?.videoHeight) || 0;
       if (!previewCanvas?.getContext || !width || !height) throw new TypeError("The live camera frame is not ready yet.");
@@ -226,11 +265,20 @@ export function createVisionController({
       if (!context?.drawImage) throw new TypeError("This browser cannot capture the live camera frame.");
       context.drawImage(preview, 0, 0, width, height);
       const frame = await prepareFrame(previewCanvas, { filename: "camera-frame.jpg" });
-      const result = await api.postVision(buildVisionPayload(frame, prompt));
-      onResult(result);
-      return result;
+      if (!isCurrent(token) || controller.signal.aborted) return null;
+      try {
+        const result = await api.postVision(buildVisionPayload(frame, prompt), { signal: controller.signal });
+        if (!isCurrent(token) || controller.signal.aborted) return null;
+        onResult(result);
+        return result;
+      } finally {
+        if (visionAbort === controller) visionAbort = null;
+      }
     },
     stopCamera,
-    destroy: stopCamera,
+    destroy() {
+      destroyed = true;
+      return stopCamera();
+    },
   };
 }

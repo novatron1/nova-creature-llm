@@ -124,6 +124,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
   let spark;
   let vision;
   let closeVisionSheet = () => {};
+  let visionSheetGeneration = 0;
   let inFlight = false;
 
   const elements = {
@@ -146,7 +147,8 @@ export async function bootstrapCompanion(document = globalThis.document) {
     if (trustLabel) trustLabel.textContent = label;
   };
 
-  const addVisionResult = (result) => {
+  const addVisionResult = (result, isCurrentSheet = () => true) => {
+    if (!isCurrentSheet()) return false;
     const trace = result?.trace || {};
     const message = appendMessage(timeline, {
       id: `vision_${createRequestId()}`,
@@ -162,13 +164,17 @@ export async function bootstrapCompanion(document = globalThis.document) {
     appendVisionTraceDetails(message, trace);
     updateTrustFromTrace(dispatch, trace, { permissions: result?.permissions });
     timeline.scrollTop = timeline.scrollHeight;
+    return true;
   };
 
-  const openVisionSheet = () => {
+  const openVisionSheet = (invoker = document.activeElement) => {
     const host = document.getElementById("companionSheetHost");
     const backdrop = document.getElementById("companionSheetBackdrop");
     if (!host || !backdrop) return false;
     closeVisionSheet();
+    const sheetGeneration = ++visionSheetGeneration;
+    const sheetAbort = new AbortController();
+    const isCurrentSheet = () => sheetGeneration === visionSheetGeneration && !sheetAbort.signal.aborted;
     host.replaceChildren();
     host.hidden = false;
     backdrop.hidden = false;
@@ -227,6 +233,8 @@ export async function bootstrapCompanion(document = globalThis.document) {
     host.append(title, privacy, statusLine, pictureLabel, prompt, preview, previewCanvas, buttons);
 
     let preparedPicture = null;
+    let picturePreparationGeneration = 0;
+    let visionRequestGeneration = 0;
     const updateCameraStatus = (camera) => {
       statusLine.textContent = camera.active
         ? `Camera is live (${camera.facingMode === "user" ? "front" : "back"}). Tap Look to capture one frame.`
@@ -240,14 +248,26 @@ export async function bootstrapCompanion(document = globalThis.document) {
       preview,
       previewCanvas,
       onStateChange: (camera) => {
+        if (!isCurrentSheet()) return;
         dispatch({ type: "CAMERA_CHANGED", permission: camera.permission, active: camera.active, persisted: false });
         updateCameraStatus(camera);
       },
-      onResult: addVisionResult,
+      onResult: (result) => { addVisionResult(result, isCurrentSheet); },
     });
+    const focusVisionControl = (index) => {
+      const controls = [...host.querySelectorAll("button:not([disabled]), input:not([disabled]), textarea:not([disabled])")];
+      const control = index < 0 ? controls.at(-1) : controls[index];
+      control?.focus?.({ preventScroll: true });
+    };
     const closeSheet = () => {
+      if (!isCurrentSheet()) return;
+      visionSheetGeneration += 1;
+      picturePreparationGeneration += 1;
+      visionRequestGeneration += 1;
+      sheetAbort.abort();
       vision?.stopCamera();
       vision = null;
+      preparedPicture = null;
       host.hidden = true;
       backdrop.hidden = true;
       host.classList.remove("companion-vision");
@@ -255,59 +275,89 @@ export async function bootstrapCompanion(document = globalThis.document) {
       document.removeEventListener?.("keydown", onKeydown);
       backdrop.removeEventListener("click", closeSheet);
       closeVisionSheet = () => {};
+      invoker?.focus?.({ preventScroll: true });
     };
     const onKeydown = (event) => {
+      if (!isCurrentSheet()) return;
       if (event.key === "Escape") {
         event.preventDefault();
         closeSheet();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const controls = [...host.querySelectorAll("button:not([disabled]), input:not([disabled]), textarea:not([disabled])")];
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        focusVisionControl(-1);
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        focusVisionControl(0);
       }
     };
     closeVisionSheet = closeSheet;
     document.addEventListener?.("keydown", onKeydown);
     backdrop.addEventListener("click", closeSheet, { once: true });
     picture.addEventListener("change", async () => {
+      if (!isCurrentSheet()) return;
       const file = picture.files?.[0];
       picture.value = "";
       if (!file) return;
+      const preparationGeneration = ++picturePreparationGeneration;
       try {
         statusLine.textContent = "Preparing the selected picture locally…";
-        preparedPicture = await prepareVisionCanvas(file);
+        const frame = await prepareVisionCanvas(file);
+        if (!isCurrentSheet() || preparationGeneration !== picturePreparationGeneration) return;
+        preparedPicture = frame;
         statusLine.textContent = `Picture ready: ${preparedPicture.width} × ${preparedPicture.height}px. Tap Look to send it.`;
       } catch (error) {
+        if (!isCurrentSheet() || preparationGeneration !== picturePreparationGeneration) return;
         preparedPicture = null;
         statusLine.textContent = error instanceof Error ? error.message : "Nova could not prepare that picture.";
       }
     });
     enable.addEventListener("click", async () => {
+      if (!isCurrentSheet()) return;
       try {
         await vision?.enableCamera();
       } catch (error) {
+        if (!isCurrentSheet()) return;
         statusLine.textContent = error instanceof Error ? error.message : "Nova could not enable the camera.";
       }
     });
     facing.addEventListener("click", async () => {
+      if (!isCurrentSheet()) return;
       try {
         const next = vision?.getState().facingMode === "user" ? "environment" : "user";
         await vision?.changeFacingMode(next);
       } catch (error) {
+        if (!isCurrentSheet()) return;
         statusLine.textContent = error instanceof Error ? error.message : "Nova could not switch cameras.";
       }
     });
     look.addEventListener("click", async () => {
+      if (!isCurrentSheet()) return;
+      const requestGeneration = ++visionRequestGeneration;
       try {
         statusLine.textContent = "Nova is inspecting the frame you chose…";
         if (preparedPicture) {
-          addVisionResult(await api.postVision(buildVisionPayload(preparedPicture, prompt.value)));
+          const result = await api.postVision(buildVisionPayload(preparedPicture, prompt.value), { signal: sheetAbort.signal });
+          if (!isCurrentSheet() || requestGeneration !== visionRequestGeneration) return;
+          addVisionResult(result, isCurrentSheet);
         } else {
           await vision?.look(prompt.value);
         }
       } catch (error) {
+        if (!isCurrentSheet() || requestGeneration !== visionRequestGeneration) return;
         statusLine.textContent = error instanceof Error ? error.message : "Nova could not inspect that frame.";
       }
     });
     stop.addEventListener("click", () => vision?.stopCamera());
     close.addEventListener("click", closeSheet);
     updateCameraStatus(vision.getState());
+    focusVisionControl(0);
     return true;
   };
 
@@ -394,7 +444,8 @@ export async function bootstrapCompanion(document = globalThis.document) {
     },
     onCompanionAction: async (action) => {
       if (action.id === "vision") {
-        globalThis.setTimeout?.(() => { openVisionSheet(); }, 0);
+        const invoker = document.activeElement;
+        globalThis.setTimeout?.(() => { openVisionSheet(invoker); }, 0);
         return true;
       }
       elements.liveStatus.textContent = `${action.label} is not available in this Companion version yet.`;

@@ -77,18 +77,39 @@ def test_companion_spark_keeps_a_fixed_accessible_capability_registry():
 def test_companion_vision_requires_explicit_camera_and_look_actions():
     senses = (ROOT / "assets/nova_companion/companion-senses.js").read_text(encoding="utf-8")
     app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    api = (ROOT / "assets/nova_companion/companion-api.js").read_text(encoding="utf-8")
     css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
     for required in (
         "prepareVisionCanvas",
         "buildVisionPayload",
         "createVisionController",
-        'text: "allow camera"',
+        'postPermissionCommand("allow camera"',
         "getUserMedia({ video: { facingMode: camera.facingMode }, audio: false })",
         "persist: false",
         "stopTracks(stream)",
+        "postPermissionCommand",
+        "AbortController",
+        "operation += 1",
     ):
         assert required in senses
+    assert 'postJson("/api/chat"' in api
     assert "openVisionSheet" in app
     assert "api.postVision(buildVisionPayload" in app
     assert "appendVisionTraceDetails" in app
     assert "companion-vision" in css
+
+
+def test_companion_vision_sheet_guards_stale_work_and_manages_focus():
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    for required in (
+        "visionSheetGeneration",
+        "isCurrentSheet",
+        "sheetAbort.abort()",
+        "sheetAbort.signal",
+        "document.activeElement",
+        "focusVisionControl",
+        "focusVisionControl(-1)",
+        "event.key !== \"Tab\"",
+        "invoker?.focus?.({ preventScroll: true })",
+    ):
+        assert required in app

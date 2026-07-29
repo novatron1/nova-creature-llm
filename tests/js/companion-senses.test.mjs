@@ -8,6 +8,16 @@ import {
   visionStateAfter,
 } from "../../assets/nova_companion/companion-senses.js";
 
+const deferred = () => {
+  let resolve;
+  let reject;
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+};
+
 test("vision payload declares local preprocessing and no persistence", () => {
   const payload = buildVisionPayload(
     { filename: "camera-frame.jpg", mimeType: "image/jpeg", imageBase64: "abc", width: 640, height: 480, resized: true },
@@ -51,7 +61,7 @@ test("camera becomes active only after Nova permission and a live video track", 
   const calls = [];
   const liveTrack = { readyState: "live", stop() { calls.push("track.stop"); } };
   const controller = createVisionController({
-    api: { chat: async (body) => { calls.push(body.text); return {}; } },
+    api: { postPermissionCommand: async (text) => { calls.push(text); return {}; } },
     mediaDevices: { getUserMedia: async (constraints) => {
       calls.push(constraints);
       return { getVideoTracks: () => [liveTrack], getTracks: () => [liveTrack] };
@@ -68,7 +78,7 @@ test("stopping camera ends every track and clears the preview", async () => {
   const tracks = [{ readyState: "live", stopped: false, stop() { this.stopped = true; } }];
   const preview = { srcObject: { stale: true } };
   const controller = createVisionController({
-    api: { chat: async () => ({}) },
+    api: { postPermissionCommand: async () => ({}) },
     preview,
     mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => tracks, getTracks: () => tracks }) },
   });
@@ -90,7 +100,7 @@ test("Look captures the live preview into an ephemeral canvas before posting vis
   };
   const liveTrack = { readyState: "live", stop() {} };
   const controller = createVisionController({
-    api: { chat: async () => ({}), postVision: async (body) => { posted.push(body); return { ok: true }; } },
+    api: { postPermissionCommand: async () => ({}), postVision: async (body) => { posted.push(body); return { ok: true }; } },
     preview,
     previewCanvas,
     mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => [liveTrack], getTracks: () => [liveTrack] }) },
@@ -106,4 +116,159 @@ test("Look captures the live preview into an ephemeral canvas before posting vis
   assert.deepEqual(draws[0].slice(0, 1), [preview]);
   assert.equal(posted[0].prompt, "Read the label");
   assert.equal(posted[0].persist, false);
+});
+
+test("camera permission uses the Companion /api/chat command contract", async () => {
+  const calls = [];
+  const liveTrack = { readyState: "live", stop() {} };
+  const controller = createVisionController({
+    api: { postPermissionCommand: async (text, options) => { calls.push({ text, options }); return {}; } },
+    mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => [liveTrack], getTracks: () => [liveTrack] }) },
+  });
+  await controller.enableCamera();
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].text, "allow camera");
+  assert.ok(calls[0].options.signal instanceof AbortSignal);
+});
+
+test("Stop invalidates a pending permission command before browser camera access", async () => {
+  const permission = deferred();
+  let mediaRequests = 0;
+  const controller = createVisionController({
+    api: { postPermissionCommand: () => permission.promise },
+    mediaDevices: { getUserMedia: async () => { mediaRequests += 1; return null; } },
+  });
+  const enable = controller.enableCamera();
+  controller.stopCamera();
+  permission.resolve({});
+  await enable;
+  assert.equal(mediaRequests, 0);
+  assert.equal(controller.getState().active, false);
+});
+
+test("Stop immediately ends a stream that resolves after getUserMedia was invalidated", async () => {
+  const media = deferred();
+  const track = { readyState: "live", stopped: false, stop() { this.stopped = true; } };
+  const controller = createVisionController({
+    api: { postPermissionCommand: async () => ({}) },
+    mediaDevices: { getUserMedia: () => media.promise },
+  });
+  const enable = controller.enableCamera();
+  await new Promise((resolve) => setImmediate(resolve));
+  controller.stopCamera();
+  media.resolve({ getVideoTracks: () => [track], getTracks: () => [track] });
+  await enable;
+  assert.equal(track.stopped, true);
+  assert.equal(controller.getState().active, false);
+});
+
+test("repeated Enable taps share one pending camera operation", async () => {
+  const permission = deferred();
+  let permissionCalls = 0;
+  const track = { readyState: "live", stop() {} };
+  const controller = createVisionController({
+    api: { postPermissionCommand: () => { permissionCalls += 1; return permission.promise; } },
+    mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => [track], getTracks: () => [track] }) },
+  });
+  const first = controller.enableCamera();
+  const second = controller.enableCamera();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(permissionCalls, 1);
+  permission.resolve({});
+  await Promise.all([first, second]);
+  assert.equal(controller.getState().active, true);
+});
+
+test("a synchronous permission failure releases the Enable operation for retry", async () => {
+  let calls = 0;
+  const track = { readyState: "live", stop() {} };
+  const controller = createVisionController({
+    api: { postPermissionCommand: () => {
+      calls += 1;
+      if (calls === 1) throw new Error("offline");
+      return {};
+    } },
+    mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => [track], getTracks: () => [track] }) },
+  });
+  await assert.rejects(() => controller.enableCamera(), /offline/);
+  await controller.enableCamera();
+  assert.equal(calls, 2);
+  assert.equal(controller.getState().active, true);
+});
+
+test("camera switch wins a race with an earlier pending enable", async () => {
+  const firstMedia = deferred();
+  const secondMedia = deferred();
+  const oldTrack = { readyState: "live", stopped: false, stop() { this.stopped = true; } };
+  const newTrack = { readyState: "live", stopped: false, stop() { this.stopped = true; } };
+  let mediaCalls = 0;
+  const controller = createVisionController({
+    api: { postPermissionCommand: async () => ({}) },
+    mediaDevices: { getUserMedia: () => (++mediaCalls === 1 ? firstMedia.promise : secondMedia.promise) },
+  });
+  const enable = controller.enableCamera();
+  await new Promise((resolve) => setImmediate(resolve));
+  const switched = controller.changeFacingMode("user");
+  firstMedia.resolve({ getVideoTracks: () => [oldTrack], getTracks: () => [oldTrack] });
+  secondMedia.resolve({ getVideoTracks: () => [newTrack], getTracks: () => [newTrack] });
+  await Promise.all([enable, switched]);
+  assert.equal(oldTrack.stopped, true);
+  assert.equal(newTrack.stopped, false);
+  assert.deepEqual(controller.getState(), { permission: "granted", active: true, persisted: false, facingMode: "user" });
+});
+
+test("Stop suppresses a late vision result and aborts the request when supported", async () => {
+  const result = deferred();
+  const track = { readyState: "live", stop() {} };
+  const preview = { videoWidth: 640, videoHeight: 480, srcObject: null };
+  const previewCanvas = { width: 0, height: 0, getContext: () => ({ drawImage() {}, clearRect() {} }) };
+  let received = 0;
+  const controller = createVisionController({
+    api: {
+      postPermissionCommand: async () => ({}),
+      postVision: (_body, options) => {
+        assert.ok(options.signal instanceof AbortSignal);
+        return result.promise;
+      },
+    },
+    preview,
+    previewCanvas,
+    mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => [track], getTracks: () => [track] }) },
+    prepareFrame: async () => ({ filename: "camera-frame.jpg", mimeType: "image/jpeg", imageBase64: "abc", width: 640, height: 480 }),
+    onResult: () => { received += 1; },
+  });
+  await controller.enableCamera();
+  const look = controller.look();
+  controller.stopCamera();
+  result.resolve({ ok: true, response: "stale" });
+  await look;
+  assert.equal(received, 0);
+});
+
+test("closing then reopening a vision session cannot deliver the prior deferred result", async () => {
+  const result = deferred();
+  const received = [];
+  const track = { readyState: "live", stop() {} };
+  const preview = { videoWidth: 640, videoHeight: 480, srcObject: null };
+  const canvas = { width: 0, height: 0, getContext: () => ({ drawImage() {}, clearRect() {} }) };
+  const options = {
+    api: {
+      postPermissionCommand: async () => ({}),
+      postVision: () => result.promise,
+    },
+    preview,
+    previewCanvas: canvas,
+    mediaDevices: { getUserMedia: async () => ({ getVideoTracks: () => [track], getTracks: () => [track] }) },
+    prepareFrame: async () => ({ filename: "camera-frame.jpg", mimeType: "image/jpeg", imageBase64: "abc", width: 640, height: 480 }),
+    onResult: (value) => received.push(value.response),
+  };
+  const first = createVisionController(options);
+  await first.enableCamera();
+  const oldLook = first.look();
+  first.destroy();
+  const reopened = createVisionController({ ...options, onResult: (value) => received.push(`new:${value.response}`) });
+  assert.equal(reopened.getState().active, false);
+  result.resolve({ ok: true, response: "old" });
+  await oldLook;
+  assert.deepEqual(received, []);
 });

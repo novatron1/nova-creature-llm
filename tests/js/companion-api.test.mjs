@@ -94,6 +94,21 @@ test("pairing errors retain a machine-readable code", async () => {
   await assert.rejects(() => api.getStatus(), (error) => error.code === "pairing_required" && error.status === 401);
 });
 
+test("camera permission commands use the authenticated legacy /api/chat route", async () => {
+  const calls = [];
+  const api = new NovaCompanionApi({
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return makeResponse({ json: { ok: true } });
+    },
+    authHeaders: (extra) => ({ ...extra, Authorization: "Bearer paired-device" }),
+  });
+  await api.postPermissionCommand("allow camera");
+  assert.equal(calls[0].url, "/api/chat");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer paired-device");
+  assert.deepEqual(JSON.parse(calls[0].options.body), { text: "allow camera" });
+});
+
 test("transport failures from JSON endpoints are serialized without request secrets", async () => {
   const secret = "Bearer no-leak prompt-image-base64";
   const api = new NovaCompanionApi({
