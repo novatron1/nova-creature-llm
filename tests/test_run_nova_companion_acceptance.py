@@ -14,6 +14,7 @@ SCRIPT = ROOT / "tools" / "run_nova_companion_acceptance.py"
 sys.path.insert(0, str(ROOT / "src"))
 
 from nova_answer_firewall import GENERIC_FALLBACK_MARKERS as FIREWALL_GENERIC_MARKERS
+import nova_evaluation_policy as evaluation_policy
 from nova_evaluation_policy import evaluation_mutation_reason
 
 
@@ -92,6 +93,9 @@ def test_acceptance_runner_uses_one_identity_and_exactly_25_evaluation_only_turn
     assert len({body["conversation_id"] for body in bodies}) == 1
     assert len({body["session_id"] for body in bodies}) == 1
     assert all(body["evaluation_only"] is True for body in bodies)
+    assert [body["evaluation_case_id"] for body in bodies] == [
+        case.case_id for case in runner.ACCEPTANCE_CASES
+    ]
     assert all(body["conversation_summary_write_allowed"] is False for body in bodies)
     assert all(body["metadata"]["training_allowed"] is False for body in bodies)
     assert report["summary"]["passed"] == 25
@@ -153,6 +157,7 @@ def test_acceptance_runner_checks_required_routes_and_all_required_scenarios(tmp
 def test_acceptance_prompts_remain_benign_under_fail_closed_evaluation_policy():
     runner = _load_runner()
 
+    assert runner.ACCEPTANCE_CASES is evaluation_policy.COMPANION_ACCEPTANCE_CASES
     assert all(
         evaluation_mutation_reason(case.prompt) is None
         for case in runner.ACCEPTANCE_CASES

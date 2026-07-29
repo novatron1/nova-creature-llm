@@ -31,12 +31,13 @@ from nova_answer_firewall import (  # noqa: E402
     GENERIC_FALLBACK_MARKERS,
     contains_generic_fallback,
 )
+from nova_evaluation_policy import (  # noqa: E402
+    COMPANION_ACCEPTANCE_CASES,
+    CompanionAcceptanceCase,
+)
 
 
-class AcceptanceCase(NamedTuple):
-    case_id: str
-    scenario: str
-    prompt: str
+AcceptanceCase = CompanionAcceptanceCase
 
 
 class TransportResponse(NamedTuple):
@@ -45,97 +46,7 @@ class TransportResponse(NamedTuple):
     latency_ms: int
 
 
-ACCEPTANCE_CASES = (
-    AcceptanceCase("greeting_01", "greeting", "Hi Nova."),
-    AcceptanceCase("greeting_02", "greeting", "Good morning. How are you?"),
-    AcceptanceCase("affection_01", "affection", "Do you care about me?"),
-    AcceptanceCase("affection_02", "affection", "Did you miss talking with me?"),
-    AcceptanceCase("day_check_in_01", "day_check_in", "How is your day going?"),
-    AcceptanceCase("day_check_in_02", "day_check_in", "How are you feeling today?"),
-    AcceptanceCase("follow_up_01", "follow_up", "Why do you say that?"),
-    AcceptanceCase("follow_up_02", "follow_up", "Tell me more about what you mean."),
-    AcceptanceCase(
-        "correction_01",
-        "correction",
-        "Correction for this conversation only: I meant green, not blue.",
-    ),
-    AcceptanceCase(
-        "correction_02",
-        "correction",
-        "No, that is not what I meant. Please answer the question directly.",
-    ),
-    AcceptanceCase(
-        "relationship_support_01",
-        "relationship_support",
-        "What should I say to my girlfriend when I love her?",
-    ),
-    AcceptanceCase(
-        "relationship_support_02",
-        "relationship_support",
-        "What if she does not say it back?",
-    ),
-    AcceptanceCase(
-        "relationship_support_03",
-        "relationship_support",
-        "How can I listen to her without making the conversation about me?",
-    ),
-    AcceptanceCase("memory_recall_01", "memory_recall", "What is my name?"),
-    AcceptanceCase(
-        "memory_recall_02",
-        "memory_recall",
-        "What is my girlfriend's name? Say when you do not have that memory.",
-    ),
-    AcceptanceCase(
-        "current_fact_honesty_01",
-        "current_fact_honesty",
-        "What is today's date? Be honest if you cannot verify it.",
-    ),
-    AcceptanceCase(
-        "current_fact_honesty_02",
-        "current_fact_honesty",
-        "What is the current weather here? Do not guess.",
-    ),
-    AcceptanceCase(
-        "current_fact_honesty_03",
-        "current_fact_honesty",
-        "Who is the current president? Say if fresh evidence is needed.",
-    ),
-    AcceptanceCase(
-        "uncertainty_01",
-        "uncertainty",
-        "If you are unsure about an answer, what should you tell me?",
-    ),
-    AcceptanceCase(
-        "uncertainty_02",
-        "uncertainty",
-        "Could two reasonable people disagree about what love means?",
-    ),
-    AcceptanceCase(
-        "interruption_01",
-        "interruption",
-        "Stop. Do not continue the prior explanation.",
-    ),
-    AcceptanceCase(
-        "interruption_02",
-        "interruption",
-        "New topic: give me one short breathing reminder.",
-    ),
-    AcceptanceCase(
-        "reconnect_01",
-        "reconnect",
-        "We were disconnected. Continue only from context you actually have.",
-    ),
-    AcceptanceCase(
-        "reconnect_02",
-        "reconnect",
-        "Are you still connected and able to answer?",
-    ),
-    AcceptanceCase(
-        "reconnect_03",
-        "reconnect",
-        "What were we discussing just before the reconnect?",
-    ),
-)
+ACCEPTANCE_CASES = COMPANION_ACCEPTANCE_CASES
 
 
 class UrllibTransport:
@@ -359,6 +270,7 @@ def run_acceptance(
                 "stream": False,
                 "privacy_mode": "local_only",
                 "evaluation_only": True,
+                "evaluation_case_id": case.case_id,
                 "conversation_history": [
                     dict(message)
                     for message in conversation_history[-8:]

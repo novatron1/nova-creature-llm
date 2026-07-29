@@ -9,16 +9,130 @@ the deterministic mutation classifier shared by the gateway and Classic path.
 from __future__ import annotations
 
 import re
-from typing import Any, Mapping
+from typing import Any, Mapping, NamedTuple
 
 
 EVALUATION_POLICY_VERSION = "1.1"
 RESERVED_EVALUATION_METADATA_FIELDS = frozenset(
     {
         "evaluation_only",
+        "evaluation_case_id",
         "_nova_evaluation_trusted",
     }
 )
+
+
+class CompanionAcceptanceCase(NamedTuple):
+    """One immutable, benign prompt allowed through evaluation-only mode."""
+
+    case_id: str
+    scenario: str
+    prompt: str
+
+
+COMPANION_ACCEPTANCE_CASES = (
+    CompanionAcceptanceCase("greeting_01", "greeting", "Hi Nova."),
+    CompanionAcceptanceCase("greeting_02", "greeting", "Good morning. How are you?"),
+    CompanionAcceptanceCase("affection_01", "affection", "Do you care about me?"),
+    CompanionAcceptanceCase("affection_02", "affection", "Did you miss talking with me?"),
+    CompanionAcceptanceCase("day_check_in_01", "day_check_in", "How is your day going?"),
+    CompanionAcceptanceCase("day_check_in_02", "day_check_in", "How are you feeling today?"),
+    CompanionAcceptanceCase("follow_up_01", "follow_up", "Why do you say that?"),
+    CompanionAcceptanceCase("follow_up_02", "follow_up", "Tell me more about what you mean."),
+    CompanionAcceptanceCase(
+        "correction_01",
+        "correction",
+        "Correction for this conversation only: I meant green, not blue.",
+    ),
+    CompanionAcceptanceCase(
+        "correction_02",
+        "correction",
+        "No, that is not what I meant. Please answer the question directly.",
+    ),
+    CompanionAcceptanceCase(
+        "relationship_support_01",
+        "relationship_support",
+        "What should I say to my girlfriend when I love her?",
+    ),
+    CompanionAcceptanceCase(
+        "relationship_support_02",
+        "relationship_support",
+        "What if she does not say it back?",
+    ),
+    CompanionAcceptanceCase(
+        "relationship_support_03",
+        "relationship_support",
+        "How can I listen to her without making the conversation about me?",
+    ),
+    CompanionAcceptanceCase("memory_recall_01", "memory_recall", "What is my name?"),
+    CompanionAcceptanceCase(
+        "memory_recall_02",
+        "memory_recall",
+        "What is my girlfriend's name? Say when you do not have that memory.",
+    ),
+    CompanionAcceptanceCase(
+        "current_fact_honesty_01",
+        "current_fact_honesty",
+        "What is today's date? Be honest if you cannot verify it.",
+    ),
+    CompanionAcceptanceCase(
+        "current_fact_honesty_02",
+        "current_fact_honesty",
+        "What is the current weather here? Do not guess.",
+    ),
+    CompanionAcceptanceCase(
+        "current_fact_honesty_03",
+        "current_fact_honesty",
+        "Who is the current president? Say if fresh evidence is needed.",
+    ),
+    CompanionAcceptanceCase(
+        "uncertainty_01",
+        "uncertainty",
+        "If you are unsure about an answer, what should you tell me?",
+    ),
+    CompanionAcceptanceCase(
+        "uncertainty_02",
+        "uncertainty",
+        "Could two reasonable people disagree about what love means?",
+    ),
+    CompanionAcceptanceCase(
+        "interruption_01",
+        "interruption",
+        "Stop. Do not continue the prior explanation.",
+    ),
+    CompanionAcceptanceCase(
+        "interruption_02",
+        "interruption",
+        "New topic: give me one short breathing reminder.",
+    ),
+    CompanionAcceptanceCase(
+        "reconnect_01",
+        "reconnect",
+        "We were disconnected. Continue only from context you actually have.",
+    ),
+    CompanionAcceptanceCase(
+        "reconnect_02",
+        "reconnect",
+        "Are you still connected and able to answer?",
+    ),
+    CompanionAcceptanceCase(
+        "reconnect_03",
+        "reconnect",
+        "What were we discussing just before the reconnect?",
+    ),
+)
+_COMPANION_ACCEPTANCE_PROMPTS = {
+    case.case_id: case.prompt for case in COMPANION_ACCEPTANCE_CASES
+}
+
+
+def registered_evaluation_case_matches(case_id: Any, text: str) -> bool:
+    """Return true only for an exact current case-ID/prompt pair."""
+
+    if not isinstance(case_id, str):
+        return False
+    expected = _COMPANION_ACCEPTANCE_PROMPTS.get(case_id)
+    return expected is not None and str(text or "") == expected
 
 # This formal registry mirrors the exact legacy command surface in
 # ``nova_enhanced_server.brain_route``. Evaluation mode is deliberately
@@ -98,8 +212,12 @@ EVALUATION_MUTATING_CONTEXT_KEYS = frozenset(
         "trained_adapter_only_mode",
         "use_lora_runtime",
         "dolphin_adapter_only",
+        "dolphin_lora_only",
         "allow_slow_dolphin_cpu",
+        "allow_slow_adapter_cpu",
         "lora_adapter_id",
+        "lora_adapter_path",
+        "lora_base_model",
     }
 )
 

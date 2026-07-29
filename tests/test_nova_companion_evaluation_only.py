@@ -9,6 +9,7 @@ import pytest
 
 import nova_enhanced_server as server
 import nova_evaluation_policy as evaluation_policy
+from nova_entity_memory import ENTITY_ALIASES, SLOT_ALIASES
 from nova_gateway.adapters import openai_chat_to_nova, openai_response_to_nova
 from nova_gateway.auth import AuthContext, LOCAL_SAFE_SCOPES
 from nova_gateway.config import GatewayConfig
@@ -75,6 +76,54 @@ LEGACY_MUTATING_COMMAND_ALIASES = (
     "generate image of a test",
 )
 
+STRUCTURED_ENTITY_SAVE_PROMPTS = tuple(dict.fromkeys(
+    [
+        f"my {entity_alias}'s name is Evaluation Value"
+        for entity_aliases in ENTITY_ALIASES.values()
+        for entity_alias in entity_aliases
+    ]
+    + [
+        f"my brother's {slot_alias} is Evaluation Value"
+        for slot_aliases in SLOT_ALIASES.values()
+        for slot_alias in slot_aliases
+    ]
+))
+
+STRUCTURED_CLASSIC_SAVE_PROMPTS = (
+    "my girlfriend is named Evaluation Person",
+    "my girl friend's name is Evaluation Person",
+    "my ex girlfriend was named Evaluation Person",
+    "my old gf name was Evaluation Person",
+    "my best friend is named Evaluation Person",
+    "my buddy's name is Evaluation Person",
+    "my girlfriend's favorite color is purple",
+    "my old girlfriend's favourite colour was green",
+    "my dog is named Evaluation Pet",
+    "my cat's name was Evaluation Pet",
+    "my bird is named Evaluation Pet",
+    "my fish is named Evaluation Pet",
+    "my hamster is named Evaluation Pet",
+    "my pet is named Evaluation Pet",
+    "my name is Evaluation Person",
+    "call me Evaluation Person",
+    "I am Evaluation Person",
+    "I'm Evaluation Person",
+)
+
+ADAPTER_RUNTIME_CONTEXT_CASES = (
+    ("adapter_only_mode", True),
+    ("trained_adapter_only", True),
+    ("trained_adapter_only_mode", True),
+    ("use_lora_runtime", True),
+    ("dolphin_adapter_only", True),
+    ("dolphin_lora_only", True),
+    ("allow_slow_dolphin_cpu", True),
+    ("allow_slow_adapter_cpu", True),
+    ("lora_adapter_id", "evaluation-adapter"),
+    ("lora_adapter_path", "C:/evaluation/adapter"),
+    ("lora_base_model", "evaluation-base-model"),
+)
+
 
 def _controller(core, config):
     return NovaGatewayHttpController(core, authenticator=None, config=config)
@@ -96,6 +145,85 @@ def _remote_auth():
         local=False,
         authenticated=True,
     )
+
+
+def _registered_evaluation_body(index=0, **overrides):
+    case = evaluation_policy.COMPANION_ACCEPTANCE_CASES[index]
+    body = {
+        "text": case.prompt,
+        "evaluation_only": True,
+        "evaluation_case_id": case.case_id,
+    }
+    body.update(overrides)
+    return body
+
+
+def test_native_evaluation_carries_only_top_level_registered_case_id():
+    controller = _controller(core=None, config=GatewayConfig())
+    request = controller._native_request(
+        _registered_evaluation_body(
+            metadata={"evaluation_case_id": "forged-case"},
+        ),
+        _auth(),
+    )
+
+    assert request.metadata["evaluation_case_id"] == "greeting_01"
+
+
+@pytest.mark.parametrize(
+    ("case_id", "text"),
+    [
+        (None, "Hi Nova."),
+        ("unknown-case", "Hi Nova."),
+        ("greeting_01", "Changed prompt text."),
+    ],
+)
+def test_gateway_evaluation_rejects_missing_unknown_or_mismatched_case_before_provider(
+    case_id,
+    text,
+):
+    calls = []
+    config = GatewayConfig()
+    core = NovaGatewayCore(
+        lambda prompt, context: calls.append((prompt, context)) or ("must not run", {}),
+        config=config,
+        register_ollama=False,
+    )
+    body = {"text": text, "evaluation_only": True}
+    if case_id is not None:
+        body["evaluation_case_id"] = case_id
+    request = _controller(core, config)._native_request(body, _auth())
+
+    with pytest.raises(PermissionDeniedError, match="(?i)registered.*case"):
+        core.generate(request)
+
+    assert calls == []
+
+
+def test_all_registered_acceptance_cases_reach_local_free_provider():
+    calls = []
+    config = GatewayConfig()
+    core = NovaGatewayCore(
+        lambda prompt, context: calls.append((prompt, context)) or ("allowed", {}),
+        config=config,
+        register_ollama=False,
+    )
+    controller = _controller(core, config)
+
+    for case in evaluation_policy.COMPANION_ACCEPTANCE_CASES:
+        request = controller._native_request(
+            {
+                "text": case.prompt,
+                "evaluation_only": True,
+                "evaluation_case_id": case.case_id,
+            },
+            _auth(),
+        )
+        assert core.generate(request).content == "allowed"
+
+    assert [prompt for prompt, _ in calls] == [
+        case.prompt for case in evaluation_policy.COMPANION_ACCEPTANCE_CASES
+    ]
 
 
 @pytest.mark.parametrize("invalid", ["true", "false", 1, 0, None, [], {}])
@@ -143,6 +271,7 @@ def test_openai_adapters_strip_reserved_evaluation_metadata():
             "messages": [{"role": "user", "content": "ordinary OpenAI chat"}],
             "metadata": {
                 "evaluation_only": True,
+                "evaluation_case_id": "forged-chat-case",
                 "_nova_evaluation_trusted": True,
                 "conversation_id": "chat-conversation",
             },
@@ -155,6 +284,7 @@ def test_openai_adapters_strip_reserved_evaluation_metadata():
             "input": "ordinary Responses request",
             "metadata": {
                 "evaluation_only": True,
+                "evaluation_case_id": "forged-response-case",
                 "_nova_evaluation_trusted": True,
                 "conversation_id": "response-conversation",
             },
@@ -166,6 +296,8 @@ def test_openai_adapters_strip_reserved_evaluation_metadata():
     assert response.metadata.get("evaluation_only") is None
     assert chat.metadata.get("_nova_evaluation_trusted") is None
     assert response.metadata.get("_nova_evaluation_trusted") is None
+    assert chat.metadata.get("evaluation_case_id") is None
+    assert response.metadata.get("evaluation_case_id") is None
     assert chat.conversation_id == "chat-conversation"
     assert response.conversation_id == "response-conversation"
 
@@ -248,11 +380,7 @@ def test_native_evaluation_route_fails_before_remote_or_paid_provider(
     core.register_provider(provider, aliases={"evaluation-external": "mock-text"})
     controller = _controller(core, config)
     request = controller._native_request(
-        {
-            "text": "benign evaluation",
-            "model": "evaluation-external",
-            "evaluation_only": True,
-        },
+        _registered_evaluation_body(model="evaluation-external"),
         _auth(),
     )
     decision = RoutingDecision(
@@ -322,13 +450,13 @@ class _PaidTerminalStreamProvider(_CountingRouteProvider):
             yield event
 
 
-def _paid_stream_core(events, *, budget=10.0):
+def _paid_stream_core(events, *, budget=10.0, provider=None):
     config = GatewayConfig(
         allow_paid_tools=True,
         monthly_cloud_budget=budget,
         require_confirmation_over=10.0,
     )
-    provider = _PaidTerminalStreamProvider(events)
+    provider = provider or _PaidTerminalStreamProvider(events)
     core = NovaGatewayCore(
         lambda text, context: ("existing local path", {}),
         config=config,
@@ -343,7 +471,7 @@ def _paid_stream_core(events, *, budget=10.0):
     ("terminal_error", "actual_cost", "expected_actual"),
     [
         (None, 0.25, 0.25),
-        (None, None, 0.6),
+        (None, None, None),
         ({"type": "provider_error", "message": "safe failure"}, 0.2, 0.2),
     ],
 )
@@ -385,11 +513,14 @@ def test_ordinary_paid_stream_records_cost_once_on_terminal_event(
 
     assert provider.stream_calls == 1
     assert core._estimated_cloud_spend == pytest.approx(0.6)
-    assert core._actual_cloud_spend == pytest.approx(expected_actual)
+    assert core._actual_cloud_spend == pytest.approx(expected_actual or 0.0)
     assert output[-1].metadata["cost"]["estimated_request"] == pytest.approx(0.6)
-    assert output[-1].metadata["cost"]["actual_request"] == pytest.approx(
-        expected_actual
-    )
+    if expected_actual is None:
+        assert output[-1].metadata["cost"]["actual_request"] is None
+    else:
+        assert output[-1].metadata["cost"]["actual_request"] == pytest.approx(
+            expected_actual
+        )
 
 
 def test_paid_stream_duplicate_done_is_not_double_counted():
@@ -461,7 +592,74 @@ def test_repeated_paid_stream_advances_budget_before_second_provider_call():
 
     assert provider.stream_calls == 1
     assert core._estimated_cloud_spend == pytest.approx(0.6)
-    assert core._actual_cloud_spend == pytest.approx(0.6)
+    assert core._actual_cloud_spend == pytest.approx(0.0)
+
+
+class _PaidStreamRaisesBeforeDone(_PaidTerminalStreamProvider):
+    def stream(self, request):
+        self.stream_calls += 1
+        self.calls.append(request)
+        raise RuntimeError("provider failed before terminal event")
+        yield  # pragma: no cover - keeps this a generator
+
+
+class _PaidStreamWaitsAfterDelta(_PaidTerminalStreamProvider):
+    def stream(self, request):
+        self.stream_calls += 1
+        self.calls.append(request)
+        yield NovaStreamEvent(
+            "content.delta",
+            "resp-disconnect",
+            0,
+            delta="partial",
+        )
+        yield NovaStreamEvent(
+            "response.completed",
+            "resp-disconnect",
+            1,
+            done=True,
+        )
+
+
+def test_paid_stream_reserves_estimate_before_provider_raises_without_done():
+    provider = _PaidStreamRaisesBeforeDone([])
+    core, provider, controller = _paid_stream_core([], provider=provider)
+    request = controller._native_request(
+        {
+            "text": "ordinary paid stream failure",
+            "model": "ordinary-paid-stream",
+            "stream": True,
+        },
+        _auth(),
+    )
+
+    with pytest.raises(RuntimeError, match="before terminal"):
+        list(core.stream(request))
+
+    assert provider.stream_calls == 1
+    assert core._estimated_cloud_spend == pytest.approx(0.6)
+    assert core._actual_cloud_spend == pytest.approx(0.0)
+
+
+def test_paid_stream_reservation_survives_client_disconnect_before_done():
+    provider = _PaidStreamWaitsAfterDelta([])
+    core, provider, controller = _paid_stream_core([], provider=provider)
+    request = controller._native_request(
+        {
+            "text": "ordinary paid stream disconnect",
+            "model": "ordinary-paid-stream",
+            "stream": True,
+        },
+        _auth(),
+    )
+    output = core.stream(request)
+
+    assert next(output).delta == "partial"
+    output.close()
+
+    assert provider.stream_calls == 1
+    assert core._estimated_cloud_spend == pytest.approx(0.6)
+    assert core._actual_cloud_spend == pytest.approx(0.0)
 
 
 @pytest.mark.parametrize(
@@ -523,19 +721,10 @@ def test_gateway_evaluation_rejects_declared_tools_before_provider():
     assert calls == []
 
 
-@pytest.mark.parametrize(
-    "context_field",
-    [
-        "adapter_only_mode",
-        "trained_adapter_only",
-        "trained_adapter_only_mode",
-        "use_lora_runtime",
-        "dolphin_adapter_only",
-        "allow_slow_dolphin_cpu",
-    ],
-)
+@pytest.mark.parametrize(("context_field", "context_value"), ADAPTER_RUNTIME_CONTEXT_CASES)
 def test_gateway_evaluation_rejects_adapter_runtime_controls_before_provider(
     context_field,
+    context_value,
 ):
     calls = []
     config = GatewayConfig()
@@ -545,11 +734,7 @@ def test_gateway_evaluation_rejects_adapter_runtime_controls_before_provider(
         register_ollama=False,
     )
     request = _controller(core, config)._native_request(
-        {
-            "text": "benign wording",
-            "evaluation_only": True,
-            context_field: True,
-        },
+        _registered_evaluation_body(**{context_field: context_value}),
         _auth(),
     )
 
@@ -557,6 +742,36 @@ def test_gateway_evaluation_rejects_adapter_runtime_controls_before_provider(
         core.generate(request)
 
     assert calls == []
+
+
+@pytest.mark.parametrize(("context_field", "context_value"), ADAPTER_RUNTIME_CONTEXT_CASES)
+def test_direct_evaluation_rejects_every_adapter_runtime_selector_before_adapter(
+    monkeypatch,
+    context_field,
+    context_value,
+):
+    adapter_calls = []
+    monkeypatch.setattr(
+        server,
+        "_run_trained_adapter_only_request",
+        lambda *args, **kwargs: adapter_calls.append((args, kwargs))
+        or ("must not run", {}),
+    )
+
+    response, trace = server.brain_route(
+        "Hi Nova.",
+        {
+            "nova_gateway": True,
+            "evaluation_only": True,
+            "memory_write_allowed": False,
+            "conversation_memory_allowed": False,
+            context_field: context_value,
+        },
+    )
+
+    assert "evaluation-only" in response.casefold()
+    assert trace["source"] == "evaluation_mutation_guard"
+    assert adapter_calls == []
 
 
 def test_evaluation_turn_reaches_provider_without_retained_gateway_state(tmp_path):
@@ -610,23 +825,21 @@ def test_evaluation_turn_reaches_provider_without_retained_gateway_state(tmp_pat
     before_cost = (core._estimated_cloud_spend, core._actual_cloud_spend)
 
     evaluation = controller._native_request(
-        {
-            "text": "evaluation turn",
-            "conversation_id": "evaluation-conversation",
-            "evaluation_only": True,
-            "conversation_summary_write_allowed": True,
-        },
+        _registered_evaluation_body(
+            0,
+            conversation_id="evaluation-conversation",
+            conversation_summary_write_allowed=True,
+        ),
         _auth(),
     )
     response = core.generate(evaluation)
 
     streaming = controller._native_request(
-        {
-            "text": "streamed evaluation turn",
-            "conversation_id": "stream-evaluation-conversation",
-            "evaluation_only": True,
-            "stream": True,
-        },
+        _registered_evaluation_body(
+            1,
+            conversation_id="stream-evaluation-conversation",
+            stream=True,
+        ),
         _auth(),
     )
     stream_events = list(core.stream(streaming))
@@ -653,7 +866,7 @@ def test_evaluation_turn_reaches_provider_without_retained_gateway_state(tmp_pat
     assert hashlib.sha256(training.read_bytes()).hexdigest() == before_training
 
 
-def test_evaluation_wrapper_passes_flag_to_brain_route_and_restores_legacy_state(monkeypatch):
+def test_evaluation_wrapper_blocks_raw_adapter_before_brain_route_and_restores_legacy_state(monkeypatch):
     captured = {}
     previous_user = server._LAST_USER_TEXT
     previous_response = server._LAST_NOVA_RESPONSE
@@ -670,7 +883,7 @@ def test_evaluation_wrapper_passes_flag_to_brain_route_and_restores_legacy_state
 
     monkeypatch.setattr(server, "brain_route", fake_brain)
     response, trace = server._run_nova_chat_turn(
-        "evaluation wrapper",
+        "Hi Nova.",
         {
             "nova_gateway": True,
             "adapter_only_mode": True,
@@ -681,9 +894,9 @@ def test_evaluation_wrapper_passes_flag_to_brain_route_and_restores_legacy_state
         },
     )
 
-    assert response == "Evaluation output."
-    assert captured["evaluation_only"] is True
-    assert trace.get("conversation_summary") is None
+    assert "evaluation-only" in response.casefold()
+    assert trace["source"] == "evaluation_mutation_guard"
+    assert captured == {}
     assert server._LAST_USER_TEXT == previous_user
     assert server._LAST_NOVA_RESPONSE == previous_response
     assert server.SESSION_LOG == before_log
@@ -733,6 +946,94 @@ def test_server_evaluation_blocks_learning_and_full_training_before_mutation(mon
 
     assert sentinels == []
     assert server.PERMISSIONS == permissions_snapshot
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    STRUCTURED_ENTITY_SAVE_PROMPTS + STRUCTURED_CLASSIC_SAVE_PROMPTS,
+)
+def test_direct_evaluation_blocks_every_structured_entity_slot_save_without_mutation(
+    monkeypatch,
+    prompt,
+):
+    memory_snapshot = deepcopy(server.MEMORY)
+    memory_path = Path(server.MEMORY_FILE)
+    disk_before = hashlib.sha256(memory_path.read_bytes()).hexdigest()
+    save_calls = []
+    monkeypatch.setattr(server, "_save_memory", lambda: save_calls.append(prompt))
+
+    try:
+        response, trace = server.brain_route(
+            prompt,
+            {
+                "nova_gateway": True,
+                "evaluation_only": True,
+                "memory_read_allowed": True,
+                "memory_write_allowed": False,
+                "conversation_memory_allowed": False,
+            },
+        )
+        observed_memory = deepcopy(server.MEMORY)
+    finally:
+        server.MEMORY.clear()
+        server.MEMORY.update(memory_snapshot)
+
+    assert "evaluation-only" in response.casefold()
+    assert trace["source"] == "evaluation_mutation_guard"
+    assert save_calls == []
+    assert observed_memory == memory_snapshot
+    assert hashlib.sha256(memory_path.read_bytes()).hexdigest() == disk_before
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "her name is Evaluation Person",
+        "she name was Evaluation Person",
+        "that girl name is Evaluation Person",
+        "her favorite color is purple",
+        "she's favourite colour was green",
+        "that woman's favorite color is orange",
+    ],
+)
+def test_direct_evaluation_blocks_contextual_relationship_saves_without_mutation(
+    monkeypatch,
+    prompt,
+):
+    memory_snapshot = deepcopy(server.MEMORY)
+    memory_path = Path(server.MEMORY_FILE)
+    disk_before = hashlib.sha256(memory_path.read_bytes()).hexdigest()
+    previous_user = server._LAST_USER_TEXT
+    previous_response = server._LAST_NOVA_RESPONSE
+    save_calls = []
+    monkeypatch.setattr(server, "_save_memory", lambda: save_calls.append(prompt))
+    server._LAST_USER_TEXT = "We were talking about my girlfriend."
+    server._LAST_NOVA_RESPONSE = "What would you like me to remember about her?"
+
+    try:
+        expected_memory = deepcopy(server.MEMORY)
+        response, trace = server.brain_route(
+            prompt,
+            {
+                "nova_gateway": True,
+                "evaluation_only": True,
+                "memory_read_allowed": True,
+                "memory_write_allowed": False,
+                "conversation_memory_allowed": False,
+            },
+        )
+        observed_memory = deepcopy(server.MEMORY)
+    finally:
+        server.MEMORY.clear()
+        server.MEMORY.update(memory_snapshot)
+        server._LAST_USER_TEXT = previous_user
+        server._LAST_NOVA_RESPONSE = previous_response
+
+    assert "evaluation-only" in response.casefold()
+    assert trace["source"] == "evaluation_mutation_guard"
+    assert save_calls == []
+    assert observed_memory == expected_memory
+    assert hashlib.sha256(memory_path.read_bytes()).hexdigest() == disk_before
 
 
 def test_direct_brain_evaluation_blocks_mutation_before_legacy_branches(monkeypatch):

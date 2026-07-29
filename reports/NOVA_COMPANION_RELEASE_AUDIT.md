@@ -79,7 +79,7 @@ proves all 25 acceptance prompts remain benign under the same fail-closed
 classifier used by production evaluation requests.
 
 Evaluation-only propagation and non-retention result:
-**PASS — 80 tests**. The tests exercise both OpenAI adapters, the native HTTP
+**PASS — 180 tests**. The tests exercise both OpenAI adapters, the native HTTP
 adapter, provider context, gateway core, and existing `/api/chat` brain route.
 Invalid non-Boolean values and remote evaluation clients are rejected; nested
 metadata cannot forge the flag; remote/free and local/paid providers are not
@@ -89,20 +89,34 @@ runtime control, tool, privacy, emergency, camera, microphone, speaker, or
 permission actions; normal turns still retain state; and training data remains
 unchanged.
 
-The mutation boundary is backed by a formal registry of every current exact
-legacy command alias plus every write/action prefix. Nested mock-voice routing
-preserves its evaluation context. Tests exercise the aliases against live
-Classic routing with sentinels and prove that memory, permissions, privacy,
-training state, all five legacy `_LAST_*` fields, and long-term-memory handlers
-remain unchanged.
+The 25 allowed evaluation cases live in one shared immutable registry. The
+runner sends each case ID and Nova Core accepts it only when both the ID and
+current prompt exactly match that registry. Missing, unknown, mismatched, or
+client-metadata-forged cases are rejected before provider entry. Conversation
+history remains process-memory-only and prompt/response content remains absent
+from the report.
 
-Paid streaming cost accounting is recorded exactly once at the first terminal
-event. Provider-reported actual cost is preferred; if absent, the routing
-estimate is used as a conservative actual-cost fallback. Success and error
-terminals are covered, duplicate terminal events reuse the same cost record,
-and a completed first stream advances the monthly budget before a repeated
-request can reach the provider. Evaluation streams are still rejected before
-any paid or remote provider call.
+The mutation boundary also retains a formal registry of every current exact
+legacy command alias plus every write/action prefix. At the Classic boundary,
+Nova runs the real non-mutating entity, relationship, pet, contextual
+relationship, and user-identity parsers before any corresponding save route.
+Tests cover every entity alias and every slot alias from `nova_entity_memory`,
+plus relationship, pet, contextual, and user-name forms. Nested mock-voice
+routing preserves its evaluation context. All adapter selector and path aliases
+used by the raw-adapter override are blocked. Tests prove that memory,
+permissions, privacy, training state, all five legacy `_LAST_*` fields,
+long-term-memory handlers, adapter calls, and disk-save handlers remain
+unchanged.
+
+Paid streaming reserves estimated cost atomically before provider stream
+execution. The reservation remains charged if the provider raises before a
+terminal event or the client closes the generator after a partial delta. A
+provider-reported terminal actual cost is reconciled separately without adding
+the estimate twice; if actual cost is absent, the ledger honestly remains
+estimate-only. Success and error terminals are covered, duplicate terminal
+events cannot double-account, and a first stream's reservation advances the
+monthly budget before a repeated request can reach the provider. Evaluation
+streams are still rejected before any paid or remote provider call.
 
 Legacy turn-state concurrency uses one explicit re-entrant lock around the
 complete Classic/gateway turn. This serializes simultaneous model turns and
@@ -158,7 +172,7 @@ Automated source contracts cover:
 Task 11 automated results:
 
 - Companion source/loader/PWA/acceptance-runner pytest matrix:
-  **PASS — 128 passed**
+  **PASS — 228 passed**
 - Gateway core/adapter/firewall regression matrix:
   **PASS — 64 passed**
 - Gateway HTTP/security/portability/foundation regression matrix:
