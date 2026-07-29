@@ -79,6 +79,10 @@ function createSparkDom() {
   return { document, button, host, backdrop };
 }
 
+function buttonsIn(host) {
+  return host.querySelectorAll("button");
+}
+
 test("the model cannot add an unregistered Spark action", () => {
   const shown = resolveSparkActions(
     [{ id: "chat", available: true }, { id: "invented-shell", available: true }],
@@ -140,6 +144,16 @@ test("camera tool metadata uses the documented live-input status without adding 
   assert.equal(disabled[0].reason, "Camera service is disabled.");
 });
 
+test("unmapped Classic actions ignore similarly named tool records", () => {
+  const chat = COMPANION_CAPABILITIES.find((item) => item.id === "chat");
+  const resolved = resolveCapabilityAvailability(chat, {
+    items: new Map([["chat", { availability_status: "disabled", reason: "Not a chat action." }]]),
+  });
+
+  assert.equal(resolved.available, true);
+  assert.equal(resolved.reason, "");
+});
+
 test("Spark focuses immediately and never refocuses a hidden sheet after a delayed load closes", async () => {
   const dom = createSparkDom();
   const pending = deferred();
@@ -172,4 +186,41 @@ test("destroy removes Spark click listeners and blocks old voice or pending-load
   await opening;
   assert.equal(controller.isOpen, false);
   assert.equal(dom.document.activeElement, dom.button);
+});
+
+test("a late first open cannot overwrite focus from a newer Spark open", async () => {
+  const dom = createSparkDom();
+  const first = deferred();
+  const second = deferred();
+  let loads = 0;
+  const { createSparkController } = await import("../../assets/nova_companion/companion-spark.js");
+  const controller = createSparkController({
+    ...dom,
+    loadServerState: () => (loads++ === 0 ? first.promise : second.promise),
+  });
+
+  const openA = controller.open();
+  controller.close();
+  const openB = controller.open();
+  second.resolve({ capabilities: {} });
+  await openB;
+  const focusFromB = dom.document.activeElement;
+  first.resolve({ capabilities: { vision: { image_input: { available: true } } } });
+  await openA;
+
+  assert.equal(dom.document.activeElement, focusFromB);
+  assert.equal(controller.isOpen, true);
+});
+
+test("dismissing the Spark discovery hint restores focus to a current sheet control", async () => {
+  const dom = createSparkDom();
+  const { createSparkController } = await import("../../assets/nova_companion/companion-spark.js");
+  const controller = createSparkController({ ...dom });
+
+  await controller.open();
+  const dismiss = buttonsIn(dom.host).find((item) => item.textContent === "Got it");
+  assert.ok(dismiss);
+  dismiss.dispatch("click");
+  assert.notEqual(dom.document.activeElement, dismiss);
+  assert.ok(buttonsIn(dom.host).includes(dom.document.activeElement));
 });

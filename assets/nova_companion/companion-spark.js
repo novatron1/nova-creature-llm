@@ -54,9 +54,9 @@ function unavailableReason(item) {
 }
 
 function serverItemFor(item, serverState) {
+  if (!item.requiredTool) return undefined;
   const items = serverState?.items;
-  const key = item.requiredTool || item.id;
-  return items?.get?.(key) || items?.[key];
+  return items?.get?.(item.requiredTool) || items?.[item.requiredTool];
 }
 
 function toolAvailability(item, serverItem) {
@@ -122,6 +122,7 @@ export function createSparkController({
   let openCount = 0;
   let hintDismissed = false;
   let destroyed = false;
+  let openGeneration = 0;
 
   const keydown = (event) => {
     if (!isOpen) return;
@@ -181,7 +182,11 @@ export function createSparkController({
       dismiss.type = "button";
       dismiss.className = "companion-spark__dismiss";
       dismiss.textContent = "Got it";
-      dismiss.addEventListener("click", () => { hintDismissed = true; render(); });
+      dismiss.addEventListener("click", () => {
+        hintDismissed = true;
+        render();
+        focusFirstSheetControl();
+      });
       hint.appendChild(document.createTextNode(" "));
       hint.appendChild(dismiss);
       host.appendChild(hint);
@@ -220,6 +225,7 @@ export function createSparkController({
   };
 
   const close = () => {
+    openGeneration += 1;
     if (!isOpen) return;
     isOpen = false;
     host.hidden = true;
@@ -236,6 +242,7 @@ export function createSparkController({
 
   const open = async () => {
     if (destroyed || isOpen) return false;
+    const generation = ++openGeneration;
     isOpen = true;
     openCount += 1;
     host.hidden = false;
@@ -246,12 +253,12 @@ export function createSparkController({
     focusFirstSheetControl();
     try {
       const loadedState = await loadServerState();
-      if (!isOpen || destroyed) return false;
+      if (!isOpen || destroyed || generation !== openGeneration) return false;
       serverState = loadedState;
       render();
       focusFirstSheetControl();
     } catch {
-      if (!isOpen || destroyed) return false;
+      if (!isOpen || destroyed || generation !== openGeneration) return false;
       render();
       focusFirstSheetControl();
     }
