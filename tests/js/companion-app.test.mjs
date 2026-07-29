@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
+import * as companionApp from "../../assets/nova_companion/companion-app.js";
+
+const {
+  acquireBrowserStorage,
+  createCompanionIdentity,
   createSelectedPictureVisionSubmitter,
   resolveVisionFocusRestoreTarget,
+  startCompanion,
+  storageValue,
   stopVoiceAndActiveRequest,
-} from "../../assets/nova_companion/companion-app.js";
+} = companionApp;
 
 function deferred() {
   let resolve;
@@ -47,6 +53,95 @@ test("voice Stop cancels the active normal chat request after stopping local voi
     requestId: "request_7",
   });
   assert.deepEqual(calls, ["voice.stop", "cancel:request_7"]);
+});
+
+test("blocked browser storage falls back to generated in-memory Companion IDs", () => {
+  assert.equal(typeof acquireBrowserStorage, "function");
+  assert.equal(typeof createCompanionIdentity, "function");
+  assert.equal(typeof storageValue, "function");
+  const blockedGlobal = {};
+  Object.defineProperty(blockedGlobal, "localStorage", {
+    get() { throw new Error("storage blocked"); },
+  });
+  const storage = acquireBrowserStorage(blockedGlobal);
+  assert.equal(storage, null);
+  assert.match(storageValue(storage, "client-key", "client"), /^client_/);
+  assert.match(storageValue(storage, "conversation-key", "conversation"), /^conversation_/);
+  const identity = createCompanionIdentity(blockedGlobal);
+  assert.match(identity.clientId, /^client_/);
+  assert.match(identity.conversationId, /^conversation_/);
+});
+
+test("available browser storage preserves existing Companion IDs", () => {
+  const existing = new Map([
+    ["client-key", "client_existing"],
+    ["conversation-key", "conversation_existing"],
+  ]);
+  const storage = {
+    getItem(key) { return existing.get(key) || null; },
+    setItem(key, value) { existing.set(key, value); },
+  };
+  assert.equal(storageValue(storage, "client-key", "client"), "client_existing");
+  assert.equal(storageValue(storage, "conversation-key", "conversation"), "conversation_existing");
+  const globalLike = { localStorage: storage };
+  const identity = createCompanionIdentity(globalLike, {
+    clientKey: "client-key",
+    conversationKey: "conversation-key",
+  });
+  assert.deepEqual(identity, {
+    clientId: "client_existing",
+    conversationId: "conversation_existing",
+  });
+});
+
+test("bootstrap failure becomes visible and fail closed without exposing the raw error", async () => {
+  assert.equal(typeof startCompanion, "function");
+  const elements = new Map();
+  const makeElement = () => ({
+    attributes: new Map(),
+    classList: {
+      values: new Set(["sr-only"]),
+      add(value) { this.values.add(value); },
+      remove(value) { this.values.delete(value); },
+      contains(value) { return this.values.has(value); },
+    },
+    dataset: {},
+    textContent: "",
+    setAttribute(name, value) { this.attributes.set(name, String(value)); },
+    getAttribute(name) { return this.attributes.get(name); },
+  });
+  const root = makeElement();
+  const trust = makeElement();
+  const status = makeElement();
+  const input = makeElement();
+  const send = makeElement();
+  const spark = makeElement();
+  elements.set("companionApp", root);
+  elements.set("companionTrustLabel", trust);
+  elements.set("companionLiveStatus", status);
+  elements.set("companionInput", input);
+  elements.set("companionSendButton", send);
+  elements.set("novaSparkButton", spark);
+  const document = { getElementById(id) { return elements.get(id) || null; } };
+
+  await startCompanion({
+    document,
+    boot: async () => {
+      throw new Error("private prompt and credential material");
+    },
+  });
+
+  assert.equal(root.getAttribute("aria-busy"), "false");
+  assert.equal(root.dataset.companionReady, "false");
+  assert.equal(trust.textContent, "Setup unavailable");
+  assert.equal(status.classList.contains("sr-only"), false);
+  assert.match(status.textContent, /reload/i);
+  assert.match(status.textContent, /Nova Classic/i);
+  assert.equal(status.textContent.includes("private prompt"), false);
+  assert.equal(status.textContent.includes("credential"), false);
+  assert.equal(input.disabled, true);
+  assert.equal(send.disabled, true);
+  assert.equal(spark.disabled, true);
 });
 
 test("selected pictures grant local vision permission before upload without starting browser camera", async () => {

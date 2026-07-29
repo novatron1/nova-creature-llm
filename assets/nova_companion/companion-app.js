@@ -15,7 +15,15 @@ function generatedId(prefix) {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
 }
 
-function storageValue(storage, key, prefix) {
+export function acquireBrowserStorage(globalLike = globalThis) {
+  try {
+    return globalLike?.localStorage || null;
+  } catch {
+    return null;
+  }
+}
+
+export function storageValue(storage, key, prefix) {
   try {
     const existing = storage?.getItem(key);
     if (existing) return existing;
@@ -25,6 +33,17 @@ function storageValue(storage, key, prefix) {
   } catch {
     return generatedId(prefix);
   }
+}
+
+export function createCompanionIdentity(globalLike = globalThis, {
+  clientKey = CLIENT_ID_KEY,
+  conversationKey = CONVERSATION_ID_KEY,
+} = {}) {
+  const storage = acquireBrowserStorage(globalLike);
+  return {
+    clientId: storageValue(storage, clientKey, "client"),
+    conversationId: storageValue(storage, conversationKey, "conversation"),
+  };
 }
 
 function eventType(event) {
@@ -207,9 +226,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
   const sendButton = document?.getElementById("companionSendButton");
   if (!root || !timeline || !form || !input || !sendButton) return null;
 
-  const storage = globalThis.localStorage;
-  const clientId = storageValue(storage, CLIENT_ID_KEY, "client");
-  const conversationId = storageValue(storage, CONVERSATION_ID_KEY, "conversation");
+  const { clientId, conversationId } = createCompanionIdentity(globalThis);
   const rawApi = new NovaCompanionApi();
   let api = rawApi;
   let state = createInitialCompanionState({ clientId, conversationId });
@@ -739,11 +756,42 @@ export async function bootstrapCompanion(document = globalThis.document) {
   };
 }
 
+export function presentBootstrapFailure(document = globalThis.document) {
+  const root = document?.getElementById?.("companionApp");
+  const trustLabel = document?.getElementById?.("companionTrustLabel");
+  const liveStatus = document?.getElementById?.("companionLiveStatus");
+  const input = document?.getElementById?.("companionInput");
+  const sendButton = document?.getElementById?.("companionSendButton");
+  const sparkButton = document?.getElementById?.("novaSparkButton");
+  if (root) {
+    root.setAttribute("aria-busy", "false");
+    root.dataset.companionReady = "false";
+  }
+  if (trustLabel) trustLabel.textContent = "Setup unavailable";
+  if (liveStatus) {
+    liveStatus.textContent = "Nova Companion could not finish setup. Reload this page or open Nova Classic.";
+    liveStatus.classList?.remove("sr-only");
+    liveStatus.classList?.add("companion-boot-failure");
+  }
+  if (input) input.disabled = true;
+  if (sendButton) sendButton.disabled = true;
+  if (sparkButton) sparkButton.disabled = true;
+}
+
+export async function startCompanion({
+  document = globalThis.document,
+  boot = bootstrapCompanion,
+} = {}) {
+  try {
+    return await boot(document);
+  } catch {
+    presentBootstrapFailure(document);
+    return null;
+  }
+}
+
 function start() {
-  void bootstrapCompanion().catch(() => {
-    const root = globalThis.document?.getElementById("companionApp");
-    if (root) root.setAttribute("aria-busy", "false");
-  });
+  void startCompanion();
 }
 
 if (globalThis.document) {
