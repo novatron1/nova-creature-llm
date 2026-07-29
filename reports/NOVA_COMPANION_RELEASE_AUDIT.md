@@ -1,11 +1,10 @@
 # Nova Companion Release Audit
 
-Status: **PENDING CONTROLLER LIVE ACCEPTANCE**
+Status: **PARTIAL — COMPANION AVAILABLE AT `/companion`**
 
-This document separates automated evidence from browser/device measurements.
-Any result that requires the running Nova server or the in-app browser remains
-marked **PENDING** until the controller records it. No estimated live result is
-presented as measured.
+This document separates automated evidence from measured browser/device
+evidence. Unavailable native-device checks remain explicitly limited rather
+than estimated.
 
 ## Exact Task 11 files
 
@@ -22,18 +21,23 @@ presented as measured.
 - `src/nova_gateway/core.py`
 - `nova_enhanced_server.py`
 - `reports/NOVA_COMPANION_RELEASE_AUDIT.md`
-- `reports/nova_companion_acceptance.json` — PENDING controller live run
+- `reports/nova_companion_acceptance.json` — completed measured live run
 
 ## Routes and feature flags
 
 Source/configuration inspection:
 
-- `/companion`: implemented; live HTTP recheck PENDING
-- `/classic`: implemented; live HTTP recheck PENDING
-- `/healthz`: implemented; live HTTP recheck PENDING
-- `/nova/v1/capabilities`: implemented; live HTTP recheck PENDING
-- `/nova/v1/tools`: implemented; live HTTP recheck PENDING
-- `/nova/v1/chat`: implemented; 25-turn live gate PENDING
+- `/companion`: live PASS
+- `/classic`: live PASS by direct click/navigation
+- `/`: live PASS and byte-for-byte matched `/classic`
+- `/health`: live PASS
+- `/healthz`: live PASS
+- `/nova/v1/health`: live PASS
+- `/v1/models`: live PASS
+- `/nova/v1/providers`: live PASS
+- `/nova/v1/capabilities`: live PASS
+- `/nova/v1/tools`: live PASS
+- `/nova/v1/chat`: live PARTIAL — 17 of 25 cases passed
 - `NOVA_COMPANION_ENABLED=true`
 - `NOVA_COMPANION_DEFAULT=false`
 
@@ -125,7 +129,14 @@ from being observed by or restored over an ordinary turn. The lock is a
 bounded compatibility measure until all five legacy `_LAST_*` fields move to
 session-scoped state.
 
-Live 25-turn result: **PENDING**. The controller must run:
+Live 25-turn result: **PARTIAL — 17/25 cases passed; 5/5 route checks
+passed**. The monitored run took 320,031 ms. Failed case IDs were
+`affection_02`, `follow_up_02`, `correction_01`, `uncertainty_02`,
+`interruption_01`, `reconnect_01`, `reconnect_02`, and `reconnect_03`.
+All failures returned safe HTTP responses; they did not mutate training data.
+The failing outputs were not copied into this privacy-safe report.
+
+Reproduction command:
 
 ```powershell
 py -3.11 tools/run_nova_companion_acceptance.py --base-url http://127.0.0.1:8765 --output reports/nova_companion_acceptance.json
@@ -147,12 +158,16 @@ Required controller measurements:
 
 | Viewport | Body overflow | Composer/focus | Spark/focus trap | Safe area | Classic | Result |
 | --- | --- | --- | --- | --- | --- | --- |
-| `390x844` | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| `430x932` | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| desktop `>=1024px` | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| `390x844` | PASS | PASS | PASS | PASS | PASS | PASS |
+| `430x932` | PASS | PASS | PASS | PASS | PASS | PASS |
+| desktop `1280x800` | PASS | PASS | PASS | PASS | PASS by click | PASS |
 
-The controller must record computed widths, scroll positions, screenshots, and
-keyboard-only desktop results here.
+The repaired composer remained within the viewport at both phone sizes, focus
+kept the composer visible, Spark trapped focus and restored it after Escape,
+and the browser console remained clean. Screenshots and detailed limitations
+are recorded in the Task 11 live report. Classic was proven by direct
+click/navigation; the automation harness did not activate the real link from a
+synthetic Enter key, so keyboard-link activation is not separately claimed.
 
 ## Accessibility and privacy
 
@@ -183,16 +198,31 @@ Task 11 automated results:
   **PASS — 23 passed, 331 deselected**
 - Complete Companion JavaScript matrix: **PASS — 111 passed, 0 failed**
 
-Keyboard focus order, focus restoration, and screen-reader behavior on the
-live browser/device: **PENDING**.
+Task 12 final regression results:
+
+- Complete JavaScript matrix: **PASS — 111 passed, 0 failed, 0 skipped,
+  3,533.3842 ms**
+- Exact Companion/HTTP focused pytest matrix: **PASS — 61 passed, 0 failed,
+  61.01 s**
+- Entire existing and new pytest suite: **PASS — 1,560 passed, 10 skipped,
+  0 failed, 831.61 s**
+- Conversation evaluation: **PASS — 560/560**, evaluation-only mode,
+  `training_writes=0`, `content_logged=false`,
+  `memory_writes_allowed=false`, and `training_allowed=false`
+
+Keyboard focus into the composer and Spark focus restoration: **PASS**.
+Screen-reader announcement behavior was not available in the browser harness
+and is not claimed.
 
 ## Performance
 
-- Navigation start to `data-companion-ready="true"`, five warm local runs:
-  **PENDING**
-- Median warm shell-ready time: **PENDING**
-- Presence-motion frame stability: **PENDING**
-- Device/browser limitation notes: **PENDING**
+- Five measured warm shell-ready runs: 6,292 ms, 2,074 ms, 4,685 ms,
+  2,407 ms, and 4,868 ms.
+- Median warm shell-ready time: **4,685 ms**
+- Presence-motion frame stability: **NOT MEASURED**; the browser harness does
+  not expose trustworthy frame-timing telemetry.
+- Device/browser limitations: native software-keyboard resize,
+  screen-reader output, and reduced-motion emulation were unavailable.
 
 No frame-rate or shell-timing estimate is substituted for a measurement.
 
@@ -208,7 +238,11 @@ Prior task evidence:
 - Automated control covers a stalled recognition engine without falsely
   reporting listening.
 
-Task 11 cross-viewport recheck: **PENDING**.
+Task 11 cross-viewport recheck: controls and availability labels remained
+truthful. On this isolated run the current server reported vision and voice
+input unavailable; no false-ready state was shown. The prior selected-picture
+vision and voice-output evidence remains valid for the configured services
+used in those task-specific live runs.
 
 Manual human microphone transcript and native permission-denial outcome remain
 device-dependent limitations; earlier automation did not fabricate them.
@@ -217,16 +251,34 @@ device-dependent limitations; earlier automation did not fabricate them.
 
 Deterministic mutation detection: **PASS**.
 
-Live before/after SHA-256 and unchanged state: **PENDING** in
-`reports/nova_companion_acceptance.json`.
+Live before/after SHA-256: **PASS — unchanged**.
+Both hashes were
+`423c83035f850183950cb9d22ee322a5526ba4a33cec48b39bd99552a3541e85`.
+The acceptance report records `evaluation_only=true` and
+`content_logged=false`.
 
 ## Classic rollback
 
 Nova Classic remains linked at `/classic`, and
 `NOVA_COMPANION_DEFAULT=false` currently keeps it as the root fallback.
 
-Controller live proof that Classic opens and remains functional: **PENDING**.
-Task 12 must repeat the one-flag rollback proof before any default change.
+Task 12 repeated the proof on an isolated current-build server without touching
+the user's services. All ten required routes returned HTTP 200: `/`,
+`/companion`, `/classic`, `/health`, `/healthz`, `/nova/v1/health`,
+`/v1/models`, `/nova/v1/providers`, `/nova/v1/capabilities`, and
+`/nova/v1/tools`.
+
+Content hashes proved the configured root was exactly Classic:
+
+- root: `522a15ebfd9634ed76e1775b626794d43b9f509fdfbede9389d7751d0c0b0f40`
+- Classic: `522a15ebfd9634ed76e1775b626794d43b9f509fdfbede9389d7751d0c0b0f40`
+- Companion: `8fac33825c9ff5a0d256150876b46371a1dd5ace60f00d407c6ae18254dea3fa`
+- `root_equals_classic=true`
+- `root_equals_companion=false`
+
+Exact one-flag rollback is `NOVA_COMPANION_DEFAULT=false` followed by a normal
+Nova restart. `NOVA_COMPANION_ENABLED=true` may remain set so `/companion`
+continues to be available without becoming the default.
 
 ## Known limitations
 
@@ -242,13 +294,22 @@ Task 12 must repeat the one-flag rollback proof before any default change.
 - Task 11 does not change Nova cognition, model weights, trained adapters,
   checkpoints, identity, memory contents, tools, or existing response
   contracts. It tightens only the reserved evaluation-control boundary.
+- The 25-turn conversational gate failed eight contextual/relationship cases.
+  The Companion default must remain disabled until those cognitive failures
+  are fixed outside this visual acceptance task and the complete gate passes.
+- The 4,685 ms measured median shell-ready time is functional but not yet a
+  high-performance release result.
+- A 25-turn visual timeline was not replayed into the UI because the
+  evaluation-only HTTP run intentionally avoids persistence. The shell was
+  exercised directly at all required viewports.
 
 ## Default readiness
 
-**PENDING — DO NOT ENABLE AS DEFAULT YET.**
+**PARTIAL — COMPANION AVAILABLE AT `/companion`.**
 
 Companion is available at `/companion`, while Nova Classic remains the
-configured default. The release can be considered for default only after the
-controller completes all live viewports, the 25-turn no-training run,
-performance measurements, full regression, and rollback proof with no failed
-gate.
+configured default. Required viewport, cancellation, route, and training
+isolation checks passed, the full regression suite passed, the 560-case
+evaluation passed, and the one-flag rollback was proved. Default promotion
+remains blocked by the failed 25-turn quality gate. Configuration remains
+`NOVA_COMPANION_ENABLED=true` and `NOVA_COMPANION_DEFAULT=false`.
