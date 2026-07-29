@@ -1,3 +1,5 @@
+// This is a display-only reducer. It never persists state, authorizes actions,
+// or decides backend truth; the backend remains authoritative for all of those.
 const phases = [
   "booting", "submitting", "thinking", "acting", "responding", "completed",
   "offline", "failed", "cancelled",
@@ -14,11 +16,12 @@ export const COMPANION_PHASES = new Set(phases);
 export const COMPANION_EVENTS = new Set(events);
 
 const REQUEST_EVENTS = new Set([
-  "REQUEST_ACCEPTED", "THINKING", "TOOL_STARTED", "DELTA", "COMPLETED", "FAILED", "CANCELLED",
+  "REQUEST_ACCEPTED", "THINKING", "TOOL_PROPOSED", "TOOL_STARTED", "DELTA", "COMPLETED", "FAILED", "CANCELLED",
 ]);
 
 function freezeState(state) {
   Object.freeze(state.acceptedRequestIds);
+  if (state.activeTool) Object.freeze(state.activeTool);
   Object.freeze(state.camera);
   Object.freeze(state.microphone);
   Object.freeze(state.trust);
@@ -51,19 +54,20 @@ function withRequest(state, requestId, changes) {
 export function createInitialCompanionState(options = {}) {
   return freezeState({
     phase: "booting",
+    // These are read-only UI projections, never authorization or persistence inputs.
     clientId: asText(options.clientId),
     conversationId: asText(options.conversationId),
     activeRequestId: "",
     acceptedRequestIds: [],
     conversationTurnCount: 0,
     streamingText: "",
-    activeTool: null,
+    activeTool: null, // Observed/proposed tool display metadata only.
     error: null,
     offline: false,
-    sheet: null,
-    camera: { permission: "unknown", active: false, persisted: false },
-    microphone: { permission: "unknown", active: false },
-    trust: { local: null, provider: "", model: "", memoryUsed: false },
+    sheet: null, // UI-only sheet selection.
+    camera: { permission: "unknown", active: false, persisted: false }, // Display projection.
+    microphone: { permission: "unknown", active: false }, // Display projection.
+    trust: { local: null, provider: "", model: "", memoryUsed: false }, // Display projection.
   });
 }
 
@@ -85,21 +89,16 @@ export function reduceCompanionState(state, event) {
     case "THINKING":
       return freezeState({ ...state, phase: "thinking", error: null, offline: false });
     case "TOOL_PROPOSED": {
-      const requestId = asText(event.requestId);
-      if (!requestId) return state;
-      if (state.activeRequestId && !requestMatches(state, event)) return state;
-      if (!state.activeRequestId && state.acceptedRequestIds.includes(requestId)) return state;
-      const activeTool = { name: asText(event.toolName), started: false };
-      if (!state.activeRequestId) {
-        return withRequest(state, requestId, { phase: "thinking", activeTool, error: null });
-      }
-      return freezeState({ ...state, activeTool });
+      return freezeState({
+        ...state,
+        activeTool: { name: asText(event.toolName), status: "proposed" },
+      });
     }
     case "TOOL_STARTED":
       return freezeState({
         ...state,
         phase: "acting",
-        activeTool: { name: asText(event.toolName) || state.activeTool?.name || "", started: true },
+        activeTool: { name: asText(event.toolName) || state.activeTool?.name || "", status: "started" },
       });
     case "DELTA":
       return freezeState({

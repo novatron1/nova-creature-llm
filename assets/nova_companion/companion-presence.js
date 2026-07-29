@@ -13,10 +13,11 @@ const PHASE_PRESENTATION = {
 export function presenceViewModel(state = {}, reducedMotion = false) {
   const phase = PHASE_PRESENTATION[state.phase] ? state.phase : "booting";
   const presentation = PHASE_PRESENTATION[phase];
-  const toolName = state.activeTool?.started && state.activeTool.name;
+  const toolName = state.activeTool?.status === "started" && state.activeTool.name;
+  const toolProposed = state.activeTool?.status === "proposed";
   return Object.freeze({
     phase,
-    label: toolName ? `Nova is using ${toolName}` : presentation.label,
+    label: toolProposed ? "Nova is proposing an action" : toolName ? `Nova is using ${toolName}` : presentation.label,
     color: presentation.color,
     motion: reducedMotion ? "none" : presentation.motion,
     size: Number(state.conversationTurnCount) > 0 ? "compact" : "full",

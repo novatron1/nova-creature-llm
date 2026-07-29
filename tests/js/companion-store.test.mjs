@@ -29,9 +29,15 @@ test("cancelled requests ignore late deltas", () => {
 });
 
 test("a tool is acting only after an observed tool-start event", () => {
-  const state = createInitialCompanionState({});
-  const proposed = reduceCompanionState(state, { type: "TOOL_PROPOSED", requestId: "r", toolName: "vision.observe" });
+  const state = reduceCompanionState(createInitialCompanionState({}), {
+    type: "SUBMIT", requestId: "r", text: "Observe this",
+  });
+  const proposed = reduceCompanionState(state, {
+    type: "TOOL_PROPOSED", requestId: "r", toolName: "vision.observe",
+  });
   assert.notEqual(proposed.phase, "acting");
+  assert.equal(proposed.activeTool.status, "proposed");
+  assert.ok(Object.isFrozen(proposed.activeTool));
   const acting = reduceCompanionState(proposed, { type: "TOOL_STARTED", requestId: "r", toolName: "vision.observe" });
   assert.equal(acting.phase, "acting");
 });
@@ -56,6 +62,15 @@ test("initial state has the documented immutable shape", () => {
   assert.ok(Object.isFrozen(state));
   assert.ok(COMPANION_PHASES.has("responding"));
   assert.ok(COMPANION_EVENTS.has("SUBMIT"));
+});
+
+test("identity, trust, sensor, tool, and sheet fields are display-only projections", () => {
+  const state = createInitialCompanionState({ clientId: "desktop", conversationId: "conv-2" });
+  assert.deepEqual(state.trust, { local: null, provider: "", model: "", memoryUsed: false });
+  assert.equal(state.sheet, null);
+  assert.equal(state.camera.active, false);
+  assert.equal(state.microphone.active, false);
+  assert.equal(state.activeTool, null);
 });
 
 test("reducer returns a new state and ignores stale request-bound events", () => {
@@ -91,12 +106,28 @@ test("identity changes clear private transient state", () => {
   assert.equal(changed.microphone.active, false);
 });
 
-test("a cancelled request cannot be reactivated by a late tool proposal", () => {
+test("tool proposals apply only to the active matching request", () => {
   const initial = createInitialCompanionState({});
   const submitted = reduceCompanionState(initial, { type: "SUBMIT", requestId: "r", text: "Hi" });
-  const cancelled = reduceCompanionState(submitted, { type: "CANCELLED", requestId: "r" });
-  const late = reduceCompanionState(cancelled, { type: "TOOL_PROPOSED", requestId: "r", toolName: "vision.observe" });
-  assert.equal(late, cancelled);
+  const stale = reduceCompanionState(submitted, { type: "TOOL_PROPOSED", requestId: "old", toolName: "vision.observe" });
+  const proposed = reduceCompanionState(submitted, { type: "TOOL_PROPOSED", requestId: "r", toolName: "vision.observe" });
+  assert.equal(stale, submitted);
+  assert.equal(proposed.phase, "submitting");
+  assert.deepEqual(proposed.activeTool, { name: "vision.observe", status: "proposed" });
+  assert.equal(presenceViewModel(proposed, false).label, "Nova is proposing an action");
+});
+
+test("late and evicted tool proposals cannot start or revive requests", () => {
+  let state = createInitialCompanionState({});
+  assert.equal(reduceCompanionState(state, { type: "TOOL_PROPOSED", requestId: "blank", toolName: "vision.observe" }), state);
+  for (let index = 0; index < 22; index += 1) {
+    state = reduceCompanionState(state, { type: "SUBMIT", requestId: `r-${index}`, text: "Hi" });
+  }
+  const completed = reduceCompanionState(state, { type: "COMPLETED", requestId: "r-21" });
+  const evicted = reduceCompanionState(completed, { type: "TOOL_PROPOSED", requestId: "r-0", toolName: "vision.observe" });
+  const completedLate = reduceCompanionState(completed, { type: "TOOL_PROPOSED", requestId: "r-21", toolName: "vision.observe" });
+  assert.equal(evicted, completed);
+  assert.equal(completedLate, completed);
 });
 
 test("presence rendering uses text content and state attributes", () => {
