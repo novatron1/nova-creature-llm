@@ -237,6 +237,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
   let vision;
   let voice;
   let voiceState = { listening: false, speaking: false };
+  const conversationHistory = [];
   let closeVisionSheet = () => {};
   let visionSheetGeneration = 0;
   let inFlight = false;
@@ -610,7 +611,13 @@ export async function bootstrapCompanion(document = globalThis.document) {
     let accepted = false;
     dispatch({ type: "SUBMIT", requestId, text });
     try {
-      const result = await api.streamChat({ text, requestId, clientId, conversationId }, {
+      const result = await api.streamChat({
+        text,
+        requestId,
+        clientId,
+        conversationId,
+        history: conversationHistory.slice(-8),
+      }, {
         onEvent(event) {
           if (!accepted && !event?.error && eventType(event) !== "error") {
             accepted = true;
@@ -630,6 +637,13 @@ export async function bootstrapCompanion(document = globalThis.document) {
           dispatch({ type: "DELTA", requestId, delta });
         },
       });
+      conversationHistory.push(
+        { role: "user", content: text },
+        { role: "assistant", content: String(result?.text || result?.response || "") },
+      );
+      if (conversationHistory.length > 8) {
+        conversationHistory.splice(0, conversationHistory.length - 8);
+      }
       if (assistantMessage) {
         markMessageStatus(assistantMessage, "completed");
         const answerStatus = result.trace?.answer_status;
@@ -683,16 +697,37 @@ export async function bootstrapCompanion(document = globalThis.document) {
       input.focus({ preventScroll: true });
     },
   });
-  voiceButton.addEventListener("click", () => { voice.startListening(); });
+  const startVoiceListening = () => { voice.startListening(); };
+  voiceButton.addEventListener("click", startVoiceListening);
   voiceOutputButton.addEventListener("click", () => { setVoiceOutputEnabled(!voiceOutputEnabled); });
   voiceStopButton.addEventListener("click", () => { void stopVoiceAndRequest(); });
   spark = createSparkController({
     document,
-    loadServerState: () => loadSparkServerState(api),
+    loadServerState: async () => {
+      const serverState = await loadSparkServerState(api);
+      const capabilities = serverState.capabilities || {};
+      return {
+        ...serverState,
+        capabilities: {
+          ...capabilities,
+          audio: {
+            ...(capabilities.audio || {}),
+            input: {
+              available: voiceSupport.transcription,
+              reason: voiceSupport.transcription ? "" : voiceSupport.reason,
+            },
+          },
+        },
+      };
+    },
     onCompanionAction: async (action) => {
       if (action.id === "vision") {
         const invoker = document.activeElement;
         globalThis.setTimeout?.(() => { openVisionSheet(invoker); }, 0);
+        return true;
+      }
+      if (action.id === "voice" && voiceSupport.transcription) {
+        globalThis.setTimeout?.(startVoiceListening, 0);
         return true;
       }
       elements.liveStatus.textContent = `${action.label} is not available in this Companion version yet.`;

@@ -74,7 +74,7 @@ test("stream chat sends only the native Companion request fields", async () => {
   );
   assert.deepEqual(JSON.parse(calls[0].options.body), {
     model: "nova", text: "Hi", stream: true, request_id: "req-2", client_id: "client",
-    conversation_id: "conv", session_id: "session", recent_messages: [{ role: "user", content: "Earlier" }],
+    conversation_id: "conv", session_id: "session", conversation_history: [{ role: "user", content: "Earlier" }],
   });
 });
 

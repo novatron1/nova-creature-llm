@@ -131,7 +131,7 @@ export class NovaCompanionApi {
       client_id: clientId,
       conversation_id: conversationId,
       session_id: sessionId,
-      recent_messages: history,
+      conversation_history: history,
     };
     let textSoFar = "";
     let completed = false;

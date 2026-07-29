@@ -234,7 +234,7 @@ class BootstrapElement {
   querySelectorAll() {
     const found = [];
     const visit = (node) => {
-      for (const child of node.children) {
+      for (const child of node.children || []) {
         if (["button", "input", "textarea", "select", "a"].includes(child.tagName) && !child.disabled) {
           found.push(child);
         }
@@ -285,6 +285,154 @@ function createBootstrapDom() {
   root.append(timeline, form);
   return { document, root, form, input, send };
 }
+
+function companionJsonResponse(payload = {}) {
+  return {
+    ok: true,
+    status: 200,
+    headers: { get() { return null; } },
+    async json() { return payload; },
+  };
+}
+
+function companionStreamResponse(text) {
+  const encoder = new TextEncoder();
+  const payload = [
+    `event: response.delta\ndata: ${JSON.stringify({ event_type: "response.delta", response_id: "response-test", sequence: 0, delta: text })}\n\n`,
+    `event: response.completed\ndata: ${JSON.stringify({ event_type: "response.completed", response_id: "response-test", sequence: 1, done: true, metadata: { trace: { source: "test" } } })}\n\n`,
+    "data: [DONE]\n\n",
+  ];
+  let index = 0;
+  return {
+    ok: true,
+    status: 200,
+    headers: { get() { return "text/event-stream"; } },
+    body: {
+      getReader() {
+        return {
+          async read() {
+            if (index >= payload.length) return { done: true, value: undefined };
+            return { done: false, value: encoder.encode(payload[index++]) };
+          },
+          async cancel() {},
+        };
+      },
+    },
+  };
+}
+
+test("a real second Companion turn sends the completed first exchange as bounded canonical history", async () => {
+  const dom = createBootstrapDom();
+  const descriptors = new Map([
+    ["fetch", Object.getOwnPropertyDescriptor(globalThis, "fetch")],
+    ["authHeaders", Object.getOwnPropertyDescriptor(globalThis, "authHeaders")],
+    ["pairedDeviceToken", Object.getOwnPropertyDescriptor(globalThis, "pairedDeviceToken")],
+    ["rememberPairedDeviceToken", Object.getOwnPropertyDescriptor(globalThis, "rememberPairedDeviceToken")],
+  ]);
+  const chatBodies = [];
+  const replies = ["The code word is blue.", "Yes, the code word is blue."];
+  globalThis.authHeaders = (headers = {}) => ({ ...headers });
+  globalThis.pairedDeviceToken = () => "";
+  globalThis.rememberPairedDeviceToken = () => {};
+  globalThis.fetch = async (url, options = {}) => {
+    const path = String(url);
+    if (path.endsWith("/nova/v1/chat")) {
+      chatBodies.push(JSON.parse(options.body));
+      return companionStreamResponse(replies[chatBodies.length - 1]);
+    }
+    if (path.endsWith("/api/pairing/status")) {
+      return companionJsonResponse({ enabled: true, local_client: true, pairing_required: false });
+    }
+    if (path.endsWith("/status")) {
+      return companionJsonResponse({ ok: true, private_mode: true });
+    }
+    return companionJsonResponse({ ok: true });
+  };
+
+  try {
+    const controller = await bootstrapCompanion(dom.document);
+    dom.input.value = "Remember that the code word is blue.";
+    await controller.composer.submit();
+    dom.input.value = "What is the code word?";
+    await controller.composer.submit();
+
+    assert.equal(chatBodies.length, 2);
+    assert.deepEqual(chatBodies[0].conversation_history, []);
+    assert.deepEqual(chatBodies[1].conversation_history, [
+      { role: "user", content: "Remember that the code word is blue." },
+      { role: "assistant", content: "The code word is blue." },
+    ]);
+    assert.equal(JSON.stringify(globalThis.localStorage || {}).includes("code word"), false);
+    controller.destroy();
+  } finally {
+    for (const [name, descriptor] of descriptors) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else delete globalThis[name];
+    }
+  }
+});
+
+test("an enabled Spark Voice action executes the same recognition path as Talk", async () => {
+  const dom = createBootstrapDom();
+  const descriptors = new Map([
+    ["fetch", Object.getOwnPropertyDescriptor(globalThis, "fetch")],
+    ["authHeaders", Object.getOwnPropertyDescriptor(globalThis, "authHeaders")],
+    ["pairedDeviceToken", Object.getOwnPropertyDescriptor(globalThis, "pairedDeviceToken")],
+    ["rememberPairedDeviceToken", Object.getOwnPropertyDescriptor(globalThis, "rememberPairedDeviceToken")],
+    ["SpeechRecognition", Object.getOwnPropertyDescriptor(globalThis, "SpeechRecognition")],
+  ]);
+  let recognitionStarts = 0;
+  class TestRecognition {
+    start() {
+      recognitionStarts += 1;
+      this.onstart?.();
+    }
+    stop() { this.onend?.(); }
+    abort() { this.onend?.(); }
+  }
+  globalThis.SpeechRecognition = TestRecognition;
+  globalThis.authHeaders = (headers = {}) => ({ ...headers });
+  globalThis.pairedDeviceToken = () => "";
+  globalThis.rememberPairedDeviceToken = () => {};
+  globalThis.fetch = async (url) => {
+    const path = String(url);
+    if (path.endsWith("/api/pairing/status")) {
+      return companionJsonResponse({ enabled: true, local_client: true, pairing_required: false });
+    }
+    if (path.endsWith("/status")) {
+      return companionJsonResponse({ ok: true, companion: {} });
+    }
+    if (path.endsWith("/nova/v1/capabilities")) {
+      return companionJsonResponse({ audio: { input: { available: true } } });
+    }
+    if (path.endsWith("/nova/v1/tools")) {
+      return companionJsonResponse({ object: "list", data: [] });
+    }
+    return companionJsonResponse({ ok: true });
+  };
+
+  try {
+    const controller = await bootstrapCompanion(dom.document);
+    const sparkButton = dom.document.getElementById("novaSparkButton");
+    for (const listener of sparkButton.listeners.get("click") || []) listener({});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const host = dom.document.getElementById("companionSheetHost");
+    const voiceAction = host.querySelectorAll().find((item) => item.dataset.sparkAction === "voice");
+    assert.ok(voiceAction);
+    assert.equal(voiceAction.disabled, false);
+
+    for (const listener of voiceAction.listeners.get("click") || []) listener({});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(recognitionStarts, 1);
+    controller.destroy();
+  } finally {
+    for (const [name, descriptor] of descriptors) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else delete globalThis[name];
+    }
+  }
+});
 
 test("real Companion bootstrap mounts securely when the global storage getter throws", async () => {
   assert.equal(typeof bootstrapCompanion, "function");

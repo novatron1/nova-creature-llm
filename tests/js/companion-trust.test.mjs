@@ -46,7 +46,7 @@ function loadFoundationHelpers() {
 test("trust projection never copies private content", () => {
   assert.equal(typeof projectTrustState, "function");
   const projected = projectTrustState({
-    status: { private_mode: true, permissions: { camera: false } },
+    status: { local: true, private_mode: true, permissions: { camera: false } },
     health: { provider: "existing-nova", model: "nova", prompt: "secret prompt" },
     trace: { answer_status: { memory: "used" }, hidden_reasoning: "secret" },
   });
@@ -271,6 +271,36 @@ test("pairing-disabled remote access is labeled plain Remote everywhere", async 
   assert.equal(access.pairingEnabled, false);
   assert.equal(access.paired, false);
   assert.equal(trustConnectionLabel(state, access), "Remote");
+});
+
+test("a failed pairing-status check never turns partial remote evidence into Local", async () => {
+  const controller = createTrustController({
+    api: {
+      async getJson(path) {
+        if (path === "/api/pairing/status") throw new Error("pairing status unavailable");
+        if (path === "/status") return { ok: true, private_mode: true };
+        return { ok: true };
+      },
+      async postJson() { return {}; },
+    },
+    rememberPairedDeviceToken() {},
+  });
+
+  const state = await controller.refresh();
+
+  assert.equal(state.connection, "unknown");
+  assert.equal(trustConnectionLabel(state), "Connection unknown");
+  assert.equal(trustConnectionLabel(state).includes("Local"), false);
+});
+
+test("an asserted Local label is ignored without affirmative same-host evidence", () => {
+  const state = projectTrustState({
+    connection: "local",
+    status: { ok: true, private_mode: true },
+  });
+
+  assert.equal(state.connection, "unknown");
+  assert.equal(trustConnectionLabel(state), "Connection unknown");
 });
 
 test("validated Foundation token helpers authorize later requests and reject invalid text", async () => {

@@ -1,7 +1,7 @@
 const REDACTED = "[redacted]";
 const SENSITIVE_KEY = /(?:authorization|api[_-]?key|token|secret|password|prompt|memory[_-]?(?:content|text)|image[_-]?(?:base64|data)|hidden[_-]?reasoning|chain[_-]?of[_-]?thought|tool[_-]?(?:arguments|input)|headers?|file[_-]?content)/i;
 const ACTION_STATES = new Set(["proposed", "authorized", "attempted", "started", "completed", "failed", "cancelled"]);
-const CONNECTIONS = new Set(["local", "remote", "offline"]);
+const CONNECTIONS = new Set(["local", "remote", "offline", "unknown"]);
 
 function safeText(value, maximum = 160) {
   return typeof value === "string" ? value.slice(0, maximum) : "";
@@ -15,13 +15,16 @@ function safeCost(value) {
 
 function connectionFor(inputs) {
   const explicit = safeText(inputs?.connection).toLowerCase();
-  if (CONNECTIONS.has(explicit)) return explicit;
   if (inputs?.offline === true) return "offline";
   const status = inputs?.status || {};
   const pairing = inputs?.pairing || {};
+  if (explicit === "offline" || explicit === "remote" || explicit === "unknown") return explicit;
+  if (explicit === "local" && status?.local !== true && pairing?.local_client !== true) return "unknown";
+  if (CONNECTIONS.has(explicit)) return explicit;
   if (status?.ok === false && inputs?.health?.ok === false) return "offline";
   if (status?.local === false || pairing?.local_client === false || status?.pairing_required === true) return "remote";
-  return "local";
+  if (status?.local === true || pairing?.local_client === true) return "local";
+  return "unknown";
 }
 
 function recentActionsFor(inputs) {
@@ -128,6 +131,7 @@ export function projectTrustState(inputs = {}) {
 /** Return one truthful connection label from the fixed Trust state. */
 export function trustConnectionLabel(state, access = {}) {
   if (state?.connection === "offline") return "Offline";
+  if (state?.connection === "unknown") return "Connection unknown";
   if (state?.connection === "local") return state?.privateMode ? "Local · Private" : "Local";
   if (state?.connection !== "remote") return "Offline";
   if (access.pairingEnabled === false) return "Remote";
@@ -216,6 +220,7 @@ export function createTrustController({
     const results = await Promise.allSettled(paths.map((path) => api.getJson(path)));
     if (destroyed || generation !== refreshGeneration) return state;
     const value = (index) => results[index].status === "fulfilled" ? results[index].value : {};
+    const pairingStatusAvailable = results[0].status === "fulfilled";
     const pairing = value(0);
     const status = value(1);
     const healthz = value(2);
@@ -231,7 +236,9 @@ export function createTrustController({
     const inputs = {
       connection: !reachable
         ? "offline"
-        : (pairing?.local_client === true ? "local" : (pairing?.local_client === false ? "remote" : undefined)),
+        : (!pairingStatusAvailable
+          ? "unknown"
+          : (pairing?.local_client === true ? "local" : (pairing?.local_client === false ? "remote" : "unknown"))),
       pairing,
       status,
       health: {
@@ -245,8 +252,7 @@ export function createTrustController({
     };
     if (!hasAuthoritativeCost({ status, health: inputs.health })) inputs.estimatedCost = state.estimatedCost;
     if (!hasAuthoritativeActions({ status })) inputs.recentActions = state.recentActions;
-    const next = projectTrustState(inputs);
-    publish(next);
+    publish(inputs);
     return state;
   };
 
