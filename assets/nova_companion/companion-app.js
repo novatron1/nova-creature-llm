@@ -5,6 +5,7 @@ import { appendMessage, beginStreamingMessage, appendStreamingDelta } from "./co
 import { createComposerController } from "./companion-composer.js";
 import { createSparkController } from "./companion-spark.js";
 import { buildVisionPayload, createVisionController, createVoiceController, prepareVisionCanvas, voiceAvailability } from "./companion-senses.js";
+import { createTrustController } from "./companion-trust.js";
 
 const CLIENT_ID_KEY = "nova_companion_client_id_v1";
 const CONVERSATION_ID_KEY = "nova_companion_conversation_id_v1";
@@ -209,11 +210,13 @@ export async function bootstrapCompanion(document = globalThis.document) {
   const storage = globalThis.localStorage;
   const clientId = storageValue(storage, CLIENT_ID_KEY, "client");
   const conversationId = storageValue(storage, CONVERSATION_ID_KEY, "conversation");
-  const api = new NovaCompanionApi();
+  const rawApi = new NovaCompanionApi();
+  let api = rawApi;
   let state = createInitialCompanionState({ clientId, conversationId });
   let status = {};
   let composer;
   let spark;
+  let trust;
   let vision;
   let voice;
   let voiceState = { listening: false, speaking: false };
@@ -240,6 +243,40 @@ export async function bootstrapCompanion(document = globalThis.document) {
   const setConnectionLabel = (label) => {
     if (trustLabel) trustLabel.textContent = label;
   };
+  trust = createTrustController({
+    document,
+    api: rawApi,
+    pairedDeviceToken: globalThis.pairedDeviceToken,
+    rememberPairedDeviceToken: globalThis.rememberPairedDeviceToken,
+    onBeforeOpen: () => {
+      spark?.close();
+      closeVisionSheet();
+    },
+    onPairingRequired: () => {
+      setConnectionLabel("Remote · Pairing required");
+      elements.liveStatus.textContent = "Pair this device, then choose Retry on your message.";
+    },
+    onPaired: () => {
+      setConnectionLabel("Remote · Paired");
+      elements.liveStatus.textContent = "Paired securely. Choose Retry to send your message.";
+    },
+    onStateChange: (projected, pairing) => {
+      const label = projected.connection === "offline"
+        ? "Offline"
+        : projected.connection === "local"
+          ? (projected.privateMode ? "Local · Private" : "Local")
+          : (pairing.pairingRequired ? "Remote · Pairing required" : "Remote · Paired");
+      setConnectionLabel(label);
+      dispatch({
+        type: "TRUST_CHANGED",
+        local: projected.connection === "local",
+        provider: projected.provider,
+        model: projected.model,
+        memoryUsed: projected.memoryUsed,
+      });
+    },
+  });
+  api = trust.wrapApi(rawApi);
   const voiceSupport = voiceAvailability(globalThis, { ttsAvailable: typeof api.postTts === "function" });
   let voiceOutputEnabled = false;
   const voiceButton = document.createElement("button");
@@ -319,6 +356,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
         break;
     }
     showVoiceStatus(event);
+    trust.update({ camera: state.camera, microphone: state.microphone });
   };
 
   const addVisionResult = (result, isCurrentSheet = () => true) => {
@@ -337,6 +375,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
     appendCompletionDetails(message, answerStatus, result?.permissions);
     appendVisionTraceDetails(message, trace);
     updateTrustFromTrace(dispatch, trace, { permissions: result?.permissions });
+    trust.update({ trace, camera: state.camera, microphone: state.microphone });
     timeline.scrollTop = timeline.scrollHeight;
     return true;
   };
@@ -424,6 +463,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       onStateChange: (camera) => {
         if (!isCurrentSheet()) return;
         dispatch({ type: "CAMERA_CHANGED", permission: camera.permission, active: camera.active, persisted: false });
+        trust.update({ camera: state.camera, microphone: state.microphone });
         updateCameraStatus(camera);
       },
       onResult: (result) => { addVisionResult(result, isCurrentSheet); },
@@ -585,6 +625,12 @@ export async function bootstrapCompanion(document = globalThis.document) {
         appendCompletionDetails(assistantMessage, answerStatus, result.trace?.permissions_snapshot || result.trace?.permissions);
       }
       updateTrustFromTrace(dispatch, result.trace, status);
+      trust.update({
+        trace: result.trace,
+        status,
+        camera: state.camera,
+        microphone: state.microphone,
+      });
       dispatch({ type: "COMPLETED", requestId });
       if (voiceOutputEnabled) await voice?.speak(String(result?.response || result?.text || ""));
     } catch (error) {
@@ -649,13 +695,20 @@ export async function bootstrapCompanion(document = globalThis.document) {
   }
 
   try {
-    status = await api.getStatus();
-    const pairingRequired = status?.code === "pairing_required" || status?.pairing_required === true;
-    if (pairingRequired) {
-      setConnectionLabel("Pairing required");
-      elements.liveStatus.textContent = "Pairing required";
+    const projected = await trust.refresh();
+    status = {
+      local: projected.connection === "local",
+      provider: projected.provider,
+      model: projected.model,
+    };
+    if (trust.pairingRequired) {
+      setConnectionLabel("Remote · Pairing required");
+      elements.liveStatus.textContent = "Pair this device, then choose Retry on your message.";
+      trust.openPairing(document.getElementById("companionTrustButton"));
+    } else if (projected.connection === "offline") {
+      setConnectionLabel("Offline");
+      dispatch({ type: "OFFLINE" });
     } else {
-      setConnectionLabel("Present");
       dispatch({ type: "READY" });
       updateTrustFromTrace(dispatch, {}, status);
     }
@@ -685,6 +738,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       voiceStopButton.remove();
       voice?.destroy();
       spark?.destroy();
+      trust?.destroy();
       closeVisionSheet();
     },
   };

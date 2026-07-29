@@ -153,3 +153,24 @@ def test_companion_voice_is_truthful_and_uses_the_normal_composer_lifecycle():
         assert required in app
     assert "Nova is listening" in presence
     assert "Nova is speaking" in presence
+
+
+def test_companion_trust_uses_foundation_pairing_and_safe_projection():
+    trust = (ROOT / "assets/nova_companion/companion-trust.js").read_text(encoding="utf-8")
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
+    foundation = (ROOT / "assets/nova_foundation_ui.js").read_text(encoding="utf-8")
+    for required in (
+        "projectTrustState",
+        "redactTrustValue",
+        "createTrustController",
+        '"/api/pairing/status"',
+        '"/api/pairing/exchange"',
+        "rememberPairedDeviceToken",
+        "wrapApi",
+    ):
+        assert required in trust
+    assert "createTrustController" in app
+    assert "companion-trust" in css
+    assert "pairedDeviceToken," in foundation
+    assert "rememberPairedDeviceToken," in foundation
