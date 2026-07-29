@@ -72,6 +72,8 @@ def test_decision_precedence_keeps_high_risk_action_out_of_general_chat():
     ("prompt", "subtype"),
     (
         ("I need some money", "money_need"),
+        ("I need money for rent", "essential_expense_stress"),
+        ("I need money for groceries", "essential_expense_stress"),
         ("I cannot cover groceries this week", "essential_expense_stress"),
         ("Can you help me find a job?", "income_help"),
     ),
@@ -112,6 +114,18 @@ def test_rent_deadline_followup_stays_in_practical_support_after_money_need():
     assert followup.intent_family == "practical_support"
     assert followup.intent_subtype == "essential_expense_stress"
     assert followup.memory_recommended is False
+
+
+def test_high_stakes_financial_guidance_outranks_practical_support():
+    decision = understand_conversation_turn(
+        "I need money; what financial investment should I make?"
+    )
+
+    assert decision.intent_family == "high_stakes_finance"
+    assert decision.reasoning_mode == "verify"
+    assert decision.factual_evidence_required is True
+    assert decision.current_information_required is True
+    assert decision.repair_policy == "strict_evidence"
 
 
 def test_safe_trace_contains_routing_metadata_but_not_user_text():

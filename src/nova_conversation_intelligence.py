@@ -219,6 +219,28 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             confidence=0.95,
         )
 
+    if re.search(
+        r"\b(?:financial|investment|stock|crypto|tax|insurance|credit|mortgage)\b",
+        canonical,
+    ) and re.search(
+        r"\b(?:what|which|should|how|can|recommend|advice|advise)\b",
+        canonical,
+    ):
+        return _decision(
+            canonical,
+            "high_stakes_finance",
+            "financial_guidance",
+            "answer",
+            factual_evidence_required=True,
+            current_information_required=True,
+            reasoning_mode="verify",
+            initial_model_tier="small",
+            repair_policy="strict_evidence",
+            expected_qualities=("high-accuracy", "evidence-based", "uncertainty"),
+            signals=("high_stakes_financial_guidance",),
+            confidence=0.98,
+        )
+
     practical_support_qualities = (
         "empathetic",
         "direct",
@@ -230,6 +252,8 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         r"\b(?:due|tomorrow|urgent|short|behind|afford|cover|pay)\b"
         r"|\b(?:can(?:not|'t)|unable to)\b.{0,36}"
         r"\b(?:rent|food|groceries|bills?|utilities)\b"
+        r"|\b(?:money|cash|funds)\s+for\s+"
+        r"(?:rent|food|groceries|bills?|utilities)\b"
         r"|^for\s+(?:rent|food|groceries|bills?|utilities)\b",
         canonical,
     ):
