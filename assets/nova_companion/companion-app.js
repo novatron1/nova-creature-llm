@@ -39,6 +39,12 @@ function markMessageStatus(message, status) {
   if (message) message.dataset.status = status;
 }
 
+export function resolveVisionFocusRestoreTarget(invoker, fallback) {
+  if (invoker?.isConnected && typeof invoker.focus === "function") return invoker;
+  if (fallback?.isConnected && typeof fallback.focus === "function") return fallback;
+  return null;
+}
+
 function appendCompletionDetails(message, answerStatus, permissions) {
   if (!message) return;
   const document = message.ownerDocument;
@@ -275,7 +281,8 @@ export async function bootstrapCompanion(document = globalThis.document) {
       document.removeEventListener?.("keydown", onKeydown);
       backdrop.removeEventListener("click", closeSheet);
       closeVisionSheet = () => {};
-      invoker?.focus?.({ preventScroll: true });
+      const fallback = document.getElementById("novaSparkButton");
+      resolveVisionFocusRestoreTarget(invoker, fallback)?.focus?.({ preventScroll: true });
     };
     const onKeydown = (event) => {
       if (!isCurrentSheet()) return;

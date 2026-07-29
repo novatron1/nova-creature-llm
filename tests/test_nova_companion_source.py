@@ -110,6 +110,7 @@ def test_companion_vision_sheet_guards_stale_work_and_manages_focus():
         "focusVisionControl",
         "focusVisionControl(-1)",
         "event.key !== \"Tab\"",
-        "invoker?.focus?.({ preventScroll: true })",
+        "resolveVisionFocusRestoreTarget",
+        'getElementById("novaSparkButton")',
     ):
         assert required in app
