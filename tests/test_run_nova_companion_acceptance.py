@@ -3,11 +3,17 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import sys
 from urllib.parse import urlsplit
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "run_nova_companion_acceptance.py"
+sys.path.insert(0, str(ROOT / "src"))
+
+from nova_answer_firewall import GENERIC_FALLBACK_MARKERS as FIREWALL_GENERIC_MARKERS
 
 
 def _load_runner():
@@ -171,3 +177,30 @@ def test_acceptance_runner_fails_generic_recovery_and_training_mutation_without_
     serialized = output.read_text(encoding="utf-8")
     assert "off-topic draft" not in serialized
     assert '"changed\\n"' not in serialized
+
+
+@pytest.mark.parametrize("marker", FIREWALL_GENERIC_MARKERS)
+def test_acceptance_runner_rejects_every_canonical_firewall_generic_marker(marker):
+    runner = _load_runner()
+    result = runner._case_result(
+        runner.ACCEPTANCE_CASES[0],
+        runner.TransportResponse(
+            status=200,
+            body={
+                "content": marker,
+                "metadata": {
+                    "trace": {
+                        "answer_status": {
+                            "intent": "social",
+                            "memory": "not used",
+                            "safety": "blocked",
+                        }
+                    }
+                },
+            },
+            latency_ms=1,
+        ),
+    )
+
+    assert marker in runner.GENERIC_FALLBACK_MARKERS
+    assert result["passed"] is False

@@ -13,6 +13,12 @@ presented as measured.
 - `tests/test_run_nova_companion_acceptance.py`
 - `assets/nova_companion/companion-shell.css`
 - `tests/test_nova_companion_source.py`
+- `tests/test_nova_companion_evaluation_only.py`
+- `src/nova_answer_firewall.py`
+- `src/nova_gateway/http.py`
+- `src/nova_gateway/providers.py`
+- `src/nova_gateway/core.py`
+- `nova_enhanced_server.py`
 - `reports/NOVA_COMPANION_RELEASE_AUDIT.md`
 - `reports/nova_companion_acceptance.json` — PENDING controller live run
 
@@ -38,19 +44,31 @@ The acceptance runner:
 
 - checks the five required shell/health/capability routes;
 - sends exactly 25 Nova-native, evaluation-only turns;
+- validates `evaluation_only` as a top-level Boolean and carries it through
+  the provider-neutral request into Nova's existing cognitive path;
 - uses one generated client identity, one stable conversation ID, and one
   stable session ID;
 - covers greeting, affection, day check-in, follow-up, correction,
   relationship support, memory recall, current-fact honesty, uncertainty,
   interruption, and reconnect;
-- rejects known generic/off-topic recovery text;
+- rejects generic/off-topic recovery text through the shared canonical Nova
+  answer-firewall predicate;
 - records only case ID, pass/fail, HTTP status, latency, intent, memory-used
   state, safety state, and response length;
 - never writes prompt or response content to its JSON report;
+- forces evaluation requests to be non-retained: no conversation-summary or
+  session-log write, no world-model event/checkpoint, no Dream Lab simulation,
+  no continuity record, and no cost/request ledger entry;
 - hashes `conversation_training_data.jsonl` before and after and fails the gate
   if the hash changes.
 
-Deterministic runner/unit result: **PASS — 3 tests**.
+Deterministic runner result: **PASS — 20 tests**.
+
+Evaluation-only propagation and non-retention result:
+**PASS — 10 tests**. The tests exercise the native HTTP adapter, provider
+context, gateway core, and existing `/api/chat` brain route; invalid
+non-Boolean values are rejected, nested metadata cannot forge the flag, normal
+turns still retain state, and training data remains unchanged.
 
 Live 25-turn result: **PENDING**. The controller must run:
 
@@ -90,6 +108,7 @@ Automated source contracts cover:
 - camera and microphone controls are real `button` elements;
 - browser zoom is not disabled;
 - touch controls remain at least 44px;
+- the Classic fallback link is rendered as a real centered 44px touch target;
 - safe-area and reduced-motion rules remain present;
 - Companion storage keys cannot contain message, history, prompt, image,
   audio, memory, or token;
@@ -98,7 +117,9 @@ Automated source contracts cover:
 Task 11 automated results:
 
 - Companion source/loader/PWA/acceptance-runner pytest matrix:
-  **PASS — 28 passed**
+  **PASS — 56 passed**
+- Broader affected Python regression matrix:
+  **PASS — 136 passed**
 - Complete Companion JavaScript matrix: **PASS — 111 passed, 0 failed**
 
 Keyboard focus order, focus restoration, and screen-reader behavior on the

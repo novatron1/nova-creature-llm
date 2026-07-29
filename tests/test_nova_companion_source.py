@@ -64,6 +64,15 @@ def test_companion_mobile_composer_uses_bounded_tracks_for_all_voice_controls():
     assert re.search(r"min-width:\s*0;", body)
 
 
+def test_classic_fallback_is_a_real_44px_touch_target():
+    css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
+    rules = re.findall(r"(?:^|\n)\.classic-fallback\s*\{([^}]*)\}", css, re.DOTALL)
+    assert rules
+    body = rules[-1]
+    assert re.search(r"display:\s*(?:inline-flex|flex|grid|block);", body)
+    assert "align-items: center" in body or "place-items: center" in body
+
+
 def test_companion_source_keeps_sheet_openers_and_media_controls_accessible():
     html = (ROOT / "nova_companion_web.html").read_text(encoding="utf-8")
     app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")

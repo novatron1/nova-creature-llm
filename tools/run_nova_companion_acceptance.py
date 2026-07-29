@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 import time
 from typing import Any, NamedTuple
 import urllib.error
@@ -24,6 +25,12 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "reports" / "nova_companion_acceptance.json"
 DEFAULT_TRAINING_DATA = ROOT / "data" / "conversation_training_data.jsonl"
+sys.path.insert(0, str(ROOT / "src"))
+
+from nova_answer_firewall import (  # noqa: E402
+    GENERIC_FALLBACK_MARKERS,
+    contains_generic_fallback,
+)
 
 
 class AcceptanceCase(NamedTuple):
@@ -128,18 +135,6 @@ ACCEPTANCE_CASES = (
         "reconnect",
         "What were we discussing just before the reconnect?",
     ),
-)
-
-
-DISALLOWED_GENERIC_RECOVERY_PHRASES = (
-    "i caught an off-topic draft before sending it",
-    "the active nova route did not produce a reliable answer",
-    "i'm here with you. i can talk, remember saved facts, use tools, code, and build inside the app",
-    "i'm here with you. tell me what you want to do next",
-    "i am here with you. tell me what you want to do next",
-    "yeah, i'm here with you. tell me what's on your mind",
-    "because your statement is confusing or off-topic",
-    "let's have a more focused conversation if that would help clarify things",
 )
 
 
@@ -273,10 +268,7 @@ def _answer_status(payload: Any) -> dict[str, Any]:
 
 def _case_result(case: AcceptanceCase, response: TransportResponse) -> dict[str, Any]:
     content = _response_content(response.body)
-    lowered = content.casefold()
-    generic_recovery = any(
-        phrase in lowered for phrase in DISALLOWED_GENERIC_RECOVERY_PHRASES
-    )
+    generic_recovery = contains_generic_fallback(content)
     status = _answer_status(response.body)
     memory = str(status.get("memory") or "not used").strip().casefold()
     return {

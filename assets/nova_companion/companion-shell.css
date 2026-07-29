@@ -94,7 +94,7 @@ button, .classic-fallback { min-height: 44px; }
 .companion-spark__icon { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; background: #37305e; color: var(--cyan); font-size: 1.1rem; }
 .companion-spark__text { display: grid; gap: 0.15rem; }
 .companion-spark__text small { color: var(--text-muted); }
-.classic-fallback { align-self: center; color: var(--text-muted); }
+.classic-fallback { display: inline-flex; align-self: center; align-items: center; justify-content: center; padding: 0 0.75rem; color: var(--text-muted); }
 
 .companion-vision { display: grid; gap: 0.75rem; }
 .companion-vision__privacy, .companion-vision__status { margin: 0; color: var(--text-muted); }
