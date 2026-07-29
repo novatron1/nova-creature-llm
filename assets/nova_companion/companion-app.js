@@ -4,7 +4,7 @@ import { presenceViewModel, renderPresence } from "./companion-presence.js";
 import { appendMessage, beginStreamingMessage, appendStreamingDelta } from "./companion-conversation.js";
 import { createComposerController } from "./companion-composer.js";
 import { createSparkController } from "./companion-spark.js";
-import { buildVisionPayload, createVisionController, prepareVisionCanvas } from "./companion-senses.js";
+import { buildVisionPayload, createVisionController, createVoiceController, prepareVisionCanvas, voiceAvailability } from "./companion-senses.js";
 
 const CLIENT_ID_KEY = "nova_companion_client_id_v1";
 const CONVERSATION_ID_KEY = "nova_companion_conversation_id_v1";
@@ -211,6 +211,8 @@ export async function bootstrapCompanion(document = globalThis.document) {
   let composer;
   let spark;
   let vision;
+  let voice;
+  let voiceState = { listening: false, speaking: false };
   let closeVisionSheet = () => {};
   let visionSheetGeneration = 0;
   let inFlight = false;
@@ -223,7 +225,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
   };
   const trustLabel = document.getElementById("companionTrustLabel");
   const render = () => {
-    renderPresence(elements, presenceViewModel(state, globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches));
+    renderPresence(elements, presenceViewModel({ ...state, voice: voiceState }, globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches));
     root.setAttribute("aria-busy", String(Boolean(state.activeRequestId)));
   };
   const dispatch = (event) => {
@@ -233,6 +235,69 @@ export async function bootstrapCompanion(document = globalThis.document) {
   };
   const setConnectionLabel = (label) => {
     if (trustLabel) trustLabel.textContent = label;
+  };
+  const voiceSupport = voiceAvailability(globalThis);
+  const voiceButton = document.createElement("button");
+  voiceButton.type = "button";
+  voiceButton.id = "companionVoiceButton";
+  voiceButton.textContent = voiceSupport.transcription ? "Talk" : "Voice unavailable";
+  voiceButton.setAttribute("aria-label", voiceSupport.transcription ? "Talk with Nova" : voiceSupport.reason);
+  if (!voiceSupport.transcription) {
+    voiceButton.disabled = true;
+    voiceButton.title = voiceSupport.reason;
+  }
+  const voiceStopButton = document.createElement("button");
+  voiceStopButton.type = "button";
+  voiceStopButton.id = "companionVoiceStopButton";
+  voiceStopButton.textContent = "Stop voice";
+  voiceStopButton.setAttribute("aria-label", "Stop voice and Nova's active response");
+  form.insertBefore(voiceButton, sendButton);
+  form.insertBefore(voiceStopButton, sendButton);
+
+  const showVoiceStatus = (event) => {
+    switch (event.type) {
+      case "LISTENING_INTERIM":
+        elements.liveStatus.textContent = `Hearing: ${event.text}`;
+        break;
+      case "LISTENING_FINAL":
+        elements.liveStatus.textContent = "Transcript ready. Review it, then Send.";
+        break;
+      case "LISTENING_UNAVAILABLE":
+      case "LISTENING_FAILED":
+      case "SPEECH_FAILED":
+        elements.liveStatus.textContent = event.message;
+        break;
+      default:
+        break;
+    }
+  };
+  const handleVoiceEvent = (event) => {
+    switch (event.type) {
+      case "LISTENING_STARTED":
+        voiceState = { ...voiceState, listening: true };
+        dispatch({ type: "MICROPHONE_CHANGED", permission: "granted", active: true });
+        break;
+      case "LISTENING_STOPPED":
+      case "LISTENING_FAILED":
+      case "LISTENING_UNAVAILABLE":
+        voiceState = { ...voiceState, listening: false };
+        dispatch({ type: "MICROPHONE_CHANGED", active: false });
+        break;
+      case "SPEECH_STARTED":
+        voiceState = { ...voiceState, speaking: true };
+        dispatch(event);
+        break;
+      case "SPEECH_FINISHED":
+      case "SPEECH_STOPPED":
+      case "SPEECH_FAILED":
+        voiceState = { ...voiceState, speaking: false };
+        dispatch(event);
+        break;
+      default:
+        dispatch(event);
+        break;
+    }
+    showVoiceStatus(event);
   };
 
   const addVisionResult = (result, isCurrentSheet = () => true) => {
@@ -500,6 +565,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       }
       updateTrustFromTrace(dispatch, result.trace, status);
       dispatch({ type: "COMPLETED", requestId });
+      await voice?.speak(String(result?.response || result?.text || ""));
     } catch (error) {
       const safeError = error instanceof NovaApiError ? error : new NovaApiError();
       const cancelled = safeError.code === "cancelled";
@@ -520,14 +586,30 @@ export async function bootstrapCompanion(document = globalThis.document) {
     }
   };
 
+  const stopVoiceAndRequest = async () => {
+    voice?.stop();
+    const requestId = state.activeRequestId;
+    if (requestId) await api.cancel(requestId);
+  };
   composer = createComposerController({
     form, input, sendButton, storage, draftKey: DRAFT_KEY,
     onSubmit: sendConversation,
-    onStop: async () => {
-      const requestId = state.activeRequestId;
-      if (requestId) await api.cancel(requestId);
+    onStop: stopVoiceAndRequest,
+  });
+  const voiceApi = { postTts: (...args) => api.postTts(...args) };
+  voice = createVoiceController({
+    windowLike: globalThis,
+    api: voiceApi,
+    dispatch: handleVoiceEvent,
+    onInterimTranscript: () => {},
+    onTranscript: (text) => {
+      input.value = text;
+      composer.resize();
+      input.focus({ preventScroll: true });
     },
   });
+  voiceButton.addEventListener("click", () => { voice.startListening(); });
+  voiceStopButton.addEventListener("click", () => { void stopVoiceAndRequest(); });
   spark = createSparkController({
     document,
     loadServerState: () => loadSparkServerState(api),
@@ -580,6 +662,9 @@ export async function bootstrapCompanion(document = globalThis.document) {
         globalThis.removeEventListener("pageshow", restoreAfterPersistedNavigation);
       }
       composer.destroy();
+      voiceButton.remove();
+      voiceStopButton.remove();
+      voice?.destroy();
       spark?.destroy();
       closeVisionSheet();
     },

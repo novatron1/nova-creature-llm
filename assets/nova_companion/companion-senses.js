@@ -282,3 +282,191 @@ export function createVisionController({
     },
   };
 }
+
+const VOICE_UNAVAILABLE_REASON = "Speech recognition is unavailable in this browser.";
+
+const RECOGNITION_ERRORS = Object.freeze({
+  "not-allowed": "Microphone permission was not granted.",
+  "audio-capture": "No microphone is available.",
+  "no-speech": "Nova did not hear speech. Try again.",
+  network: "Speech recognition network service is unavailable.",
+});
+
+function recognitionConstructor(windowLike) {
+  return windowLike?.SpeechRecognition || windowLike?.webkitSpeechRecognition || null;
+}
+
+export function voiceAvailability(windowLike = globalThis) {
+  const Recognition = recognitionConstructor(windowLike);
+  return Object.freeze({
+    transcription: typeof Recognition === "function",
+    playback: true,
+    reason: typeof Recognition === "function" ? "" : VOICE_UNAVAILABLE_REASON,
+  });
+}
+
+function recognitionErrorMessage(error) {
+  return RECOGNITION_ERRORS[String(error?.error || "")] || "Speech recognition could not start.";
+}
+
+function transcriptFor(resultEvent) {
+  const parts = [];
+  const interim = [];
+  const results = resultEvent?.results || [];
+  for (let index = Number(resultEvent?.resultIndex) || 0; index < results.length; index += 1) {
+    const item = results[index];
+    const text = String(item?.[0]?.transcript || "").trim();
+    if (!text) continue;
+    (item.isFinal ? parts : interim).push(text);
+  }
+  return { finalText: parts.join(" ").trim(), interimText: interim.join(" ").trim() };
+}
+
+function audioSource(tts = {}) {
+  const mimeType = String(tts?.mime_type || "audio/mpeg").trim() || "audio/mpeg";
+  const audioBase64 = String(tts?.audio_base64 || "").trim();
+  if (!audioBase64) throw new TypeError("Nova did not return playable voice audio.");
+  return `data:${mimeType};base64,${audioBase64}`;
+}
+
+export function createVoiceController({
+  windowLike = globalThis,
+  api = null,
+  dispatch = () => {},
+  audioFactory = (source) => new Audio(source),
+  onTranscript = () => {},
+  onInterimTranscript = () => {},
+} = {}) {
+  let recognition = null;
+  let audio = null;
+  let operation = 0;
+  let ttsAbort = null;
+  let destroyed = false;
+  const availability = voiceAvailability(windowLike);
+  const emit = (event) => dispatch(event);
+  const isCurrent = (token) => !destroyed && token === operation;
+  const clearAudio = () => {
+    if (!audio) return;
+    audio.pause?.();
+    audio.removeAttribute?.("src");
+    audio.src = "";
+    audio.load?.();
+    audio = null;
+  };
+  const attachAudio = (nextAudio, token = operation) => {
+    clearAudio();
+    audio = nextAudio || null;
+    if (!audio) return null;
+    const currentAudio = audio;
+    audio.addEventListener?.("play", () => {
+      if (isCurrent(token) && audio === currentAudio) emit({ type: "SPEECH_STARTED" });
+    });
+    audio.addEventListener?.("ended", () => {
+      if (isCurrent(token) && audio === currentAudio) {
+        audio = null;
+        emit({ type: "SPEECH_FINISHED" });
+      }
+    });
+    audio.addEventListener?.("error", () => {
+      if (isCurrent(token) && audio === currentAudio) {
+        audio = null;
+        emit({ type: "SPEECH_FAILED", message: "Nova voice playback failed." });
+      }
+    });
+    return audio;
+  };
+  const stop = () => {
+    operation += 1;
+    ttsAbort?.abort();
+    ttsAbort = null;
+    recognition?.abort?.();
+    recognition = null;
+    clearAudio();
+    emit({ type: "LISTENING_STOPPED" });
+    emit({ type: "SPEECH_STOPPED" });
+  };
+  return {
+    availability,
+    getAvailability: () => availability,
+    attachAudio,
+    startListening() {
+      if (destroyed || !availability.transcription) {
+        emit({ type: "LISTENING_UNAVAILABLE", message: availability.reason });
+        return false;
+      }
+      if (recognition) return true;
+      const Recognition = recognitionConstructor(windowLike);
+      const token = operation;
+      const engine = new Recognition();
+      recognition = engine;
+      engine.continuous = false;
+      engine.interimResults = true;
+      engine.onstart = () => {
+        if (isCurrent(token) && recognition === engine) emit({ type: "LISTENING_STARTED" });
+      };
+      engine.onresult = (event) => {
+        if (!isCurrent(token) || recognition !== engine) return;
+        const { finalText, interimText } = transcriptFor(event);
+        if (interimText) {
+          onInterimTranscript(interimText);
+          emit({ type: "LISTENING_INTERIM", text: interimText });
+        }
+        if (finalText) {
+          onTranscript(finalText);
+          emit({ type: "LISTENING_FINAL", text: finalText });
+        }
+      };
+      engine.onerror = (event) => {
+        if (!isCurrent(token) || recognition !== engine) return;
+        emit({ type: "LISTENING_FAILED", message: recognitionErrorMessage(event) });
+      };
+      engine.onend = () => {
+        if (!isCurrent(token) || recognition !== engine) return;
+        recognition = null;
+        emit({ type: "LISTENING_STOPPED" });
+      };
+      try {
+        engine.start();
+        return true;
+      } catch (error) {
+        if (isCurrent(token) && recognition === engine) {
+          recognition = null;
+          emit({ type: "LISTENING_FAILED", message: recognitionErrorMessage(error) });
+          emit({ type: "LISTENING_STOPPED" });
+        }
+        return false;
+      }
+    },
+    async speak(text) {
+      const spokenText = String(text || "").trim();
+      if (!spokenText || destroyed || typeof api?.postTts !== "function") return null;
+      ttsAbort?.abort();
+      clearAudio();
+      const token = ++operation;
+      const controller = new AbortController();
+      ttsAbort = controller;
+      try {
+        const tts = await api.postTts(spokenText, { signal: controller.signal });
+        if (!isCurrent(token) || controller.signal.aborted) return null;
+        const nextAudio = attachAudio(audioFactory(audioSource(tts)), token);
+        const playback = nextAudio?.play?.();
+        if (playback?.catch) {
+          playback.catch(() => {
+            if (isCurrent(token) && audio === nextAudio) emit({ type: "SPEECH_FAILED", message: "Nova voice playback could not start." });
+          });
+        }
+        return nextAudio;
+      } catch (error) {
+        if (isCurrent(token) && !controller.signal.aborted) emit({ type: "SPEECH_FAILED", message: "Nova voice playback failed." });
+        return null;
+      } finally {
+        if (ttsAbort === controller) ttsAbort = null;
+      }
+    },
+    stop,
+    destroy() {
+      destroyed = true;
+      stop();
+    },
+  };
+}

@@ -11,17 +11,26 @@ const PHASE_PRESENTATION = {
 };
 
 export function presenceViewModel(state = {}, reducedMotion = false) {
+  const voice = state.voice || {};
   const phase = PHASE_PRESENTATION[state.phase] ? state.phase : "booting";
   const presentation = PHASE_PRESENTATION[phase];
   const toolName = state.activeTool?.status === "started" && state.activeTool.name;
   const toolProposed = state.activeTool?.status === "proposed";
+  const listening = voice.listening === true;
+  const speaking = voice.speaking === true;
+  const voicePresentation = listening
+    ? { phase: "listening", label: "Nova is listening", color: "cyan", motion: "listening", busy: true }
+    : speaking
+      ? { phase: "speaking", label: "Nova is speaking", color: "cyan", motion: "responding", busy: true }
+      : null;
+  const shown = voicePresentation || presentation;
   return Object.freeze({
-    phase,
-    label: toolProposed ? "Nova is proposing an action" : toolName ? `Nova is using ${toolName}` : presentation.label,
-    color: presentation.color,
-    motion: reducedMotion ? "none" : presentation.motion,
+    phase: voicePresentation?.phase || phase,
+    label: voicePresentation?.label || (toolProposed ? "Nova is proposing an action" : toolName ? `Nova is using ${toolName}` : presentation.label),
+    color: shown.color,
+    motion: reducedMotion ? "none" : shown.motion,
     size: Number(state.conversationTurnCount) > 0 ? "compact" : "full",
-    busy: presentation.busy,
+    busy: shown.busy,
   });
 }
 

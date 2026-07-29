@@ -4,8 +4,10 @@ import test from "node:test";
 import {
   buildVisionPayload,
   createVisionController,
+  createVoiceController,
   prepareVisionCanvas,
   visionStateAfter,
+  voiceAvailability,
 } from "../../assets/nova_companion/companion-senses.js";
 
 const deferred = () => {
@@ -17,6 +19,98 @@ const deferred = () => {
   });
   return { promise, resolve, reject };
 };
+
+function makeFakeAudio() {
+  const listeners = new Map();
+  return {
+    src: "",
+    paused: false,
+    addEventListener(type, listener) { listeners.set(type, listener); },
+    removeEventListener(type, listener) { if (listeners.get(type) === listener) listeners.delete(type); },
+    emit(type) { listeners.get(type)?.(); },
+    pause() { this.paused = true; },
+    load() {},
+    play() { return Promise.resolve(); },
+  };
+}
+
+test("unsupported recognition never reports listening", () => {
+  const availability = voiceAvailability({});
+  assert.equal(availability.transcription, false);
+  assert.equal(availability.reason, "Speech recognition is unavailable in this browser.");
+  const events = [];
+  const controller = createVoiceController({ windowLike: {}, dispatch: (event) => events.push(event) });
+  controller.startListening();
+  assert.equal(events.some((event) => event.type === "LISTENING_STARTED"), false);
+  assert.equal(events.at(-1).type, "LISTENING_UNAVAILABLE");
+});
+
+test("recognition reports listening only after the browser engine starts", () => {
+  let recognition;
+  class FakeRecognition {
+    start() {}
+    abort() {}
+  }
+  const events = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class extends FakeRecognition { constructor() { super(); recognition = this; } } },
+    dispatch: (event) => events.push(event),
+  });
+  controller.startListening();
+  assert.equal(events.some((event) => event.type === "LISTENING_STARTED"), false);
+  recognition.onstart();
+  assert.equal(events.at(-1).type, "LISTENING_STARTED");
+});
+
+test("recognition errors use safe distinct microphone messages and end listening", () => {
+  let recognition;
+  class FakeRecognition {
+    start() {}
+    abort() {}
+  }
+  const events = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class { constructor() { recognition = new FakeRecognition(); return recognition; } } },
+    dispatch: (event) => events.push(event),
+  });
+  controller.startListening();
+  recognition.onerror({ error: "audio-capture" });
+  recognition.onend();
+  assert.equal(events.find((event) => event.type === "LISTENING_FAILED").message, "No microphone is available.");
+  assert.equal(events.at(-1).type, "LISTENING_STOPPED");
+});
+
+test("audio is speaking only after the play event", () => {
+  const events = [];
+  const controller = createVoiceController({ dispatch: (event) => events.push(event), audioFactory: makeFakeAudio });
+  const audio = makeFakeAudio();
+  controller.attachAudio(audio);
+  assert.equal(events.some((event) => event.type === "SPEECH_STARTED"), false);
+  audio.emit("play");
+  assert.equal(events.at(-1).type, "SPEECH_STARTED");
+});
+
+test("Stop invalidates recognition and audio callbacks", () => {
+  let recognition;
+  class FakeRecognition {
+    start() {}
+    abort() {}
+  }
+  const events = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class { constructor() { recognition = new FakeRecognition(); return recognition; } } },
+    dispatch: (event) => events.push(event),
+  });
+  const audio = makeFakeAudio();
+  controller.attachAudio(audio);
+  controller.startListening();
+  controller.stop();
+  recognition.onstart();
+  audio.emit("play");
+  assert.equal(events.some((event) => event.type === "LISTENING_STARTED" || event.type === "SPEECH_STARTED"), false);
+  assert.equal(audio.paused, true);
+  assert.equal(audio.src, "");
+});
 
 test("vision payload declares local preprocessing and no persistence", () => {
   const payload = buildVisionPayload(

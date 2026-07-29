@@ -114,3 +114,33 @@ def test_companion_vision_sheet_guards_stale_work_and_manages_focus():
         'getElementById("novaSparkButton")',
     ):
         assert required in app
+
+
+def test_companion_voice_is_truthful_and_uses_the_normal_composer_lifecycle():
+    senses = (ROOT / "assets/nova_companion/companion-senses.js").read_text(encoding="utf-8")
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    presence = (ROOT / "assets/nova_companion/companion-presence.js").read_text(encoding="utf-8")
+    for required in (
+        "createVoiceController",
+        "voiceAvailability",
+        "windowLike?.SpeechRecognition || windowLike?.webkitSpeechRecognition",
+        'type: "LISTENING_STARTED"',
+        'type: "SPEECH_STARTED"',
+        "engine.onstart",
+        "audio.addEventListener?.(\"play\"",
+        "recognition?.abort?.()",
+        "audio.pause?.()",
+        "ttsAbort?.abort()",
+    ):
+        assert required in senses
+    for required in (
+        "createVoiceController",
+        "voiceAvailability(globalThis)",
+        "onTranscript:",
+        "voice?.stop()",
+        "api.postTts",
+        "voiceStopButton",
+    ):
+        assert required in app
+    assert "Nova is listening" in presence
+    assert "Nova is speaking" in presence
