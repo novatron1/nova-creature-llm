@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,3 +31,12 @@ def test_companion_css_has_mobile_accessibility_contract():
     assert ":focus-visible" in css
     assert "min-height: 44px" in css
     assert "overflow-x: hidden" in css
+
+
+def test_companion_shell_contains_modal_positioning_context():
+    css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
+    assert re.search(
+        r"\.companion-shell\s*\{[^}]*\bposition:\s*relative;",
+        css,
+        re.DOTALL,
+    )

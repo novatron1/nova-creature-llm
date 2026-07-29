@@ -28,6 +28,7 @@ button, .classic-fallback { min-height: 44px; }
 
 .companion-shell {
   display: grid;
+  position: relative;
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   gap: var(--spacing);
   height: 100dvh;
@@ -72,8 +73,8 @@ button, .classic-fallback { min-height: 44px; }
 #companionSendButton, #novaSparkButton { width: 44px; padding: 0; }
 
 #novaSparkButton { justify-self: end; box-shadow: var(--shadow); }
-#companionSheetBackdrop { position: absolute; inset: 0; background: rgb(0 0 0 / 50%); }
-#companionSheetHost { position: absolute; right: var(--spacing); bottom: calc(var(--spacing) + var(--safe-area-bottom)); left: var(--spacing); max-height: 70dvh; overflow: auto; border-radius: var(--radius); background: var(--surface-elevated); box-shadow: var(--shadow); }
+#companionSheetBackdrop { position: absolute; z-index: 1; inset: 0; background: rgb(0 0 0 / 50%); }
+#companionSheetHost { position: absolute; z-index: 2; right: var(--spacing); bottom: calc(var(--spacing) + var(--safe-area-bottom)); left: var(--spacing); max-height: 70dvh; overflow: auto; border-radius: var(--radius); background: var(--surface-elevated); box-shadow: var(--shadow); }
 #companionSheetHost:not([hidden]) { padding: var(--spacing); }
 .classic-fallback { align-self: center; color: var(--text-muted); }
 
