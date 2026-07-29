@@ -447,7 +447,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
         ? toolsResult.value.data
         : [];
       const items = new Map(toolData.map((item) => [String(item?.id || item?.name || ""), item]));
-      return { capabilities, items };
+      return { capabilities, items, companion: status?.companion || {} };
     },
     onCompanionAction: async (action) => {
       if (action.id === "vision") {

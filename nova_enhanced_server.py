@@ -218,6 +218,22 @@ def _fetch_news_headlines(query, limit=3):
 # ── Memory ──────────────────────────────────────────────────────────────────
 MEMORY_FILE = os.path.join(ROOT, "data", "nova_memory.json")
 PERMISSIONS = {"mic": False, "camera": False, "speaker": False}
+
+
+def _companion_vision_service_status():
+    """Describe the local upload route without claiming model image capability."""
+    available = callable(globals().get("_vision_response_from_upload"))
+    return {
+        "available": available,
+        "tool_name": "vision.observe",
+        "endpoint": "/api/vision",
+        "availability_status": "requires_live_input" if available else "disabled",
+        "reason": "" if available else "The local /api/vision service is unavailable.",
+        "image_input": False,
+        "image_persisted": False,
+    }
+
+
 PRIVATE_MODE = False
 SESSION_ID = str(uuid.uuid4())[:8]
 SESSION_LOG = []
@@ -1314,6 +1330,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "session": SESSION_ID,
                 "permissions": PERMISSIONS,
                 "private_mode": PRIVATE_MODE,
+                "companion": {"vision_service": _companion_vision_service_status()},
                 "people_count": len(MEMORY["people"]),
                 "lessons_count": len(MEMORY["lessons"])
             }).encode())

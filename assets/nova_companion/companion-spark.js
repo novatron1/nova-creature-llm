@@ -56,7 +56,16 @@ function unavailableReason(item) {
 function serverItemFor(item, serverState) {
   if (!item.requiredTool) return undefined;
   const items = serverState?.items;
-  return items?.get?.(item.requiredTool) || items?.[item.requiredTool];
+  const mapped = items?.get?.(item.requiredTool) || items?.[item.requiredTool];
+  if (mapped) return mapped;
+  const visionService = item.id === "vision" ? serverState?.companion?.vision_service : null;
+  if (!visionService || typeof visionService.available !== "boolean") return undefined;
+  return {
+    name: "vision.observe",
+    availability_status: visionService.available ? "requires_live_input" : "disabled",
+    reason: String(visionService.reason || ""),
+    provider: "nova-companion-local-vision",
+  };
 }
 
 function toolAvailability(item, serverItem) {
@@ -73,6 +82,7 @@ function toolAvailability(item, serverItem) {
 export function resolveCapabilityAvailability(capabilityItem, serverState = {}) {
   const item = { ...capabilityItem };
   const toolState = toolAvailability(item, serverItemFor(item, serverState));
+  if (item.id === "vision" && toolState) return { ...item, ...toolState };
   if (!item.requiredCapability) return toolState ? { ...item, ...toolState } : { ...item, available: true, reason: "" };
   const capabilityValue = valueAtPath(serverState?.capabilities || serverState, item.requiredCapability);
   const available = capabilityIsAvailable(capabilityValue);

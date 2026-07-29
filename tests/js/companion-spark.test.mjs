@@ -118,6 +118,40 @@ test("server capability state may refine an unavailable reason without changing 
   assert.equal(item.reason, "Camera support is disabled.");
 });
 
+test("the current local vision service makes the fixed See action reachable without changing text-model image input", () => {
+  const vision = COMPANION_CAPABILITIES.find((item) => item.id === "vision");
+  const serverState = {
+    capabilities: { vision: { image_input: { available: false, reason: "The text model has no image input." } } },
+    companion: { vision_service: { available: true, endpoint: "/api/vision" } },
+    items: new Map(),
+  };
+  const resolved = resolveCapabilityAvailability(vision, serverState);
+
+  assert.equal(resolved.available, true);
+  assert.equal(serverState.capabilities.vision.image_input.available, false);
+});
+
+test("an unavailable local vision service keeps See disabled with its honest reason", () => {
+  const vision = COMPANION_CAPABILITIES.find((item) => item.id === "vision");
+  const resolved = resolveCapabilityAvailability(vision, {
+    companion: { vision_service: { available: false, reason: "The local vision service is offline." } },
+    items: new Map(),
+  });
+
+  assert.equal(resolved.available, false);
+  assert.equal(resolved.reason, "The local vision service is offline.");
+});
+
+test("an unknown tool name cannot enable fixed See without the local service projection", () => {
+  const vision = COMPANION_CAPABILITIES.find((item) => item.id === "vision");
+  const resolved = resolveCapabilityAvailability(vision, {
+    capabilities: { vision: { image_input: { available: false } } },
+    items: new Map([["vision.inspect", { name: "vision.inspect", availability_status: "available" }]]),
+  });
+
+  assert.equal(resolved.available, false);
+});
+
 test("the fixed registry has visible labels in every approved Spark group", () => {
   const groups = new Set(COMPANION_CAPABILITIES.map((item) => item.group));
   assert.deepEqual(groups, new Set(["see", "speak", "create", "remember", "work", "system"]));
