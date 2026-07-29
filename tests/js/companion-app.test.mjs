@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   createSelectedPictureVisionSubmitter,
   resolveVisionFocusRestoreTarget,
+  stopVoiceAndActiveRequest,
 } from "../../assets/nova_companion/companion-app.js";
 
 function deferred() {
@@ -36,6 +37,16 @@ test("vision focus restoration keeps a connected invoker when it remains durable
   const invoker = { isConnected: true, focus() {} };
   const sparkButton = { isConnected: true, focus() {} };
   assert.equal(resolveVisionFocusRestoreTarget(invoker, sparkButton), invoker);
+});
+
+test("voice Stop cancels the active normal chat request after stopping local voice", async () => {
+  const calls = [];
+  await stopVoiceAndActiveRequest({
+    voice: { stop() { calls.push("voice.stop"); } },
+    api: { cancel: async (requestId) => { calls.push(`cancel:${requestId}`); } },
+    requestId: "request_7",
+  });
+  assert.deepEqual(calls, ["voice.stop", "cancel:request_7"]);
 });
 
 test("selected pictures grant local vision permission before upload without starting browser camera", async () => {

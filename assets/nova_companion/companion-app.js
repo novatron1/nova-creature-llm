@@ -8,7 +8,6 @@ import { buildVisionPayload, createVisionController, createVoiceController, prep
 
 const CLIENT_ID_KEY = "nova_companion_client_id_v1";
 const CONVERSATION_ID_KEY = "nova_companion_conversation_id_v1";
-const DRAFT_KEY = "nova_companion_draft_v1";
 
 function generatedId(prefix) {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
@@ -43,6 +42,11 @@ export function resolveVisionFocusRestoreTarget(invoker, fallback) {
   if (invoker?.isConnected && typeof invoker.focus === "function") return invoker;
   if (fallback?.isConnected && typeof fallback.focus === "function") return fallback;
   return null;
+}
+
+export async function stopVoiceAndActiveRequest({ voice, api, requestId } = {}) {
+  voice?.stop?.();
+  if (requestId) await api?.cancel?.(requestId);
 }
 
 export async function loadSparkServerState(api) {
@@ -236,22 +240,36 @@ export async function bootstrapCompanion(document = globalThis.document) {
   const setConnectionLabel = (label) => {
     if (trustLabel) trustLabel.textContent = label;
   };
-  const voiceSupport = voiceAvailability(globalThis);
+  const voiceSupport = voiceAvailability(globalThis, { ttsAvailable: typeof api.postTts === "function" });
+  let voiceOutputEnabled = false;
   const voiceButton = document.createElement("button");
   voiceButton.type = "button";
   voiceButton.id = "companionVoiceButton";
-  voiceButton.textContent = voiceSupport.transcription ? "Talk" : "Voice unavailable";
+  voiceButton.textContent = voiceSupport.transcription ? (voiceSupport.playback ? "Talk" : "Talk (input only)") : "Voice input unavailable";
   voiceButton.setAttribute("aria-label", voiceSupport.transcription ? "Talk with Nova" : voiceSupport.reason);
   if (!voiceSupport.transcription) {
     voiceButton.disabled = true;
     voiceButton.title = voiceSupport.reason;
   }
+  const voiceOutputButton = document.createElement("button");
+  voiceOutputButton.type = "button";
+  voiceOutputButton.id = "companionVoiceOutputButton";
+  const setVoiceOutputEnabled = (enabled) => {
+    voiceOutputEnabled = Boolean(enabled) && voiceSupport.playback;
+    voiceOutputButton.textContent = voiceOutputEnabled ? "Voice output on" : voiceSupport.playback ? "Voice output off" : "Voice output unavailable";
+    voiceOutputButton.setAttribute("aria-pressed", String(voiceOutputEnabled));
+    voiceOutputButton.setAttribute("aria-label", voiceSupport.playback ? "Toggle Nova voice output" : voiceSupport.outputReason);
+  };
+  voiceOutputButton.disabled = !voiceSupport.playback;
+  if (!voiceSupport.playback) voiceOutputButton.title = voiceSupport.outputReason;
+  setVoiceOutputEnabled(false);
   const voiceStopButton = document.createElement("button");
   voiceStopButton.type = "button";
   voiceStopButton.id = "companionVoiceStopButton";
   voiceStopButton.textContent = "Stop voice";
   voiceStopButton.setAttribute("aria-label", "Stop voice and Nova's active response");
   form.insertBefore(voiceButton, sendButton);
+  form.insertBefore(voiceOutputButton, sendButton);
   form.insertBefore(voiceStopButton, sendButton);
 
   const showVoiceStatus = (event) => {
@@ -265,6 +283,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       case "LISTENING_UNAVAILABLE":
       case "LISTENING_FAILED":
       case "SPEECH_FAILED":
+      case "SPEECH_UNAVAILABLE":
         elements.liveStatus.textContent = event.message;
         break;
       default:
@@ -290,8 +309,10 @@ export async function bootstrapCompanion(document = globalThis.document) {
       case "SPEECH_FINISHED":
       case "SPEECH_STOPPED":
       case "SPEECH_FAILED":
+      case "SPEECH_UNAVAILABLE":
         voiceState = { ...voiceState, speaking: false };
         dispatch(event);
+        if (event.type === "SPEECH_FAILED") setVoiceOutputEnabled(false);
         break;
       default:
         dispatch(event);
@@ -565,7 +586,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       }
       updateTrustFromTrace(dispatch, result.trace, status);
       dispatch({ type: "COMPLETED", requestId });
-      await voice?.speak(String(result?.response || result?.text || ""));
+      if (voiceOutputEnabled) await voice?.speak(String(result?.response || result?.text || ""));
     } catch (error) {
       const safeError = error instanceof NovaApiError ? error : new NovaApiError();
       const cancelled = safeError.code === "cancelled";
@@ -586,13 +607,9 @@ export async function bootstrapCompanion(document = globalThis.document) {
     }
   };
 
-  const stopVoiceAndRequest = async () => {
-    voice?.stop();
-    const requestId = state.activeRequestId;
-    if (requestId) await api.cancel(requestId);
-  };
+  const stopVoiceAndRequest = () => stopVoiceAndActiveRequest({ voice, api, requestId: state.activeRequestId });
   composer = createComposerController({
-    form, input, sendButton, storage, draftKey: DRAFT_KEY,
+    form, input, sendButton,
     onSubmit: sendConversation,
     onStop: stopVoiceAndRequest,
   });
@@ -600,15 +617,16 @@ export async function bootstrapCompanion(document = globalThis.document) {
   voice = createVoiceController({
     windowLike: globalThis,
     api: voiceApi,
+    ttsAvailable: voiceSupport.playback,
     dispatch: handleVoiceEvent,
     onInterimTranscript: () => {},
     onTranscript: (text) => {
-      input.value = text;
-      composer.resize();
+      composer.setTransientText(text);
       input.focus({ preventScroll: true });
     },
   });
   voiceButton.addEventListener("click", () => { voice.startListening(); });
+  voiceOutputButton.addEventListener("click", () => { setVoiceOutputEnabled(!voiceOutputEnabled); });
   voiceStopButton.addEventListener("click", () => { void stopVoiceAndRequest(); });
   spark = createSparkController({
     document,
@@ -663,6 +681,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       }
       composer.destroy();
       voiceButton.remove();
+      voiceOutputButton.remove();
       voiceStopButton.remove();
       voice?.destroy();
       spark?.destroy();

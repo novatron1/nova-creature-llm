@@ -45,11 +45,14 @@ def test_companion_shell_contains_modal_positioning_context():
 def test_companion_conversation_keeps_model_text_in_safe_dom_nodes():
     conversation = (ROOT / "assets/nova_companion/companion-conversation.js").read_text(encoding="utf-8")
     app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    composer = (ROOT / "assets/nova_companion/companion-composer.js").read_text(encoding="utf-8")
     assert "textContent" in conversation
     assert ".innerHTML" not in conversation
-    assert "nova_companion_draft_v1" in app
+    assert "nova_companion_draft_v1" not in app
     assert "nova_companion_messages" not in app
     assert "localStorage.setItem" not in conversation
+    assert "storage?.setItem" not in composer
+    assert "storage?.getItem" not in composer
 
 
 def test_companion_app_accepts_the_composer_callback_options_shape():
@@ -127,19 +130,23 @@ def test_companion_voice_is_truthful_and_uses_the_normal_composer_lifecycle():
         'type: "LISTENING_STARTED"',
         'type: "SPEECH_STARTED"',
         "engine.onstart",
-        "audio.addEventListener?.(\"play\"",
-        "recognition?.abort?.()",
+        "nextAudio.addEventListener?.(\"play\"",
+        "finishRecognition",
+        "stopRecognition();",
         "audio.pause?.()",
         "ttsAbort?.abort()",
+        "finishAudio",
     ):
         assert required in senses
     for required in (
         "createVoiceController",
-        "voiceAvailability(globalThis)",
+        "voiceAvailability(globalThis, { ttsAvailable",
         "onTranscript:",
-        "voice?.stop()",
+        "stopVoiceAndActiveRequest",
         "api.postTts",
         "voiceStopButton",
+        "voiceOutputEnabled",
+        "composer.setTransientText",
     ):
         assert required in app
     assert "Nova is listening" in presence

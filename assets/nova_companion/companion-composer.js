@@ -25,11 +25,6 @@ export function createComposerController({
   if (!form || !input || !sendButton) throw new TypeError("Composer elements are required.");
   let active = false;
 
-  const persistDraft = () => {
-    const draft = String(input.value || "");
-    if (draft) storage?.setItem?.(draftKey, draft);
-    else storage?.removeItem?.(draftKey);
-  };
   const resize = () => {
     input.style.height = "auto";
     input.style.height = `${Math.min(Math.max(Number(input.scrollHeight) || 44, 44), maxHeight)}px`;
@@ -40,7 +35,6 @@ export function createComposerController({
     setControlState(sendButton, active);
   };
   const markRequestAccepted = () => {
-    storage?.removeItem?.(draftKey);
     input.value = "";
     resize();
   };
@@ -70,15 +64,13 @@ export function createComposerController({
       void submit();
     }
   };
-  const onInput = () => { persistDraft(); resize(); };
+  const onInput = () => { resize(); };
   const onSendClick = (event) => {
     if (!active) return;
     event.preventDefault();
     void stop();
   };
 
-  const draft = storage?.getItem?.(draftKey);
-  if (draft && !input.value) input.value = draft;
   resize();
   setControlState(sendButton, false);
   form.addEventListener("submit", onFormSubmit);
@@ -92,6 +84,10 @@ export function createComposerController({
     markRequestAccepted,
     setRequestActive,
     resize,
+    setTransientText(text) {
+      input.value = String(text || "");
+      resize();
+    },
     restoreFocus({ userInitiated = false } = {}) {
       const target = userInitiated ? input : sendButton;
       target.focus({ preventScroll: true });

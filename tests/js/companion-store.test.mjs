@@ -97,6 +97,11 @@ test("adaptive presence remains full until Nova completes the first turn", () =>
   assert.equal(presenceViewModel(completed, false).size, "compact");
 });
 
+test("presence only presents listening or speaking when that modality is currently active", () => {
+  assert.equal(presenceViewModel({ phase: "completed", voice: { listening: false, speaking: true } }).label, "Nova is speaking");
+  assert.equal(presenceViewModel({ phase: "completed", voice: { listening: false, speaking: false } }).label, "Nova is here");
+});
+
 test("conversation rendering keeps model markup inert while linking only safe URLs", () => {
   const document = new FakeDocument();
   const timeline = new FakeNode();
@@ -120,7 +125,7 @@ test("streaming message rebuilds safe text once for every appended delta", () =>
   assert.equal(message.querySelector("[data-message-text]").textContent, "Nova responds.");
 });
 
-test("composer retains a draft until accepted server evidence clears it", async () => {
+test("composer keeps drafts only in the live control and never writes browser storage", async () => {
   const storage = new Map([["nova_companion_draft_v1", "draft"]]);
   const calls = [];
   const form = new FakeNode("form");
@@ -133,12 +138,14 @@ test("composer retains a draft until accepted server evidence clears it", async 
     storage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
     onSubmit: async (text) => calls.push(text),
   });
+  input.value = "voice transcript";
+  input.listeners.get("input")();
   await controller.submit();
   assert.equal(storage.get("nova_companion_draft_v1"), "draft");
   controller.markRequestAccepted();
-  assert.equal(storage.has("nova_companion_draft_v1"), false);
+  assert.equal(storage.get("nova_companion_draft_v1"), "draft");
   assert.equal(input.value, "");
-  assert.deepEqual(calls, ["draft"]);
+  assert.deepEqual(calls, ["voice transcript"]);
 });
 
 test("composer passes accepted evidence as a callable option to the submit lifecycle", async () => {
@@ -160,7 +167,7 @@ test("composer passes accepted evidence as a callable option to the submit lifec
   });
   await controller.submit();
   assert.equal(receivedAcceptedEvidence, true);
-  assert.equal(storage.has("nova_companion_draft_v1"), false);
+  assert.equal(storage.has("nova_companion_draft_v1"), true);
 });
 
 test("composer restores focus to Send unless the user explicitly requests the textarea", () => {

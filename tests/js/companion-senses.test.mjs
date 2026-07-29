@@ -20,17 +20,18 @@ const deferred = () => {
   return { promise, resolve, reject };
 };
 
-function makeFakeAudio() {
+function makeFakeAudio(source = "", { rejectPlay = false } = {}) {
   const listeners = new Map();
   return {
-    src: "",
+    src: source,
     paused: false,
+    loads: 0,
     addEventListener(type, listener) { listeners.set(type, listener); },
     removeEventListener(type, listener) { if (listeners.get(type) === listener) listeners.delete(type); },
     emit(type) { listeners.get(type)?.(); },
     pause() { this.paused = true; },
-    load() {},
-    play() { return Promise.resolve(); },
+    load() { this.loads += 1; },
+    play() { return rejectPlay ? Promise.reject(new Error("autoplay")) : Promise.resolve(); },
   };
 }
 
@@ -110,6 +111,181 @@ test("Stop invalidates recognition and audio callbacks", () => {
   assert.equal(events.some((event) => event.type === "LISTENING_STARTED" || event.type === "SPEECH_STARTED"), false);
   assert.equal(audio.paused, true);
   assert.equal(audio.src, "");
+});
+
+test("recognition maps every documented failure to a distinct safe message", () => {
+  const expected = {
+    "not-allowed": "Microphone permission was not granted.",
+    "audio-capture": "No microphone is available.",
+    "no-speech": "Nova did not hear speech. Try again.",
+    network: "Speech recognition network service is unavailable.",
+    bad: "Speech recognition could not start.",
+  };
+  for (const [code, message] of Object.entries(expected)) {
+    let recognition;
+    const events = [];
+    const controller = createVoiceController({
+      windowLike: { SpeechRecognition: class { constructor() { recognition = { start() {}, abort() {} }; return recognition; } } },
+      dispatch: (event) => events.push(event),
+    });
+    controller.startListening();
+    recognition.onerror({ error: code });
+    assert.equal(events.at(-1).type, "LISTENING_STOPPED");
+    assert.equal(events.at(-2).message, message);
+  }
+});
+
+test("a final transcript is delivered for normal user review without submission", () => {
+  let recognition;
+  const transcripts = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class { constructor() { recognition = { start() {}, abort() {} }; return recognition; } } },
+    onTranscript: (text) => transcripts.push(text),
+  });
+  controller.startListening();
+  recognition.onresult({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: "review this first" } }] });
+  assert.deepEqual(transcripts, ["review this first"]);
+});
+
+test("playback stops recognition so an old end event cannot block Talk again", async () => {
+  const engines = [];
+  const events = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class { constructor() { const engine = { start() {}, aborts: 0, abort() { this.aborts += 1; } }; engines.push(engine); return engine; } } },
+    api: { postTts: async () => ({ mime_type: "audio/mpeg", audio_base64: "AQ==" }) },
+    ttsAvailable: true,
+    audioFactory: makeFakeAudio,
+    dispatch: (event) => events.push(event),
+  });
+  controller.startListening();
+  engines[0].onstart();
+  await controller.speak("Nova response");
+  assert.equal(engines[0].aborts, 1);
+  assert.equal(events.some((event) => event.type === "LISTENING_STOPPED"), true);
+  engines[0].onend();
+  controller.startListening();
+  assert.equal(engines.length, 2);
+  engines[1].onstart();
+  assert.equal(events.filter((event) => event.type === "LISTENING_STARTED").length, 2);
+});
+
+test("audio terminal events clear the same data URL exactly once", async () => {
+  const events = [];
+  let audio;
+  const controller = createVoiceController({
+    api: { postTts: async () => ({ mime_type: "audio/mpeg", audio_base64: "AQ==" }) },
+    ttsAvailable: true,
+    audioFactory: (source) => { audio = makeFakeAudio(source); return audio; },
+    dispatch: (event) => events.push(event),
+  });
+  await controller.speak("Nova response");
+  audio.emit("ended");
+  audio.emit("ended");
+  assert.equal(audio.paused, true);
+  assert.equal(audio.src, "");
+  assert.equal(audio.loads, 1);
+  assert.equal(events.filter((event) => event.type === "SPEECH_FINISHED").length, 1);
+});
+
+test("audio error and rejected play clean the data URL and fail once", async () => {
+  const events = [];
+  const audios = [];
+  const controller = createVoiceController({
+    api: { postTts: async () => ({ mime_type: "audio/mpeg", audio_base64: "AQ==" }) },
+    ttsAvailable: true,
+    audioFactory: (source) => { const audio = makeFakeAudio(source, { rejectPlay: audios.length === 1 }); audios.push(audio); return audio; },
+    dispatch: (event) => events.push(event),
+  });
+  await controller.speak("first");
+  audios[0].emit("error");
+  await controller.speak("second");
+  await new Promise((resolve) => setImmediate(resolve));
+  for (const audio of audios) {
+    assert.equal(audio.paused, true);
+    assert.equal(audio.src, "");
+    assert.equal(audio.loads, 1);
+  }
+  assert.equal(events.filter((event) => event.type === "SPEECH_FAILED").length, 2);
+});
+
+test("Stop aborts pending TTS and makes its late result inert", async () => {
+  const tts = deferred();
+  let receivedSignal;
+  let audioCalls = 0;
+  const controller = createVoiceController({
+    api: { postTts: (_text, { signal }) => { receivedSignal = signal; return tts.promise; } },
+    ttsAvailable: true,
+    audioFactory: () => { audioCalls += 1; return makeFakeAudio(); },
+  });
+  const speaking = controller.speak("late reply");
+  controller.stop();
+  tts.resolve({ mime_type: "audio/mpeg", audio_base64: "AQ==" });
+  await speaking;
+  assert.equal(receivedSignal.aborted, true);
+  assert.equal(audioCalls, 0);
+});
+
+test("a newer explicit playback cancels a prior TTS request without duplicate audio", async () => {
+  const first = deferred();
+  const signals = [];
+  let audioCalls = 0;
+  const controller = createVoiceController({
+    api: { postTts: (_text, { signal }) => {
+      signals.push(signal);
+      return signals.length === 1 ? first.promise : Promise.resolve({ mime_type: "audio/mpeg", audio_base64: "AQ==" });
+    } },
+    ttsAvailable: true,
+    audioFactory: () => { audioCalls += 1; return makeFakeAudio(); },
+  });
+  const oldPlayback = controller.speak("old");
+  await controller.speak("new");
+  first.resolve({ mime_type: "audio/mpeg", audio_base64: "AQ==" });
+  await oldPlayback;
+  assert.equal(signals[0].aborted, true);
+  assert.equal(audioCalls, 1);
+});
+
+test("a stale rejected play promise cannot stop newer audio", async () => {
+  const audios = [];
+  let rejectFirst;
+  const controller = createVoiceController({
+    api: { postTts: async () => ({ mime_type: "audio/mpeg", audio_base64: "AQ==" }) },
+    ttsAvailable: true,
+    audioFactory: (source) => {
+      const audio = makeFakeAudio(source);
+      if (audios.length === 0) audio.play = () => new Promise((_resolve, reject) => { rejectFirst = reject; });
+      audios.push(audio);
+      return audio;
+    },
+  });
+  await controller.speak("first");
+  await controller.speak("second");
+  rejectFirst(new Error("late autoplay rejection"));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.notEqual(audios[1].src, "");
+  assert.equal(audios[1].paused, false);
+});
+
+test("destroy clears active response audio before making callbacks inert", async () => {
+  let audio;
+  const controller = createVoiceController({
+    api: { postTts: async () => ({ mime_type: "audio/mpeg", audio_base64: "AQ==" }) },
+    ttsAvailable: true,
+    audioFactory: (source) => { audio = makeFakeAudio(source); return audio; },
+  });
+  await controller.speak("cleanup");
+  controller.destroy();
+  assert.equal(audio.src, "");
+  assert.equal(audio.loads, 1);
+});
+
+test("voice availability reports input and output separately", () => {
+  const neither = voiceAvailability({}, { ttsAvailable: true });
+  assert.equal(neither.transcription, false);
+  assert.equal(neither.playback, false);
+  const outputOnly = voiceAvailability({ Audio() {} }, { ttsAvailable: true });
+  assert.equal(outputOnly.transcription, false);
+  assert.equal(outputOnly.playback, true);
 });
 
 test("vision payload declares local preprocessing and no persistence", () => {
