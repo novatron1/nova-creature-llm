@@ -109,11 +109,27 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
     canonical = _canonicalize(text)
 
     # Permission and high-risk actions outrank conversational interpretations.
-    if re.search(
-        r"\b(?:move|drive|turn|start|stop)\s+(?:the\s+)?robot\b"
-        r"|\b(?:send|publish|post|deploy|delete|erase|wipe|purchase|buy|pay|transfer)\b"
-        r"|\b(?:run|execute)\s+(?:a\s+)?(?:shell|command|script)\b",
+    # Transaction verbs only count when Nova is actually being directed to
+    # perform them; a hardship statement such as "I cannot pay rent" is not an
+    # action request.
+    directed_action = re.search(
+        r"^(?:nova\s+)?(?:please\s+)?"
+        r"(?:send|publish|post|deploy|delete|erase|wipe|purchase|buy|pay|transfer)\b"
+        r"|\bplease\s+"
+        r"(?:send|publish|post|deploy|delete|erase|wipe|purchase|buy|pay|transfer)\b"
+        r"|\b(?:can|could|will|would)\s+(?:you|nova)\s+(?:please\s+)?"
+        r"(?:send|publish|post|deploy|delete|erase|wipe|purchase|buy|pay|transfer)\b"
+        r"|\b(?:need|want|would\s+like)\s+(?:you|nova)\s+to\s+"
+        r"(?:send|publish|post|deploy|delete|erase|wipe|purchase|buy|pay|transfer)\b",
         canonical,
+    )
+    if (
+        directed_action
+        or re.search(
+            r"\b(?:move|drive|turn|start|stop)\s+(?:the\s+)?robot\b"
+            r"|\b(?:run|execute)\s+(?:a\s+)?(?:shell|command|script)\b",
+            canonical,
+        )
     ):
         return _decision(
             canonical,
@@ -220,10 +236,13 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         )
 
     if re.search(
-        r"\b(?:financial|investment|stock|crypto|tax|insurance|credit|mortgage)\b",
+        r"\b(?:financial|invest(?:ment|ments|ing)?|stocks?|crypto(?:currency)?|"
+        r"tax(?:es)?|insurance|credit|mortgages?)\b",
         canonical,
     ) and re.search(
-        r"\b(?:what|which|should|how|can|recommend|advice|advise)\b",
+        r"\b(?:what|which|should|how|can|recommend|advice|advise|is|are|"
+        r"would|could|invest|investing)\b"
+        r"|\bgood\s+idea\b|\bworth\s+it\b",
         canonical,
     ):
         return _decision(
@@ -252,6 +271,11 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         r"\b(?:due|tomorrow|urgent|short|behind|afford|cover|pay)\b"
         r"|\b(?:can(?:not|'t)|unable to)\b.{0,36}"
         r"\b(?:rent|food|groceries|bills?|utilities)\b"
+        r"|\bbehind\s+on\s+(?:rent|bills?|utilities)\b"
+        r"|\b(?:do\s+not|don't)\s+have\s+enough(?:\s+money)?\s+for\s+"
+        r"(?:rent|food|groceries|bills?|utilities)\b"
+        r"|\b(?:help\s+(?:me\s+)?budget|budget(?:ing)?)\b.{0,36}"
+        r"\b(?:rent|food|groceries|bills?|utilities)\b"
         r"|\b(?:money|cash|funds)\s+for\s+"
         r"(?:rent|food|groceries|bills?|utilities)\b"
         r"|^for\s+(?:rent|food|groceries|bills?|utilities)\b",
@@ -273,10 +297,12 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         )
 
     if re.search(
-        r"\b(?:help\s+(?:me\s+)?(?:find|get)\s+(?:a\s+)?job|"
+        r"\b(?:help\s+(?:me\s+)?find(?:ing)?\s+(?:a\s+)?(?:job|work)|"
+        r"help\s+(?:me\s+)?get\s+(?:a\s+)?job|"
         r"need\s+(?:a\s+)?(?:job|work)|"
         r"(?:income|employment)\s+help|"
-        r"increase\s+(?:my\s+)?income)\b",
+        r"increase\s+(?:my\s+)?income|"
+        r"lost\s+(?:my\s+)?job\b.{0,36}\bneed\s+income)\b",
         canonical,
     ):
         return _decision(
