@@ -1,4 +1,6 @@
 const safeOrigin = () => globalThis.window?.location?.origin || "";
+const TIMEOUT_REASON = "nova_timeout";
+const CANCELLED_REASON = "nova_cancelled";
 
 export function createRequestId() {
   if (globalThis.crypto?.randomUUID) return `req_${globalThis.crypto.randomUUID()}`;
@@ -47,6 +49,7 @@ export class NovaApiError extends Error {
 const messageFor = (code, status) => {
   if (code === "pairing_required") return "Pair this device before using Nova.";
   if (code === "cancelled") return "The Nova request was cancelled.";
+  if (code === "timeout") return "Nova request timed out.";
   if (code === "stream_incomplete") return "Nova's response stream ended before completion.";
   if (status === 401) return "This device is not authorized to use Nova.";
   if (status >= 500) return "Nova is temporarily unavailable.";
@@ -110,7 +113,7 @@ export class NovaCompanionApi {
     try {
       return await this.postJson(`/nova/v1/cancel/${encodeURIComponent(id)}`, {});
     } finally {
-      controller?.abort();
+      controller?.abort(CANCELLED_REASON);
     }
   }
 
@@ -131,6 +134,7 @@ export class NovaCompanionApi {
     };
     let textSoFar = "";
     let completed = false;
+    let reader = null;
     const seenDeltaEvents = new Set();
     this.activeStreams.set(id, controller);
     try {
@@ -145,11 +149,12 @@ export class NovaCompanionApi {
         code: "stream_incomplete", requestId: id,
       });
 
-      const reader = response.body.getReader();
+      reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let trace = {};
       const consumeBlock = (block) => {
+        if (completed) return;
         const event = parseSseBlock(block);
         if (!event) return;
         callbacks.onEvent?.(event);
@@ -170,7 +175,7 @@ export class NovaCompanionApi {
           textSoFar += delta;
           callbacks.onDelta?.(delta, event);
         }
-        if (event.done === true) {
+        if (event.done === true && !completed) {
           completed = true;
           trace = event.metadata?.trace || event.trace || {};
           callbacks.onDone?.(event);
@@ -180,7 +185,8 @@ export class NovaCompanionApi {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
+        buffer += decoder.decode(value, { stream: true });
+        buffer = buffer.replace(/\r\n/g, "\n");
         let boundary;
         while ((boundary = buffer.indexOf("\n\n")) !== -1) {
           const block = buffer.slice(0, boundary);
@@ -188,7 +194,8 @@ export class NovaCompanionApi {
           consumeBlock(block);
         }
       }
-      buffer += decoder.decode().replace(/\r\n/g, "\n");
+      buffer += decoder.decode();
+      buffer = buffer.replace(/\r\n/g, "\n");
       if (buffer.trim()) consumeBlock(buffer);
       if (!completed) throw new NovaApiError(messageFor("stream_incomplete"), {
         code: "stream_incomplete", partialText: textSoFar, requestId: id,
@@ -196,9 +203,14 @@ export class NovaCompanionApi {
       return { text: textSoFar, trace };
     } catch (error) {
       if (error instanceof NovaApiError) throw error;
-      const code = controller.signal.aborted ? "cancelled" : "stream_interrupted";
+      const code = controller.signal.reason === TIMEOUT_REASON
+        ? "timeout"
+        : (controller.signal.aborted ? "cancelled" : "stream_interrupted");
       throw new NovaApiError(messageFor(code), { code, partialText: textSoFar, requestId: id });
     } finally {
+      if (reader) {
+        try { await reader.cancel(); } catch { /* preserve the primary result or error */ }
+      }
       clearTimeout(timeout);
       detachExternalAbort();
       if (this.activeStreams.get(id) === controller) this.activeStreams.delete(id);
@@ -208,12 +220,12 @@ export class NovaCompanionApi {
   _url(path) { return `${this.baseUrl}${path}`; }
 
   _startTimeout(controller) {
-    return setTimeout(() => controller.abort(), this.requestTimeoutMs);
+    return setTimeout(() => controller.abort(TIMEOUT_REASON), this.requestTimeoutMs);
   }
 
   _forwardAbort(signal, controller) {
     if (!signal) return () => {};
-    const abort = () => controller.abort();
+    const abort = () => controller.abort(CANCELLED_REASON);
     if (signal.aborted) abort();
     else signal.addEventListener("abort", abort, { once: true });
     return () => signal.removeEventListener("abort", abort);
@@ -230,6 +242,14 @@ export class NovaCompanionApi {
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       });
       return await this.fetchImpl(this._url(path), { method, headers, ...(body === undefined ? {} : { body }), signal: activeSignal });
+    } catch (error) {
+      if (controller?.signal.reason === TIMEOUT_REASON) {
+        throw new NovaApiError(messageFor("timeout"), { code: "timeout" });
+      }
+      if (controller?.signal.aborted) {
+        throw new NovaApiError(messageFor("cancelled"), { code: "cancelled" });
+      }
+      throw error;
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
       detach();

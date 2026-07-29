@@ -125,6 +125,120 @@ test("the final unterminated SSE block is consumed once", async () => {
   assert.equal(result.trace.route, "native");
 });
 
+test("SSE framing survives a CRLF delimiter split across chunks", async () => {
+  const deltas = [];
+  const api = new NovaCompanionApi({
+    fetchImpl: makeStreamingFetch([
+      'data: {"event_type":"response.delta","delta":"split"}\r',
+      "\n\r",
+      "\n",
+      'data: {"event_type":"response.completed","done":true}\r\n\r\n',
+    ]),
+    authHeaders: (extra) => extra,
+  });
+
+  const result = await api.streamChat({ text: "Hi", requestId: "req-crlf" }, { onDelta: (value) => deltas.push(value) });
+  assert.deepEqual(deltas, ["split"]);
+  assert.equal(result.text, "split");
+});
+
+test("JSON request deadline expiry has a safe timeout code", async () => {
+  const api = new NovaCompanionApi({
+    requestTimeoutMs: 5,
+    fetchImpl: async (_url, options) => new Promise((_, reject) => {
+      options.signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+    }),
+    authHeaders: (extra) => extra,
+  });
+
+  await assert.rejects(
+    () => api.getHealth(),
+    (error) => error.code === "timeout" && error.message === "Nova request timed out.",
+  );
+});
+
+test("stream deadline expiry has a safe timeout code and preserves partial text", async () => {
+  const api = new NovaCompanionApi({
+    requestTimeoutMs: 5,
+    fetchImpl: async (_url, options) => makeResponse({ body: { getReader: () => ({
+      read: () => new Promise((_, reject) => {
+        options.signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+      }),
+      cancel: async () => {},
+    }) } }),
+    authHeaders: (extra) => extra,
+  });
+
+  await assert.rejects(
+    () => api.streamChat({ text: "Hi", requestId: "req-timeout" }),
+    (error) => error.code === "timeout" && error.partialText === "" && error.requestId === "req-timeout",
+  );
+});
+
+test("stream reader is cancelled when SSE parsing fails", async () => {
+  let cancelled = 0;
+  const api = new NovaCompanionApi({
+    fetchImpl: async () => makeResponse({ body: { getReader: () => ({
+      read: async () => ({ value: encoder.encode("data: not-json\n\n"), done: false }),
+      cancel: async () => { cancelled += 1; },
+    }) } }),
+    authHeaders: (extra) => extra,
+  });
+
+  await assert.rejects(() => api.streamChat({ text: "Hi", requestId: "req-parser" }));
+  assert.equal(cancelled, 1);
+});
+
+test("stream reader is cancelled when a delta callback fails", async () => {
+  let cancelled = 0;
+  const api = new NovaCompanionApi({
+    fetchImpl: async () => makeResponse({ body: { getReader: () => ({
+      read: async () => ({ value: encoder.encode('data: {"event_type":"response.delta","delta":"Hi"}\n\n'), done: false }),
+      cancel: async () => { cancelled += 1; },
+    }) } }),
+    authHeaders: (extra) => extra,
+  });
+
+  await assert.rejects(() => api.streamChat({ text: "Hi", requestId: "req-callback" }, { onDelta: () => { throw new Error("callback failure"); } }));
+  assert.equal(cancelled, 1);
+});
+
+test("stream reader is cancelled when read fails", async () => {
+  let cancelled = 0;
+  const api = new NovaCompanionApi({
+    fetchImpl: async () => makeResponse({ body: { getReader: () => ({
+      read: async () => { throw new Error("read failure"); },
+      cancel: async () => { cancelled += 1; },
+    }) } }),
+    authHeaders: (extra) => extra,
+  });
+
+  await assert.rejects(() => api.streamChat({ text: "Hi", requestId: "req-read" }));
+  assert.equal(cancelled, 1);
+});
+
+test("terminal done permits no further delta text or done callbacks", async () => {
+  const deltas = [];
+  let doneCalls = 0;
+  const api = new NovaCompanionApi({
+    fetchImpl: makeStreamingFetch([
+      'data: {"event_type":"response.delta","delta":"before"}\n\n',
+      'data: {"event_type":"response.completed","done":true}\n\n',
+      'data: {"event_type":"response.delta","delta":"after"}\n\n',
+      'data: {"event_type":"response.completed","done":true}\n\n',
+    ]),
+    authHeaders: (extra) => extra,
+  });
+
+  const result = await api.streamChat({ text: "Hi", requestId: "req-terminal" }, {
+    onDelta: (value) => deltas.push(value),
+    onDone: () => { doneCalls += 1; },
+  });
+  assert.equal(result.text, "before");
+  assert.deepEqual(deltas, ["before"]);
+  assert.equal(doneCalls, 1);
+});
+
 test("a stream without a final done event fails without automatically retrying", async () => {
   let calls = 0;
   const api = new NovaCompanionApi({
