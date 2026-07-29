@@ -141,6 +141,41 @@ test("composer retains a draft until accepted server evidence clears it", async 
   assert.deepEqual(calls, ["draft"]);
 });
 
+test("composer passes accepted evidence as a callable option to the submit lifecycle", async () => {
+  const storage = new Map([["nova_companion_draft_v1", "draft"]]);
+  const form = new FakeNode("form");
+  const input = new FakeNode("textarea");
+  input.value = "draft";
+  input.scrollHeight = 48;
+  const sendButton = new FakeNode("button");
+  let receivedAcceptedEvidence = false;
+  const controller = createComposerController({
+    form, input, sendButton,
+    storage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
+    onSubmit: async (_text, { markRequestAccepted }) => {
+      assert.equal(typeof markRequestAccepted, "function");
+      markRequestAccepted();
+      receivedAcceptedEvidence = true;
+    },
+  });
+  await controller.submit();
+  assert.equal(receivedAcceptedEvidence, true);
+  assert.equal(storage.has("nova_companion_draft_v1"), false);
+});
+
+test("composer restores focus to Send unless the user explicitly requests the textarea", () => {
+  const form = new FakeNode("form");
+  const input = new FakeNode("textarea");
+  input.scrollHeight = 48;
+  const sendButton = new FakeNode("button");
+  const controller = createComposerController({ form, input, sendButton, storage: new Map() });
+  controller.restoreFocus();
+  assert.equal(sendButton.focused, true);
+  assert.equal(input.focused, undefined);
+  controller.restoreFocus({ userInitiated: true });
+  assert.equal(input.focused, true);
+});
+
 test("initial state has the documented immutable shape", () => {
   const state = createInitialCompanionState({ clientId: "desktop", conversationId: "conv-2" });
   assert.deepEqual(state, {

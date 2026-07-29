@@ -92,7 +92,10 @@ export function createComposerController({
     markRequestAccepted,
     setRequestActive,
     resize,
-    restoreFocus() { input.focus({ preventScroll: true }); },
+    restoreFocus({ userInitiated = false } = {}) {
+      const target = userInitiated ? input : sendButton;
+      target.focus({ preventScroll: true });
+    },
     destroy() {
       form.removeEventListener("submit", onFormSubmit);
       input.removeEventListener("keydown", onKeyDown);

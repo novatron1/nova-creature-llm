@@ -119,7 +119,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
     if (trustLabel) trustLabel.textContent = label;
   };
 
-  const sendConversation = async (text, markRequestAccepted) => {
+  const sendConversation = async (text, { markRequestAccepted }) => {
     if (inFlight) return;
     inFlight = true;
     const requestId = createRequestId();
@@ -186,6 +186,12 @@ export async function bootstrapCompanion(document = globalThis.document) {
       if (requestId) await api.cancel(requestId);
     },
   });
+  const restoreAfterPersistedNavigation = (event) => {
+    if (event.persisted) composer.restoreFocus();
+  };
+  if (typeof globalThis.addEventListener === "function") {
+    globalThis.addEventListener("pageshow", restoreAfterPersistedNavigation);
+  }
 
   try {
     status = await api.getStatus();
@@ -210,7 +216,17 @@ export async function bootstrapCompanion(document = globalThis.document) {
   }
   render();
   root.dataset.companionReady = "true";
-  return { api, composer, getState: () => state };
+  return {
+    api,
+    composer,
+    getState: () => state,
+    destroy() {
+      if (typeof globalThis.removeEventListener === "function") {
+        globalThis.removeEventListener("pageshow", restoreAfterPersistedNavigation);
+      }
+      composer.destroy();
+    },
+  };
 }
 
 function start() {

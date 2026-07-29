@@ -50,3 +50,9 @@ def test_companion_conversation_keeps_model_text_in_safe_dom_nodes():
     assert "nova_companion_draft_v1" in app
     assert "nova_companion_messages" not in app
     assert "localStorage.setItem" not in conversation
+
+
+def test_companion_app_accepts_the_composer_callback_options_shape():
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    assert "const sendConversation = async (text, { markRequestAccepted })" in app
+    assert "addEventListener(\"pageshow\"" in app
