@@ -16,7 +16,7 @@ const capability = (item) => Object.freeze(item);
 
 export const COMPANION_CAPABILITIES = Object.freeze([
   capability({ id: "chat", group: "speak", label: "Chat with Nova", description: "Start a conversation with Nova.", icon: "✦", mode: "classic", panel: "chat", requiredCapability: "", requiredPermission: "none" }),
-  capability({ id: "vision", group: "see", label: "See with camera", description: "Let Nova inspect a picture or live frame.", icon: "◉", mode: "companion", panel: "display", requiredCapability: "vision.image_input", requiredPermission: "camera" }),
+  capability({ id: "vision", group: "see", label: "See with camera", description: "Let Nova inspect a picture or live frame.", icon: "◉", mode: "companion", panel: "display", requiredCapability: "vision.image_input", requiredTool: "vision.observe", requiredPermission: "camera" }),
   capability({ id: "voice", group: "speak", label: "Speak out loud", description: "Talk with Nova using this device's microphone.", icon: "◌", mode: "companion", panel: "chat", requiredCapability: "audio.input", requiredPermission: "microphone" }),
   capability({ id: "dream", group: "create", label: "Dream Studio", description: "Create a visual idea in Nova Classic.", icon: "✎", mode: "classic", panel: "dream", requiredCapability: "dream_studio.ui_panel", requiredPermission: "none" }),
   capability({ id: "builder", group: "create", label: "Build an app", description: "Open Nova's app builder.", icon: "▣", mode: "classic", panel: "builder", requiredCapability: "", requiredPermission: "none" }),
@@ -53,28 +53,45 @@ function unavailableReason(item) {
   return `${item.label} is not available on this Nova server.`;
 }
 
+function serverItemFor(item, serverState) {
+  const items = serverState?.items;
+  const key = item.requiredTool || item.id;
+  return items?.get?.(key) || items?.[key];
+}
+
+function toolAvailability(item, serverItem) {
+  if (!serverItem || typeof serverItem !== "object") return null;
+  if (typeof serverItem.available === "boolean") {
+    return { available: serverItem.available, reason: serverItem.reason || (serverItem.available ? "" : unavailableReason(item)) };
+  }
+  const status = String(serverItem.availability_status || "").toLowerCase();
+  const available = status === "available" || (item.id === "vision" && status === "requires_live_input");
+  const reason = serverItem.reason || (available ? "" : unavailableReason(item));
+  return { available, reason };
+}
+
 export function resolveCapabilityAvailability(capabilityItem, serverState = {}) {
   const item = { ...capabilityItem };
-  const serverItem = serverState?.items?.get?.(item.id) || serverState?.items?.[item.id];
-  if (serverItem && typeof serverItem.available === "boolean") {
-    item.available = serverItem.available;
-    item.reason = serverItem.reason || (serverItem.available ? "" : unavailableReason(item));
-    return item;
-  }
-  if (!item.requiredCapability) return { ...item, available: true, reason: "" };
+  const toolState = toolAvailability(item, serverItemFor(item, serverState));
+  if (!item.requiredCapability) return toolState ? { ...item, ...toolState } : { ...item, available: true, reason: "" };
   const capabilityValue = valueAtPath(serverState?.capabilities || serverState, item.requiredCapability);
   const available = capabilityIsAvailable(capabilityValue);
   const reason = typeof capabilityValue?.reason === "string" ? capabilityValue.reason : unavailableReason(item);
+  if (capabilityValue !== undefined && !available) return { ...item, available: false, reason };
+  if (toolState) return { ...item, ...toolState };
   return { ...item, available, reason: available ? "" : reason };
 }
 
 export function resolveSparkActions(serverItems, registry = COMPANION_CAPABILITIES) {
   const items = Array.isArray(serverItems) ? serverItems : [];
   const known = new Map((registry || []).map((item) => [item.id, item]));
+  const knownTools = new Map((registry || []).filter((item) => item.requiredTool).map((item) => [item.requiredTool, item]));
   if (!items.length) return [...known.values()];
   return items.flatMap((serverItem) => {
-    const registered = known.get(String(serverItem?.id || ""));
-    return registered ? [{ ...registered, available: serverItem.available, reason: serverItem.reason || "" }] : [];
+    const registered = knownTools.get(String(serverItem?.name || "")) || known.get(String(serverItem?.id || ""));
+    if (!registered) return [];
+    const key = registered.requiredTool || registered.id;
+    return [resolveCapabilityAvailability(registered, { items: new Map([[key, serverItem]]) })];
   });
 }
 
@@ -104,6 +121,7 @@ export function createSparkController({
   let serverState = {};
   let openCount = 0;
   let hintDismissed = false;
+  let destroyed = false;
 
   const keydown = (event) => {
     if (!isOpen) return;
@@ -128,6 +146,7 @@ export function createSparkController({
 
   const actionFor = (id) => registry.find((item) => item.id === id);
   const activate = async (id) => {
+    if (destroyed) return false;
     const action = actionFor(id);
     if (!action) return false;
     const available = resolveCapabilityAvailability(action, serverState);
@@ -142,6 +161,7 @@ export function createSparkController({
     } catch {
       return false;
     }
+    if (destroyed) return false;
     close();
     return true;
   };
@@ -209,8 +229,13 @@ export function createSparkController({
     button.focus?.({ preventScroll: true });
   };
 
+  const focusFirstSheetControl = () => {
+    if (!isOpen || destroyed) return;
+    focusableElements(host)[0]?.focus?.({ preventScroll: true });
+  };
+
   const open = async () => {
-    if (isOpen) return;
+    if (destroyed || isOpen) return false;
     isOpen = true;
     openCount += 1;
     host.hidden = false;
@@ -218,13 +243,19 @@ export function createSparkController({
     button.setAttribute("aria-expanded", "true");
     document.addEventListener?.("keydown", keydown);
     render();
+    focusFirstSheetControl();
     try {
-      serverState = await loadServerState();
-      if (isOpen) render();
+      const loadedState = await loadServerState();
+      if (!isOpen || destroyed) return false;
+      serverState = loadedState;
+      render();
+      focusFirstSheetControl();
     } catch {
-      if (isOpen) render();
+      if (!isOpen || destroyed) return false;
+      render();
+      focusFirstSheetControl();
     }
-    focusableElements(host)[0]?.focus?.({ preventScroll: true });
+    return true;
   };
 
   const triggerKeydown = (event) => {
@@ -234,12 +265,14 @@ export function createSparkController({
     }
   };
   const handleVoiceCommand = (command) => {
+    if (destroyed) return false;
     if (String(command || "").trim().toLowerCase() !== String(voiceCommand).trim().toLowerCase()) return false;
     void open();
     return true;
   };
 
-  button.addEventListener("click", () => { void open(); });
+  const triggerClick = () => { void open(); };
+  button.addEventListener("click", triggerClick);
   button.addEventListener("keydown", triggerKeydown);
   backdrop.addEventListener("click", close);
   return {
@@ -249,7 +282,10 @@ export function createSparkController({
     handleVoiceCommand,
     get isOpen() { return isOpen; },
     destroy() {
+      if (destroyed) return;
+      destroyed = true;
       close();
+      button.removeEventListener("click", triggerClick);
       button.removeEventListener("keydown", triggerKeydown);
       backdrop.removeEventListener("click", close);
     },
