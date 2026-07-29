@@ -56,3 +56,19 @@ def test_companion_app_accepts_the_composer_callback_options_shape():
     app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
     assert "const sendConversation = async (text, { markRequestAccepted })" in app
     assert "addEventListener(\"pageshow\"" in app
+
+
+def test_companion_spark_keeps_a_fixed_accessible_capability_registry():
+    spark = (ROOT / "assets/nova_companion/companion-spark.js").read_text(encoding="utf-8")
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
+    for group in ("see", "speak", "create", "remember", "work", "system"):
+        assert f'{group}: "' in spark
+    assert "COMPANION_CAPABILITIES" in spark
+    assert "resolveSparkActions" in spark
+    assert "classicPanelUrl" in spark
+    assert "aria-expanded" in spark
+    assert "document.addEventListener?.(\"keydown\", keydown)" in spark
+    assert "document.removeEventListener?.(\"keydown\", keydown)" in spark
+    assert "createSparkController" in app
+    assert ".companion-spark__action" in css

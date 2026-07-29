@@ -3,6 +3,7 @@ import { createInitialCompanionState, reduceCompanionState } from "./companion-s
 import { presenceViewModel, renderPresence } from "./companion-presence.js";
 import { appendMessage, beginStreamingMessage, appendStreamingDelta } from "./companion-conversation.js";
 import { createComposerController } from "./companion-composer.js";
+import { createSparkController } from "./companion-spark.js";
 
 const CLIENT_ID_KEY = "nova_companion_client_id_v1";
 const CONVERSATION_ID_KEY = "nova_companion_conversation_id_v1";
@@ -97,6 +98,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
   let state = createInitialCompanionState({ clientId, conversationId });
   let status = {};
   let composer;
+  let spark;
   let inFlight = false;
 
   const elements = {
@@ -186,6 +188,25 @@ export async function bootstrapCompanion(document = globalThis.document) {
       if (requestId) await api.cancel(requestId);
     },
   });
+  spark = createSparkController({
+    document,
+    loadServerState: async () => {
+      const [capabilitiesResult, toolsResult] = await Promise.allSettled([
+        api.getJson("/nova/v1/capabilities"),
+        api.getJson("/nova/v1/tools"),
+      ]);
+      const capabilities = capabilitiesResult.status === "fulfilled" ? capabilitiesResult.value : {};
+      const toolData = toolsResult.status === "fulfilled" && Array.isArray(toolsResult.value?.data)
+        ? toolsResult.value.data
+        : [];
+      const items = new Map(toolData.map((item) => [String(item?.id || item?.name || ""), item]));
+      return { capabilities, items };
+    },
+    onCompanionAction: async (action) => {
+      elements.liveStatus.textContent = `${action.label} is not available in this Companion version yet.`;
+      return false;
+    },
+  });
   const restoreAfterPersistedNavigation = (event) => {
     if (event.persisted) composer.restoreFocus();
   };
@@ -225,6 +246,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
         globalThis.removeEventListener("pageshow", restoreAfterPersistedNavigation);
       }
       composer.destroy();
+      spark?.destroy();
     },
   };
 }

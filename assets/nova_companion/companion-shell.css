@@ -84,6 +84,15 @@ button, .classic-fallback { min-height: 44px; }
 #companionSheetBackdrop { position: absolute; z-index: 1; inset: 0; background: rgb(0 0 0 / 50%); }
 #companionSheetHost { position: absolute; z-index: 2; right: var(--spacing); bottom: calc(var(--spacing) + var(--safe-area-bottom)); left: var(--spacing); max-height: 70dvh; overflow: auto; border-radius: var(--radius); background: var(--surface-elevated); box-shadow: var(--shadow); }
 #companionSheetHost:not([hidden]) { padding: var(--spacing); }
+.companion-spark__hint { margin: 0 0 var(--spacing); color: var(--text-muted); }
+.companion-spark__dismiss { min-height: 44px; border: 0; border-radius: 999px; padding: 0.4rem 0.75rem; background: transparent; color: var(--cyan); cursor: pointer; }
+.companion-spark__group + .companion-spark__group { margin-top: var(--spacing); }
+.companion-spark__group h3 { margin: 0 0 0.5rem; color: var(--cyan); font-size: 0.875rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.companion-spark__action { display: flex; width: 100%; min-height: 44px; align-items: center; gap: 0.75rem; margin-top: 0.5rem; border: 0; border-radius: 0.875rem; padding: 0.65rem 0.75rem; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; }
+.companion-spark__action:disabled { cursor: not-allowed; opacity: 0.7; }
+.companion-spark__icon { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; background: #37305e; color: var(--cyan); font-size: 1.1rem; }
+.companion-spark__text { display: grid; gap: 0.15rem; }
+.companion-spark__text small { color: var(--text-muted); }
 .classic-fallback { align-self: center; color: var(--text-muted); }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
