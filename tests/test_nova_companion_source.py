@@ -72,3 +72,23 @@ def test_companion_spark_keeps_a_fixed_accessible_capability_registry():
     assert "document.removeEventListener?.(\"keydown\", keydown)" in spark
     assert "createSparkController" in app
     assert ".companion-spark__action" in css
+
+
+def test_companion_vision_requires_explicit_camera_and_look_actions():
+    senses = (ROOT / "assets/nova_companion/companion-senses.js").read_text(encoding="utf-8")
+    app = (ROOT / "assets/nova_companion/companion-app.js").read_text(encoding="utf-8")
+    css = (ROOT / "assets/nova_companion/companion-shell.css").read_text(encoding="utf-8")
+    for required in (
+        "prepareVisionCanvas",
+        "buildVisionPayload",
+        "createVisionController",
+        'text: "allow camera"',
+        "getUserMedia({ video: { facingMode: camera.facingMode }, audio: false })",
+        "persist: false",
+        "stopTracks(stream)",
+    ):
+        assert required in senses
+    assert "openVisionSheet" in app
+    assert "api.postVision(buildVisionPayload" in app
+    assert "appendVisionTraceDetails" in app
+    assert "companion-vision" in css

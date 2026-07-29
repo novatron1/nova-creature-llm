@@ -4,6 +4,7 @@ import { presenceViewModel, renderPresence } from "./companion-presence.js";
 import { appendMessage, beginStreamingMessage, appendStreamingDelta } from "./companion-conversation.js";
 import { createComposerController } from "./companion-composer.js";
 import { createSparkController } from "./companion-spark.js";
+import { buildVisionPayload, createVisionController, prepareVisionCanvas } from "./companion-senses.js";
 
 const CLIENT_ID_KEY = "nova_companion_client_id_v1";
 const CONVERSATION_ID_KEY = "nova_companion_conversation_id_v1";
@@ -58,6 +59,28 @@ function appendCompletionDetails(message, answerStatus, permissions) {
   }
 }
 
+function appendVisionTraceDetails(message, trace = {}) {
+  if (!message || !trace || typeof trace !== "object") return;
+  const document = message.ownerDocument;
+  if (!document?.createElement) return;
+  const details = [];
+  const image = trace.image;
+  if (image?.width && image?.height) {
+    details.push(`Basic inspection: ${image.width} × ${image.height}px${image.format ? `, ${image.format}` : ""}.`);
+  } else if (Array.isArray(trace.skills) && trace.skills.includes("basic_image_inspection")) {
+    details.push("Basic inspection ran.");
+  }
+  const ocrUsed = Array.isArray(trace.skills) && trace.skills.some((skill) => /(?:^|_)ocr$/i.test(String(skill)));
+  if (ocrUsed) details.push("OCR ran on this picture.");
+  if (trace.vision_model_used === true) details.push(`Vision model: ${String(trace.vision_model || "local model")}.`);
+  for (const detail of details) {
+    const item = document.createElement("p");
+    item.className = "companion-message__answer-status";
+    item.textContent = detail;
+    message.appendChild(item);
+  }
+}
+
 function renderRetry(timeline, text, retry) {
   const document = timeline.ownerDocument;
   const row = document.createElement("div");
@@ -99,6 +122,8 @@ export async function bootstrapCompanion(document = globalThis.document) {
   let status = {};
   let composer;
   let spark;
+  let vision;
+  let closeVisionSheet = () => {};
   let inFlight = false;
 
   const elements = {
@@ -119,6 +144,171 @@ export async function bootstrapCompanion(document = globalThis.document) {
   };
   const setConnectionLabel = (label) => {
     if (trustLabel) trustLabel.textContent = label;
+  };
+
+  const addVisionResult = (result) => {
+    const trace = result?.trace || {};
+    const message = appendMessage(timeline, {
+      id: `vision_${createRequestId()}`,
+      role: "assistant",
+      text: String(result?.response || result?.error || "Nova did not return a vision answer."),
+      status: result?.ok === false ? "failed" : "completed",
+      answerStatus: null,
+      artifact: null,
+    });
+    const answerStatus = result?.answer_status || trace.answer_status;
+    if (answerStatus) message.dataset.answerStatus = JSON.stringify(answerStatus);
+    appendCompletionDetails(message, answerStatus, result?.permissions);
+    appendVisionTraceDetails(message, trace);
+    updateTrustFromTrace(dispatch, trace, { permissions: result?.permissions });
+    timeline.scrollTop = timeline.scrollHeight;
+  };
+
+  const openVisionSheet = () => {
+    const host = document.getElementById("companionSheetHost");
+    const backdrop = document.getElementById("companionSheetBackdrop");
+    if (!host || !backdrop) return false;
+    closeVisionSheet();
+    host.replaceChildren();
+    host.hidden = false;
+    backdrop.hidden = false;
+    host.classList.add("companion-vision");
+    host.setAttribute("aria-label", "See with Nova");
+    dispatch({ type: "SHEET_CHANGED", sheet: "vision" });
+
+    const title = document.createElement("h2");
+    title.textContent = "See with Nova";
+    const privacy = document.createElement("p");
+    privacy.className = "companion-vision__privacy";
+    privacy.textContent = "Pictures are prepared locally. Nova sends only the frame you choose for this request; image persistence is off.";
+    const statusLine = document.createElement("p");
+    statusLine.className = "companion-vision__status";
+    statusLine.setAttribute("role", "status");
+    statusLine.textContent = "Camera is off. Choose a picture or enable the camera.";
+    const prompt = document.createElement("textarea");
+    prompt.rows = 2;
+    prompt.maxLength = 500;
+    prompt.placeholder = "What should Nova look for?";
+    prompt.value = "What is in front of me?";
+    prompt.className = "companion-vision__prompt";
+    const pictureLabel = document.createElement("label");
+    pictureLabel.className = "companion-vision__file";
+    pictureLabel.textContent = "Choose picture";
+    const picture = document.createElement("input");
+    picture.type = "file";
+    picture.accept = "image/jpeg,image/png,image/webp";
+    pictureLabel.appendChild(picture);
+    const preview = document.createElement("video");
+    preview.className = "companion-vision__preview";
+    preview.autoplay = true;
+    preview.muted = true;
+    preview.playsInline = true;
+    const previewCanvas = document.createElement("canvas");
+    previewCanvas.hidden = true;
+    const buttons = document.createElement("div");
+    buttons.className = "companion-vision__actions";
+    const enable = document.createElement("button");
+    enable.type = "button";
+    enable.textContent = "Enable Camera";
+    const facing = document.createElement("button");
+    facing.type = "button";
+    facing.textContent = "Use front camera";
+    const look = document.createElement("button");
+    look.type = "button";
+    look.textContent = "Look";
+    const stop = document.createElement("button");
+    stop.type = "button";
+    stop.textContent = "Stop";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "companion-vision__close";
+    close.textContent = "Close";
+    buttons.append(enable, facing, look, stop, close);
+    host.append(title, privacy, statusLine, pictureLabel, prompt, preview, previewCanvas, buttons);
+
+    let preparedPicture = null;
+    const updateCameraStatus = (camera) => {
+      statusLine.textContent = camera.active
+        ? `Camera is live (${camera.facingMode === "user" ? "front" : "back"}). Tap Look to capture one frame.`
+        : camera.permission === "denied"
+          ? "Camera permission was not granted. You can still choose a picture."
+          : "Camera is off. Choose a picture or enable the camera.";
+      facing.textContent = camera.facingMode === "user" ? "Use back camera" : "Use front camera";
+    };
+    vision = createVisionController({
+      api,
+      preview,
+      previewCanvas,
+      onStateChange: (camera) => {
+        dispatch({ type: "CAMERA_CHANGED", permission: camera.permission, active: camera.active, persisted: false });
+        updateCameraStatus(camera);
+      },
+      onResult: addVisionResult,
+    });
+    const closeSheet = () => {
+      vision?.stopCamera();
+      vision = null;
+      host.hidden = true;
+      backdrop.hidden = true;
+      host.classList.remove("companion-vision");
+      dispatch({ type: "SHEET_CHANGED", sheet: null });
+      document.removeEventListener?.("keydown", onKeydown);
+      backdrop.removeEventListener("click", closeSheet);
+      closeVisionSheet = () => {};
+    };
+    const onKeydown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeSheet();
+      }
+    };
+    closeVisionSheet = closeSheet;
+    document.addEventListener?.("keydown", onKeydown);
+    backdrop.addEventListener("click", closeSheet, { once: true });
+    picture.addEventListener("change", async () => {
+      const file = picture.files?.[0];
+      picture.value = "";
+      if (!file) return;
+      try {
+        statusLine.textContent = "Preparing the selected picture locally…";
+        preparedPicture = await prepareVisionCanvas(file);
+        statusLine.textContent = `Picture ready: ${preparedPicture.width} × ${preparedPicture.height}px. Tap Look to send it.`;
+      } catch (error) {
+        preparedPicture = null;
+        statusLine.textContent = error instanceof Error ? error.message : "Nova could not prepare that picture.";
+      }
+    });
+    enable.addEventListener("click", async () => {
+      try {
+        await vision?.enableCamera();
+      } catch (error) {
+        statusLine.textContent = error instanceof Error ? error.message : "Nova could not enable the camera.";
+      }
+    });
+    facing.addEventListener("click", async () => {
+      try {
+        const next = vision?.getState().facingMode === "user" ? "environment" : "user";
+        await vision?.changeFacingMode(next);
+      } catch (error) {
+        statusLine.textContent = error instanceof Error ? error.message : "Nova could not switch cameras.";
+      }
+    });
+    look.addEventListener("click", async () => {
+      try {
+        statusLine.textContent = "Nova is inspecting the frame you chose…";
+        if (preparedPicture) {
+          addVisionResult(await api.postVision(buildVisionPayload(preparedPicture, prompt.value)));
+        } else {
+          await vision?.look(prompt.value);
+        }
+      } catch (error) {
+        statusLine.textContent = error instanceof Error ? error.message : "Nova could not inspect that frame.";
+      }
+    });
+    stop.addEventListener("click", () => vision?.stopCamera());
+    close.addEventListener("click", closeSheet);
+    updateCameraStatus(vision.getState());
+    return true;
   };
 
   const sendConversation = async (text, { markRequestAccepted }) => {
@@ -203,6 +393,10 @@ export async function bootstrapCompanion(document = globalThis.document) {
       return { capabilities, items };
     },
     onCompanionAction: async (action) => {
+      if (action.id === "vision") {
+        globalThis.setTimeout?.(() => { openVisionSheet(); }, 0);
+        return true;
+      }
       elements.liveStatus.textContent = `${action.label} is not available in this Companion version yet.`;
       return false;
     },
@@ -247,6 +441,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       }
       composer.destroy();
       spark?.destroy();
+      closeVisionSheet();
     },
   };
 }
