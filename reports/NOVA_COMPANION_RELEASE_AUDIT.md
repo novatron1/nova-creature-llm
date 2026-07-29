@@ -14,7 +14,9 @@ presented as measured.
 - `assets/nova_companion/companion-shell.css`
 - `tests/test_nova_companion_source.py`
 - `tests/test_nova_companion_evaluation_only.py`
+- `src/nova_evaluation_policy.py`
 - `src/nova_answer_firewall.py`
+- `src/nova_gateway/adapters.py`
 - `src/nova_gateway/http.py`
 - `src/nova_gateway/providers.py`
 - `src/nova_gateway/core.py`
@@ -46,8 +48,15 @@ The acceptance runner:
 - sends exactly 25 Nova-native, evaluation-only turns;
 - validates `evaluation_only` as a top-level Boolean and carries it through
   the provider-neutral request into Nova's existing cognitive path;
+- restricts evaluation mode to trusted local Nova-native requests, forces
+  `local_only`, and rejects any routed provider that is not both local and
+  free before generation or streaming begins;
+- strips Nova-reserved evaluation metadata from both OpenAI Chat Completions
+  and Responses adapters so external clients cannot suppress accounting;
 - uses one generated client identity, one stable conversation ID, and one
   stable session ID;
+- carries only the most recent eight user/assistant messages in process memory
+  so follow-up, interruption, and reconnect checks are contextual;
 - covers greeting, affection, day check-in, follow-up, correction,
   relationship support, memory recall, current-fact honesty, uncertainty,
   interruption, and reconnect;
@@ -59,16 +68,29 @@ The acceptance runner:
 - forces evaluation requests to be non-retained: no conversation-summary or
   session-log write, no world-model event/checkpoint, no Dream Lab simulation,
   no continuity record, and no cost/request ledger entry;
+- blocks training, explicit memory mutation, tools, filesystem/application
+  mutation, and dangerous commands before the provider or Classic mutation
+  branches can run;
 - hashes `conversation_training_data.jsonl` before and after and fails the gate
   if the hash changes.
 
-Deterministic runner result: **PASS — 20 tests**.
+Deterministic runner result: **PASS — 21 tests**.
 
 Evaluation-only propagation and non-retention result:
-**PASS — 10 tests**. The tests exercise the native HTTP adapter, provider
-context, gateway core, and existing `/api/chat` brain route; invalid
-non-Boolean values are rejected, nested metadata cannot forge the flag, normal
-turns still retain state, and training data remains unchanged.
+**PASS — 23 tests**. The tests exercise both OpenAI adapters, the native HTTP
+adapter, provider context, gateway core, and existing `/api/chat` brain route.
+Invalid non-Boolean values and remote evaluation clients are rejected; nested
+metadata cannot forge the flag; remote/free and local/paid providers are not
+called; normal paid requests remain accounted; mutation commands do not invoke
+memory, training, tool, or permission actions; normal turns still retain
+state; and training data remains unchanged.
+
+Legacy turn-state concurrency uses one explicit re-entrant lock around the
+complete Classic/gateway turn. This serializes simultaneous model turns and
+may add queue latency under concurrent load, but prevents evaluation state
+from being observed by or restored over an ordinary turn. The lock is a
+bounded compatibility measure until all five legacy `_LAST_*` fields move to
+session-scoped state.
 
 Live 25-turn result: **PENDING**. The controller must run:
 
@@ -117,9 +139,15 @@ Automated source contracts cover:
 Task 11 automated results:
 
 - Companion source/loader/PWA/acceptance-runner pytest matrix:
-  **PASS — 56 passed**
-- Broader affected Python regression matrix:
-  **PASS — 136 passed**
+  **PASS — 70 passed**
+- Gateway core/adapter/firewall regression matrix:
+  **PASS — 64 passed**
+- Gateway HTTP/security/portability/foundation regression matrix:
+  **PASS — 46 passed**
+- Full enhanced-server regression matrix:
+  **PASS — 354 passed**
+- Final evaluation/training/gateway/server-summary recheck:
+  **PASS — 23 passed, 331 deselected**
 - Complete Companion JavaScript matrix: **PASS — 111 passed, 0 failed**
 
 Keyboard focus order, focus restoration, and screen-reader behavior on the
@@ -176,8 +204,11 @@ Task 12 must repeat the one-flag rollback proof before any default change.
   the operating system's native microphone permission response.
 - Live model latency and answer quality depend on the selected local provider
   and must be measured on the running system.
-- Task 11 does not change Nova cognition, model weights, adapters, checkpoints,
-  identity, memory, tools, or API behavior.
+- Serializing legacy `_LAST_*` state protects correctness but reduces parallel
+  turn throughput until those fields become session-local.
+- Task 11 does not change Nova cognition, model weights, trained adapters,
+  checkpoints, identity, memory contents, tools, or existing response
+  contracts. It tightens only the reserved evaluation-control boundary.
 
 ## Default readiness
 

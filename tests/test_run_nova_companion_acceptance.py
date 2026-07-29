@@ -149,6 +149,56 @@ def test_acceptance_runner_checks_required_routes_and_all_required_scenarios(tmp
     assert report["summary"]["endpoint_checks_passed"] == 5
 
 
+def test_acceptance_runner_sends_bounded_ephemeral_history_without_reporting_content(tmp_path):
+    runner = _load_runner()
+    output = tmp_path / "acceptance.json"
+    transport = _RecordingTransport(runner.TransportResponse)
+
+    runner.run_acceptance(
+        base_url="http://nova.test",
+        output_path=output,
+        transport=transport,
+        training_data_path=tmp_path / "missing-training-data.jsonl",
+    )
+
+    bodies = [
+        call["json_body"]
+        for call in transport.calls
+        if call["method"] == "POST"
+    ]
+    assert bodies[0].get("conversation_history") in (None, [])
+    assert bodies[1]["conversation_history"] == [
+        {"role": "user", "content": runner.ACCEPTANCE_CASES[0].prompt},
+        {"role": "assistant", "content": "Focused evaluation response 1."},
+    ]
+    assert len(bodies[5]["conversation_history"]) == 8
+    assert bodies[5]["conversation_history"][0] == {
+        "role": "user",
+        "content": runner.ACCEPTANCE_CASES[1].prompt,
+    }
+    reconnect_index = next(
+        index
+        for index, case in enumerate(runner.ACCEPTANCE_CASES)
+        if case.case_id == "reconnect_01"
+    )
+    assert len(bodies[reconnect_index]["conversation_history"]) == 8
+    assert bodies[reconnect_index]["conversation_history"][-2:] == [
+        {
+            "role": "user",
+            "content": runner.ACCEPTANCE_CASES[reconnect_index - 1].prompt,
+        },
+        {
+            "role": "assistant",
+            "content": f"Focused evaluation response {reconnect_index}.",
+        },
+    ]
+
+    serialized = output.read_text(encoding="utf-8")
+    assert "conversation_history" not in serialized
+    assert "Focused evaluation response" not in serialized
+    assert all(case.prompt not in serialized for case in runner.ACCEPTANCE_CASES)
+
+
 def test_acceptance_runner_fails_generic_recovery_and_training_mutation_without_leaking_content(tmp_path):
     runner = _load_runner()
     training = tmp_path / "conversation_training_data.jsonl"

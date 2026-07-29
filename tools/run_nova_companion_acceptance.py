@@ -340,6 +340,10 @@ def run_acceptance(
         )
 
     case_results = []
+    # This transcript exists only in process memory. It gives follow-up and
+    # reconnect checks the same bounded context as a real client without
+    # writing prompts or responses to the machine-readable report.
+    conversation_history: list[dict[str, str]] = []
     for index, case in enumerate(ACCEPTANCE_CASES, start=1):
         response = _safe_request(
             active_transport,
@@ -355,6 +359,10 @@ def run_acceptance(
                 "stream": False,
                 "privacy_mode": "local_only",
                 "evaluation_only": True,
+                "conversation_history": [
+                    dict(message)
+                    for message in conversation_history[-8:]
+                ],
                 "conversation_summary_write_allowed": False,
                 "metadata": {
                     "acceptance_evaluation_only": True,
@@ -366,6 +374,13 @@ def run_acceptance(
             timeout_seconds=180,
         )
         case_results.append(_case_result(case, response))
+        conversation_history.append({"role": "user", "content": case.prompt})
+        response_content = _response_content(response.body)
+        if response_content:
+            conversation_history.append(
+                {"role": "assistant", "content": response_content}
+            )
+        conversation_history = conversation_history[-8:]
 
     after_hash = _file_hash(training_path)
     passed = sum(1 for item in case_results if item["passed"])
