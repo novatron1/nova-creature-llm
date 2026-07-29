@@ -45,6 +45,21 @@ export function resolveVisionFocusRestoreTarget(invoker, fallback) {
   return null;
 }
 
+export async function loadSparkServerState(api) {
+  const [statusResult, capabilitiesResult, toolsResult] = await Promise.allSettled([
+    api.getStatus(),
+    api.getJson("/nova/v1/capabilities"),
+    api.getJson("/nova/v1/tools"),
+  ]);
+  const freshStatus = statusResult.status === "fulfilled" ? statusResult.value : {};
+  const capabilities = capabilitiesResult.status === "fulfilled" ? capabilitiesResult.value : {};
+  const toolData = toolsResult.status === "fulfilled" && Array.isArray(toolsResult.value?.data)
+    ? toolsResult.value.data
+    : [];
+  const items = new Map(toolData.map((item) => [String(item?.id || item?.name || ""), item]));
+  return { capabilities, items, companion: freshStatus?.companion || {} };
+}
+
 function appendCompletionDetails(message, answerStatus, permissions) {
   if (!message) return;
   const document = message.ownerDocument;
@@ -437,18 +452,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
   });
   spark = createSparkController({
     document,
-    loadServerState: async () => {
-      const [capabilitiesResult, toolsResult] = await Promise.allSettled([
-        api.getJson("/nova/v1/capabilities"),
-        api.getJson("/nova/v1/tools"),
-      ]);
-      const capabilities = capabilitiesResult.status === "fulfilled" ? capabilitiesResult.value : {};
-      const toolData = toolsResult.status === "fulfilled" && Array.isArray(toolsResult.value?.data)
-        ? toolsResult.value.data
-        : [];
-      const items = new Map(toolData.map((item) => [String(item?.id || item?.name || ""), item]));
-      return { capabilities, items, companion: status?.companion || {} };
-    },
+    loadServerState: () => loadSparkServerState(api),
     onCompanionAction: async (action) => {
       if (action.id === "vision") {
         const invoker = document.activeElement;

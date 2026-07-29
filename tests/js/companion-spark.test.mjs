@@ -7,6 +7,7 @@ import {
   resolveCapabilityAvailability,
   resolveSparkActions,
 } from "../../assets/nova_companion/companion-spark.js";
+import { loadSparkServerState } from "../../assets/nova_companion/companion-app.js";
 
 function deferred() {
   let resolve;
@@ -80,7 +81,15 @@ function createSparkDom() {
 }
 
 function buttonsIn(host) {
-  return host.querySelectorAll("button");
+  const buttons = [];
+  const visit = (node) => {
+    for (const child of node.children) {
+      if (child.tagName === "button") buttons.push(child);
+      visit(child);
+    }
+  };
+  visit(host);
+  return buttons;
 }
 
 test("the model cannot add an unregistered Spark action", () => {
@@ -140,6 +149,25 @@ test("an unavailable local vision service keeps See disabled with its honest rea
 
   assert.equal(resolved.available, false);
   assert.equal(resolved.reason, "The local vision service is offline.");
+});
+
+test("an exact public vision.observe record overrides the local vision projection", () => {
+  const vision = COMPANION_CAPABILITIES.find((item) => item.id === "vision");
+  const resolved = resolveCapabilityAvailability(vision, {
+    capabilities: { vision: { image_input: { available: false } } },
+    companion: { vision_service: { available: true, endpoint: "/api/vision" } },
+    items: new Map([[
+      "vision.observe",
+      {
+        name: "vision.observe",
+        availability_status: "disabled",
+        reason: "The public vision tool is disabled for this device.",
+      },
+    ]]),
+  });
+
+  assert.equal(resolved.available, false);
+  assert.equal(resolved.reason, "The public vision tool is disabled for this device.");
 });
 
 test("an unknown tool name cannot enable fixed See without the local service projection", () => {
@@ -244,6 +272,51 @@ test("a late first open cannot overwrite focus from a newer Spark open", async (
 
   assert.equal(dom.document.activeElement, focusFromB);
   assert.equal(controller.isOpen, true);
+});
+
+test("separate Spark opens replace an available vision status with a fresh unavailable status", async () => {
+  const dom = createSparkDom();
+  const statusResponses = [
+    { companion: { vision_service: { available: true, endpoint: "/api/vision" } } },
+    {
+      companion: {
+        vision_service: {
+          available: false,
+          reason: "Vision authorization changed after the server restarted.",
+        },
+      },
+    },
+  ];
+  let statusLoads = 0;
+  const api = {
+    async getStatus() {
+      statusLoads += 1;
+      return statusResponses.shift();
+    },
+    async getJson(path) {
+      if (path === "/nova/v1/tools") return { data: [] };
+      return { vision: { image_input: { available: false } } };
+    },
+  };
+  const { createSparkController } = await import("../../assets/nova_companion/companion-spark.js");
+  const controller = createSparkController({
+    ...dom,
+    loadServerState: () => loadSparkServerState(api),
+  });
+
+  await controller.open();
+  const firstSee = buttonsIn(dom.host).find((item) => item.dataset.sparkAction === "vision");
+  assert.equal(firstSee.disabled, false);
+
+  controller.close();
+  await controller.open();
+  const secondSee = buttonsIn(dom.host).find((item) => item.dataset.sparkAction === "vision");
+  assert.equal(secondSee.disabled, true);
+  assert.equal(
+    secondSee.children[1].children[1].textContent,
+    "Vision authorization changed after the server restarted.",
+  );
+  assert.equal(statusLoads, 2);
 });
 
 test("dismissing the Spark discovery hint restores focus to a current sheet control", async () => {

@@ -220,15 +220,53 @@ MEMORY_FILE = os.path.join(ROOT, "data", "nova_memory.json")
 PERMISSIONS = {"mic": False, "camera": False, "speaker": False}
 
 
-def _companion_vision_service_status():
-    """Describe the local upload route without claiming model image capability."""
-    available = callable(globals().get("_vision_response_from_upload"))
+def _companion_vision_route_readiness(handler=None):
+    """Report whether this request can dispatch the authenticated vision route."""
+    if handler is None:
+        return {
+            "available": False,
+            "health": "unknown",
+            "reason": "Vision route readiness requires a current authorized request.",
+        }
+    dispatch_ready = (
+        callable(globals().get("_vision_response_from_upload"))
+        and callable(getattr(handler, "_handle_companion_vision_post", None))
+        and callable(getattr(handler, "_read_json_body", None))
+        and callable(getattr(handler, "_send_json", None))
+    )
+    if not dispatch_ready:
+        return {
+            "available": False,
+            "health": "unavailable",
+            "reason": "The local /api/vision service is unavailable.",
+        }
+    pairing_required = getattr(handler, "_pairing_required_for_client", None)
+    if not callable(pairing_required):
+        return {
+            "available": False,
+            "health": "unknown",
+            "reason": "Vision authorization readiness is unknown.",
+        }
+    if pairing_required():
+        return {
+            "available": False,
+            "health": "unavailable",
+            "reason": "Pair this device before using the local vision service.",
+        }
+    return {"available": True, "health": "ready", "reason": ""}
+
+
+def _companion_vision_service_status(handler=None):
+    """Describe current local upload-route readiness without claiming model input."""
+    readiness = _companion_vision_route_readiness(handler)
+    available = readiness["available"]
     return {
         "available": available,
+        "health": readiness["health"],
         "tool_name": "vision.observe",
         "endpoint": "/api/vision",
         "availability_status": "requires_live_input" if available else "disabled",
-        "reason": "" if available else "The local /api/vision service is unavailable.",
+        "reason": readiness["reason"],
         "image_input": False,
         "image_persisted": False,
     }
@@ -1304,6 +1342,32 @@ addMsg('nova','Hello! I am **Nova Creature** - a multi-brain AI.\\n\\nType anyth
 </script></body></html>"""
 
 class NovaHandler(BaseHTTPRequestHandler):
+    def _handle_companion_vision_post(self, parsed_path):
+        if parsed_path != "/api/vision":
+            return False
+        readiness = _companion_vision_route_readiness(self)
+        if not readiness["available"]:
+            response = {
+                "ok": False,
+                "error": readiness["reason"],
+                "code": "vision_unavailable",
+            }
+            send_json = getattr(self, "_send_json", None)
+            if callable(send_json):
+                send_json(response, status=503)
+            else:
+                encoded = json.dumps(response).encode("utf-8")
+                self.send_response(503)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(encoded)))
+                self.end_headers()
+                self.wfile.write(encoded)
+            return True
+        body = self._read_json_body()
+        payload, status = _vision_response_from_upload(body)
+        self._send_json(payload, status=status)
+        return True
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path in ('/', '/index.html'):
@@ -1330,7 +1394,7 @@ class NovaHandler(BaseHTTPRequestHandler):
                 "session": SESSION_ID,
                 "permissions": PERMISSIONS,
                 "private_mode": PRIVATE_MODE,
-                "companion": {"vision_service": _companion_vision_service_status()},
+                "companion": {"vision_service": _companion_vision_service_status(self)},
                 "people_count": len(MEMORY["people"]),
                 "lessons_count": len(MEMORY["lessons"])
             }).encode())
@@ -1357,6 +1421,8 @@ class NovaHandler(BaseHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps(data).encode())
+            elif self._handle_companion_vision_post(parsed.path):
+                pass
             else:
                 self.send_response(404)
                 self.end_headers()
