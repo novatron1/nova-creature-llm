@@ -9,6 +9,7 @@ const {
   createTrustController,
   projectTrustState,
   redactTrustValue,
+  trustConnectionLabel,
 } = trustModule;
 
 function loadFoundationHelpers() {
@@ -107,6 +108,23 @@ test("trust projection copies only safe recent action metadata", () => {
   assert.equal(serialized.includes("Bearer private"), false);
 });
 
+test("unknown or missing action states never become completed", () => {
+  const projected = projectTrustState({
+    trace: {
+      recent_actions: [
+        { name: "missing.state" },
+        { name: "future.state", state: "teleported" },
+        { name: "observed.state", state: "attempted" },
+      ],
+    },
+  });
+  assert.deepEqual(projected.recentActions, [{
+    name: "observed.state",
+    state: "attempted",
+    timestamp: "",
+  }]);
+});
+
 test("trust projection uses the public regular-chat route for current provider and model", () => {
   const projected = projectTrustState({
     status: {
@@ -120,6 +138,139 @@ test("trust projection uses the public regular-chat route for current provider a
   assert.equal(projected.provider, "ollama");
   assert.equal(projected.model, "nova-qwen3-14b-8k");
   assert.equal(JSON.stringify(projected).includes("must-not-be-copied"), false);
+});
+
+test("unrelated updates and refreshes preserve cost and recent action evidence until explicitly replaced", async () => {
+  const api = {
+    async getJson(path) {
+      if (path === "/api/pairing/status") {
+        return { enabled: true, local_client: true, pairing_required: false };
+      }
+      return { ok: true };
+    },
+    async postJson() { return {}; },
+  };
+  const controller = createTrustController({ api, rememberPairedDeviceToken() {} });
+  controller.update({
+    trace: {
+      estimated_cost: 0.25,
+      recent_actions: [{
+        name: "memory.search",
+        state: "completed",
+        timestamp: "2026-07-29T12:00:00Z",
+      }],
+    },
+  });
+  controller.update({ camera: { active: true, persisted: false } });
+  await controller.refresh();
+  assert.equal(controller.getState().estimatedCost, 0.25);
+  assert.deepEqual(controller.getState().recentActions, [{
+    name: "memory.search",
+    state: "completed",
+    timestamp: "2026-07-29T12:00:00Z",
+  }]);
+
+  controller.update({ trace: { estimated_cost: null, recent_actions: [] } });
+  assert.equal(controller.getState().estimatedCost, null);
+  assert.deepEqual(controller.getState().recentActions, []);
+});
+
+function deferred() {
+  let resolve;
+  const promise = new Promise((done) => { resolve = done; });
+  return { promise, resolve };
+}
+
+function refreshBatchApi() {
+  const batches = [];
+  let calls = 0;
+  return {
+    batches,
+    async postJson() { return {}; },
+    getJson() {
+      const batchIndex = Math.floor(calls / 4);
+      const itemIndex = calls % 4;
+      calls += 1;
+      if (!batches[batchIndex]) {
+        batches[batchIndex] = Array.from({ length: 4 }, () => deferred());
+      }
+      return batches[batchIndex][itemIndex].promise;
+    },
+  };
+}
+
+function resolveRefreshBatch(batch, { pairing, status, healthz = { ok: true }, novaHealth = { ok: true } }) {
+  batch[0].resolve(pairing);
+  batch[1].resolve(status);
+  batch[2].resolve(healthz);
+  batch[3].resolve(novaHealth);
+}
+
+test("an older refresh cannot overwrite a newer Trust projection", async () => {
+  const api = refreshBatchApi();
+  const controller = createTrustController({ api, rememberPairedDeviceToken() {} });
+  const older = controller.refresh();
+  const newer = controller.refresh();
+  resolveRefreshBatch(api.batches[1], {
+    pairing: { enabled: true, local_client: false, pairing_required: false },
+    status: { ok: true, provider: "new-provider", model: "new-model" },
+  });
+  await newer;
+  resolveRefreshBatch(api.batches[0], {
+    pairing: { enabled: true, local_client: false, pairing_required: true },
+    status: { ok: true, provider: "stale-provider", model: "stale-model" },
+  });
+  await older;
+  assert.equal(controller.getState().provider, "new-provider");
+  assert.equal(controller.getState().model, "new-model");
+  assert.equal(controller.pairingRequired, false);
+});
+
+test("post-pair refresh wins over an older pre-pair refresh", async () => {
+  const api = refreshBatchApi();
+  api.postJson = async () => ({ token: "nova_valid_test_value" });
+  const controller = createTrustController({
+    api,
+    rememberPairedDeviceToken() {},
+  });
+  const prePair = controller.refresh();
+  const exchange = controller.exchangePairing({ deviceName: "Test phone", code: "123456" });
+  await Promise.resolve();
+  resolveRefreshBatch(api.batches[1], {
+    pairing: { enabled: true, local_client: false, pairing_required: false },
+    status: { ok: true, provider: "paired-provider", model: "paired-model" },
+  });
+  await exchange;
+  resolveRefreshBatch(api.batches[0], {
+    pairing: { enabled: true, local_client: false, pairing_required: true },
+    status: { ok: true, provider: "pre-pair-provider", model: "pre-pair-model" },
+  });
+  await prePair;
+  assert.equal(controller.getState().provider, "paired-provider");
+  assert.equal(controller.pairingRequired, false);
+});
+
+test("pairing-disabled remote access is labeled plain Remote everywhere", async () => {
+  assert.equal(typeof trustConnectionLabel, "function");
+  const snapshots = [];
+  const controller = createTrustController({
+    api: {
+      async getJson(path) {
+        if (path === "/api/pairing/status") {
+          return { enabled: false, local_client: false, pairing_required: false };
+        }
+        return { ok: true };
+      },
+      async postJson() { return {}; },
+    },
+    rememberPairedDeviceToken() {},
+    onStateChange(state, access) { snapshots.push({ state, access }); },
+  });
+  const state = await controller.refresh();
+  const access = snapshots.at(-1).access;
+  assert.equal(access.pairingEnabled, false);
+  assert.equal(access.paired, false);
+  assert.equal(trustConnectionLabel(state, access), "Remote");
 });
 
 test("validated Foundation token helpers authorize later requests and reject invalid text", async () => {
@@ -223,4 +374,156 @@ test("pairing-required API failures open pairing and remain rejected for explici
   await assert.rejects(wrapped.streamChat({ text: "Do not replay me" }), /Pairing required/);
   await assert.rejects(wrapped.streamChat({ text: "Do not replace the open sheet" }), /Pairing required/);
   assert.equal(opened, 1);
+});
+
+class FakeElement {
+  constructor(document, tagName) {
+    this.ownerDocument = document;
+    this.tagName = tagName;
+    this.children = [];
+    this.parent = null;
+    this.hidden = false;
+    this.disabled = false;
+    this.isConnected = true;
+    this.listeners = new Map();
+    this.attributes = new Map();
+    this.classList = {
+      values: new Set(),
+      add: (...values) => values.forEach((value) => this.classList.values.add(value)),
+      remove: (...values) => values.forEach((value) => this.classList.values.delete(value)),
+    };
+    this.textContent = "";
+    this.value = "";
+  }
+
+  append(...nodes) {
+    for (const node of nodes.filter((item) => item?.tagName)) {
+      node.parent = this;
+      this.children.push(node);
+    }
+  }
+  appendChild(node) { this.append(node); return node; }
+  replaceChildren(...nodes) {
+    for (const child of this.children) child.parent = null;
+    this.children = [];
+    this.append(...nodes);
+  }
+  remove() {
+    if (!this.parent) return;
+    this.parent.children = this.parent.children.filter((child) => child !== this);
+    this.parent = null;
+    if (this.ownerDocument.activeElement === this) this.ownerDocument.activeElement = this.ownerDocument.body;
+  }
+  setAttribute(name, value) { this.attributes.set(name, String(value)); }
+  getAttribute(name) { return this.attributes.get(name); }
+  addEventListener(type, listener) {
+    if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+    this.listeners.get(type).add(listener);
+  }
+  removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); }
+  async dispatch(type, event = {}) {
+    for (const listener of this.listeners.get(type) || []) {
+      await listener({ preventDefault() {}, key: "", shiftKey: false, ...event });
+    }
+  }
+  focus() { this.ownerDocument.activeElement = this; }
+  querySelectorAll() {
+    const descendants = [];
+    const visit = (node) => {
+      for (const child of node.children) {
+        if ((child.tagName === "button" || child.tagName === "input") && !child.disabled) descendants.push(child);
+        visit(child);
+      }
+    };
+    visit(this);
+    return descendants;
+  }
+}
+
+function createTrustDom() {
+  const document = {
+    activeElement: null,
+    listeners: new Map(),
+    elements: new Map(),
+    createElement(tagName) { return new FakeElement(this, tagName); },
+    getElementById(id) { return this.elements.get(id); },
+    addEventListener(type, listener) {
+      if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+      this.listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); },
+    async dispatch(type, event = {}) {
+      for (const listener of this.listeners.get(type) || []) {
+        await listener({ preventDefault() {}, key: "", shiftKey: false, ...event });
+      }
+    },
+  };
+  document.body = new FakeElement(document, "body");
+  document.activeElement = document.body;
+  const button = new FakeElement(document, "button");
+  const host = new FakeElement(document, "section");
+  const backdrop = new FakeElement(document, "div");
+  document.elements.set("companionTrustButton", button);
+  document.elements.set("companionSheetHost", host);
+  document.elements.set("companionSheetBackdrop", backdrop);
+  return { document, button, host, backdrop };
+}
+
+function descendants(root, tagName) {
+  const found = [];
+  const visit = (node) => {
+    for (const child of node.children) {
+      if (child.tagName === tagName) found.push(child);
+      visit(child);
+    }
+  };
+  visit(root);
+  return found;
+}
+
+test("pairing dialog owns focus through success, Escape, backdrop close, and trigger restoration", async () => {
+  const dom = createTrustDom();
+  const controller = createTrustController({
+    document: dom.document,
+    api: {
+      async postJson() { return { token: "nova_valid_test_value" }; },
+      async getJson(path) {
+        if (path === "/api/pairing/status") {
+          return { enabled: true, local_client: false, pairing_required: false };
+        }
+        return { ok: true };
+      },
+    },
+    rememberPairedDeviceToken() {},
+  });
+
+  controller.openPairing(dom.button);
+  assert.equal(dom.button.getAttribute("aria-expanded"), "true");
+  const inputs = descendants(dom.host, "input");
+  const form = descendants(dom.host, "form")[0];
+  const buttons = descendants(dom.host, "button");
+  assert.equal(dom.document.activeElement, inputs[0]);
+
+  dom.document.activeElement = dom.document.body;
+  await dom.document.dispatch("keydown", { key: "Tab" });
+  assert.equal(dom.document.activeElement, inputs[0]);
+
+  inputs[0].value = "Test phone";
+  inputs[1].value = "123456";
+  dom.document.activeElement = buttons[0];
+  await form.dispatch("submit");
+  assert.equal(buttons[1].textContent, "Close and Retry");
+  assert.equal(dom.document.activeElement, buttons[1]);
+
+  await dom.document.dispatch("keydown", { key: "Escape" });
+  assert.equal(dom.host.hidden, true);
+  assert.equal(dom.button.getAttribute("aria-expanded"), "false");
+  assert.equal(dom.document.activeElement, dom.button);
+
+  controller.open(dom.button);
+  assert.equal(dom.button.getAttribute("aria-expanded"), "true");
+  await dom.backdrop.dispatch("click");
+  assert.equal(dom.host.hidden, true);
+  assert.equal(dom.button.getAttribute("aria-expanded"), "false");
+  assert.equal(dom.document.activeElement, dom.button);
 });

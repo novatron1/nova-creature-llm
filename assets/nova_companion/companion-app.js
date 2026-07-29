@@ -5,7 +5,7 @@ import { appendMessage, beginStreamingMessage, appendStreamingDelta } from "./co
 import { createComposerController } from "./companion-composer.js";
 import { createSparkController } from "./companion-spark.js";
 import { buildVisionPayload, createVisionController, createVoiceController, prepareVisionCanvas, voiceAvailability } from "./companion-senses.js";
-import { createTrustController } from "./companion-trust.js";
+import { createTrustController, trustConnectionLabel } from "./companion-trust.js";
 
 const CLIENT_ID_KEY = "nova_companion_client_id_v1";
 const CONVERSATION_ID_KEY = "nova_companion_conversation_id_v1";
@@ -261,12 +261,7 @@ export async function bootstrapCompanion(document = globalThis.document) {
       elements.liveStatus.textContent = "Paired securely. Choose Retry to send your message.";
     },
     onStateChange: (projected, pairing) => {
-      const label = projected.connection === "offline"
-        ? "Offline"
-        : projected.connection === "local"
-          ? (projected.privateMode ? "Local · Private" : "Local")
-          : (pairing.pairingRequired ? "Remote · Pairing required" : "Remote · Paired");
-      setConnectionLabel(label);
+      setConnectionLabel(trustConnectionLabel(projected, pairing));
       dispatch({
         type: "TRUST_CHANGED",
         local: projected.connection === "local",

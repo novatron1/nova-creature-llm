@@ -8,6 +8,7 @@ function safeText(value, maximum = 160) {
 }
 
 function safeCost(value) {
+  if (value === null || value === undefined || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
@@ -33,12 +34,30 @@ function recentActionsFor(inputs) {
       : (Array.isArray(inputs?.recentActions) ? inputs.recentActions : []));
   return source.slice(-12).map((item) => {
     const state = safeText(item?.state || item?.status, 32).toLowerCase();
+    if (!ACTION_STATES.has(state)) return null;
     return {
       name: safeText(item?.name || item?.action || item?.tool?.name, 96),
-      state: ACTION_STATES.has(state) ? state : "completed",
+      state,
       timestamp: safeText(item?.timestamp || item?.created_at || item?.updated_at, 64),
     };
-  }).filter((item) => item.name);
+  }).filter((item) => item?.name);
+}
+
+function hasOwn(object, key) {
+  return Boolean(object && Object.prototype.hasOwnProperty.call(object, key));
+}
+
+function hasAuthoritativeCost(inputs) {
+  return hasOwn(inputs, "estimatedCost")
+    || hasOwn(inputs?.trace, "estimated_cost")
+    || hasOwn(inputs?.status, "estimated_cost")
+    || hasOwn(inputs?.health, "estimated_cost");
+}
+
+function hasAuthoritativeActions(inputs) {
+  return hasOwn(inputs, "recentActions")
+    || hasOwn(inputs?.trace, "recent_actions")
+    || hasOwn(inputs?.status, "recent_actions");
 }
 
 /**
@@ -106,6 +125,17 @@ export function projectTrustState(inputs = {}) {
   };
 }
 
+/** Return one truthful connection label from the fixed Trust state. */
+export function trustConnectionLabel(state, access = {}) {
+  if (state?.connection === "offline") return "Offline";
+  if (state?.connection === "local") return state?.privateMode ? "Local · Private" : "Local";
+  if (state?.connection !== "remote") return "Offline";
+  if (access.pairingEnabled === false) return "Remote";
+  if (access.pairingRequired === true) return "Remote · Pairing required";
+  if (access.paired === true) return "Remote · Paired";
+  return "Remote";
+}
+
 function isPairingRequired(error) {
   return Number(error?.status) === 401 && String(error?.code || "") === "pairing_required";
 }
@@ -142,50 +172,63 @@ export function createTrustController({
 
   let state = projectTrustState();
   let pairingRequired = false;
+  let pairingEnabled = true;
   let paired = Boolean(typeof pairedDeviceToken === "function" && pairedDeviceToken());
   let openMode = "";
   let restoreFocus = null;
   let destroyed = false;
+  let refreshGeneration = 0;
   const host = document?.getElementById?.("companionSheetHost") || null;
   const backdrop = document?.getElementById?.("companionSheetBackdrop") || null;
   const trustButton = document?.getElementById?.("companionTrustButton") || null;
 
   const publish = (next) => {
     state = projectTrustState(next);
-    onStateChange(state, { pairingRequired, paired });
+    onStateChange(state, { pairingEnabled, pairingRequired, paired });
     return state;
   };
 
-  const update = (inputs = {}) => publish({
-    connection: inputs.connection || state.connection,
-    status: {
-      local: state.connection === "local",
-      private_mode: inputs.status?.private_mode ?? state.privateMode,
-      provider: inputs.status?.provider || state.provider,
-      model: inputs.status?.model || state.model,
-      ...inputs.status,
-    },
-    health: inputs.health,
-    trace: inputs.trace,
-    camera: inputs.camera || state.camera,
-    microphone: inputs.microphone || state.microphone,
-    memoryUsed: inputs.memoryUsed ?? state.memoryUsed,
-    pendingConfirmation: inputs.pendingConfirmation ?? state.pendingConfirmation,
-  });
+  const update = (inputs = {}) => {
+    const next = {
+      connection: inputs.connection || state.connection,
+      status: {
+        local: state.connection === "local",
+        private_mode: inputs.status?.private_mode ?? state.privateMode,
+        provider: inputs.status?.provider || state.provider,
+        model: inputs.status?.model || state.model,
+        ...inputs.status,
+      },
+      health: inputs.health,
+      trace: inputs.trace,
+      camera: inputs.camera || state.camera,
+      microphone: inputs.microphone || state.microphone,
+      memoryUsed: inputs.memoryUsed ?? state.memoryUsed,
+      pendingConfirmation: inputs.pendingConfirmation ?? state.pendingConfirmation,
+    };
+    if (!hasAuthoritativeCost(inputs)) next.estimatedCost = state.estimatedCost;
+    if (!hasAuthoritativeActions(inputs)) next.recentActions = state.recentActions;
+    return publish(next);
+  };
 
   const refresh = async () => {
+    const generation = ++refreshGeneration;
     const paths = ["/api/pairing/status", "/status", "/healthz", "/nova/v1/health"];
     const results = await Promise.allSettled(paths.map((path) => api.getJson(path)));
+    if (destroyed || generation !== refreshGeneration) return state;
     const value = (index) => results[index].status === "fulfilled" ? results[index].value : {};
     const pairing = value(0);
     const status = value(1);
     const healthz = value(2);
     const novaHealth = value(3);
-    pairingRequired = pairing?.pairing_required === true;
+    pairingEnabled = pairing?.enabled !== false;
+    pairingRequired = pairingEnabled && pairing?.pairing_required === true;
     paired = pairing?.local_client === true
-      || (!pairingRequired && (paired || Boolean(typeof pairedDeviceToken === "function" && pairedDeviceToken())));
+      || (pairingEnabled
+        && !pairingRequired
+        && (paired || Boolean(typeof pairedDeviceToken === "function" && pairedDeviceToken())));
+    if (!pairingEnabled && pairing?.local_client === false) paired = false;
     const reachable = results.some((result) => result.status === "fulfilled");
-    const next = projectTrustState({
+    const inputs = {
       connection: !reachable
         ? "offline"
         : (pairing?.local_client === true ? "local" : (pairing?.local_client === false ? "remote" : undefined)),
@@ -199,7 +242,10 @@ export function createTrustController({
       microphone: state.microphone,
       memoryUsed: state.memoryUsed,
       pendingConfirmation: state.pendingConfirmation,
-    });
+    };
+    if (!hasAuthoritativeCost({ status, health: inputs.health })) inputs.estimatedCost = state.estimatedCost;
+    if (!hasAuthoritativeActions({ status })) inputs.recentActions = state.recentActions;
+    const next = projectTrustState(inputs);
     publish(next);
     return state;
   };
@@ -222,7 +268,10 @@ export function createTrustController({
     if (!controls.length) return;
     const first = controls[0];
     const last = controls.at(-1);
-    if (event.shiftKey && document.activeElement === first) {
+    if (!controls.includes(document.activeElement)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus?.({ preventScroll: true });
+    } else if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus?.({ preventScroll: true });
     } else if (!event.shiftKey && document.activeElement === last) {
@@ -242,6 +291,7 @@ export function createTrustController({
     backdrop.hidden = false;
     host.classList.add("companion-trust");
     host.setAttribute("aria-label", label);
+    trustButton?.setAttribute("aria-expanded", "true");
     document.addEventListener?.("keydown", onKeydown);
     backdrop.addEventListener("click", close);
     return true;
@@ -259,6 +309,7 @@ export function createTrustController({
       backdrop.hidden = true;
       backdrop.removeEventListener("click", close);
     }
+    trustButton?.setAttribute("aria-expanded", "false");
     document?.removeEventListener?.("keydown", onKeydown);
     const target = restoreFocus;
     restoreFocus = null;
@@ -271,9 +322,10 @@ export function createTrustController({
     title.textContent = "Nova Trust";
     const pairingLine = document.createElement("p");
     pairingLine.className = "companion-trust__summary";
-    pairingLine.textContent = state.connection === "remote"
-      ? (paired && !pairingRequired ? "Remote · Paired" : "Remote · Pairing required")
-      : (state.connection === "local" ? "Local · This computer" : "Offline");
+    pairingLine.textContent = trustConnectionLabel(
+      state,
+      { pairingEnabled, pairingRequired, paired },
+    );
     const list = document.createElement("dl");
     list.className = "companion-trust__list";
     appendDefinition(document, list, "Provider", state.provider || "Not reported");
@@ -324,6 +376,7 @@ export function createTrustController({
       device_name: safeName,
     });
     rememberPairedDeviceToken(response?.token);
+    pairingEnabled = true;
     paired = true;
     pairingRequired = false;
     await refresh();
@@ -382,6 +435,7 @@ export function createTrustController({
         statusLine.textContent = "Paired securely. Close this sheet, then choose Retry on your message.";
         submit.remove();
         cancel.textContent = "Close and Retry";
+        cancel.focus?.({ preventScroll: true });
       } catch (error) {
         statusLine.textContent = error instanceof Error ? error.message : "Pairing failed.";
         submit.disabled = false;
@@ -424,6 +478,7 @@ export function createTrustController({
   const trustClick = () => {
     void refresh().finally(() => { renderTrustSheet(trustButton); });
   };
+  trustButton?.setAttribute("aria-expanded", "false");
   trustButton?.addEventListener("click", trustClick);
 
   return {
@@ -439,6 +494,7 @@ export function createTrustController({
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      refreshGeneration += 1;
       close(false);
       trustButton?.removeEventListener("click", trustClick);
     },
