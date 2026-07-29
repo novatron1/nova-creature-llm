@@ -1,9 +1,3 @@
-export const NOVA_COMPANION_DRAFT_KEY = "nova_companion_draft_v1";
-
-function defaultStorage() {
-  return globalThis.localStorage;
-}
-
 function setControlState(sendButton, active) {
   if (!sendButton) return;
   sendButton.type = active ? "button" : "submit";
@@ -16,8 +10,6 @@ export function createComposerController({
   form,
   input,
   sendButton,
-  storage = defaultStorage(),
-  draftKey = NOVA_COMPANION_DRAFT_KEY,
   maxHeight = 192,
   onSubmit = async () => {},
   onStop = async () => {},

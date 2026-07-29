@@ -5,6 +5,7 @@ import * as companionApp from "../../assets/nova_companion/companion-app.js";
 
 const {
   acquireBrowserStorage,
+  bootstrapCompanion,
   createCompanionIdentity,
   createSelectedPictureVisionSubmitter,
   resolveVisionFocusRestoreTarget,
@@ -142,6 +143,202 @@ test("bootstrap failure becomes visible and fail closed without exposing the raw
   assert.equal(input.disabled, true);
   assert.equal(send.disabled, true);
   assert.equal(spark.disabled, true);
+});
+
+test("synchronously thrown bootstrap failures use the same safe recovery presentation", async () => {
+  const root = {
+    attributes: new Map(),
+    classList: { add() {}, remove() {} },
+    dataset: {},
+    setAttribute(name, value) { this.attributes.set(name, String(value)); },
+  };
+  const trust = { textContent: "" };
+  const status = {
+    classList: { add() {}, remove() {} },
+    textContent: "",
+  };
+  const elements = new Map([
+    ["companionApp", root],
+    ["companionTrustLabel", trust],
+    ["companionLiveStatus", status],
+  ]);
+  const document = { getElementById(id) { return elements.get(id) || null; } };
+  const result = await startCompanion({
+    document,
+    boot() { throw new Error("synchronous private failure"); },
+  });
+  assert.equal(result, null);
+  assert.equal(root.attributes.get("aria-busy"), "false");
+  assert.equal(trust.textContent, "Setup unavailable");
+  assert.equal(status.textContent.includes("synchronous private failure"), false);
+});
+
+class BootstrapElement {
+  constructor(document, tagName, id = "") {
+    this.ownerDocument = document;
+    this.tagName = tagName;
+    this.id = id;
+    this.children = [];
+    this.parent = null;
+    this.attributes = new Map();
+    this.listeners = new Map();
+    this.dataset = {};
+    this.style = {};
+    this.classList = {
+      values: new Set(),
+      add: (...values) => values.forEach((value) => this.classList.values.add(value)),
+      remove: (...values) => values.forEach((value) => this.classList.values.delete(value)),
+      contains: (value) => this.classList.values.has(value),
+    };
+    this.hidden = false;
+    this.disabled = false;
+    this.isConnected = true;
+    this.scrollHeight = 44;
+    this.scrollTop = 0;
+    this.textContent = "";
+    this.value = "";
+  }
+
+  append(...nodes) {
+    for (const node of nodes.filter((item) => item?.tagName)) {
+      node.parent = this;
+      this.children.push(node);
+    }
+  }
+  appendChild(node) { this.append(node); return node; }
+  insertBefore(node, reference) {
+    node.parent = this;
+    const index = this.children.indexOf(reference);
+    if (index < 0) this.children.push(node);
+    else this.children.splice(index, 0, node);
+    return node;
+  }
+  replaceChildren(...nodes) {
+    this.children = [];
+    this.append(...nodes);
+  }
+  remove() {
+    if (!this.parent) return;
+    this.parent.children = this.parent.children.filter((child) => child !== this);
+    this.parent = null;
+  }
+  setAttribute(name, value) { this.attributes.set(name, String(value)); }
+  getAttribute(name) { return this.attributes.get(name); }
+  removeAttribute(name) { this.attributes.delete(name); }
+  addEventListener(type, listener) {
+    if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+    this.listeners.get(type).add(listener);
+  }
+  removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); }
+  focus() { this.ownerDocument.activeElement = this; }
+  querySelectorAll() {
+    const found = [];
+    const visit = (node) => {
+      for (const child of node.children) {
+        if (["button", "input", "textarea", "select", "a"].includes(child.tagName) && !child.disabled) {
+          found.push(child);
+        }
+        visit(child);
+      }
+    };
+    visit(this);
+    return found;
+  }
+}
+
+function createBootstrapDom() {
+  const document = {
+    activeElement: null,
+    elements: new Map(),
+    listeners: new Map(),
+    createElement(tagName) { return new BootstrapElement(this, tagName); },
+    createTextNode() { return { tagName: "#text" }; },
+    getElementById(id) { return this.elements.get(id) || null; },
+    addEventListener(type, listener) {
+      if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+      this.listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); },
+  };
+  document.body = new BootstrapElement(document, "body");
+  document.activeElement = document.body;
+  const add = (id, tagName) => {
+    const element = new BootstrapElement(document, tagName, id);
+    document.elements.set(id, element);
+    return element;
+  };
+  const root = add("companionApp", "main");
+  const timeline = add("conversationTimeline", "section");
+  const form = add("companionComposer", "form");
+  const input = add("companionInput", "textarea");
+  const send = add("companionSendButton", "button");
+  form.append(input, send);
+  add("novaPresence", "section");
+  add("novaFace", "div");
+  add("novaGreeting", "h1");
+  add("companionLiveStatus", "p");
+  add("companionTrustLabel", "span");
+  add("companionTrustButton", "button");
+  add("companionSheetHost", "section");
+  add("companionSheetBackdrop", "div");
+  add("novaSparkButton", "button");
+  root.append(timeline, form);
+  return { document, root, form, input, send };
+}
+
+test("real Companion bootstrap mounts securely when the global storage getter throws", async () => {
+  assert.equal(typeof bootstrapCompanion, "function");
+  const dom = createBootstrapDom();
+  const descriptors = new Map([
+    ["localStorage", Object.getOwnPropertyDescriptor(globalThis, "localStorage")],
+    ["fetch", Object.getOwnPropertyDescriptor(globalThis, "fetch")],
+    ["authHeaders", Object.getOwnPropertyDescriptor(globalThis, "authHeaders")],
+    ["pairedDeviceToken", Object.getOwnPropertyDescriptor(globalThis, "pairedDeviceToken")],
+    ["rememberPairedDeviceToken", Object.getOwnPropertyDescriptor(globalThis, "rememberPairedDeviceToken")],
+  ]);
+  const restore = () => {
+    for (const [name, descriptor] of descriptors) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else delete globalThis[name];
+    }
+  };
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    get() { throw new Error("storage getter blocked"); },
+  });
+  globalThis.authHeaders = (headers = {}) => ({ ...headers });
+  globalThis.pairedDeviceToken = () => "";
+  globalThis.rememberPairedDeviceToken = () => {};
+  globalThis.fetch = async (url) => {
+    const path = String(url);
+    let payload = { ok: true };
+    if (path.endsWith("/api/pairing/status")) {
+      payload = { ok: true, enabled: true, local_client: true, pairing_required: false };
+    } else if (path.endsWith("/status")) {
+      payload = {
+        ok: true,
+        private_mode: true,
+        regular_chat_routing: { primary_provider: "existing-nova", primary_model: "nova" },
+      };
+    }
+    return { ok: true, status: 200, async json() { return payload; } };
+  };
+
+  try {
+    const controller = await bootstrapCompanion(dom.document);
+    assert.ok(controller);
+    assert.equal(dom.root.dataset.companionReady, "true");
+    assert.equal(dom.root.getAttribute("aria-busy"), "false");
+    assert.equal(dom.document.getElementById("companionTrustLabel").textContent, "Local · Private");
+    assert.equal(dom.document.getElementById("companionTrustButton").getAttribute("aria-expanded"), "false");
+    assert.ok(dom.form.children.some((child) => child.id === "companionVoiceButton"));
+    assert.ok(dom.form.listeners.get("submit")?.size);
+    assert.equal(dom.input.disabled, false);
+    assert.equal(dom.send.type, "submit");
+    controller.destroy();
+  } finally {
+    restore();
+  }
 });
 
 test("selected pictures grant local vision permission before upload without starting browser camera", async () => {
