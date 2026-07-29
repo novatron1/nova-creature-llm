@@ -218,13 +218,16 @@ Post-regression final fix wave:
 - Python compilation and scoped diff validation: **PASS**
 - Independent targeted re-review: **CLEAN — 5/5 JavaScript and 2/2
   cancellation-ownership checks passed**
+- Exact current-tree full pytest suite: **PASS — 1,562 passed, 10 skipped,
+  0 failed, 697.74 s**
 - Closed four cross-feature findings: bounded RAM-only canonical conversation
   history, authenticated per-client cancellation, fail-closed remote Trust,
   and an executable capability-gated Spark Voice action.
 
-The 1,560-case full pytest run and 560-case conversation evaluation preceded
-this final bounded plumbing/security fix wave. The post-wave parent/focused
-suites above passed; the full 831-second suite was not rerun.
+The earlier 1,560-case full pytest run and the 560-case conversation
+evaluation preceded this bounded plumbing/security fix wave. The current-tree
+1,562-case full suite above supersedes the earlier pytest result. The
+560-case evaluation was not repeated after the wave.
 
 Keyboard focus into the composer and Spark focus restoration: **PASS**.
 Screen-reader announcement behavior was not available in the browser harness
@@ -322,10 +325,10 @@ continues to be available without becoming the default.
   continuity/cancellation/Trust/Voice fix wave. It remains the latest measured
   live score; the 25-turn live runner was not repeated afterward. Default
   promotion therefore remains blocked until a fresh current-build run passes.
-- The full 1,560-case pytest suite and 560-case evaluation were completed
-  before the final fix wave. Post-wave coverage was intentionally bounded to
-  the affected 115 JavaScript and 67 Python tests plus independent targeted
-  re-review.
+- The 560-case evaluation was completed before the final fix wave and was not
+  repeated afterward. The exact current post-wave tree was covered by the
+  1,562-case full pytest run plus the affected 115 JavaScript and 67 Python
+  focused suites.
 
 ## Default readiness
 
@@ -333,8 +336,8 @@ continues to be available without becoming the default.
 
 Companion is available at `/companion`, while Nova Classic remains the
 configured default. Required viewport, cancellation, route, and training
-isolation checks passed, the pre-wave full regression suite passed, the
-560-case evaluation passed, post-wave focused suites passed, and the one-flag
-rollback was proved. Default promotion remains blocked until the current build
-passes a fresh 25-turn live quality gate. Configuration remains
+isolation checks passed, the current-tree 1,562-case full regression passed,
+the pre-wave 560-case evaluation passed, post-wave focused suites passed, and
+the one-flag rollback was proved. Default promotion remains blocked until the
+current build passes a fresh 25-turn live quality gate. Configuration remains
 `NOVA_COMPANION_ENABLED=true` and `NOVA_COMPANION_DEFAULT=false`.
