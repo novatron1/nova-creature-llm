@@ -136,6 +136,8 @@ def test_companion_voice_is_truthful_and_uses_the_normal_composer_lifecycle():
         "audio.pause?.()",
         "ttsAbort?.abort()",
         "finishAudio",
+        "recognitionStartTimeoutMs",
+        "Microphone did not start. Check browser permission and try again.",
     ):
         assert required in senses
     for required in (

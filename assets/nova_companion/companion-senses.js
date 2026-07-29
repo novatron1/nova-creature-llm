@@ -284,6 +284,8 @@ export function createVisionController({
 }
 
 const VOICE_UNAVAILABLE_REASON = "Speech recognition is unavailable in this browser.";
+export const VOICE_RECOGNITION_START_TIMEOUT_MS = 8_000;
+const MICROPHONE_START_TIMEOUT_MESSAGE = "Microphone did not start. Check browser permission and try again.";
 
 const RECOGNITION_ERRORS = Object.freeze({
   "not-allowed": "Microphone permission was not granted.",
@@ -342,8 +344,12 @@ export function createVoiceController({
   audioFactory = null,
   onTranscript = () => {},
   onInterimTranscript = () => {},
+  recognitionStartTimeoutMs = VOICE_RECOGNITION_START_TIMEOUT_MS,
+  setTimeout: setTimeoutImpl = globalThis.setTimeout,
+  clearTimeout: clearTimeoutImpl = globalThis.clearTimeout,
 } = {}) {
   let recognition = null;
+  let recognitionStartWatchdog = null;
   let listening = false;
   let audioRecord = null;
   let playbackOperation = 0;
@@ -352,6 +358,20 @@ export function createVoiceController({
   const resolvedAudioFactory = audioFactory || (typeof windowLike?.Audio === "function" ? (source) => new windowLike.Audio(source) : null);
   const availability = voiceAvailability(windowLike, { ttsAvailable, audioAvailable: typeof resolvedAudioFactory === "function" });
   const emit = (event) => dispatch(event);
+  const clearRecognitionStartWatchdog = (engine = null) => {
+    if (!recognitionStartWatchdog || (engine && recognitionStartWatchdog.engine !== engine)) return;
+    clearTimeoutImpl?.(recognitionStartWatchdog.timer);
+    recognitionStartWatchdog = null;
+  };
+  const armRecognitionStartWatchdog = (engine) => {
+    clearRecognitionStartWatchdog();
+    const timeout = Math.max(0, Number(recognitionStartTimeoutMs) || 0);
+    if (!timeout || typeof setTimeoutImpl !== "function") return;
+    const timer = setTimeoutImpl(() => {
+      if (!destroyed && recognition === engine) finishRecognition(engine, { failure: MICROPHONE_START_TIMEOUT_MESSAGE, abort: true });
+    }, timeout);
+    recognitionStartWatchdog = { engine, timer };
+  };
   const currentPlayback = (record) => !destroyed && audioRecord === record && record.token === playbackOperation && !record.finished;
   const clearAudio = (record) => {
     const audio = record?.audio || record;
@@ -393,6 +413,7 @@ export function createVoiceController({
   };
   const finishRecognition = (engine, { failure = null, abort = false } = {}) => {
     if (recognition !== engine) return false;
+    clearRecognitionStartWatchdog(engine);
     recognition = null;
     const wasListening = listening;
     listening = false;
@@ -429,6 +450,7 @@ export function createVoiceController({
       engine.interimResults = true;
       engine.onstart = () => {
         if (!destroyed && recognition === engine) {
+          clearRecognitionStartWatchdog(engine);
           listening = true;
           emit({ type: "LISTENING_STARTED" });
         }
@@ -452,6 +474,7 @@ export function createVoiceController({
         finishRecognition(engine);
       };
       try {
+        armRecognitionStartWatchdog(engine);
         engine.start();
         return true;
       } catch (error) {

@@ -35,6 +35,22 @@ function makeFakeAudio(source = "", { rejectPlay = false } = {}) {
   };
 }
 
+function createFakeTimers() {
+  const timers = [];
+  return {
+    setTimeout(callback, delay) {
+      const timer = { callback, delay, cleared: false };
+      timers.push(timer);
+      return timer;
+    },
+    clearTimeout(timer) { if (timer) timer.cleared = true; },
+    runAll() {
+      for (const timer of timers) if (!timer.cleared) timer.callback();
+    },
+    activeCount() { return timers.filter((timer) => !timer.cleared).length; },
+  };
+}
+
 test("unsupported recognition never reports listening", () => {
   const availability = voiceAvailability({});
   assert.equal(availability.transcription, false);
@@ -61,6 +77,50 @@ test("recognition reports listening only after the browser engine starts", () =>
   assert.equal(events.some((event) => event.type === "LISTENING_STARTED"), false);
   recognition.onstart();
   assert.equal(events.at(-1).type, "LISTENING_STARTED");
+});
+
+test("a silent microphone start times out without claiming listening and permits retry", () => {
+  const timers = createFakeTimers();
+  const engines = [];
+  const events = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class { constructor() { const engine = { start() {}, aborts: 0, abort() { this.aborts += 1; } }; engines.push(engine); return engine; } } },
+    dispatch: (event) => events.push(event),
+    recognitionStartTimeoutMs: 25,
+    setTimeout: timers.setTimeout,
+    clearTimeout: timers.clearTimeout,
+  });
+  controller.startListening();
+  assert.equal(events.some((event) => event.type === "LISTENING_STARTED"), false);
+  assert.equal(timers.activeCount(), 1);
+  timers.runAll();
+  assert.equal(engines[0].aborts, 1);
+  assert.equal(events.at(-2).message, "Microphone did not start. Check browser permission and try again.");
+  assert.equal(events.at(-1).type, "LISTENING_STOPPED");
+  controller.startListening();
+  assert.equal(engines.length, 2);
+});
+
+test("real start clears the microphone watchdog and old callbacks cannot revive after retry", () => {
+  const timers = createFakeTimers();
+  const engines = [];
+  const events = [];
+  const controller = createVoiceController({
+    windowLike: { SpeechRecognition: class { constructor() { const engine = { start() {}, abort() {} }; engines.push(engine); return engine; } } },
+    dispatch: (event) => events.push(event),
+    recognitionStartTimeoutMs: 25,
+    setTimeout: timers.setTimeout,
+    clearTimeout: timers.clearTimeout,
+  });
+  controller.startListening();
+  timers.runAll();
+  controller.startListening();
+  engines[1].onstart();
+  assert.equal(timers.activeCount(), 0);
+  engines[0].onstart();
+  engines[0].onend();
+  assert.equal(events.filter((event) => event.type === "LISTENING_STARTED").length, 1);
+  assert.equal(events.filter((event) => event.type === "LISTENING_STOPPED").length, 1);
 });
 
 test("recognition errors use safe distinct microphone messages and end listening", () => {
@@ -145,6 +205,7 @@ test("a final transcript is delivered for normal user review without submission"
   controller.startListening();
   recognition.onresult({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: "review this first" } }] });
   assert.deepEqual(transcripts, ["review this first"]);
+  controller.stop();
 });
 
 test("playback stops recognition so an old end event cannot block Talk again", async () => {
