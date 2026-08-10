@@ -19,7 +19,7 @@ import sys
 import tempfile
 import threading
 import time
-from typing import Iterable, Mapping
+from typing import Callable, Iterable, Mapping
 
 from nova_release_security import SECRET_PATTERNS
 
@@ -111,15 +111,39 @@ raise SystemExit(0)
 """
 _MAX_HEALTH_HEADER_BYTES = 16_384
 _MAX_HEALTH_BODY_BYTES = 65_536
+_HEALTH_STABILITY_SECONDS = 0.25
+_MAX_PROXY_REQUEST_HEADER_BYTES = 16_384
+_MAX_PROXY_CONNECTION_BYTES = 4 * 1024 * 1024
+_MAX_PROXY_TOTAL_BYTES = 16 * 1024 * 1024
+_MAX_PROXY_CONNECTIONS = 16
+_SMOKE_PROBE_PATHS = (
+    "/healthz",
+    "/status",
+    "/api/reliability/status",
+    "/api/desktop/status",
+    "/assets/nova_foundation_ui.js",
+    "/assets/nova_foundation_ui.css",
+    "/manifest.webmanifest",
+    "/service-worker.js",
+    "/recovery",
+)
 _MAX_TCP_TABLE_BYTES = 4 * 1024 * 1024
 _MAX_TCP_ROWS = 65_536
 _MAX_PROC_PIDS = 32_768
+_MAX_PROC_ENTRIES = 65_536
 _MAX_PROC_FDS_PER_PID = 4_096
 _MAX_PROC_LINK_BYTES = 512
 _MAX_PROC_COMPONENT_BYTES = 32
+_MAX_PROC_STAT_BYTES = 4_096
 _PLATFORM_OS_NAME = os.name
 _PLATFORM_SYSTEM = sys.platform
-_SUPERVISOR_HANDSHAKE_SECONDS = 5.0
+_PROCESS_CLEANUP_SECONDS = 5.0
+_LINUX_SIGNAL_RESERVE_SECONDS = 0.25
+_LINUX_FINAL_CLEANUP_RESERVE_SECONDS = 1.0
+_LINUX_SUPERVISOR_GRACE_SECONDS = 0.25
+_MAX_SUPERVISOR_PAYLOAD_BYTES = 262_144
+_MAX_SUPERVISOR_ARGUMENTS = 4_096
+_SUPERVISOR_BOOTSTRAP_SECONDS = 5.0
 
 
 class _HealthResponseRejected(Exception):
@@ -130,11 +154,46 @@ class _ConnectionOwnershipRejected(Exception):
     pass
 
 
+class _ProbeRequestRejected(Exception):
+    pass
+
+
+class _ContainedLaunchFailure(OSError):
+    def __init__(self, message: str, *, cleanup_complete: bool) -> None:
+        super().__init__(message)
+        self.cleanup_complete = cleanup_complete
+
+
+class _ContainedLaunchTimeout(TimeoutError):
+    def __init__(self, message: str, *, cleanup_complete: bool) -> None:
+        super().__init__(message)
+        self.cleanup_complete = cleanup_complete
+
+
 def _ensure_supported_platform() -> None:
     if _PLATFORM_OS_NAME == "nt":
         return
     if _PLATFORM_OS_NAME == "posix" and _PLATFORM_SYSTEM.startswith("linux"):
-        return
+        pidfd_open = getattr(os, "pidfd_open", None)
+        pidfd_send_signal = getattr(signal, "pidfd_send_signal", None)
+        if not callable(pidfd_open) or not callable(pidfd_send_signal):
+            raise RuntimeError("unsupported release-gate platform")
+        descriptor: int | None = None
+        supported = False
+        try:
+            descriptor = pidfd_open(os.getpid())
+            pidfd_send_signal(descriptor, 0)
+            supported = True
+        except (OSError, TypeError, ValueError):
+            pass
+        finally:
+            if descriptor is not None:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    supported = False
+        if supported:
+            return
     raise RuntimeError("unsupported release-gate platform")
 
 
@@ -157,6 +216,18 @@ class GateResult:
     timed_out: bool
     stdout_tail: str
     stderr_tail: str
+
+
+@dataclass(frozen=True)
+class _LinuxSessionScan:
+    members: tuple[int, ...]
+    complete: bool
+
+
+@dataclass(frozen=True)
+class _LinuxProcessSession:
+    session_id: int | None
+    complete: bool
 
 
 class _BoundedTail:
@@ -422,9 +493,9 @@ class _SafeReportDirectory:
                     raise ctypes.WinError(ctypes.get_last_error())
                 numeric_handle = int(handle)
                 self._directory_handles.append(numeric_handle)
-                path_stat = os.stat(directory, follow_symlinks=False)
-                path_identity = (path_stat.st_dev, path_stat.st_ino)
-                if self._windows_handle_identity(numeric_handle) != path_identity:
+                if self._windows_handle_identity(
+                    numeric_handle
+                ) != self._windows_path_identity(directory):
                     raise ValueError("report ancestor changed while pinning")
         except BaseException:
             self.close()
@@ -467,6 +538,38 @@ class _SafeReportDirectory:
         )
         return int(information.VolumeSerialNumber), file_index
 
+    @classmethod
+    def _windows_path_identity(cls, path: Path) -> tuple[int, int]:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateFileW.argtypes = [
+            wintypes.LPCWSTR,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            ctypes.c_void_p,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            wintypes.HANDLE,
+        ]
+        kernel32.CreateFileW.restype = wintypes.HANDLE
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
+        handle = kernel32.CreateFileW(
+            str(path),
+            0x0080,
+            0x00000001 | 0x00000002 | 0x00000004,
+            None,
+            3,
+            0x02000000 | 0x00200000,
+            None,
+        )
+        if handle == wintypes.HANDLE(-1).value:
+            raise ctypes.WinError(ctypes.get_last_error())
+        numeric_handle = int(handle)
+        try:
+            return cls._windows_handle_identity(numeric_handle)
+        finally:
+            kernel32.CloseHandle(wintypes.HANDLE(numeric_handle))
+
     def _pinned_identity(self) -> tuple[int, int]:
         if self._directory_fd is not None:
             directory_stat = os.fstat(self._directory_fd)
@@ -495,6 +598,8 @@ class _SafeReportDirectory:
             pass
 
     def _directory_identity(self) -> tuple[int, int]:
+        if os.name == "nt":
+            return self._windows_path_identity(self.path)
         directory_stat = os.stat(self.path, follow_symlinks=False)
         return (directory_stat.st_dev, directory_stat.st_ino)
 
@@ -895,19 +1000,39 @@ class _ProcessContainment:
         self.candidate_exit_code: int | None = None
 
     @staticmethod
-    def _linux_process_session(pid: int) -> int | None:
+    def _linux_process_session(
+        pid: int,
+        *,
+        proc_root: Path = Path("/proc"),
+        deadline: float | None = None,
+        maximum_stat_bytes: int = _MAX_PROC_STAT_BYTES,
+    ) -> _LinuxProcessSession:
+        if deadline is not None and _deadline_expired(deadline):
+            return _LinuxProcessSession(None, False)
         try:
-            content = Path(f"/proc/{pid}/stat").read_text(encoding="ascii")
+            with (proc_root / str(pid) / "stat").open("rb") as stream:
+                content_bytes = stream.read(maximum_stat_bytes + 1)
+        except (FileNotFoundError, ProcessLookupError):
+            return _LinuxProcessSession(None, True)
+        except OSError:
+            return _LinuxProcessSession(None, False)
+        if len(content_bytes) > maximum_stat_bytes:
+            return _LinuxProcessSession(None, False)
+        if deadline is not None and _deadline_expired(deadline):
+            return _LinuxProcessSession(None, False)
+        try:
+            content = content_bytes.decode("ascii")
             fields = content.rsplit(")", 1)[1].split()
-            return int(fields[3])
-        except (OSError, ValueError, IndexError):
-            return None
+            return _LinuxProcessSession(int(fields[3]), True)
+        except (UnicodeError, ValueError, IndexError):
+            return _LinuxProcessSession(None, False)
 
-    def owns_pid(self, pid: int) -> bool:
+    def owns_pid(self, pid: int, *, deadline: float | None = None) -> bool:
         if self.windows_job is not None:
             return self.windows_job.contains_pid(pid)
         assert self.process_group_id is not None
-        return self._linux_process_session(pid) == self.process_group_id
+        lookup = self._linux_process_session(pid, deadline=deadline)
+        return lookup.complete and lookup.session_id == self.process_group_id
 
     def candidate_alive(self) -> bool:
         if self.candidate_exit_code is not None:
@@ -953,7 +1078,13 @@ class _ProcessContainment:
             verified = self.windows_job.terminate_and_verify()
         else:
             assert self.process_group_id is not None
-            verified = self._terminate_linux_session_members()
+            cleanup_deadline = time.monotonic() + _PROCESS_CLEANUP_SECONDS
+            initial_cleanup_deadline = (
+                cleanup_deadline - _LINUX_FINAL_CLEANUP_RESERVE_SECONDS
+            )
+            verified = self._terminate_linux_session_members(
+                initial_cleanup_deadline
+            )
             if self.control_fd is not None:
                 try:
                     os.write(self.control_fd, b"x")
@@ -971,38 +1102,111 @@ class _ProcessContainment:
                     pass
                 self.status_fd = None
         try:
-            self.process.wait(timeout=5)
+            if self.windows_job is not None:
+                wait_seconds = _PROCESS_CLEANUP_SECONDS
+            else:
+                supervisor_deadline = min(
+                    cleanup_deadline
+                    - (_LINUX_FINAL_CLEANUP_RESERVE_SECONDS / 2),
+                    time.monotonic() + _LINUX_SUPERVISOR_GRACE_SECONDS,
+                )
+                wait_seconds = max(0, supervisor_deadline - time.monotonic())
+            self.process.wait(timeout=wait_seconds)
         except subprocess.TimeoutExpired:
+            if self.windows_job is not None:
+                verified = False
+            else:
+                try:
+                    self.process.kill()
+                    self.process.wait(
+                        timeout=max(
+                            0,
+                            cleanup_deadline
+                            - (_LINUX_FINAL_CLEANUP_RESERVE_SECONDS / 2)
+                            - time.monotonic(),
+                        )
+                    )
+                except (OSError, subprocess.TimeoutExpired):
+                    verified = False
+        except OSError:
             verified = False
+        if self.windows_job is None:
+            final_session_verified = self._terminate_linux_session_members(
+                cleanup_deadline
+            )
+            verified = final_session_verified and verified
         return verified and self.process.poll() is not None
 
-    def _linux_session_members(self) -> list[int] | None:
-        if not sys.platform.startswith("linux"):
-            return None
+    def _linux_session_members(
+        self,
+        deadline: float,
+        *,
+        proc_root: Path = Path("/proc"),
+        maximum_entries: int = _MAX_PROC_ENTRIES,
+        maximum_processes: int = _MAX_PROC_PIDS,
+    ) -> _LinuxSessionScan:
         members: list[int] = []
+        if _deadline_expired(deadline):
+            return _LinuxSessionScan((), False)
         try:
-            entries = list(Path("/proc").iterdir())
+            entries = os.scandir(proc_root)
         except OSError:
-            return None
-        for entry in entries:
-            if not entry.name.isdigit():
-                continue
-            pid = int(entry.name)
-            if pid == self.process.pid:
-                continue
-            if self._linux_process_session(pid) == self.process_group_id:
-                members.append(pid)
-        return members
+            return _LinuxSessionScan((), False)
+        entry_count = 0
+        process_count = 0
+        with entries:
+            try:
+                for entry in entries:
+                    if _deadline_expired(deadline):
+                        return _LinuxSessionScan(tuple(members), False)
+                    entry_count += 1
+                    if entry_count > maximum_entries:
+                        return _LinuxSessionScan(tuple(members), False)
+                    if not entry.name.isdigit():
+                        continue
+                    if len(os.fsencode(entry.name)) > _MAX_PROC_COMPONENT_BYTES:
+                        return _LinuxSessionScan(tuple(members), False)
+                    process_count += 1
+                    if process_count > maximum_processes:
+                        return _LinuxSessionScan(tuple(members), False)
+                    pid = int(entry.name)
+                    if pid == self.process.pid:
+                        continue
+                    session = self._linux_process_session(
+                        pid,
+                        proc_root=proc_root,
+                        deadline=deadline,
+                    )
+                    if _deadline_expired(deadline):
+                        return _LinuxSessionScan(tuple(members), False)
+                    if not session.complete:
+                        return _LinuxSessionScan(tuple(members), False)
+                    if session.session_id == self.process_group_id:
+                        members.append(pid)
+            except OSError:
+                return _LinuxSessionScan(tuple(members), False)
+        return _LinuxSessionScan(tuple(members), True)
 
-    def _signal_linux_members(self, members: Iterable[int], signum: int) -> bool:
-        if not hasattr(os, "pidfd_open") or not hasattr(signal, "pidfd_send_signal"):
-            return False
+    def _signal_linux_members(
+        self,
+        members: Iterable[int],
+        signum: int,
+        deadline: float,
+    ) -> bool:
         verified = True
         for pid in members:
+            if _deadline_expired(deadline):
+                return False
             descriptor: int | None = None
             try:
                 descriptor = os.pidfd_open(pid)
-                if not self.owns_pid(pid):
+                session = self._linux_process_session(pid, deadline=deadline)
+                if not session.complete:
+                    verified = False
+                    continue
+                if session.session_id != self.process_group_id:
+                    if session.session_id is not None:
+                        verified = False
                     continue
                 signal.pidfd_send_signal(descriptor, signum)
             except ProcessLookupError:
@@ -1011,66 +1215,294 @@ class _ProcessContainment:
                 verified = False
             finally:
                 if descriptor is not None:
-                    os.close(descriptor)
+                    try:
+                        os.close(descriptor)
+                    except OSError:
+                        verified = False
         return verified
 
-    def _terminate_linux_session_members(self) -> bool:
-        members = self._linux_session_members()
-        if members is None:
-            if self.process_group_id is not None:
-                try:
-                    os.killpg(self.process_group_id, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
+    def _kill_linux_process_group(self) -> bool:
+        assert self.process_group_id is not None
+        try:
+            os.killpg(self.process_group_id, signal.SIGKILL)
+        except ProcessLookupError:
+            return True
+        except OSError:
             return False
-        verified = self._signal_linux_members(members, signal.SIGTERM)
-        grace_deadline = time.monotonic() + 0.5
+        return True
+
+    def _linux_cleanup_scan(self, deadline: float) -> _LinuxSessionScan:
+        scan_deadline = deadline - _LINUX_SIGNAL_RESERVE_SECONDS
+        if _deadline_expired(scan_deadline):
+            return _LinuxSessionScan((), False)
+        return self._linux_session_members(scan_deadline)
+
+    def _terminate_linux_session_members(self, deadline: float) -> bool:
+        scan = self._linux_cleanup_scan(deadline)
+        if not scan.complete:
+            self._signal_linux_members(scan.members, signal.SIGKILL, deadline)
+            self._kill_linux_process_group()
+            return False
+        verified = self._signal_linux_members(
+            scan.members,
+            signal.SIGTERM,
+            deadline,
+        )
+        grace_deadline = min(deadline, time.monotonic() + 0.5)
         while time.monotonic() < grace_deadline:
-            remaining = self._linux_session_members()
-            if not remaining:
+            remaining = self._linux_cleanup_scan(deadline)
+            if not remaining.complete:
+                self._signal_linux_members(
+                    remaining.members,
+                    signal.SIGKILL,
+                    deadline,
+                )
+                self._kill_linux_process_group()
+                return False
+            if not remaining.members:
                 return verified
-            time.sleep(0.05)
-        remaining = self._linux_session_members() or []
-        verified = self._signal_linux_members(remaining, signal.SIGKILL) and verified
-        verify_deadline = time.monotonic() + 5
-        while time.monotonic() < verify_deadline:
-            if not self._linux_session_members():
+            time.sleep(min(0.05, max(0, grace_deadline - time.monotonic())))
+        remaining = self._linux_cleanup_scan(deadline)
+        if not remaining.complete:
+            self._signal_linux_members(
+                remaining.members,
+                signal.SIGKILL,
+                deadline,
+            )
+            self._kill_linux_process_group()
+            return False
+        verified = (
+            self._signal_linux_members(
+                remaining.members,
+                signal.SIGKILL,
+                deadline,
+            )
+            and verified
+        )
+        while time.monotonic() < deadline:
+            remaining = self._linux_cleanup_scan(deadline)
+            if not remaining.complete:
+                self._signal_linux_members(
+                    remaining.members,
+                    signal.SIGKILL,
+                    deadline,
+                )
+                self._kill_linux_process_group()
+                return False
+            if not remaining.members:
                 return verified
-            time.sleep(0.05)
+            self._signal_linux_members(
+                remaining.members,
+                signal.SIGKILL,
+                deadline,
+            )
+            time.sleep(min(0.05, max(0, deadline - time.monotonic())))
         return False
 
 
-def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> None:
+def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> bool:
     containment = _ProcessContainment(
         process,
         process_group_id=process.pid,
     )
-    members = containment._linux_session_members() or []
-    containment._signal_linux_members(members, signal.SIGKILL)
+    deadline = time.monotonic() + _PROCESS_CLEANUP_SECONDS
+    verified = True
+    try:
+        scan = containment._linux_cleanup_scan(deadline)
+    except BaseException:
+        scan = _LinuxSessionScan((), False)
+    if not scan.complete:
+        verified = False
+    try:
+        if not containment._signal_linux_members(
+            scan.members,
+            signal.SIGKILL,
+            deadline,
+        ):
+            verified = False
+    except BaseException:
+        verified = False
+    try:
+        if not containment._kill_linux_process_group():
+            verified = False
+    except BaseException:
+        verified = False
+
     supervisor_descriptor: int | None = None
     try:
-        if hasattr(os, "pidfd_open") and hasattr(signal, "pidfd_send_signal"):
-            supervisor_descriptor = os.pidfd_open(process.pid)
-            signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
-        elif process.poll() is None:
-            process.kill()
+        supervisor_descriptor = os.pidfd_open(process.pid)
+        signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
     except ProcessLookupError:
         pass
+    except BaseException:
+        verified = False
+        if process.poll() is None:
+            try:
+                process.kill()
+            except (OSError, ProcessLookupError):
+                pass
     finally:
         if supervisor_descriptor is not None:
-            os.close(supervisor_descriptor)
-    deadline = time.monotonic() + 5
-    while time.monotonic() < deadline:
-        remaining = containment._linux_session_members()
-        if not remaining:
-            break
-        containment._signal_linux_members(remaining, signal.SIGKILL)
-        time.sleep(0.02)
+            try:
+                os.close(supervisor_descriptor)
+            except OSError:
+                verified = False
+
     try:
-        process.wait(timeout=max(0.1, deadline - time.monotonic()))
+        process.wait(timeout=max(0, deadline - time.monotonic()))
     except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait(timeout=5)
+        verified = False
+        if process.poll() is None:
+            try:
+                process.kill()
+            except (OSError, ProcessLookupError):
+                pass
+        try:
+            process.wait(timeout=max(0, deadline - time.monotonic()))
+        except subprocess.TimeoutExpired:
+            pass
+    except OSError:
+        verified = False
+
+    session_empty = False
+    while time.monotonic() < deadline:
+        try:
+            remaining = containment._linux_cleanup_scan(deadline)
+        except BaseException:
+            remaining = _LinuxSessionScan((), False)
+        if not remaining.complete:
+            verified = False
+        try:
+            if not containment._signal_linux_members(
+                remaining.members,
+                signal.SIGKILL,
+                deadline,
+            ):
+                verified = False
+        except BaseException:
+            verified = False
+        if not remaining.complete:
+            try:
+                containment._kill_linux_process_group()
+            except BaseException:
+                pass
+            break
+        if not remaining.members:
+            session_empty = True
+            break
+        time.sleep(min(0.02, max(0, deadline - time.monotonic())))
+    return verified and session_empty and process.poll() is not None
+
+
+def _supervisor_payload(command: list[str], *, deadline: float) -> bytes:
+    if _deadline_expired(deadline):
+        raise TimeoutError("trusted supervisor payload exceeded launch deadline")
+    if len(command) > _MAX_SUPERVISOR_ARGUMENTS:
+        raise ValueError("candidate command exceeds supervisor payload bound")
+    encoded_arguments: list[bytes] = []
+    total_bytes = len(b'{"argv":[]}\n')
+    for argument in command:
+        if _deadline_expired(deadline):
+            raise TimeoutError("trusted supervisor payload exceeded launch deadline")
+        if not isinstance(argument, str):
+            raise TypeError("candidate command arguments must be strings")
+        if len(argument) > _MAX_SUPERVISOR_PAYLOAD_BYTES:
+            raise ValueError("candidate command exceeds supervisor payload bound")
+        encoded = json.dumps(argument, ensure_ascii=False).encode("utf-8")
+        separator_bytes = 1 if encoded_arguments else 0
+        total_bytes += separator_bytes + len(encoded)
+        if total_bytes > _MAX_SUPERVISOR_PAYLOAD_BYTES:
+            raise ValueError("candidate command exceeds supervisor payload bound")
+        encoded_arguments.append(encoded)
+    if _deadline_expired(deadline):
+        raise TimeoutError("trusted supervisor payload exceeded launch deadline")
+    return b'{"argv":[' + b",".join(encoded_arguments) + b"]}\n"
+
+
+def _write_posix_payload_with_deadline(
+    stream: object,
+    payload: bytes,
+    deadline: float,
+) -> None:
+    descriptor = stream.fileno()  # type: ignore[attr-defined]
+    os.set_blocking(descriptor, False)
+    offset = 0
+    while offset < len(payload):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("trusted supervisor payload exceeded launch deadline")
+        try:
+            _, writable, _ = select.select([], [descriptor], [], remaining)
+        except InterruptedError:
+            continue
+        if not writable:
+            raise TimeoutError("trusted supervisor payload exceeded launch deadline")
+        try:
+            written = os.write(descriptor, payload[offset:])
+        except BlockingIOError:
+            continue
+        if written <= 0:
+            raise OSError("trusted supervisor payload delivery failed")
+        offset += written
+    stream.close()  # type: ignore[attr-defined]
+
+
+def _write_windows_payload_with_deadline(
+    process: subprocess.Popen[bytes],
+    payload: bytes,
+    deadline: float,
+) -> None:
+    assert process.stdin is not None
+    stream = process.stdin
+    completed = threading.Event()
+    errors: list[BaseException] = []
+
+    def write_payload() -> None:
+        try:
+            descriptor = stream.fileno()
+            offset = 0
+            while offset < len(payload):
+                written = os.write(descriptor, payload[offset:])
+                if written <= 0:
+                    raise OSError("trusted supervisor payload delivery failed")
+                offset += written
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            completed.set()
+
+    writer = threading.Thread(target=write_payload, daemon=True)
+    writer.start()
+    remaining = deadline - time.monotonic()
+    if remaining <= 0 or not completed.wait(remaining):
+        cleanup_complete = True
+        if process.poll() is None:
+            try:
+                process.kill()
+            except OSError:
+                cleanup_complete = False
+        try:
+            process.wait(timeout=0.25)
+        except subprocess.TimeoutExpired:
+            cleanup_complete = False
+        except OSError:
+            cleanup_complete = False
+        try:
+            stream.close()
+        except OSError:
+            cleanup_complete = False
+        writer.join(timeout=0.25)
+        if writer.is_alive():
+            cleanup_complete = False
+        if not cleanup_complete:
+            raise _ContainedLaunchTimeout(
+                "trusted supervisor payload exceeded launch deadline",
+                cleanup_complete=False,
+            )
+        raise TimeoutError("trusted supervisor payload exceeded launch deadline")
+    if errors:
+        raise errors[0]
+    stream.close()
 
 
 def _launch_contained_process(
@@ -1078,8 +1510,20 @@ def _launch_contained_process(
     *,
     cwd: Path,
     environment: Mapping[str, str],
+    deadline: float,
 ) -> _ProcessContainment:
+    if _deadline_expired(deadline):
+        raise TimeoutError("candidate launch deadline expired")
     _ensure_supported_platform()
+    if _deadline_expired(deadline):
+        raise TimeoutError("candidate launch deadline expired")
+    bootstrap_deadline = min(
+        deadline,
+        time.monotonic() + _SUPERVISOR_BOOTSTRAP_SECONDS,
+    )
+    payload = _supervisor_payload(command, deadline=bootstrap_deadline)
+    if _deadline_expired(bootstrap_deadline):
+        raise TimeoutError("candidate launch deadline expired")
     if os.name != "nt":
         descriptors: set[int] = set()
         process: subprocess.Popen[bytes] | None = None
@@ -1112,20 +1556,25 @@ def _launch_contained_process(
             for descriptor in (status_write, control_read, ready_write):
                 os.close(descriptor)
                 descriptors.discard(descriptor)
-            payload = json.dumps({"argv": command}).encode("utf-8") + b"\n"
-            if len(payload) > 262_144:
-                raise ValueError("candidate command exceeds supervisor payload bound")
             assert process.stdin is not None
-            process.stdin.write(payload)
-            process.stdin.close()
+            _write_posix_payload_with_deadline(
+                process.stdin,
+                payload,
+                bootstrap_deadline,
+            )
+            remaining = bootstrap_deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("trusted supervisor handshake exceeded launch deadline")
             ready, _, _ = select.select(
                 [ready_read],
                 [],
                 [],
-                _SUPERVISOR_HANDSHAKE_SECONDS,
+                remaining,
             )
             if not ready:
-                raise TimeoutError("trusted supervisor handshake timed out")
+                raise TimeoutError(
+                    "trusted supervisor handshake exceeded launch deadline"
+                )
             response = os.read(ready_read, 257)
             os.close(ready_read)
             descriptors.discard(ready_read)
@@ -1139,25 +1588,59 @@ def _launch_contained_process(
                 ) from error
             if launch_status != {"started": True}:
                 raise OSError("candidate spawn failed")
+            if _deadline_expired(bootstrap_deadline):
+                raise TimeoutError(
+                    "trusted supervisor handshake exceeded launch deadline"
+                )
             return _ProcessContainment(
                 process,
                 process_group_id=process.pid,
                 status_fd=status_read,
                 control_fd=control_write,
             )
-        except BaseException:
+        except BaseException as error:
+            cleanup_complete = (
+                error.cleanup_complete
+                if isinstance(
+                    error,
+                    (_ContainedLaunchFailure, _ContainedLaunchTimeout),
+                )
+                else True
+            )
             if process is not None:
                 if process.stdin is not None and not process.stdin.closed:
-                    process.stdin.close()
-                _terminate_failed_posix_launch(process)
+                    try:
+                        process.stdin.close()
+                    except OSError:
+                        cleanup_complete = False
+                try:
+                    cleanup_complete = (
+                        _terminate_failed_posix_launch(process)
+                        and cleanup_complete
+                    )
+                except BaseException:
+                    cleanup_complete = False
                 for stream in (process.stdout, process.stderr):
                     if stream is not None and not stream.closed:
-                        stream.close()
+                        try:
+                            stream.close()
+                        except OSError:
+                            cleanup_complete = False
             for descriptor in descriptors:
                 try:
                     os.close(descriptor)
                 except OSError:
-                    pass
+                    cleanup_complete = False
+            if isinstance(error, TimeoutError):
+                raise _ContainedLaunchTimeout(
+                    str(error),
+                    cleanup_complete=cleanup_complete,
+                ) from error
+            if isinstance(error, OSError):
+                raise _ContainedLaunchFailure(
+                    str(error),
+                    cleanup_complete=cleanup_complete,
+                ) from error
             raise
 
     job = _WindowsJob()
@@ -1174,15 +1657,61 @@ def _launch_contained_process(
             stderr=subprocess.PIPE,
         )
         job.assign(process)
-        assert process.stdin is not None
-        process.stdin.write(json.dumps({"argv": command}).encode("utf-8") + b"\n")
-        process.stdin.close()
+        _write_windows_payload_with_deadline(process, payload, bootstrap_deadline)
+        if _deadline_expired(bootstrap_deadline):
+            raise TimeoutError("trusted supervisor payload exceeded launch deadline")
         return _ProcessContainment(process, windows_job=job)
-    except BaseException:
-        if process is not None and process.poll() is None:
-            process.kill()
-            process.wait(timeout=5)
-        job.close()
+    except BaseException as error:
+        cleanup_complete = (
+            error.cleanup_complete
+            if isinstance(
+                error,
+                (_ContainedLaunchFailure, _ContainedLaunchTimeout),
+            )
+            else True
+        )
+        if process is not None:
+            try:
+                cleanup_complete = (
+                    job.terminate_and_verify() and cleanup_complete
+                )
+            except BaseException:
+                cleanup_complete = False
+            if process.poll() is None:
+                try:
+                    process.kill()
+                except OSError:
+                    cleanup_complete = False
+            if process.stdin is not None and not process.stdin.closed:
+                try:
+                    process.stdin.close()
+                except OSError:
+                    cleanup_complete = False
+            try:
+                process.wait(timeout=_PROCESS_CLEANUP_SECONDS)
+            except subprocess.TimeoutExpired:
+                cleanup_complete = False
+            for stream in (process.stdout, process.stderr):
+                if stream is not None and not stream.closed:
+                    try:
+                        stream.close()
+                    except OSError:
+                        cleanup_complete = False
+            cleanup_complete = process.poll() is not None and cleanup_complete
+        try:
+            job.close()
+        except OSError:
+            cleanup_complete = False
+        if isinstance(error, TimeoutError):
+            raise _ContainedLaunchTimeout(
+                str(error),
+                cleanup_complete=cleanup_complete,
+            ) from error
+        if isinstance(error, OSError):
+            raise _ContainedLaunchFailure(
+                str(error),
+                cleanup_complete=cleanup_complete,
+            ) from error
         raise
 
 
@@ -1241,6 +1770,8 @@ class GateRunner:
         self,
         gate: GateDefinition,
         deadline: float,
+        *,
+        containment_ready: Callable[[_ProcessContainment], None] | None = None,
     ) -> GateResult:
         self._safe_report_directory.verify()
         artifact_reservations: list[tuple[str, tuple[int, int]]] = []
@@ -1282,8 +1813,11 @@ class GateRunner:
                     self.candidate_root,
                     self.base_environment,
                 ),
+                deadline=deadline,
             )
             process = containment.process
+            if containment_ready is not None:
+                containment_ready(containment)
             assert process.stdout is not None
             assert process.stderr is not None
             threads = [
@@ -1307,6 +1841,16 @@ class GateRunner:
                 containment.wait_candidate(remaining)
             except subprocess.TimeoutExpired:
                 timed_out = True
+        except _ContainedLaunchTimeout as error:
+            timed_out = True
+            cleanup_complete = error.cleanup_complete
+            stderr_tail.append(str(error).encode("utf-8", errors="replace"))
+        except _ContainedLaunchFailure as error:
+            cleanup_complete = error.cleanup_complete
+            stderr_tail.append(str(error).encode("utf-8", errors="replace"))
+        except TimeoutError as error:
+            timed_out = True
+            stderr_tail.append(str(error).encode("utf-8", errors="replace"))
         except OSError as error:
             stderr_tail.append(str(error).encode("utf-8", errors="replace"))
         finally:
@@ -1666,41 +2210,80 @@ def _linux_connection_owner_pids(
     return owners
 
 
+def _endpoint_owned_by_containment(
+    owner_endpoint: tuple[str, int],
+    remote_endpoint: tuple[str, int],
+    containment: _ProcessContainment,
+    deadline: float,
+    *,
+    description: str,
+) -> tuple[bool, str]:
+    resolution_deadline = min(deadline, time.monotonic() + 0.5)
+    while time.monotonic() < resolution_deadline:
+        owners = (
+            _windows_connection_owner_pids(
+                owner_endpoint,
+                remote_endpoint,
+                resolution_deadline,
+            )
+            if os.name == "nt"
+            else _linux_connection_owner_pids(
+                owner_endpoint,
+                remote_endpoint,
+                resolution_deadline,
+            )
+        )
+        if owners is None:
+            return False, f"{description} ownership resolution exceeded its bound"
+        if owners:
+            if not containment.candidate_alive():
+                return False, f"candidate exited before {description} ownership proof"
+            if all(
+                containment.owns_pid(pid, deadline=resolution_deadline)
+                for pid in owners
+            ):
+                return True, ""
+            return False, f"{description} ownership is outside candidate containment"
+        time.sleep(min(0.01, max(0, resolution_deadline - time.monotonic())))
+    return False, f"{description} ownership could not be resolved"
+
+
 def _connection_owned_by_containment(
     connection: socket.socket,
     containment: _ProcessContainment,
     deadline: float,
 ) -> tuple[bool, str]:
     try:
-        client_endpoint = connection.getsockname()
-        server_endpoint = connection.getpeername()
+        controller_endpoint = connection.getsockname()
+        candidate_endpoint = connection.getpeername()
     except OSError:
         return False, "connection ownership tuple could not be resolved"
-    resolution_deadline = min(deadline, time.monotonic() + 0.5)
-    while time.monotonic() < resolution_deadline:
-        owners = (
-            _windows_connection_owner_pids(
-                server_endpoint,
-                client_endpoint,
-                deadline,
-            )
-            if os.name == "nt"
-            else _linux_connection_owner_pids(
-                server_endpoint,
-                client_endpoint,
-                deadline,
-            )
-        )
-        if owners is None:
-            return False, "connection ownership resolution exceeded its bound"
-        if owners:
-            if not containment.candidate_alive():
-                return False, "candidate exited before connection ownership proof"
-            if all(containment.owns_pid(pid) for pid in owners):
-                return True, ""
-            return False, "connection ownership is outside candidate containment"
-        time.sleep(min(0.01, max(0, resolution_deadline - time.monotonic())))
-    return False, "connection ownership could not be resolved"
+    return _endpoint_owned_by_containment(
+        candidate_endpoint,
+        controller_endpoint,
+        containment,
+        deadline,
+        description="connection",
+    )
+
+
+def _probe_client_owned_by_containment(
+    connection: socket.socket,
+    containment: _ProcessContainment,
+    deadline: float,
+) -> tuple[bool, str]:
+    try:
+        proxy_endpoint = connection.getsockname()
+        probe_endpoint = connection.getpeername()
+    except OSError:
+        return False, "probe client ownership tuple could not be resolved"
+    return _endpoint_owned_by_containment(
+        probe_endpoint,
+        proxy_endpoint,
+        containment,
+        deadline,
+        description="probe client connection",
+    )
 
 
 def _windows_listener_owner_pids(
@@ -1963,9 +2546,18 @@ def _wait_for_health(
         except (OSError, ValueError, json.JSONDecodeError):
             ready = False
         if ready:
-            time.sleep(min(0.05, max(0, deadline - time.monotonic())))
-            if not containment.candidate_alive():
-                return False, False, "candidate exited after readiness"
+            stability_deadline = min(
+                deadline,
+                time.monotonic() + _HEALTH_STABILITY_SECONDS,
+            )
+            while time.monotonic() < stability_deadline:
+                time.sleep(
+                    min(0.025, max(0, stability_deadline - time.monotonic()))
+                )
+                if not containment.candidate_alive():
+                    return False, False, "candidate exited after readiness"
+            if _deadline_expired(deadline):
+                return False, False, ""
             return True, False, ""
         time.sleep(min(0.05, max(0, deadline - time.monotonic())))
     return False, False, ""
@@ -1977,10 +2569,35 @@ class _OwnershipProxy:
         upstream_port: int,
         containment: _ProcessContainment,
         deadline: float,
+        *,
+        maximum_connections: int | None = None,
+        maximum_total_bytes: int | None = None,
+        maximum_connection_bytes: int | None = None,
     ) -> None:
         self._upstream_port = upstream_port
-        self._containment = containment
+        self._server_containment = containment
         self._deadline = deadline
+        self._maximum_connections = (
+            _MAX_PROXY_CONNECTIONS
+            if maximum_connections is None
+            else maximum_connections
+        )
+        self._maximum_total_bytes = (
+            _MAX_PROXY_TOTAL_BYTES
+            if maximum_total_bytes is None
+            else maximum_total_bytes
+        )
+        self._maximum_connection_bytes = (
+            _MAX_PROXY_CONNECTION_BYTES
+            if maximum_connection_bytes is None
+            else maximum_connection_bytes
+        )
+        if (
+            self._maximum_connections <= 0
+            or self._maximum_total_bytes <= 0
+            or self._maximum_connection_bytes <= 0
+        ):
+            raise ValueError("probe proxy bounds must be positive")
         self._listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._listener.bind(("127.0.0.1", 0))
         self._listener.listen(8)
@@ -1988,14 +2605,25 @@ class _OwnershipProxy:
         self.port = int(self._listener.getsockname()[1])
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._serve, daemon=True)
-        self._observed_connections = 0
+        self._probe_containment: _ProcessContainment | None = None
+        self._accepted_connections = 0
+        self._completed_paths: list[str] = []
+        self._total_relayed_bytes = 0
         self._error = ""
+        self._started = False
         self._stopped = False
 
-    def start(self) -> None:
+    def start(self, probe_containment: _ProcessContainment) -> None:
+        if self._started:
+            raise RuntimeError("probe ownership proxy already started")
+        self._probe_containment = probe_containment
+        self._started = True
         self._thread.start()
 
     def _serve(self) -> None:
+        if self._probe_containment is None:
+            self._error = "probe containment was not registered"
+            return
         while not self._stop.is_set() and time.monotonic() < self._deadline:
             try:
                 client, _ = self._listener.accept()
@@ -2004,6 +2632,44 @@ class _OwnershipProxy:
             except OSError:
                 return
             with client:
+                self._accepted_connections += 1
+                if self._accepted_connections > self._maximum_connections:
+                    self._error = "probe proxy exceeded connection limit"
+                    return
+                owned, reason = _probe_client_owned_by_containment(
+                    client,
+                    self._probe_containment,
+                    self._deadline,
+                )
+                if not owned:
+                    self._error = reason
+                    return
+                try:
+                    path = self._read_probe_request(client)
+                except _ProbeRequestRejected as error:
+                    self._error = str(error)
+                    return
+                expected_index = len(self._completed_paths)
+                if (
+                    expected_index >= len(_SMOKE_PROBE_PATHS)
+                    or path != _SMOKE_PROBE_PATHS[expected_index]
+                ):
+                    self._error = (
+                        "probe proxy did not observe exact smoke request sequence"
+                    )
+                    return
+                canonical_request = (
+                    f"GET {path} HTTP/1.1\r\n"
+                    f"Host: 127.0.0.1:{self._upstream_port}\r\n"
+                    "Accept-Encoding: identity\r\n"
+                    "User-Agent: Nova-Release-Smoke/1\r\n"
+                    "Connection: close\r\n\r\n"
+                ).encode("ascii")
+                if not self._reserve_relay_bytes(
+                    len(canonical_request),
+                    connection_bytes=0,
+                ):
+                    return
                 try:
                     upstream = socket.create_connection(
                         ("127.0.0.1", self._upstream_port),
@@ -2015,60 +2681,159 @@ class _OwnershipProxy:
                 with upstream:
                     owned, reason = _connection_owned_by_containment(
                         upstream,
-                        self._containment,
+                        self._server_containment,
                         self._deadline,
                     )
                     if not owned:
                         self._error = reason
-                        continue
-                    self._observed_connections += 1
-                    if not self._relay(client, upstream):
                         return
+                    try:
+                        upstream.settimeout(_remaining_seconds(self._deadline))
+                        upstream.sendall(canonical_request)
+                    except (OSError, TimeoutError):
+                        self._error = "probe proxy relay failed"
+                        return
+                    if not self._relay_response(
+                        client,
+                        upstream,
+                        len(canonical_request),
+                    ):
+                        return
+                    self._completed_paths.append(path)
 
-    def _relay(self, client: socket.socket, upstream: socket.socket) -> bool:
-        sources: dict[socket.socket, socket.socket] = {
-            client: upstream,
-            upstream: client,
-        }
-        transferred = 0
-        while sources and not self._stop.is_set():
+    def _read_probe_request(self, client: socket.socket) -> str:
+        received = bytearray()
+        header_end = -1
+        while header_end < 0:
+            if _deadline_expired(self._deadline):
+                raise _ProbeRequestRejected("probe proxy exceeded smoke deadline")
+            remaining_capacity = _MAX_PROXY_REQUEST_HEADER_BYTES + 1 - len(received)
+            if remaining_capacity <= 0:
+                raise _ProbeRequestRejected("probe proxy rejected oversized request")
+            try:
+                client.settimeout(_remaining_seconds(self._deadline))
+                content = client.recv(min(8192, remaining_capacity))
+            except (OSError, TimeoutError) as error:
+                raise _ProbeRequestRejected(
+                    "probe proxy could not read complete request"
+                ) from error
+            if not content:
+                raise _ProbeRequestRejected(
+                    "probe proxy could not read complete request"
+                )
+            received.extend(content)
+            if len(received) > _MAX_PROXY_REQUEST_HEADER_BYTES:
+                raise _ProbeRequestRejected("probe proxy rejected oversized request")
+            header_end = received.find(b"\r\n\r\n")
+
+        if header_end + 4 != len(received):
+            raise _ProbeRequestRejected("probe proxy rejected request body")
+        try:
+            lines = bytes(received[:header_end]).decode("ascii").split("\r\n")
+        except UnicodeError as error:
+            raise _ProbeRequestRejected("probe proxy rejected malformed request") from error
+        request_parts = lines[0].split(" ")
+        if (
+            len(request_parts) != 3
+            or request_parts[0] != "GET"
+            or request_parts[1] not in _SMOKE_PROBE_PATHS
+            or request_parts[2] != "HTTP/1.1"
+        ):
+            raise _ProbeRequestRejected("probe proxy rejected request target")
+        headers: dict[str, str] = {}
+        for line in lines[1:]:
+            if ":" not in line:
+                raise _ProbeRequestRejected("probe proxy rejected malformed request")
+            name, raw_value = line.split(":", 1)
+            if not re.fullmatch(r"[A-Za-z0-9-]+", name):
+                raise _ProbeRequestRejected("probe proxy rejected malformed request")
+            value = raw_value.strip()
+            if any(ord(character) < 32 or ord(character) == 127 for character in value):
+                raise _ProbeRequestRejected("probe proxy rejected malformed request")
+            normalized_name = name.lower()
+            if normalized_name in headers:
+                raise _ProbeRequestRejected("probe proxy rejected duplicate header")
+            headers[normalized_name] = value
+        if set(headers) != {
+            "accept-encoding",
+            "host",
+            "user-agent",
+            "connection",
+        }:
+            raise _ProbeRequestRejected("probe proxy rejected header shape")
+        if (
+            headers["accept-encoding"].lower() != "identity"
+            or headers["host"].lower() != f"127.0.0.1:{self.port}"
+            or headers["connection"].lower() != "close"
+            or re.fullmatch(r"Python-urllib/\d+(?:\.\d+)+", headers["user-agent"])
+            is None
+        ):
+            raise _ProbeRequestRejected("probe proxy rejected header shape")
+        try:
+            readable, _, _ = select.select([client], [], [], 0)
+            if readable and client.recv(1, socket.MSG_PEEK):
+                raise _ProbeRequestRejected("probe proxy rejected request body")
+            client.shutdown(socket.SHUT_RD)
+        except _ProbeRequestRejected:
+            raise
+        except OSError as error:
+            raise _ProbeRequestRejected("probe proxy rejected malformed request") from error
+        return request_parts[1]
+
+    def _reserve_relay_bytes(
+        self,
+        content_bytes: int,
+        *,
+        connection_bytes: int,
+    ) -> bool:
+        if connection_bytes + content_bytes > self._maximum_connection_bytes:
+            self._error = "probe proxy exceeded per-connection transfer byte limit"
+            return False
+        if self._total_relayed_bytes + content_bytes > self._maximum_total_bytes:
+            self._error = "probe proxy exceeded aggregate transfer byte limit"
+            return False
+        self._total_relayed_bytes += content_bytes
+        return True
+
+    def _relay_response(
+        self,
+        client: socket.socket,
+        upstream: socket.socket,
+        connection_bytes: int,
+    ) -> bool:
+        while not self._stop.is_set():
             if _deadline_expired(self._deadline):
                 self._error = "probe proxy exceeded smoke deadline"
                 return False
+            per_connection_remaining = self._maximum_connection_bytes - connection_bytes
+            aggregate_remaining = self._maximum_total_bytes - self._total_relayed_bytes
+            receive_bytes = min(
+                65_536,
+                max(1, per_connection_remaining + 1),
+                max(1, aggregate_remaining + 1),
+            )
             try:
-                readable, _, _ = select.select(
-                    list(sources),
-                    [],
-                    [],
-                    min(0.1, _remaining_seconds(self._deadline)),
-                )
+                upstream.settimeout(_remaining_seconds(self._deadline))
+                content = upstream.recv(receive_bytes)
             except (OSError, TimeoutError):
                 self._error = "probe proxy relay failed"
                 return False
-            for source in readable:
-                destination = sources[source]
-                try:
-                    content = source.recv(65_536)
-                except OSError:
-                    content = b""
-                if not content:
-                    sources.pop(source, None)
-                    try:
-                        destination.shutdown(socket.SHUT_WR)
-                    except OSError:
-                        pass
-                    continue
-                transferred += len(content)
-                if transferred > 4 * 1024 * 1024:
-                    self._error = "probe proxy exceeded transfer byte limit"
-                    return False
-                try:
-                    destination.settimeout(_remaining_seconds(self._deadline))
-                    destination.sendall(content)
-                except (OSError, TimeoutError):
-                    self._error = "probe proxy relay failed"
-                    return False
-        return True
+            if not content:
+                return True
+            if not self._reserve_relay_bytes(
+                len(content),
+                connection_bytes=connection_bytes,
+            ):
+                return False
+            try:
+                client.settimeout(_remaining_seconds(self._deadline))
+                client.sendall(content)
+            except (OSError, TimeoutError):
+                self._error = "probe proxy relay failed"
+                return False
+            connection_bytes += len(content)
+        self._error = "probe proxy relay did not complete"
+        return False
 
     def stop_and_verify(self) -> tuple[bool, str]:
         if not self._stopped:
@@ -2078,13 +2843,18 @@ class _OwnershipProxy:
                 self._listener.close()
             except OSError:
                 pass
-            self._thread.join(timeout=min(2, max(0, self._deadline - time.monotonic())))
-        if self._thread.is_alive():
+            if self._started:
+                self._thread.join(
+                    timeout=min(2, max(0, self._deadline - time.monotonic()))
+                )
+        if self._started and self._thread.is_alive():
             return False, "probe ownership proxy did not stop"
         if self._error:
             return False, self._error
-        if self._observed_connections < 1:
-            return False, "probe connection ownership was not observed"
+        if self._probe_containment is None:
+            return False, "probe containment was not registered"
+        if tuple(self._completed_paths) != _SMOKE_PROBE_PATHS:
+            return False, "probe proxy did not observe exact smoke request sequence"
         return True, ""
 
 
@@ -2096,9 +2866,13 @@ def run_clean_start_smoke(
 ) -> GateResult:
     """Start, probe, report, and terminate one isolated candidate server."""
 
-    _ensure_supported_platform()
+    started = time.monotonic()
     if timeout_seconds <= 0:
         raise ValueError("timeout_seconds must be positive")
+    deadline = started + timeout_seconds
+    _ensure_supported_platform()
+    if _deadline_expired(deadline):
+        raise TimeoutError("clean-start smoke deadline expired during preflight")
     candidate = Path(candidate_root).resolve()
     destination = _absolute_lexical_path(report_path)
     safe_reports = _SafeReportDirectory(candidate, destination.parent)
@@ -2108,8 +2882,6 @@ def run_clean_start_smoke(
     safe_reports.validate_output(stdout_filename)
     safe_reports.validate_output(stderr_filename)
 
-    started = time.monotonic()
-    deadline = started + timeout_seconds
     port = _unused_loopback_port()
     server_command = [sys.executable, "nova_enhanced_server.py", str(port)]
     probe_command = [
@@ -2135,12 +2907,14 @@ def run_clean_start_smoke(
     timed_out = False
     launch_error = ""
     cleanup_complete = False
+    launch_cleanup_complete = True
 
     try:
         server_containment = _launch_contained_process(
             server_command,
             cwd=candidate,
             environment=_sanitized_environment(candidate, None),
+            deadline=deadline,
         )
         server = server_containment.process
         assert server.stdout is not None
@@ -2188,7 +2962,6 @@ def run_clean_start_smoke(
                     server_containment,
                     deadline,
                 )
-                ownership_proxy.start()
                 probe_command = [
                     sys.executable,
                     "tools/nova_smoke_check.py",
@@ -2206,6 +2979,7 @@ def run_clean_start_smoke(
                         timeout_seconds=timeout_seconds,
                     ),
                     deadline,
+                    containment_ready=ownership_proxy.start,
                 )
                 timed_out = probe_result.timed_out
                 ownership_complete, ownership_reason = (
@@ -2219,10 +2993,20 @@ def run_clean_start_smoke(
                         ownership_reason
                         or "candidate server exited during smoke probe"
                     )
+    except _ContainedLaunchTimeout as error:
+        timed_out = True
+        launch_cleanup_complete = error.cleanup_complete
+        launch_error = str(error)
+    except _ContainedLaunchFailure as error:
+        launch_cleanup_complete = error.cleanup_complete
+        launch_error = str(error)
+    except TimeoutError as error:
+        timed_out = True
+        launch_error = str(error)
     except OSError as error:
         launch_error = str(error)
     finally:
-        containment_complete = True
+        containment_complete = launch_cleanup_complete
         capture_complete = True
         proxy_complete = True
         if ownership_proxy is not None:

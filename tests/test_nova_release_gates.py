@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 from dataclasses import replace
+import errno
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import textwrap
 import time
+from types import SimpleNamespace
 
 import pytest
 import nova_release_gates
@@ -119,6 +121,161 @@ def test_unsupported_posix_is_rejected_before_report_mutation(
         GateRunner(candidate, reports)
 
     assert not reports.exists()
+
+
+@pytest.mark.parametrize("missing_api", ["pidfd_open", "pidfd_send_signal"])
+def test_linux_preflight_rejects_missing_pidfd_api_before_report_mutation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    missing_api: str,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    reports = tmp_path / "reports"
+    monkeypatch.setattr(nova_release_gates, "_PLATFORM_OS_NAME", "posix")
+    monkeypatch.setattr(nova_release_gates, "_PLATFORM_SYSTEM", "linux")
+    owner = os if missing_api == "pidfd_open" else signal
+    monkeypatch.delattr(owner, missing_api, raising=False)
+
+    with pytest.raises(RuntimeError, match="unsupported release-gate platform"):
+        GateRunner(candidate, reports)
+
+    assert not reports.exists()
+
+
+def test_linux_preflight_rejects_kernel_pidfd_failure_and_closes_probe(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    reports = tmp_path / "reports"
+    descriptor = os.open(os.devnull, os.O_RDONLY)
+    monkeypatch.setattr(nova_release_gates, "_PLATFORM_OS_NAME", "posix")
+    monkeypatch.setattr(nova_release_gates, "_PLATFORM_SYSTEM", "linux")
+    monkeypatch.setattr(os, "pidfd_open", lambda pid: descriptor, raising=False)
+
+    def reject_kernel_pidfd(descriptor: int, signum: int) -> None:
+        raise OSError(errno.ENOSYS, "kernel pidfd signaling unavailable")
+
+    monkeypatch.setattr(
+        signal,
+        "pidfd_send_signal",
+        reject_kernel_pidfd,
+        raising=False,
+    )
+
+    with pytest.raises(RuntimeError, match="unsupported release-gate platform"):
+        GateRunner(candidate, reports)
+
+    with pytest.raises(OSError) as closed_descriptor:
+        os.fstat(descriptor)
+    assert closed_descriptor.value.errno == errno.EBADF
+    assert not reports.exists()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux PIDFD proof")
+def test_linux_preflight_probes_real_pidfd_without_descriptor_leak() -> None:
+    before = len(list(Path("/proc/self/fd").iterdir()))
+
+    nova_release_gates._ensure_supported_platform()
+
+    after = len(list(Path("/proc/self/fd").iterdir()))
+    assert after <= before
+
+
+def test_linux_session_scan_fails_closed_at_entry_and_process_caps(
+    tmp_path: Path,
+) -> None:
+    proc_root = tmp_path / "proc"
+    for pid in (101, 102, 103):
+        process = proc_root / str(pid)
+        process.mkdir(parents=True)
+        (process / "stat").write_text(
+            f"{pid} (python) S 1 2 4242 0\n",
+            encoding="ascii",
+        )
+    containment = nova_release_gates._ProcessContainment(
+        SimpleNamespace(pid=999),  # type: ignore[arg-type]
+        process_group_id=4242,
+    )
+
+    entry_capped = containment._linux_session_members(
+        time.monotonic() + 1,
+        proc_root=proc_root,
+        maximum_entries=2,
+        maximum_processes=10,
+    )
+    process_capped = containment._linux_session_members(
+        time.monotonic() + 1,
+        proc_root=proc_root,
+        maximum_entries=10,
+        maximum_processes=2,
+    )
+
+    assert entry_capped.complete is False
+    assert process_capped.complete is False
+    assert len(entry_capped.members) == 2
+    assert len(process_capped.members) == 2
+    assert set(entry_capped.members).issubset({101, 102, 103})
+    assert set(process_capped.members).issubset({101, 102, 103})
+
+
+def test_linux_session_scan_fails_closed_when_absolute_deadline_is_exhausted(
+    tmp_path: Path,
+) -> None:
+    proc_root = tmp_path / "proc"
+    process = proc_root / "101"
+    process.mkdir(parents=True)
+    (process / "stat").write_text(
+        "101 (python) S 1 2 4242 0\n",
+        encoding="ascii",
+    )
+    containment = nova_release_gates._ProcessContainment(
+        SimpleNamespace(pid=999),  # type: ignore[arg-type]
+        process_group_id=4242,
+    )
+    started = time.monotonic()
+
+    scan = containment._linux_session_members(
+        time.monotonic() - 1,
+        proc_root=proc_root,
+        maximum_entries=10,
+        maximum_processes=10,
+    )
+
+    assert scan.members == ()
+    assert scan.complete is False
+    assert time.monotonic() - started < 0.1
+
+
+@pytest.mark.parametrize(
+    "stat_content",
+    [b"malformed\n", b"x" * 4_097],
+    ids=("malformed", "oversized"),
+)
+def test_linux_session_scan_treats_uncertain_stat_as_incomplete(
+    tmp_path: Path,
+    stat_content: bytes,
+) -> None:
+    proc_root = tmp_path / "proc"
+    process = proc_root / "101"
+    process.mkdir(parents=True)
+    (process / "stat").write_bytes(stat_content)
+    containment = nova_release_gates._ProcessContainment(
+        SimpleNamespace(pid=999),  # type: ignore[arg-type]
+        process_group_id=4242,
+    )
+
+    scan = containment._linux_session_members(
+        time.monotonic() + 1,
+        proc_root=proc_root,
+        maximum_entries=10,
+        maximum_processes=10,
+    )
+
+    assert scan.members == ()
+    assert scan.complete is False
 
 
 def _make_directory_link(link: Path, target: Path) -> None:
@@ -513,6 +670,180 @@ def test_gate_runner_kills_sigterm_ignoring_descendant_after_leader_exit(
         _force_kill_test_process(child_pid)
 
 
+def test_posix_cleanup_rechecks_session_after_supervisor_is_reaped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeSupervisor:
+        pid = 4242
+        returncode: int | None = None
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def wait(self, timeout: float) -> int:
+            self.returncode = 0
+            return 0
+
+    supervisor = FakeSupervisor()
+    control_read, control_write = os.pipe()
+    containment = nova_release_gates._ProcessContainment(
+        supervisor,  # type: ignore[arg-type]
+        process_group_id=supervisor.pid,
+        control_fd=control_write,
+    )
+
+    def session_cleanup(
+        active_containment: object,
+        deadline: float,
+    ) -> bool:
+        return supervisor.poll() is None
+
+    monkeypatch.setattr(
+        nova_release_gates._ProcessContainment,
+        "_terminate_linux_session_members",
+        session_cleanup,
+    )
+    try:
+        cleanup_complete = containment.terminate_and_verify()
+    finally:
+        os.close(control_read)
+
+    assert cleanup_complete is False
+
+
+def test_posix_cleanup_kills_and_reaps_stalled_supervisor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeSupervisor:
+        pid = 4242
+        returncode: int | None = None
+        killed = False
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def kill(self) -> None:
+            self.killed = True
+
+        def wait(self, timeout: float) -> int:
+            if not self.killed:
+                raise subprocess.TimeoutExpired("supervisor", timeout)
+            self.returncode = 1
+            return 1
+
+    supervisor = FakeSupervisor()
+    control_read, control_write = os.pipe()
+    containment = nova_release_gates._ProcessContainment(
+        supervisor,  # type: ignore[arg-type]
+        process_group_id=supervisor.pid,
+        control_fd=control_write,
+    )
+    monkeypatch.setattr(
+        nova_release_gates._ProcessContainment,
+        "_terminate_linux_session_members",
+        lambda containment, deadline: True,
+    )
+    try:
+        cleanup_complete = containment.terminate_and_verify()
+    finally:
+        os.close(control_read)
+
+    assert cleanup_complete is True
+    assert supervisor.killed is True
+    assert supervisor.returncode == 1
+
+
+def test_windows_blocked_payload_preserves_timeout_and_cleanup_uncertainty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import threading
+
+    release_writer = threading.Event()
+
+    class FakeStream:
+        closed = False
+
+        def fileno(self) -> int:
+            return 123
+
+        def close(self) -> None:
+            self.closed = True
+
+    class FakeProcess:
+        stdin = FakeStream()
+        returncode: int | None = None
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def kill(self) -> None:
+            self.returncode = 1
+
+        def wait(self, timeout: float) -> int:
+            self.returncode = 1
+            return 1
+
+    process = FakeProcess()
+
+    def blocked_write(descriptor: int, payload: bytes) -> int:
+        release_writer.wait(5)
+        return len(payload)
+
+    monkeypatch.setattr(os, "write", blocked_write)
+    try:
+        with pytest.raises(
+            nova_release_gates._ContainedLaunchTimeout,
+            match="payload exceeded launch deadline",
+        ) as raised:
+            nova_release_gates._write_windows_payload_with_deadline(
+                process,  # type: ignore[arg-type]
+                b"payload",
+                time.monotonic() + 0.05,
+            )
+    finally:
+        release_writer.set()
+
+    assert raised.value.cleanup_complete is False
+    assert process.returncode == 1
+    assert process.stdin.closed is True
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows Job/payload proof")
+def test_windows_launch_propagates_known_writer_cleanup_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+
+    def fail_payload_write(
+        process: object,
+        payload: bytes,
+        deadline: float,
+    ) -> None:
+        raise nova_release_gates._ContainedLaunchTimeout(
+            "trusted supervisor payload exceeded launch deadline",
+            cleanup_complete=False,
+        )
+
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_write_windows_payload_with_deadline",
+        fail_payload_write,
+    )
+
+    result = GateRunner(candidate, reports).run(
+        GateDefinition(
+            name="writer-cleanup-uncertain",
+            argv=(sys.executable, "-c", "pass"),
+            timeout_seconds=2,
+        )
+    )
+
+    assert result.passed is False
+    assert result.timed_out is True
+    assert "process containment cleanup could not be verified" in result.stderr_tail
+
+
 @pytest.mark.skipif(os.name == "nt", reason="POSIX supervisor behavior")
 def test_posix_supervisor_pins_session_after_candidate_exit(
     tmp_path: Path,
@@ -522,6 +853,7 @@ def test_posix_supervisor_pins_session_after_candidate_exit(
         [sys.executable, "-c", "raise SystemExit(0)"],
         cwd=candidate,
         environment=_sanitized_environment(candidate, None),
+        deadline=time.monotonic() + 5,
     )
     unrelated = subprocess.Popen(
         [sys.executable, "-c", "import time; time.sleep(30)"],
@@ -549,6 +881,7 @@ def test_posix_supervisor_reports_spawn_failure_without_fd_leak(tmp_path: Path) 
             [str(candidate / "does-not-exist")],
             cwd=candidate,
             environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 5,
         )
 
     after = len(list(Path("/proc/self/fd").iterdir()))
@@ -565,6 +898,7 @@ def test_posix_payload_encoding_failure_closes_all_descriptors(tmp_path: Path) -
             [object()],  # type: ignore[list-item]
             cwd=candidate,
             environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 5,
         )
 
     after = len(list(Path("/proc/self/fd").iterdir()))
@@ -583,7 +917,6 @@ def test_posix_handshake_timeout_reaps_supervisor_before_late_spawn(
         f"pathlib.Path({str(late_marker)!r}).write_text('late'); time.sleep(30)"
     )
     monkeypatch.setattr(nova_release_gates, "_POSIX_SUPERVISOR", delayed_supervisor)
-    monkeypatch.setattr(nova_release_gates, "_SUPERVISOR_HANDSHAKE_SECONDS", 0.1)
     started = time.monotonic()
 
     with pytest.raises(TimeoutError, match="handshake"):
@@ -591,11 +924,234 @@ def test_posix_handshake_timeout_reaps_supervisor_before_late_spawn(
             [sys.executable, "-c", "print('must not launch')"],
             cwd=candidate,
             environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 0.1,
         )
 
     assert time.monotonic() - started < 2
     time.sleep(0.2)
     assert not late_marker.exists()
+
+
+def test_launch_rejects_expired_deadline_before_spawning_process(
+    tmp_path: Path,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    marker = candidate / "must-not-launch"
+
+    with pytest.raises(TimeoutError, match="launch deadline"):
+        _launch_contained_process(
+            [
+                sys.executable,
+                "-c",
+                f"from pathlib import Path; Path({str(marker)!r}).write_text('bad')",
+            ],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() - 1,
+        )
+
+    assert not marker.exists()
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        ["x"] * 4_097,
+        ["x" * 262_145],
+    ],
+    ids=("argument-count", "argument-size"),
+)
+def test_supervisor_payload_is_bounded_before_serialization(
+    command: list[str],
+) -> None:
+    started = time.monotonic()
+
+    with pytest.raises(ValueError, match="supervisor payload bound"):
+        nova_release_gates._supervisor_payload(
+            command,
+            deadline=time.monotonic() + 1,
+        )
+
+    assert time.monotonic() - started < 0.1
+
+
+def test_launch_bootstrap_cap_is_shorter_than_long_caller_budget(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    stalled_supervisor = "import time; time.sleep(2)"
+    if os.name == "nt":
+        monkeypatch.setattr(
+            nova_release_gates,
+            "_WINDOWS_LAUNCHER",
+            stalled_supervisor,
+        )
+    else:
+        monkeypatch.setattr(
+            nova_release_gates,
+            "_POSIX_SUPERVISOR",
+            stalled_supervisor,
+        )
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_SUPERVISOR_BOOTSTRAP_SECONDS",
+        0.2,
+        raising=False,
+    )
+    started = time.monotonic()
+
+    with pytest.raises(TimeoutError, match="payload|handshake"):
+        _launch_contained_process(
+            [sys.executable, "-c", "pass", "x" * 200_000],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 5,
+        )
+
+    assert time.monotonic() - started < 1
+
+
+def test_gate_launch_setup_obeys_one_second_absolute_budget(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    stalled_supervisor = "import time; time.sleep(2)"
+    if os.name == "nt":
+        monkeypatch.setattr(
+            nova_release_gates,
+            "_WINDOWS_LAUNCHER",
+            stalled_supervisor,
+        )
+    else:
+        monkeypatch.setattr(
+            nova_release_gates,
+            "_POSIX_SUPERVISOR",
+            stalled_supervisor,
+        )
+    gate = GateDefinition(
+        name="bounded-launch",
+        argv=(sys.executable, "-c", "pass", "x" * 200_000),
+        timeout_seconds=1,
+    )
+    started = time.monotonic()
+
+    result = GateRunner(candidate, reports).run(gate)
+
+    assert result.passed is False
+    assert result.timed_out is True
+    assert time.monotonic() - started < 1.6
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux cleanup proof")
+def test_failed_posix_launch_reports_indeterminate_cleanup_and_reaps_supervisor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    supervisor_pid_path = candidate / "uncertain-supervisor.pid"
+    delayed_supervisor = (
+        "import os, pathlib, sys, time; sys.stdin.buffer.readline(); "
+        f"pathlib.Path({str(supervisor_pid_path)!r}).write_text(str(os.getpid())); "
+        "time.sleep(30)"
+    )
+    monkeypatch.setattr(nova_release_gates, "_POSIX_SUPERVISOR", delayed_supervisor)
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_SUPERVISOR_BOOTSTRAP_SECONDS",
+        0.2,
+        raising=False,
+    )
+
+    def indeterminate_scan(
+        containment: object,
+        deadline: float,
+        **kwargs: object,
+    ) -> object:
+        return nova_release_gates._LinuxSessionScan((), False)
+
+    monkeypatch.setattr(
+        nova_release_gates._ProcessContainment,
+        "_linux_session_members",
+        indeterminate_scan,
+    )
+
+    result = GateRunner(candidate, reports).run(
+        GateDefinition(
+            name="uncertain-launch-cleanup",
+            argv=(sys.executable, "-c", "pass"),
+            timeout_seconds=2,
+        )
+    )
+
+    assert result.passed is False
+    assert result.timed_out is True
+    assert "process containment cleanup could not be verified" in result.stderr_tail
+    assert _wait_for_path(supervisor_pid_path)
+    supervisor_pid = int(supervisor_pid_path.read_text(encoding="utf-8"))
+    assert _wait_for_process_exit(supervisor_pid)
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux pipe proof")
+def test_posix_blocked_payload_honors_deadline_and_reaps_supervisor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    supervisor_pid_path = candidate / "blocked-supervisor.pid"
+    stalled_supervisor = (
+        "import os, pathlib, time; "
+        f"pathlib.Path({str(supervisor_pid_path)!r}).write_text(str(os.getpid())); "
+        "time.sleep(30)"
+    )
+    monkeypatch.setattr(nova_release_gates, "_POSIX_SUPERVISOR", stalled_supervisor)
+    before = len(list(Path("/proc/self/fd").iterdir()))
+    started = time.monotonic()
+
+    with pytest.raises(TimeoutError, match="payload"):
+        _launch_contained_process(
+            [sys.executable, "-c", "pass", "x" * 200_000],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 0.2,
+        )
+
+    assert time.monotonic() - started < 1
+    assert _wait_for_path(supervisor_pid_path)
+    supervisor_pid = int(supervisor_pid_path.read_text(encoding="utf-8"))
+    assert _wait_for_process_exit(supervisor_pid)
+    after = len(list(Path("/proc/self/fd").iterdir()))
+    assert after <= before
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux handshake proof")
+def test_posix_delayed_handshake_uses_only_remaining_caller_budget(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    supervisor_pid_path = candidate / "delayed-supervisor.pid"
+    delayed_supervisor = (
+        "import os, pathlib, sys, time; sys.stdin.buffer.readline(); "
+        f"pathlib.Path({str(supervisor_pid_path)!r}).write_text(str(os.getpid())); "
+        "time.sleep(30)"
+    )
+    monkeypatch.setattr(nova_release_gates, "_POSIX_SUPERVISOR", delayed_supervisor)
+    started = time.monotonic()
+
+    with pytest.raises(TimeoutError, match="handshake"):
+        _launch_contained_process(
+            [sys.executable, "-c", "pass"],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 0.2,
+        )
+
+    assert time.monotonic() - started < 1
+    assert _wait_for_path(supervisor_pid_path)
+    supervisor_pid = int(supervisor_pid_path.read_text(encoding="utf-8"))
+    assert _wait_for_process_exit(supervisor_pid)
 
 
 @pytest.mark.skipif(
@@ -613,6 +1169,7 @@ def test_listener_ownership_accepts_only_contained_listener(tmp_path: Path) -> N
         [sys.executable, "-c", listener_script, str(port)],
         cwd=candidate,
         environment=_sanitized_environment(candidate, os.environ),
+        deadline=time.monotonic() + 5,
     )
     try:
         assert _wait_for_listener(port)
@@ -646,6 +1203,7 @@ def test_listener_ownership_rejects_live_contained_competitor(tmp_path: Path) ->
             [sys.executable, "-c", "import time; time.sleep(30)"],
             cwd=candidate,
             environment=_sanitized_environment(candidate, os.environ),
+            deadline=time.monotonic() + 5,
         )
         owned, reason = _listener_owned_by_containment(port, containment)
         assert owned is False
@@ -693,6 +1251,7 @@ def test_connection_ownership_rejects_handoff_after_valid_listener_sample(
         [sys.executable, "-c", candidate_script],
         cwd=candidate,
         environment=_sanitized_environment(candidate, os.environ),
+        deadline=time.monotonic() + 5,
     )
     competitor = None
     try:
@@ -1156,8 +1715,23 @@ def _write_fake_smoke_candidate(candidate: Path, server_source: str) -> None:
             parser = argparse.ArgumentParser()
             parser.add_argument("--url", required=True)
             args = parser.parse_args()
-            with urlopen(args.url + "/healthz", timeout=2) as response:
-                payload = json.loads(response.read().decode("utf-8"))
+            paths = (
+                "/healthz",
+                "/status",
+                "/api/reliability/status",
+                "/api/desktop/status",
+                "/assets/nova_foundation_ui.js",
+                "/assets/nova_foundation_ui.css",
+                "/manifest.webmanifest",
+                "/service-worker.js",
+                "/recovery",
+            )
+            payload = None
+            for index, path in enumerate(paths):
+                with urlopen(args.url + path, timeout=2) as response:
+                    content = response.read()
+                if index == 0:
+                    payload = json.loads(content.decode("utf-8"))
             if payload.get("ok") is not True:
                 raise SystemExit(1)
             print("PROBE_OK")
@@ -1165,6 +1739,494 @@ def _write_fake_smoke_candidate(candidate: Path, server_source: str) -> None:
         ),
         encoding="utf-8",
     )
+
+
+def _write_raw_socket_smoke_probe(candidate: Path, request_template: str) -> None:
+    (candidate / "tools" / "nova_smoke_check.py").write_text(
+        textwrap.dedent(
+            f"""
+            import argparse
+            import socket
+            from urllib.parse import urlsplit
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--url", required=True)
+            args = parser.parse_args()
+            parsed = urlsplit(args.url)
+            request = {request_template!r}.format(port=parsed.port).encode("ascii")
+            with socket.create_connection((parsed.hostname, parsed.port), timeout=2) as connection:
+                connection.sendall(request)
+                connection.settimeout(2)
+                while connection.recv(65536):
+                    pass
+            print("RAW_PROBE_DONE")
+            """
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_proxy_policy_server(candidate: Path, marker: Path) -> None:
+    _write_fake_smoke_candidate(
+        candidate,
+        f"""
+        import json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import pathlib
+        import sys
+
+        marker = pathlib.Path({str(marker)!r})
+
+        class Handler(BaseHTTPRequestHandler):
+            def _respond(self):
+                body = json.dumps({{"ok": True}}).encode()
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_GET(self):
+                if self.headers.get("User-Agent"):
+                    marker.write_text("proxied")
+                self._respond()
+
+            def do_POST(self):
+                marker.write_text("proxied")
+                length = int(self.headers.get("Content-Length", "0"))
+                if length:
+                    self.rfile.read(length)
+                self._respond()
+
+            def log_message(self, format, *args):
+                return
+
+        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+        """,
+    )
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux handshake proof")
+def test_clean_start_smoke_launch_setup_obeys_one_second_absolute_budget(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    _write_fake_smoke_candidate(candidate, "raise SystemExit(99)")
+    delayed_supervisor = (
+        "import sys, time; sys.stdin.buffer.readline(); time.sleep(30)"
+    )
+    monkeypatch.setattr(nova_release_gates, "_POSIX_SUPERVISOR", delayed_supervisor)
+    started = time.monotonic()
+
+    result = run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=1,
+    )
+
+    assert result.passed is False
+    assert result.timed_out is True
+    assert time.monotonic() - started < 1.6
+
+
+def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
+    tmp_path: Path,
+) -> None:
+    import socket
+    import threading
+
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    upstream_marker = candidate / "proxied-request"
+    _write_proxy_policy_server(candidate, upstream_marker)
+    (candidate / "tools" / "nova_smoke_check.py").write_text(
+        textwrap.dedent(
+            """
+            import argparse
+            import pathlib
+            import time
+            from urllib.parse import urlsplit
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--url", required=True)
+            args = parser.parse_args()
+            parsed = urlsplit(args.url)
+            pathlib.Path("proxy-port").write_text(str(parsed.port))
+            deadline = time.monotonic() + 5
+            while not pathlib.Path("release-probe").exists():
+                if time.monotonic() >= deadline:
+                    raise SystemExit(3)
+                time.sleep(0.01)
+            """
+        ),
+        encoding="utf-8",
+    )
+    report_path = tmp_path / "reports" / "smoke.json"
+    observed: dict[str, object] = {}
+
+    def run_smoke() -> None:
+        try:
+            observed["result"] = run_clean_start_smoke(
+                candidate,
+                report_path,
+                timeout_seconds=8,
+            )
+        except BaseException as error:
+            observed["error"] = error
+
+    worker = threading.Thread(target=run_smoke)
+    worker.start()
+    proxy_port_path = candidate / "proxy-port"
+    try:
+        assert _wait_for_path(proxy_port_path)
+        proxy_port = int(proxy_port_path.read_text(encoding="utf-8"))
+        request = (
+            f"GET /healthz HTTP/1.1\r\n"
+            f"Accept-Encoding: identity\r\n"
+            f"Host: 127.0.0.1:{proxy_port}\r\n"
+            f"User-Agent: Python-urllib/3.11\r\n"
+            f"Connection: close\r\n\r\n"
+        ).encode("ascii")
+        with socket.create_connection(("127.0.0.1", proxy_port), timeout=2) as client:
+            client.sendall(request)
+            client.settimeout(2)
+            try:
+                while client.recv(65_536):
+                    pass
+            except (ConnectionAbortedError, ConnectionResetError):
+                pass
+    finally:
+        (candidate / "release-probe").write_text("release", encoding="ascii")
+        worker.join(timeout=10)
+
+    assert worker.is_alive() is False
+    if "error" in observed:
+        raise observed["error"]  # type: ignore[misc]
+    result = observed["result"]
+    assert isinstance(result, nova_release_gates.GateResult)
+    assert result.passed is False
+    assert not upstream_marker.exists()
+
+
+@pytest.mark.parametrize(
+    "request_template",
+    [
+        (
+            "POST /healthz HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n"
+            "Content-Length: 4\r\n\r\nPWN!"
+        ),
+        (
+            "GET /not-a-smoke-path HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n\r\n"
+        ),
+        (
+            "GET /healthz HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n"
+            "X-Not-Used-By-Smoke: value\r\n\r\n"
+        ),
+        (
+            "GET /healthz HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n\r\n"
+        ),
+        (
+            "GET /healthz HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n"
+            "Transfer-Encoding: chunked\r\n\r\n4\r\nPWN!\r\n0\r\n\r\n"
+        ),
+        (
+            "GET /healthz HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n\r\n"
+            "GET /status HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n\r\n"
+        ),
+        "GET /healthz HTTP/1.1\r\nMalformed-Header\r\n\r\n",
+        (
+            "GET /healthz HTTP/1.1\r\n"
+            "Accept-Encoding: identity\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "User-Agent: Python-urllib/3.11\r\n"
+            "Connection: close\r\n"
+            "X-Padding: " + "x" * 17_000 + "\r\n\r\n"
+        ),
+    ],
+    ids=(
+        "post-body",
+        "unknown-path",
+        "unknown-header",
+        "duplicate-host",
+        "chunked-body",
+        "pipelined-request",
+        "malformed-request",
+        "oversized-request",
+    ),
+)
+def test_clean_start_proxy_rejects_unapproved_http_before_upstream(
+    tmp_path: Path,
+    request_template: str,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    upstream_marker = candidate / "proxied-request"
+    _write_proxy_policy_server(candidate, upstream_marker)
+    _write_raw_socket_smoke_probe(candidate, request_template)
+
+    result = run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=5,
+    )
+
+    assert result.passed is False
+    assert not upstream_marker.exists()
+
+
+@pytest.mark.parametrize(
+    "paths",
+    [
+        ("/healthz",),
+        ("/healthz", "/healthz"),
+    ],
+    ids=("incomplete", "duplicate"),
+)
+def test_clean_start_proxy_requires_exact_nine_path_probe_sequence(
+    tmp_path: Path,
+    paths: tuple[str, ...],
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    _write_proxy_policy_server(candidate, candidate / "proxied-request")
+    (candidate / "tools" / "nova_smoke_check.py").write_text(
+        textwrap.dedent(
+            f"""
+            import argparse
+            from urllib.request import Request, urlopen
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--url", required=True)
+            args = parser.parse_args()
+            for path in {paths!r}:
+                request = Request(args.url + path, method="GET")
+                with urlopen(request, timeout=2) as response:
+                    response.read()
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=5,
+    )
+
+    assert result.passed is False
+    assert "exact smoke request sequence" in result.stderr_tail
+
+
+def test_clean_start_proxy_caps_total_accepted_connections(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    _write_proxy_policy_server(candidate, candidate / "proxied-request")
+    (candidate / "tools" / "nova_smoke_check.py").write_text(
+        textwrap.dedent(
+            """
+            import argparse
+            from urllib.request import urlopen
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--url", required=True)
+            args = parser.parse_args()
+            paths = ("/healthz", "/status", "/api/reliability/status")
+            for path in paths:
+                with urlopen(args.url + path, timeout=2) as response:
+                    response.read()
+            """
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_MAX_PROXY_CONNECTIONS",
+        2,
+        raising=False,
+    )
+
+    result = run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=5,
+    )
+
+    assert result.passed is False
+    assert "probe proxy exceeded connection limit" in result.stderr_tail
+
+
+def test_clean_start_proxy_caps_aggregate_relayed_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    _write_fake_smoke_candidate(
+        candidate,
+        """
+        import json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import sys
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = json.dumps({"ok": True, "padding": "x" * 256}).encode()
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format, *args):
+                return
+
+        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+        """,
+    )
+    (candidate / "tools" / "nova_smoke_check.py").write_text(
+        textwrap.dedent(
+            """
+            import argparse
+            from urllib.request import urlopen
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--url", required=True)
+            args = parser.parse_args()
+            paths = ("/healthz", "/status")
+            for path in paths:
+                with urlopen(args.url + path, timeout=2) as response:
+                    response.read()
+            """
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_MAX_PROXY_TOTAL_BYTES",
+        750,
+        raising=False,
+    )
+
+    result = run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=5,
+    )
+
+    assert result.passed is False
+    assert "probe proxy exceeded aggregate transfer byte limit" in result.stderr_tail
+
+
+def test_clean_start_proxy_allows_exact_contained_read_only_probe_paths(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    request_log = candidate / "request-paths.log"
+    allowed_paths = (
+        "/healthz",
+        "/status",
+        "/api/reliability/status",
+        "/api/desktop/status",
+        "/assets/nova_foundation_ui.js",
+        "/assets/nova_foundation_ui.css",
+        "/manifest.webmanifest",
+        "/service-worker.js",
+        "/recovery",
+    )
+    _write_fake_smoke_candidate(
+        candidate,
+        f"""
+        import json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import pathlib
+        import sys
+
+        request_log = pathlib.Path({str(request_log)!r})
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                with request_log.open("a", encoding="utf-8") as stream:
+                    stream.write(self.path + "\\n")
+                body = json.dumps({{"ok": True}}).encode()
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format, *args):
+                return
+
+        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+        """,
+    )
+    (candidate / "tools" / "nova_smoke_check.py").write_text(
+        textwrap.dedent(
+            f"""
+            import argparse
+            from urllib.request import Request, urlopen
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--url", required=True)
+            args = parser.parse_args()
+            for path in {allowed_paths!r}:
+                request = Request(args.url + path, method="GET")
+                with urlopen(request, timeout=2) as response:
+                    response.read()
+            print("FULL_PROBE_OK")
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=10,
+    )
+
+    assert result.passed is True
+    assert "FULL_PROBE_OK" in result.stdout_tail
+    assert request_log.read_text(encoding="utf-8").splitlines() == [
+        "/healthz",
+        "/healthz",
+        "/status",
+        "/api/reliability/status",
+        "/api/desktop/status",
+        "/assets/nova_foundation_ui.js",
+        "/assets/nova_foundation_ui.css",
+        "/manifest.webmanifest",
+        "/service-worker.js",
+        "/recovery",
+    ]
 
 
 def test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup(
@@ -1189,9 +2251,6 @@ def test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup(
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                if self.path != "/healthz":
-                    self.send_error(404)
-                    return
                 body = json.dumps({"ok": True, "version": "2026.fake"}).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
