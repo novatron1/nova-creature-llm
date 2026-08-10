@@ -67,8 +67,9 @@ class ReleaseSecurityResult:
 
 def _is_link(entry_stat: os.stat_result) -> bool:
     attributes = getattr(entry_stat, "st_file_attributes", 0)
+    reparse_point = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
     return stat.S_ISLNK(entry_stat.st_mode) or bool(
-        attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+        attributes & reparse_point
     )
 
 

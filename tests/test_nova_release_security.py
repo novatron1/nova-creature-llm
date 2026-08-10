@@ -35,6 +35,24 @@ def test_clean_release_candidate_passes(tmp_path: Path) -> None:
     assert result.inspected_files == 2
 
 
+def test_release_handles_missing_windows_reparse_constant(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "app.py").write_text("print('nova')", encoding="utf-8")
+    monkeypatch.delattr(
+        nova_release_security.stat,
+        "FILE_ATTRIBUTE_REPARSE_POINT",
+        raising=False,
+    )
+
+    result = inspect_release(tmp_path)
+
+    assert result.passed
+    assert result.inspected_files == 1
+    assert result.path_escape_findings == []
+
+
 def test_release_rejects_source_maps_secrets_private_keys_and_debug_artifacts(tmp_path: Path) -> None:
     (tmp_path / "app.js.map").write_text("{}", encoding="utf-8")
     (tmp_path / ".env").write_text("SECRET=true", encoding="utf-8")
