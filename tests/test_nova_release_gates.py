@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import base64
 import ctypes
 from dataclasses import replace
 import errno
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -12,6 +14,7 @@ import sys
 import textwrap
 import time
 from types import SimpleNamespace
+import zlib
 
 import pytest
 import nova_release_gates
@@ -695,6 +698,8 @@ def test_posix_cleanup_rechecks_session_after_supervisor_is_reaped(
     def session_cleanup(
         active_containment: object,
         deadline: float,
+        *,
+        allow_group_signal: bool,
     ) -> bool:
         return supervisor.poll() is None
 
@@ -709,6 +714,148 @@ def test_posix_cleanup_rechecks_session_after_supervisor_is_reaped(
         os.close(control_read)
 
     assert cleanup_complete is False
+
+
+def test_posix_cleanup_never_signals_numeric_group_after_supervisor_reap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(signal, "SIGKILL", 9, raising=False)
+
+    class FakeSupervisor:
+        pid = 4242
+        returncode: int | None = None
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def wait(self, timeout: float) -> int:
+            self.returncode = 0
+            return 0
+
+    supervisor = FakeSupervisor()
+    control_read, control_write = os.pipe()
+    containment = nova_release_gates._ProcessContainment(
+        supervisor,  # type: ignore[arg-type]
+        process_group_id=supervisor.pid,
+        control_fd=control_write,
+    )
+    monkeypatch.setattr(
+        containment,
+        "_linux_cleanup_scan",
+        lambda deadline: nova_release_gates._LinuxSessionScan(
+            (),
+            supervisor.poll() is None,
+        ),
+    )
+    post_reap_group_signals: list[int] = []
+
+    def observe_group_signal(process_group_id: int, signum: int) -> None:
+        if supervisor.poll() is not None:
+            post_reap_group_signals.append(signum)
+        raise ProcessLookupError
+
+    monkeypatch.setattr(os, "killpg", observe_group_signal, raising=False)
+    try:
+        cleanup_complete = containment.terminate_and_verify()
+    finally:
+        os.close(control_read)
+
+    assert cleanup_complete is False
+    assert post_reap_group_signals == []
+
+
+def test_failed_posix_launch_never_signals_numeric_group_after_supervisor_reap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(signal, "SIGKILL", 9, raising=False)
+
+    class FakeSupervisor:
+        pid = 4242
+        returncode: int | None = None
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def wait(self, timeout: float) -> int:
+            self.returncode = 0
+            return 0
+
+        def kill(self) -> None:
+            self.returncode = -9
+
+    supervisor = FakeSupervisor()
+    descriptor = os.open(os.devnull, os.O_RDONLY)
+    monkeypatch.setattr(os, "pidfd_open", lambda pid: descriptor, raising=False)
+    monkeypatch.setattr(
+        signal,
+        "pidfd_send_signal",
+        lambda process_descriptor, signum: None,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        nova_release_gates._ProcessContainment,
+        "_linux_cleanup_scan",
+        lambda containment, deadline: nova_release_gates._LinuxSessionScan(
+            (),
+            supervisor.poll() is None,
+        ),
+    )
+    post_reap_group_signals: list[int] = []
+
+    def observe_group_signal(process_group_id: int, signum: int) -> None:
+        if supervisor.poll() is not None:
+            post_reap_group_signals.append(signum)
+
+    monkeypatch.setattr(os, "killpg", observe_group_signal, raising=False)
+
+    cleanup_complete = nova_release_gates._terminate_failed_posix_launch(
+        supervisor,  # type: ignore[arg-type]
+    )
+
+    assert cleanup_complete is False
+    assert post_reap_group_signals == []
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux PID reuse proof")
+def test_real_posix_cleanup_does_not_reuse_reaped_group_identity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    containment = _launch_contained_process(
+        [sys.executable, "-c", "raise SystemExit(0)"],
+        cwd=candidate,
+        environment=_sanitized_environment(candidate, None),
+        deadline=time.monotonic() + 5,
+    )
+    assert containment.wait_candidate(5) == 0
+    original_scan = containment._linux_cleanup_scan
+    original_killpg = os.killpg
+    post_reap_group_signals: list[int] = []
+
+    def inject_incomplete_post_reap_scan(deadline: float) -> object:
+        if containment.process.poll() is not None:
+            return nova_release_gates._LinuxSessionScan((), False)
+        return original_scan(deadline)
+
+    def observe_group_signal(process_group_id: int, signum: int) -> None:
+        if containment.process.poll() is not None:
+            post_reap_group_signals.append(signum)
+            raise ProcessLookupError
+        original_killpg(process_group_id, signum)
+
+    monkeypatch.setattr(
+        containment,
+        "_linux_cleanup_scan",
+        inject_incomplete_post_reap_scan,
+    )
+    monkeypatch.setattr(os, "killpg", observe_group_signal)
+
+    cleanup_complete = containment.terminate_and_verify()
+
+    assert cleanup_complete is False
+    assert containment.process.poll() is not None
+    assert post_reap_group_signals == []
 
 
 def test_posix_cleanup_kills_and_reaps_stalled_supervisor(
@@ -741,7 +888,7 @@ def test_posix_cleanup_kills_and_reaps_stalled_supervisor(
     monkeypatch.setattr(
         nova_release_gates._ProcessContainment,
         "_terminate_linux_session_members",
-        lambda containment, deadline: True,
+        lambda containment, deadline, **kwargs: True,
     )
     try:
         cleanup_complete = containment.terminate_and_verify()
@@ -1705,39 +1852,152 @@ def _write_fake_smoke_candidate(candidate: Path, server_source: str) -> None:
         textwrap.dedent(server_source),
         encoding="utf-8",
     )
-    (tools / "nova_smoke_check.py").write_text(
+    _write_approved_smoke_checker(candidate)
+
+
+_APPROVED_SMOKE_CHECKER_FIXTURE = (
+    "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"
+)
+
+
+def _approved_smoke_checker_bytes() -> bytes:
+    content = zlib.decompress(
+        base64.b64decode(_APPROVED_SMOKE_CHECKER_FIXTURE.encode("ascii"))
+    )
+    assert len(content) == 4_597
+    assert (
+        hashlib.sha256(content).hexdigest()
+        == "9e2af16acd6c0b70c54940e2fb30c678754193789f6b25ddeb3f5d054118ce3e"
+    )
+    return content
+
+
+def _write_approved_smoke_checker(candidate: Path) -> None:
+    tools = candidate / "tools"
+    tools.mkdir(parents=True, exist_ok=True)
+    (tools / "nova_smoke_check.py").write_bytes(_approved_smoke_checker_bytes())
+
+
+def _approved_smoke_server_source(
+    *,
+    startup_source: str = "",
+    request_log: Path | None = None,
+) -> str:
+    prefix = textwrap.dedent(startup_source).strip()
+    if prefix:
+        prefix += "\n\n"
+    request_log_value = repr(str(request_log)) if request_log is not None else "None"
+    return (
         textwrap.dedent(
             """
-            import argparse
             import json
-            from urllib.request import urlopen
-
-            parser = argparse.ArgumentParser()
-            parser.add_argument("--url", required=True)
-            args = parser.parse_args()
-            paths = (
-                "/healthz",
-                "/status",
-                "/api/reliability/status",
-                "/api/desktop/status",
-                "/assets/nova_foundation_ui.js",
-                "/assets/nova_foundation_ui.css",
-                "/manifest.webmanifest",
-                "/service-worker.js",
-                "/recovery",
-            )
-            payload = None
-            for index, path in enumerate(paths):
-                with urlopen(args.url + path, timeout=2) as response:
-                    content = response.read()
-                if index == 0:
-                    payload = json.loads(content.decode("utf-8"))
-            if payload.get("ok") is not True:
-                raise SystemExit(1)
-            print("PROBE_OK")
+            from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+            import pathlib
+            import subprocess
+            import sys
             """
-        ),
-        encoding="utf-8",
+        )
+        + prefix
+        + textwrap.dedent(
+            f"""
+            request_log = {request_log_value}
+
+            class Handler(BaseHTTPRequestHandler):
+                def do_GET(self):
+                    if request_log is not None:
+                        with pathlib.Path(request_log).open("a", encoding="utf-8") as stream:
+                            stream.write(self.path + "\\n")
+                    if self.path == "/healthz":
+                        body = json.dumps({{"ok": True, "version": "2026.fake"}}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/status":
+                        body = json.dumps({{"ok": True}}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/api/reliability/status":
+                        body = json.dumps({{
+                            "ok": True,
+                            "diagnostics": {{}},
+                            "backups": {{}},
+                            "encryption_available": True,
+                            "vault_exports": [],
+                        }}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/api/desktop/status":
+                        body = json.dumps({{
+                            "ok": True,
+                            "autostart_enabled": False,
+                            "autostart_available": True,
+                        }}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/assets/nova_foundation_ui.js":
+                        body = b"loadReliabilityStatus applyPairingLink installNovaApp submitEncryptedBackupVault"
+                        content_type = "application/javascript"
+                    elif self.path == "/assets/nova_foundation_ui.css":
+                        body = b".reliability-check .pairing-qr-wrap .nova-vault-dialog"
+                        content_type = "text/css"
+                    elif self.path == "/manifest.webmanifest":
+                        body = json.dumps({{"display": "standalone", "icons": [{{}}]}}).encode()
+                        content_type = "application/manifest+json"
+                    elif self.path == "/service-worker.js":
+                        body = b"url.pathname.startsWith('/api/')"
+                        content_type = "application/javascript"
+                    elif self.path == "/recovery":
+                        body = b"<html>Nova Recovery</html>"
+                        content_type = "text/html"
+                    else:
+                        self.send_error(404)
+                        return
+                    self.send_response(200)
+                    self.send_header("Content-Type", content_type)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format, *args):
+                    return
+
+            ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+            """
+        )
+    )
+
+
+def _allow_custom_probe_for_proxy_policy_test(
+    candidate: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    content = (candidate / "tools" / "nova_smoke_check.py").read_bytes()
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_APPROVED_SMOKE_CHECKER_BYTES",
+        len(content),
+    )
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_APPROVED_SMOKE_CHECKER_SHA256",
+        hashlib.sha256(content).hexdigest(),
     )
 
 
@@ -1805,6 +2065,270 @@ def _write_proxy_policy_server(candidate: Path, marker: Path) -> None:
     )
 
 
+def test_clean_start_rejects_modified_delayed_body_checker_before_network(
+    tmp_path: Path,
+) -> None:
+    import socket
+    import threading
+
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    server_started = candidate / "server-started"
+    _write_fake_smoke_candidate(
+        candidate,
+        f"""
+        import json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import pathlib
+        import sys
+
+        pathlib.Path({str(server_started)!r}).write_text("started")
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = json.dumps({{"ok": True, "version": "2026.fake"}}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format, *args):
+                return
+
+        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+        """,
+    )
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.bind(("127.0.0.1", 0))
+    listener.listen(1)
+    listener.settimeout(3)
+    target_port = int(listener.getsockname()[1])
+    contacted = threading.Event()
+
+    def observe_contact() -> None:
+        try:
+            connection, _ = listener.accept()
+        except OSError:
+            return
+        with connection:
+            contacted.set()
+            try:
+                while connection.recv(65_536):
+                    pass
+            except OSError:
+                pass
+
+    observer = threading.Thread(target=observe_contact)
+    observer.start()
+    modified_checker = textwrap.dedent(
+        f"""
+        import socket
+        import time
+
+        with socket.create_connection(("127.0.0.1", {target_port}), timeout=2) as client:
+            client.sendall(b"GET /healthz HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n")
+            time.sleep(0.2)
+            client.sendall(b"delayed-body")
+        """
+    ).encode("utf-8")
+    assert len(modified_checker) < 4_597
+    (candidate / "tools" / "nova_smoke_check.py").write_bytes(
+        modified_checker + b"#" * (4_597 - len(modified_checker))
+    )
+
+    observed_error: ValueError | None = None
+    try:
+        try:
+            run_clean_start_smoke(
+                candidate,
+                tmp_path / "reports" / "smoke.json",
+                timeout_seconds=5,
+            )
+        except ValueError as error:
+            observed_error = error
+    finally:
+        listener.close()
+        observer.join(timeout=5)
+
+    assert observed_error is not None
+    assert "approved smoke checker" in str(observed_error)
+    assert contacted.is_set() is False
+    assert server_started.exists() is False
+
+
+def test_clean_start_rejects_approved_checker_through_link_before_launch(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    (candidate / "src").mkdir()
+    server_started = candidate / "server-started"
+    (candidate / "nova_enhanced_server.py").write_text(
+        f"from pathlib import Path\nPath({str(server_started)!r}).write_text('bad')\n",
+        encoding="utf-8",
+    )
+    external_tools = tmp_path / "external-tools"
+    external_tools.mkdir()
+    (external_tools / "nova_smoke_check.py").write_bytes(
+        _approved_smoke_checker_bytes()
+    )
+    _make_directory_link(candidate / "tools", external_tools)
+    reports = tmp_path / "reports"
+
+    with pytest.raises(ValueError, match="approved smoke checker"):
+        run_clean_start_smoke(
+            candidate,
+            reports / "smoke.json",
+            timeout_seconds=5,
+        )
+
+    assert server_started.exists() is False
+    assert reports.exists() is False
+
+
+def test_clean_start_proxy_rejects_redirect_without_contacting_location(
+    tmp_path: Path,
+) -> None:
+    import socket
+    import threading
+
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    redirect_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    redirect_listener.bind(("127.0.0.1", 0))
+    redirect_listener.listen(1)
+    redirect_listener.settimeout(4)
+    redirect_port = int(redirect_listener.getsockname()[1])
+    redirect_contacted = threading.Event()
+
+    def serve_redirect_target() -> None:
+        try:
+            connection, _ = redirect_listener.accept()
+        except OSError:
+            return
+        with connection:
+            redirect_contacted.set()
+            try:
+                connection.recv(65_536)
+                body = b'{"ok":true,"version":"2026.redirect"}'
+                connection.sendall(
+                    b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n"
+                    + f"Content-Length: {len(body)}\r\nConnection: close\r\n\r\n".encode(
+                        "ascii"
+                    )
+                    + body
+                )
+            except OSError:
+                pass
+
+    redirect_thread = threading.Thread(target=serve_redirect_target)
+    redirect_thread.start()
+    _write_fake_smoke_candidate(
+        candidate,
+        f"""
+        import json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import sys
+
+        class Handler(BaseHTTPRequestHandler):
+            health_requests = 0
+
+            def do_GET(self):
+                if self.path == "/healthz":
+                    type(self).health_requests += 1
+                    if type(self).health_requests > 1:
+                        self.send_response(302)
+                        self.send_header("Location", "http://127.0.0.1:{redirect_port}/escape")
+                        self.send_header("Content-Length", "0")
+                        self.end_headers()
+                        return
+                    body = json.dumps({{"ok": True, "version": "2026.fake"}}).encode()
+                    content_type = "application/json"
+                elif self.path == "/status":
+                    body = json.dumps({{"ok": True}}).encode()
+                    content_type = "application/json"
+                elif self.path == "/api/reliability/status":
+                    body = json.dumps({{
+                        "ok": True,
+                        "diagnostics": {{}},
+                        "backups": {{}},
+                        "encryption_available": True,
+                        "vault_exports": [],
+                    }}).encode()
+                    content_type = "application/json"
+                elif self.path == "/api/desktop/status":
+                    body = json.dumps({{
+                        "ok": True,
+                        "autostart_enabled": False,
+                        "autostart_available": True,
+                    }}).encode()
+                    content_type = "application/json"
+                elif self.path == "/assets/nova_foundation_ui.js":
+                    body = b"loadReliabilityStatus applyPairingLink installNovaApp submitEncryptedBackupVault"
+                    content_type = "application/javascript"
+                elif self.path == "/assets/nova_foundation_ui.css":
+                    body = b".reliability-check .pairing-qr-wrap .nova-vault-dialog"
+                    content_type = "text/css"
+                elif self.path == "/manifest.webmanifest":
+                    body = json.dumps({{"display": "standalone", "icons": [{{}}]}}).encode()
+                    content_type = "application/manifest+json"
+                elif self.path == "/service-worker.js":
+                    body = b"url.pathname.startsWith('/api/')"
+                    content_type = "application/javascript"
+                else:
+                    body = b"<html>Nova Recovery</html>"
+                    content_type = "text/html"
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format, *args):
+                return
+
+        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+        """,
+    )
+    _write_approved_smoke_checker(candidate)
+
+    try:
+        result = run_clean_start_smoke(
+            candidate,
+            tmp_path / "reports" / "smoke.json",
+            timeout_seconds=8,
+        )
+    finally:
+        redirect_listener.close()
+        redirect_thread.join(timeout=5)
+
+    assert result.passed is False
+    assert "redirect" in result.stderr_tail
+    assert redirect_contacted.is_set() is False
+
+
+def test_probe_proxy_rejects_queued_tenth_connection_during_stop() -> None:
+    import socket
+
+    proxy = nova_release_gates._OwnershipProxy(
+        9,
+        SimpleNamespace(),  # type: ignore[arg-type]
+        time.monotonic() + 5,
+    )
+    proxy._probe_containment = SimpleNamespace()  # type: ignore[assignment]
+    proxy._completed_paths.extend(nova_release_gates._SMOKE_PROBE_PATHS)
+    proxy._accepted_connections = len(nova_release_gates._SMOKE_PROBE_PATHS)
+    queued = socket.create_connection(("127.0.0.1", proxy.port), timeout=2)
+    try:
+        verified, reason = proxy.stop_and_verify()
+    finally:
+        queued.close()
+
+    assert verified is False
+    assert "exact smoke request sequence" in reason
+
+
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux handshake proof")
 def test_clean_start_smoke_launch_setup_obeys_one_second_absolute_budget(
     tmp_path: Path,
@@ -1832,6 +2356,7 @@ def test_clean_start_smoke_launch_setup_obeys_one_second_absolute_budget(
 
 def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import socket
     import threading
@@ -1862,6 +2387,7 @@ def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
         ),
         encoding="utf-8",
     )
+    _allow_custom_probe_for_proxy_policy_test(candidate, monkeypatch)
     report_path = tmp_path / "reports" / "smoke.json"
     observed: dict[str, object] = {}
 
@@ -1982,6 +2508,7 @@ def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
 )
 def test_clean_start_proxy_rejects_unapproved_http_before_upstream(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
     request_template: str,
 ) -> None:
     candidate = tmp_path / "candidate"
@@ -1989,6 +2516,7 @@ def test_clean_start_proxy_rejects_unapproved_http_before_upstream(
     upstream_marker = candidate / "proxied-request"
     _write_proxy_policy_server(candidate, upstream_marker)
     _write_raw_socket_smoke_probe(candidate, request_template)
+    _allow_custom_probe_for_proxy_policy_test(candidate, monkeypatch)
 
     result = run_clean_start_smoke(
         candidate,
@@ -2010,6 +2538,7 @@ def test_clean_start_proxy_rejects_unapproved_http_before_upstream(
 )
 def test_clean_start_proxy_requires_exact_nine_path_probe_sequence(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
     paths: tuple[str, ...],
 ) -> None:
     candidate = tmp_path / "candidate"
@@ -2032,6 +2561,7 @@ def test_clean_start_proxy_requires_exact_nine_path_probe_sequence(
         ),
         encoding="utf-8",
     )
+    _allow_custom_probe_for_proxy_policy_test(candidate, monkeypatch)
 
     result = run_clean_start_smoke(
         candidate,
@@ -2067,6 +2597,7 @@ def test_clean_start_proxy_caps_total_accepted_connections(
         ),
         encoding="utf-8",
     )
+    _allow_custom_probe_for_proxy_policy_test(candidate, monkeypatch)
     monkeypatch.setattr(
         nova_release_gates,
         "_MAX_PROXY_CONNECTIONS",
@@ -2128,6 +2659,7 @@ def test_clean_start_proxy_caps_aggregate_relayed_bytes(
         ),
         encoding="utf-8",
     )
+    _allow_custom_probe_for_proxy_policy_test(candidate, monkeypatch)
     monkeypatch.setattr(
         nova_release_gates,
         "_MAX_PROXY_TOTAL_BYTES",
@@ -2151,60 +2683,9 @@ def test_clean_start_proxy_allows_exact_contained_read_only_probe_paths(
     candidate = tmp_path / "candidate"
     candidate.mkdir()
     request_log = candidate / "request-paths.log"
-    allowed_paths = (
-        "/healthz",
-        "/status",
-        "/api/reliability/status",
-        "/api/desktop/status",
-        "/assets/nova_foundation_ui.js",
-        "/assets/nova_foundation_ui.css",
-        "/manifest.webmanifest",
-        "/service-worker.js",
-        "/recovery",
-    )
     _write_fake_smoke_candidate(
         candidate,
-        f"""
-        import json
-        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-        import pathlib
-        import sys
-
-        request_log = pathlib.Path({str(request_log)!r})
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                with request_log.open("a", encoding="utf-8") as stream:
-                    stream.write(self.path + "\\n")
-                body = json.dumps({{"ok": True}}).encode()
-                self.send_response(200)
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, format, *args):
-                return
-
-        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
-        """,
-    )
-    (candidate / "tools" / "nova_smoke_check.py").write_text(
-        textwrap.dedent(
-            f"""
-            import argparse
-            from urllib.request import Request, urlopen
-
-            parser = argparse.ArgumentParser()
-            parser.add_argument("--url", required=True)
-            args = parser.parse_args()
-            for path in {allowed_paths!r}:
-                request = Request(args.url + path, method="GET")
-                with urlopen(request, timeout=2) as response:
-                    response.read()
-            print("FULL_PROBE_OK")
-            """
-        ),
-        encoding="utf-8",
+        _approved_smoke_server_source(request_log=request_log),
     )
 
     result = run_clean_start_smoke(
@@ -2214,7 +2695,7 @@ def test_clean_start_proxy_allows_exact_contained_read_only_probe_paths(
     )
 
     assert result.passed is True
-    assert "FULL_PROBE_OK" in result.stdout_tail
+    assert "NOVA SMOKE CHECK PASSED" in result.stdout_tail
     assert request_log.read_text(encoding="utf-8").splitlines() == [
         "/healthz",
         "/healthz",
@@ -2236,33 +2717,14 @@ def test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup(
     candidate.mkdir()
     _write_fake_smoke_candidate(
         candidate,
-        """
-        import json
-        import os
-        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-        import subprocess
-        import sys
-        import time
-
-        child = subprocess.Popen(
-            [sys.executable, "-c", "import time; time.sleep(30)"]
-        )
-        print(f"CHILD_PID={child.pid}", flush=True)
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                body = json.dumps({"ok": True, "version": "2026.fake"}).encode()
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, format, *args):
-                return
-
-        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
-        """,
+        _approved_smoke_server_source(
+            startup_source="""
+            child = subprocess.Popen(
+                [sys.executable, "-c", "import time; time.sleep(30)"]
+            )
+            print(f"CHILD_PID={child.pid}", flush=True)
+            """
+        ),
     )
     report_path = tmp_path / "reports" / "smoke.json"
 
@@ -2275,7 +2737,7 @@ def test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup(
     assert result.name == "clean_start_smoke"
     assert result.passed is True
     assert result.timed_out is False
-    assert "PROBE_OK" in result.stdout_tail
+    assert "NOVA SMOKE CHECK PASSED" in result.stdout_tail
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["startup_healthy"] is True
     assert report["probe_passed"] is True
@@ -2298,27 +2760,12 @@ def test_clean_start_smoke_persisted_log_honors_exact_byte_cap(tmp_path: Path) -
     candidate.mkdir()
     _write_fake_smoke_candidate(
         candidate,
-        r"""
-        import json
-        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-        import sys
-
-        sys.stdout.buffer.write(b"x" * 65530 + b"\xff" + b"\xf0\x9f\x92\xa5END")
-        sys.stdout.buffer.flush()
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                body = json.dumps({"ok": True}).encode()
-                self.send_response(200)
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, format, *args):
-                return
-
-        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
-        """,
+        _approved_smoke_server_source(
+            startup_source=r"""
+            sys.stdout.buffer.write(b"x" * 65530 + b"\xff" + b"\xf0\x9f\x92\xa5END")
+            sys.stdout.buffer.flush()
+            """
+        ),
     )
     report_path = tmp_path / "reports" / "smoke.json"
 
@@ -2391,19 +2838,16 @@ def test_clean_start_smoke_rejects_oversized_health_body_before_probe(
         ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
         """,
     )
-    (candidate / "tools" / "nova_smoke_check.py").write_text(
-        "from pathlib import Path\nPath('probe-ran').write_text('yes')\n",
-        encoding="utf-8",
-    )
-
+    report_path = tmp_path / "reports" / "smoke.json"
     result = run_clean_start_smoke(
         candidate,
-        tmp_path / "reports" / "smoke.json",
+        report_path,
         timeout_seconds=2,
     )
 
     assert result.passed is False
-    assert not (candidate / "probe-ran").exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["probe_passed"] is False
 
 
 def test_clean_start_smoke_trickled_health_body_obeys_global_deadline(
@@ -2482,11 +2926,6 @@ def test_clean_start_smoke_probe_cannot_round_past_global_deadline(
         ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
         """,
     )
-    (candidate / "tools" / "nova_smoke_check.py").write_text(
-        "import time\ntime.sleep(30)\n",
-        encoding="utf-8",
-    )
-
     started = time.monotonic()
     result = run_clean_start_smoke(
         candidate,
@@ -2528,19 +2967,16 @@ def test_clean_start_smoke_requires_leader_alive_after_readiness(
         server.handle_request()
         """,
     )
-    (candidate / "tools" / "nova_smoke_check.py").write_text(
-        "from pathlib import Path\nPath('probe-ran').write_text('yes')\n",
-        encoding="utf-8",
-    )
-
+    report_path = tmp_path / "reports" / "smoke.json"
     result = run_clean_start_smoke(
         candidate,
-        tmp_path / "reports" / "smoke.json",
+        report_path,
         timeout_seconds=2,
     )
 
     assert result.passed is False
-    assert not (candidate / "probe-ran").exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["probe_passed"] is False
 
 
 def test_release_smoke_cli_runs_isolated_candidate_and_writes_report(
@@ -2550,25 +2986,7 @@ def test_release_smoke_cli_runs_isolated_candidate_and_writes_report(
     candidate.mkdir()
     _write_fake_smoke_candidate(
         candidate,
-        """
-        import json
-        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-        import sys
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                body = json.dumps({"ok": True, "version": "2026.fake"}).encode()
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, format, *args):
-                return
-
-        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
-        """,
+        _approved_smoke_server_source(),
     )
     report_path = tmp_path / "reports" / "cli-smoke.json"
     repository_root = Path(__file__).resolve().parents[1]

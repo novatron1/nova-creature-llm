@@ -5,6 +5,7 @@ from __future__ import annotations
 import ctypes
 from ctypes import wintypes
 from dataclasses import asdict, dataclass
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -113,9 +114,20 @@ _MAX_HEALTH_HEADER_BYTES = 16_384
 _MAX_HEALTH_BODY_BYTES = 65_536
 _HEALTH_STABILITY_SECONDS = 0.25
 _MAX_PROXY_REQUEST_HEADER_BYTES = 16_384
+_MAX_PROXY_RESPONSE_HEADER_BYTES = 16_384
 _MAX_PROXY_CONNECTION_BYTES = 4 * 1024 * 1024
 _MAX_PROXY_TOTAL_BYTES = 16 * 1024 * 1024
 _MAX_PROXY_CONNECTIONS = 16
+_APPROVED_SMOKE_CHECKER_BYTES = 4_597
+_APPROVED_SMOKE_CHECKER_SHA256 = (
+    "9e2af16acd6c0b70c54940e2fb30c678754193789f6b25ddeb3f5d054118ce3e"
+)
+_APPROVED_SMOKE_CHECKER_PATH = "tools/nova_smoke_check.py"
+_APPROVED_SMOKE_EXECUTOR = (
+    "import sys; source = sys.argv.pop(1); script = sys.argv.pop(1); "
+    "sys.argv[0] = script; namespace = {'__name__': '__main__', "
+    "'__file__': script}; exec(compile(source, script, 'exec'), namespace, namespace)"
+)
 _SMOKE_PROBE_PATHS = (
     "/healthz",
     "/status",
@@ -155,6 +167,10 @@ class _ConnectionOwnershipRejected(Exception):
 
 
 class _ProbeRequestRejected(Exception):
+    pass
+
+
+class _ProbeResponseRejected(Exception):
     pass
 
 
@@ -395,6 +411,78 @@ def _is_link_or_reparse(path: Path) -> bool:
     attributes = getattr(entry_stat, "st_file_attributes", 0)
     reparse_point = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
     return stat.S_ISLNK(entry_stat.st_mode) or bool(attributes & reparse_point)
+
+
+def _approved_smoke_checker_source(candidate_root: Path) -> str:
+    checker_parent = candidate_root / "tools"
+    checker = checker_parent / "nova_smoke_check.py"
+    descriptor: int | None = None
+    try:
+        if (
+            not os.path.lexists(checker_parent)
+            or _is_link_or_reparse(checker_parent)
+        ):
+            raise ValueError
+        parent_before = os.lstat(checker_parent)
+        if not stat.S_ISDIR(parent_before.st_mode):
+            raise ValueError
+        if not os.path.lexists(checker) or _is_link_or_reparse(checker):
+            raise ValueError
+        path_before = os.lstat(checker)
+        if (
+            not stat.S_ISREG(path_before.st_mode)
+            or path_before.st_size != _APPROVED_SMOKE_CHECKER_BYTES
+        ):
+            raise ValueError
+        flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
+        if hasattr(os, "O_CLOEXEC"):
+            flags |= os.O_CLOEXEC
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        descriptor = os.open(checker, flags)
+        opened_before = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(opened_before.st_mode)
+            or opened_before.st_size != _APPROVED_SMOKE_CHECKER_BYTES
+            or (opened_before.st_dev, opened_before.st_ino)
+            != (path_before.st_dev, path_before.st_ino)
+        ):
+            raise ValueError
+        content = bytearray()
+        while len(content) <= _APPROVED_SMOKE_CHECKER_BYTES:
+            chunk = os.read(
+                descriptor,
+                min(8_192, _APPROVED_SMOKE_CHECKER_BYTES + 1 - len(content)),
+            )
+            if not chunk:
+                break
+            content.extend(chunk)
+        opened_after = os.fstat(descriptor)
+        parent_after = os.lstat(checker_parent)
+        path_after = os.lstat(checker)
+        if (
+            len(content) != _APPROVED_SMOKE_CHECKER_BYTES
+            or _is_link_or_reparse(checker_parent)
+            or _is_link_or_reparse(checker)
+            or (parent_after.st_dev, parent_after.st_ino)
+            != (parent_before.st_dev, parent_before.st_ino)
+            or (path_after.st_dev, path_after.st_ino)
+            != (opened_after.st_dev, opened_after.st_ino)
+            or (opened_after.st_dev, opened_after.st_ino, opened_after.st_size)
+            != (opened_before.st_dev, opened_before.st_ino, opened_before.st_size)
+            or hashlib.sha256(content).hexdigest()
+            != _APPROVED_SMOKE_CHECKER_SHA256
+        ):
+            raise ValueError
+        return bytes(content).decode("utf-8", errors="strict")
+    except (OSError, UnicodeError, ValueError) as error:
+        raise ValueError("candidate does not contain the approved smoke checker") from error
+    finally:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
 
 
 def _validate_existing_components(path: Path) -> None:
@@ -1063,16 +1151,6 @@ class _ProcessContainment:
         self.candidate_exit_code = int(status)
         return self.candidate_exit_code
 
-    @staticmethod
-    def _posix_group_exists(process_group_id: int) -> bool:
-        try:
-            os.killpg(process_group_id, 0)
-        except ProcessLookupError:
-            return False
-        except PermissionError:
-            return True
-        return True
-
     def terminate_and_verify(self) -> bool:
         if self.windows_job is not None:
             verified = self.windows_job.terminate_and_verify()
@@ -1082,8 +1160,10 @@ class _ProcessContainment:
             initial_cleanup_deadline = (
                 cleanup_deadline - _LINUX_FINAL_CLEANUP_RESERVE_SECONDS
             )
-            verified = self._terminate_linux_session_members(
-                initial_cleanup_deadline
+            supervisor_live = self.process.poll() is None
+            verified = supervisor_live and self._terminate_linux_session_members(
+                initial_cleanup_deadline,
+                allow_group_signal=True,
             )
             if self.control_fd is not None:
                 try:
@@ -1132,7 +1212,8 @@ class _ProcessContainment:
             verified = False
         if self.windows_job is None:
             final_session_verified = self._terminate_linux_session_members(
-                cleanup_deadline
+                cleanup_deadline,
+                allow_group_signal=False,
             )
             verified = final_session_verified and verified
         return verified and self.process.poll() is not None
@@ -1221,8 +1302,10 @@ class _ProcessContainment:
                         verified = False
         return verified
 
-    def _kill_linux_process_group(self) -> bool:
+    def _kill_linux_process_group(self, *, group_identity_pinned: bool) -> bool:
         assert self.process_group_id is not None
+        if not group_identity_pinned:
+            return False
         try:
             os.killpg(self.process_group_id, signal.SIGKILL)
         except ProcessLookupError:
@@ -1237,11 +1320,17 @@ class _ProcessContainment:
             return _LinuxSessionScan((), False)
         return self._linux_session_members(scan_deadline)
 
-    def _terminate_linux_session_members(self, deadline: float) -> bool:
+    def _terminate_linux_session_members(
+        self,
+        deadline: float,
+        *,
+        allow_group_signal: bool,
+    ) -> bool:
         scan = self._linux_cleanup_scan(deadline)
         if not scan.complete:
             self._signal_linux_members(scan.members, signal.SIGKILL, deadline)
-            self._kill_linux_process_group()
+            if allow_group_signal:
+                self._kill_linux_process_group(group_identity_pinned=True)
             return False
         verified = self._signal_linux_members(
             scan.members,
@@ -1257,7 +1346,8 @@ class _ProcessContainment:
                     signal.SIGKILL,
                     deadline,
                 )
-                self._kill_linux_process_group()
+                if allow_group_signal:
+                    self._kill_linux_process_group(group_identity_pinned=True)
                 return False
             if not remaining.members:
                 return verified
@@ -1269,7 +1359,8 @@ class _ProcessContainment:
                 signal.SIGKILL,
                 deadline,
             )
-            self._kill_linux_process_group()
+            if allow_group_signal:
+                self._kill_linux_process_group(group_identity_pinned=True)
             return False
         verified = (
             self._signal_linux_members(
@@ -1287,7 +1378,8 @@ class _ProcessContainment:
                     signal.SIGKILL,
                     deadline,
                 )
-                self._kill_linux_process_group()
+                if allow_group_signal:
+                    self._kill_linux_process_group(group_identity_pinned=True)
                 return False
             if not remaining.members:
                 return verified
@@ -1322,10 +1414,15 @@ def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> bool:
             verified = False
     except BaseException:
         verified = False
-    try:
-        if not containment._kill_linux_process_group():
+    if process.poll() is None:
+        try:
+            if not containment._kill_linux_process_group(
+                group_identity_pinned=True
+            ):
+                verified = False
+        except BaseException:
             verified = False
-    except BaseException:
+    else:
         verified = False
 
     supervisor_descriptor: int | None = None
@@ -1382,10 +1479,6 @@ def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> bool:
         except BaseException:
             verified = False
         if not remaining.complete:
-            try:
-                containment._kill_linux_process_group()
-            except BaseException:
-                pass
             break
         if not remaining.members:
             session_empty = True
@@ -2769,16 +2862,88 @@ class _OwnershipProxy:
             is None
         ):
             raise _ProbeRequestRejected("probe proxy rejected header shape")
-        try:
-            readable, _, _ = select.select([client], [], [], 0)
-            if readable and client.recv(1, socket.MSG_PEEK):
-                raise _ProbeRequestRejected("probe proxy rejected request body")
-            client.shutdown(socket.SHUT_RD)
-        except _ProbeRequestRejected:
-            raise
-        except OSError as error:
-            raise _ProbeRequestRejected("probe proxy rejected malformed request") from error
         return request_parts[1]
+
+    def _read_candidate_response(self, upstream: socket.socket) -> bytes:
+        received = bytearray()
+        header_end = -1
+        while header_end < 0:
+            if _deadline_expired(self._deadline):
+                raise _ProbeResponseRejected("probe proxy exceeded smoke deadline")
+            remaining_capacity = (
+                _MAX_PROXY_RESPONSE_HEADER_BYTES + 1 - len(received)
+            )
+            if remaining_capacity <= 0:
+                raise _ProbeResponseRejected(
+                    "probe proxy rejected oversized candidate response"
+                )
+            try:
+                upstream.settimeout(_remaining_seconds(self._deadline))
+                content = upstream.recv(min(8_192, remaining_capacity))
+            except (OSError, TimeoutError) as error:
+                raise _ProbeResponseRejected(
+                    "probe proxy could not read candidate response"
+                ) from error
+            if not content:
+                raise _ProbeResponseRejected(
+                    "probe proxy could not read candidate response"
+                )
+            received.extend(content)
+            header_end = received.find(b"\r\n\r\n")
+            if header_end < 0 and len(received) > _MAX_PROXY_RESPONSE_HEADER_BYTES:
+                raise _ProbeResponseRejected(
+                    "probe proxy rejected oversized candidate response"
+                )
+        if header_end + 4 > _MAX_PROXY_RESPONSE_HEADER_BYTES:
+            raise _ProbeResponseRejected(
+                "probe proxy rejected oversized candidate response"
+            )
+        try:
+            lines = bytes(received[:header_end]).decode("ascii").split("\r\n")
+        except UnicodeError as error:
+            raise _ProbeResponseRejected(
+                "probe proxy rejected malformed candidate response"
+            ) from error
+        status_match = re.fullmatch(
+            r"HTTP/1\.[01] ([0-9]{3})(?: [\x20-\x7e]*)?",
+            lines[0],
+        )
+        if status_match is None:
+            raise _ProbeResponseRejected(
+                "probe proxy rejected malformed candidate response"
+            )
+        status_code = int(status_match.group(1))
+        if 300 <= status_code < 400:
+            raise _ProbeResponseRejected("probe proxy rejected candidate redirect")
+        if not 200 <= status_code < 300:
+            raise _ProbeResponseRejected(
+                "probe proxy rejected non-success candidate response"
+            )
+        observed_headers: set[str] = set()
+        for line in lines[1:]:
+            if ":" not in line:
+                raise _ProbeResponseRejected(
+                    "probe proxy rejected malformed candidate response"
+                )
+            name, raw_value = line.split(":", 1)
+            if not re.fullmatch(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]+", name):
+                raise _ProbeResponseRejected(
+                    "probe proxy rejected malformed candidate response"
+                )
+            value = raw_value.strip()
+            if any(ord(character) < 32 or ord(character) == 127 for character in value):
+                raise _ProbeResponseRejected(
+                    "probe proxy rejected malformed candidate response"
+                )
+            normalized_name = name.lower()
+            if normalized_name in observed_headers:
+                raise _ProbeResponseRejected(
+                    "probe proxy rejected duplicate candidate response header"
+                )
+            observed_headers.add(normalized_name)
+            if normalized_name in {"location", "uri", "refresh"}:
+                raise _ProbeResponseRejected("probe proxy rejected candidate redirect")
+        return bytes(received)
 
     def _reserve_relay_bytes(
         self,
@@ -2801,6 +2966,11 @@ class _OwnershipProxy:
         upstream: socket.socket,
         connection_bytes: int,
     ) -> bool:
+        try:
+            pending = self._read_candidate_response(upstream)
+        except _ProbeResponseRejected as error:
+            self._error = str(error)
+            return False
         while not self._stop.is_set():
             if _deadline_expired(self._deadline):
                 self._error = "probe proxy exceeded smoke deadline"
@@ -2812,12 +2982,16 @@ class _OwnershipProxy:
                 max(1, per_connection_remaining + 1),
                 max(1, aggregate_remaining + 1),
             )
-            try:
-                upstream.settimeout(_remaining_seconds(self._deadline))
-                content = upstream.recv(receive_bytes)
-            except (OSError, TimeoutError):
-                self._error = "probe proxy relay failed"
-                return False
+            if pending:
+                content = pending
+                pending = b""
+            else:
+                try:
+                    upstream.settimeout(_remaining_seconds(self._deadline))
+                    content = upstream.recv(receive_bytes)
+                except (OSError, TimeoutError):
+                    self._error = "probe proxy relay failed"
+                    return False
             if not content:
                 return True
             if not self._reserve_relay_bytes(
@@ -2835,18 +3009,56 @@ class _OwnershipProxy:
         self._error = "probe proxy relay did not complete"
         return False
 
+    def _drain_listener_backlog(self) -> None:
+        drained_connections = 0
+        try:
+            self._listener.setblocking(False)
+            while True:
+                if (
+                    _deadline_expired(self._deadline)
+                    or self._accepted_connections >= self._maximum_connections
+                ):
+                    if not self._error:
+                        self._error = "probe proxy exceeded connection limit"
+                    return
+                try:
+                    client, _ = self._listener.accept()
+                except BlockingIOError:
+                    break
+                except OSError:
+                    if not self._error:
+                        self._error = "probe proxy accept backlog could not be verified"
+                    return
+                self._accepted_connections += 1
+                drained_connections += 1
+                try:
+                    client.close()
+                except OSError:
+                    if not self._error:
+                        self._error = "probe proxy accept backlog could not be verified"
+                    return
+        except OSError:
+            if not self._error:
+                self._error = "probe proxy accept backlog could not be verified"
+            return
+        if drained_connections and not self._error:
+            self._error = "probe proxy did not observe exact smoke request sequence"
+
     def stop_and_verify(self) -> tuple[bool, str]:
         if not self._stopped:
             self._stopped = True
             self._stop.set()
-            try:
-                self._listener.close()
-            except OSError:
-                pass
             if self._started:
                 self._thread.join(
                     timeout=min(2, max(0, self._deadline - time.monotonic()))
                 )
+            if not self._started or not self._thread.is_alive():
+                self._drain_listener_backlog()
+            try:
+                self._listener.close()
+            except OSError:
+                if not self._error:
+                    self._error = "probe proxy listener could not be closed"
         if self._started and self._thread.is_alive():
             return False, "probe ownership proxy did not stop"
         if self._error:
@@ -2874,6 +3086,9 @@ def run_clean_start_smoke(
     if _deadline_expired(deadline):
         raise TimeoutError("clean-start smoke deadline expired during preflight")
     candidate = Path(candidate_root).resolve()
+    approved_checker_source = _approved_smoke_checker_source(candidate)
+    if _deadline_expired(deadline):
+        raise TimeoutError("clean-start smoke deadline expired during preflight")
     destination = _absolute_lexical_path(report_path)
     safe_reports = _SafeReportDirectory(candidate, destination.parent)
     stdout_filename = destination.stem + ".server.stdout.log"
@@ -2968,6 +3183,16 @@ def run_clean_start_smoke(
                     "--url",
                     f"http://127.0.0.1:{ownership_proxy.port}",
                 ]
+                probe_execution_command = [
+                    sys.executable,
+                    "-I",
+                    "-c",
+                    _APPROVED_SMOKE_EXECUTOR,
+                    approved_checker_source,
+                    _APPROVED_SMOKE_CHECKER_PATH,
+                    "--url",
+                    f"http://127.0.0.1:{ownership_proxy.port}",
+                ]
                 probe_runner = GateRunner(
                     candidate,
                     safe_reports.path,
@@ -2975,11 +3200,15 @@ def run_clean_start_smoke(
                 probe_result = probe_runner._run_until(
                     GateDefinition(
                         name="clean_start_probe",
-                        argv=tuple(probe_command),
+                        argv=tuple(probe_execution_command),
                         timeout_seconds=timeout_seconds,
                     ),
                     deadline,
                     containment_ready=ownership_proxy.start,
+                )
+                probe_result.command = _redact_command(
+                    probe_command,
+                    sensitive_paths=sensitive_paths,
                 )
                 timed_out = probe_result.timed_out
                 ownership_complete, ownership_reason = (
