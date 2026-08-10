@@ -7,7 +7,23 @@ import subprocess
 
 import pytest
 
+import nova_release_security
 from nova_release_security import generate_sbom, inspect_release, verify_lockfile
+
+
+def _create_directory_link(target: Path, link: Path) -> None:
+    try:
+        os.symlink(target, link, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        if os.name != "nt":
+            pytest.skip("filesystem links are unavailable for this user")
+        junction = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(link), str(target)],
+            capture_output=True,
+            check=False,
+        )
+        if junction.returncode:
+            pytest.skip("filesystem links are unavailable for this user")
 
 
 def test_clean_release_candidate_passes(tmp_path: Path) -> None:
@@ -65,6 +81,61 @@ def test_release_rejects_link_that_resolves_outside_root(tmp_path: Path) -> None
 
     assert not result.passed
     assert result.path_escape_findings == ["outside-link.txt"]
+
+
+def test_release_rejects_ignored_directory_link_that_resolves_outside_root(tmp_path: Path) -> None:
+    outside = tmp_path.parent / f"{tmp_path.name}-ignored-outside"
+    outside.mkdir()
+    (outside / "private.txt").write_text("private", encoding="utf-8")
+    link = tmp_path / "ignored"
+    _create_directory_link(outside, link)
+
+    result = inspect_release(tmp_path, ignored_directories=("ignored",))
+
+    assert not result.passed
+    assert result.path_escape_findings == ["ignored"]
+
+
+def test_release_fails_closed_when_directory_cannot_be_enumerated(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    blocked = tmp_path / "blocked"
+    blocked.mkdir()
+    real_scandir = os.scandir
+
+    def failing_scandir(path: str | os.PathLike[str]):
+        if Path(path) == blocked:
+            raise PermissionError(13, "blocked for test", blocked)
+        return real_scandir(path)
+
+    monkeypatch.setattr(nova_release_security.os, "scandir", failing_scandir)
+
+    result = inspect_release(tmp_path)
+
+    assert not result.passed
+    assert result.path_escape_findings == ["blocked"]
+
+
+def test_release_fails_closed_when_entry_cannot_be_classified(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    unclassifiable = tmp_path / "unclassifiable.txt"
+    unclassifiable.write_text("private", encoding="utf-8")
+    real_lstat = os.lstat
+
+    def failing_lstat(path, *args, **kwargs):
+        if Path(path) == unclassifiable:
+            raise PermissionError(13, "blocked for test", unclassifiable)
+        return real_lstat(path, *args, **kwargs)
+
+    monkeypatch.setattr(nova_release_security.os, "lstat", failing_lstat)
+
+    result = inspect_release(tmp_path)
+
+    assert not result.passed
+    assert result.path_escape_findings == ["unclassifiable.txt"]
 
 
 def test_exact_dependency_lock_is_verified(tmp_path: Path) -> None:

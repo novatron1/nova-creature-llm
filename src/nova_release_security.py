@@ -65,18 +65,22 @@ class ReleaseSecurityResult:
         return asdict(self)
 
 
-def _is_link(path: Path) -> bool:
-    if path.is_symlink():
-        return True
+def _is_link(entry_stat: os.stat_result) -> bool:
+    attributes = getattr(entry_stat, "st_file_attributes", 0)
+    return stat.S_ISLNK(entry_stat.st_mode) or bool(
+        attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+    )
+
+
+def _relative_finding(path: Path, base: Path) -> str:
     try:
-        attributes = path.lstat().st_file_attributes
-    except (AttributeError, OSError):
-        return False
-    return bool(attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+        return path.relative_to(base).as_posix()
+    except ValueError:
+        return "."
 
 
 def _record_path_escape(path: Path, base: Path, findings: list[str]) -> None:
-    relative = path.relative_to(base).as_posix()
+    relative = _relative_finding(path, base)
     try:
         resolved = path.resolve(strict=False)
     except OSError:
@@ -101,30 +105,34 @@ def inspect_release(
     oversized: list[str] = []
     path_escapes: list[str] = []
     inspected = 0
-    for current_root, directory_names, file_names in os.walk(base, followlinks=False):
-        current = Path(current_root)
-        directory_names.sort()
-        file_names.sort()
-        traversable_directories: list[str] = []
-        for directory_name in directory_names:
-            path = current / directory_name
+
+    pending_directories = [base]
+    while pending_directories:
+        current = pending_directories.pop()
+        try:
+            with os.scandir(current) as scanner:
+                entries = sorted(scanner, key=lambda entry: entry.name)
+        except OSError:
+            path_escapes.append(_relative_finding(current, base))
+            continue
+        child_directories: list[Path] = []
+        for entry in entries:
+            path = current / entry.name
             relative = path.relative_to(base)
-            if any(part.lower() in ignored for part in relative.parts):
+            try:
+                entry_stat = os.lstat(path)
+            except OSError:
+                path_escapes.append(relative.as_posix())
                 continue
-            if _is_link(path):
+            if _is_link(entry_stat):
                 _record_path_escape(path, base, path_escapes)
                 continue
-            traversable_directories.append(directory_name)
-        directory_names[:] = traversable_directories
-        for file_name in file_names:
-            path = current / file_name
-            relative = path.relative_to(base)
-            if any(part.lower() in ignored for part in relative.parts[:-1]):
+            if stat.S_ISDIR(entry_stat.st_mode):
+                if any(part.lower() in ignored for part in relative.parts):
+                    continue
+                child_directories.append(path)
                 continue
-            if _is_link(path):
-                _record_path_escape(path, base, path_escapes)
-                continue
-            if not path.is_file():
+            if not stat.S_ISREG(entry_stat.st_mode):
                 continue
             inspected += 1
             lowered_name = path.name.lower()
@@ -136,17 +144,18 @@ def inspect_release(
                 or path.suffix.lower() in {".pyc", ".pyo"}
             ):
                 unexpected.append(relative.as_posix())
-            if path.stat().st_size > max_debug_bytes and any(
+            if entry_stat.st_size > max_debug_bytes and any(
                 marker in lowered_name for marker in ("debug", "trace", "log", "dump")
             ):
                 oversized.append(relative.as_posix())
-            if path.suffix.lower() in TEXT_SUFFIXES and path.stat().st_size <= 2_000_000:
+            if path.suffix.lower() in TEXT_SUFFIXES and entry_stat.st_size <= 2_000_000:
                 try:
                     content = path.read_text(encoding="utf-8", errors="ignore")
                 except OSError:
                     continue
                 if any(pattern.search(content) for pattern in SECRET_PATTERNS):
                     secrets.append(relative.as_posix())
+        pending_directories.extend(reversed(child_directories))
     return ReleaseSecurityResult(
         passed=not (unexpected or secrets or oversized or path_escapes),
         inspected_files=inspected,
