@@ -162,10 +162,15 @@ def test_sha256_file_rejects_replacement_between_inspection_and_open(
     replacement.write_text("replaced", encoding="utf-8")
     real_open = os.open
 
-    def replace_then_open(path: str | bytes | os.PathLike[str], flags: int, *args: int) -> int:
+    def replace_then_open(
+        path: str | bytes | os.PathLike[str],
+        flags: int,
+        *args: int,
+        **kwargs: int | None,
+    ) -> int:
         if Path(path) == target:
             os.replace(replacement, target)
-        return real_open(path, flags, *args)
+        return real_open(path, flags, *args, **kwargs)
 
     monkeypatch.setattr(release_manifest_module.os, "open", replace_then_open)
 
@@ -185,10 +190,15 @@ def test_manifest_rejects_file_replacement_before_descriptor_open(
     replacement.write_text("trusted = False\n", encoding="utf-8")
     real_open = os.open
 
-    def replace_then_open(path: str | bytes | os.PathLike[str], flags: int, *args: int) -> int:
+    def replace_then_open(
+        path: str | bytes | os.PathLike[str],
+        flags: int,
+        *args: int,
+        **kwargs: int | None,
+    ) -> int:
         if Path(path) == target:
             os.replace(replacement, target)
-        return real_open(path, flags, *args)
+        return real_open(path, flags, *args, **kwargs)
 
     monkeypatch.setattr(release_manifest_module.os, "open", replace_then_open)
 
@@ -323,14 +333,32 @@ def test_manifest_fails_closed_on_directory_enumeration_error(
     blocked = tmp_path / "blocked"
     blocked.mkdir()
     (blocked / "secret.txt").write_text("private", encoding="utf-8")
-    real_scandir = os.scandir
+    if os.name == "nt":
+        real_scandir = os.scandir
 
-    def deny_blocked_directory(path: str | bytes | os.PathLike[str]):
-        if Path(path) == blocked:
-            raise PermissionError("injected traversal denial")
-        return real_scandir(path)
+        def deny_blocked_directory(path: str | bytes | os.PathLike[str]):
+            if Path(path) == blocked:
+                raise PermissionError("injected traversal denial")
+            return real_scandir(path)
 
-    monkeypatch.setattr(release_manifest_module.os, "scandir", deny_blocked_directory)
+        monkeypatch.setattr(
+            release_manifest_module.os,
+            "scandir",
+            deny_blocked_directory,
+        )
+    else:
+        real_entries = release_manifest_module._PosixDirectoryAnchor.entries
+
+        def deny_blocked_anchor(anchor):
+            if anchor.path == blocked:
+                raise PermissionError("injected traversal denial")
+            return real_entries(anchor)
+
+        monkeypatch.setattr(
+            release_manifest_module._PosixDirectoryAnchor,
+            "entries",
+            deny_blocked_anchor,
+        )
 
     with pytest.raises(PermissionError, match="injected traversal denial"):
         build_content_manifest(
@@ -342,6 +370,52 @@ def test_manifest_fails_closed_on_directory_enumeration_error(
             deletions=[],
             gates={},
         )
+
+
+def test_manifest_rejects_intermediate_directory_substitution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    intermediate = candidate / "vendor" / "module"
+    intermediate.mkdir(parents=True)
+    (intermediate / "inside.py").write_text("inside = True\n", encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "outside.py").write_text("outside = True\n", encoding="utf-8")
+    parked = candidate / "vendor" / "parked"
+    attempted = False
+    real_open_anchor = getattr(release_manifest_module, "_open_directory_anchor", None)
+
+    def substitute_before_anchor(path: Path, *args: object, **kwargs: object):
+        nonlocal attempted
+        if path == intermediate:
+            attempted = True
+            os.replace(intermediate, parked)
+            _make_directory_link(intermediate, outside)
+        assert real_open_anchor is not None
+        return real_open_anchor(path, *args, **kwargs)
+
+    monkeypatch.setattr(
+        release_manifest_module,
+        "_open_directory_anchor",
+        substitute_before_anchor,
+        raising=False,
+    )
+
+    with pytest.raises(OSError):
+        build_content_manifest(
+            candidate,
+            source_branch="codex/test",
+            source_commit="f" * 40,
+            candidate_branch="codex/release-lock-test",
+            excluded_counts={},
+            deletions=[],
+            gates={},
+        )
+
+    assert attempted
+    assert not (outside / "NOVA_RELEASE_MANIFEST.json").exists()
 
 
 def test_run_report_is_local_to_git_common_dir_and_written_atomically(
@@ -523,6 +597,65 @@ def test_atomic_write_leaves_no_temporary_after_serialization_failure(
     assert not state_root.exists()
 
 
+def test_atomic_write_anchors_parent_across_validation_and_replace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    state_root = release_manifest_module.release_state_root(git_common_dir)
+    runs = state_root / "runs"
+    runs.mkdir(parents=True)
+    report_path = runs / "run-001.json"
+    parked = state_root / "parked-runs"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    outside_temporary = outside / "run-001.json.tmp"
+    outside_temporary.write_text("attacker-owned", encoding="utf-8")
+    outside_report = outside / "run-001.json"
+    validation_count = 0
+    attempted = False
+    substitution_blocked = False
+    real_validate = release_manifest_module._validate_destination_entry
+
+    def validate_then_substitute(destination: Path) -> None:
+        nonlocal validation_count, attempted, substitution_blocked
+        real_validate(destination)
+        if destination != report_path:
+            return
+        validation_count += 1
+        if validation_count != 2:
+            return
+        attempted = True
+        try:
+            os.replace(runs, parked)
+            _make_directory_link(runs, outside)
+        except OSError:
+            substitution_blocked = True
+
+    monkeypatch.setattr(
+        release_manifest_module,
+        "_validate_destination_entry",
+        validate_then_substitute,
+    )
+
+    if os.name == "nt":
+        release_manifest_module.write_json_atomic(report_path, {"status": "running"})
+        assert substitution_blocked
+        assert report_path.read_text(encoding="utf-8") == '{"status":"running"}\n'
+    else:
+        with pytest.raises(OSError, match="directory identity changed"):
+            release_manifest_module.write_json_atomic(
+                report_path,
+                {"status": "running"},
+            )
+        assert not (parked / "run-001.json.tmp").exists()
+
+    assert attempted
+    assert outside_temporary.read_text(encoding="utf-8") == "attacker-owned"
+    assert not outside_report.exists()
+
+
 def test_atomic_write_cleans_owned_temporary_after_replace_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -538,7 +671,11 @@ def test_atomic_write_cleans_owned_temporary_after_replace_failure(
     report_path.write_text('{"old":true}\n', encoding="utf-8")
     temporary = report_path.with_name("run-001.json.tmp")
 
-    def fail_replace(_source: Path, _destination: Path) -> None:
+    def fail_replace(
+        _source: Path | str,
+        _destination: Path | str,
+        **_kwargs: int,
+    ) -> None:
         raise OSError("injected replace failure")
 
     monkeypatch.setattr(release_manifest_module.os, "replace", fail_replace)
