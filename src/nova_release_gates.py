@@ -9,6 +9,8 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
+import select
 import signal
 import socket
 import stat
@@ -41,7 +43,12 @@ _AUTHORIZATION_PATTERN = re.compile(
 _BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[^\s,;]+")
 _PRIVATE_RECORD_MARKER = re.compile(
     r"(?im)(?:^|[{,])\s*[\"']?(?:prompt|response|memory(?:_contents?)?|"
-    r"database_rows?|db_rows?)[\"']?\s*[:=]"
+    r"database_rows?|db_rows?|private)[\"']?\s*[:=]"
+)
+_SENSITIVE_OPTION = re.compile(
+    r"^--?(?:[^=]*(?:prompt|response|memory|database|db|private|authorization|"
+    r"token|key|secret|password)[^=]*)(?:=(.*))?$",
+    re.IGNORECASE,
 )
 _WINDOWS_LAUNCHER = (
     "import json, subprocess, sys; "
@@ -50,6 +57,25 @@ _WINDOWS_LAUNCHER = (
     "stdin=subprocess.DEVNULL); "
     "raise SystemExit(child.wait())"
 )
+_POSIX_SUPERVISOR = """
+import json
+import os
+import signal
+import subprocess
+import sys
+
+status_fd = int(sys.argv[1])
+control_fd = int(sys.argv[2])
+payload = json.loads(sys.stdin.buffer.readline())
+child = subprocess.Popen(payload["argv"], shell=False, stdin=subprocess.DEVNULL)
+exit_code = child.wait()
+os.write(status_fd, (str(exit_code) + "\\n").encode("ascii"))
+os.close(status_fd)
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+os.read(control_fd, 1)
+os.close(control_fd)
+raise SystemExit(0)
+"""
 _MAX_HEALTH_HEADER_BYTES = 16_384
 _MAX_HEALTH_BODY_BYTES = 65_536
 
@@ -64,6 +90,7 @@ class GateDefinition:
     argv: tuple[str, ...]
     timeout_seconds: int
     required: bool = True
+    artifact_paths: tuple[str, ...] = ()
 
 
 @dataclass
@@ -174,6 +201,41 @@ def _record_output(
     return _valid_utf8_suffix(redacted, maximum_bytes)
 
 
+def _persisted_log_content(output: str, maximum_bytes: int) -> str:
+    bounded = _valid_utf8_suffix(output, maximum_bytes)
+    if bounded and len(bounded.encode("utf-8")) < maximum_bytes:
+        return bounded + "\n"
+    return bounded
+
+
+def _redact_command(
+    command: Iterable[str],
+    *,
+    sensitive_paths: Iterable[str | Path],
+) -> list[str]:
+    recorded: list[str] = []
+    redact_next = False
+    for argument in command:
+        if redact_next:
+            recorded.append("[REDACTED]")
+            redact_next = False
+            continue
+        option = _SENSITIVE_OPTION.match(argument)
+        if option is not None:
+            if "=" in argument:
+                recorded.append(argument.split("=", 1)[0] + "=[REDACTED]")
+            else:
+                recorded.append(
+                    redact_gate_output(argument, sensitive_paths=sensitive_paths)
+                )
+                redact_next = True
+            continue
+        recorded.append(
+            redact_gate_output(argument, sensitive_paths=sensitive_paths)
+        )
+    return recorded
+
+
 def _sanitized_environment(
     candidate_root: Path,
     base_environment: Mapping[str, str] | None,
@@ -259,12 +321,79 @@ class _SafeReportDirectory:
         ):
             raise ValueError("run-report directory must be outside the candidate")
         self._identity = self._directory_identity()
+        self._directory_fd: int | None = None
+        self._directory_handle: int | None = None
+        self._before_create_hook = None
+        self._pin_directory()
+
+    def _pin_directory(self) -> None:
+        if os.name != "nt":
+            flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+            if hasattr(os, "O_NOFOLLOW"):
+                flags |= os.O_NOFOLLOW
+            self._directory_fd = os.open(self.path, flags)
+            if self._pinned_identity() != self._identity:
+                self.close()
+                raise ValueError("run-report directory changed while pinning")
+            return
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateFileW.argtypes = [
+            wintypes.LPCWSTR,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            ctypes.c_void_p,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            wintypes.HANDLE,
+        ]
+        kernel32.CreateFileW.restype = wintypes.HANDLE
+        handle = kernel32.CreateFileW(
+            str(self.path),
+            0x0001,
+            0x00000001 | 0x00000002,
+            None,
+            3,
+            0x02000000 | 0x00200000,
+            None,
+        )
+        if handle == wintypes.HANDLE(-1).value:
+            raise ctypes.WinError(ctypes.get_last_error())
+        self._directory_handle = int(handle)
+        if self._directory_identity() != self._identity:
+            self.close()
+            raise ValueError("run-report directory changed while pinning")
+
+    def _pinned_identity(self) -> tuple[int, int]:
+        if self._directory_fd is not None:
+            directory_stat = os.fstat(self._directory_fd)
+            return (directory_stat.st_dev, directory_stat.st_ino)
+        return self._identity
+
+    def close(self) -> None:
+        if self._directory_fd is not None:
+            os.close(self._directory_fd)
+            self._directory_fd = None
+        if self._directory_handle is not None:
+            ctypes.WinDLL("kernel32", use_last_error=True).CloseHandle(
+                wintypes.HANDLE(self._directory_handle)
+            )
+            self._directory_handle = None
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except (OSError, AttributeError):
+            pass
 
     def _directory_identity(self) -> tuple[int, int]:
         directory_stat = os.stat(self.path, follow_symlinks=False)
         return (directory_stat.st_dev, directory_stat.st_ino)
 
     def verify(self) -> None:
+        if self._directory_fd is None and self._directory_handle is None:
+            raise ValueError("run-report directory pin is closed")
+        if self._pinned_identity() != self._identity:
+            raise ValueError("pinned run-report directory identity changed")
         _validate_existing_components(self.path)
         if self._directory_identity() != self._identity:
             raise ValueError("run-report directory identity changed")
@@ -288,16 +417,112 @@ class _SafeReportDirectory:
                 raise ValueError(f"report output is not a regular file: {destination}")
         return destination
 
+    def _artifact_filename(self, artifact_path: str | Path) -> str:
+        artifact = _absolute_lexical_path(artifact_path)
+        if artifact.parent != self.path:
+            raise ValueError("gate artifact must be within the verified report directory")
+        return artifact.name
+
+    def reserve_artifact(self, artifact_path: str | Path) -> tuple[str, tuple[int, int]]:
+        filename = self._artifact_filename(artifact_path)
+        destination = self.output_path(filename)
+        self.verify()
+        if os.path.lexists(destination):
+            if _is_link_or_reparse(destination):
+                raise ValueError("gate artifact is a link or reparse point")
+            raise ValueError("gate artifact already exists")
+        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        if self._directory_fd is not None:
+            descriptor = os.open(filename, flags, 0o600, dir_fd=self._directory_fd)
+        else:
+            descriptor = os.open(destination, flags, 0o600)
+        try:
+            artifact_stat = os.fstat(descriptor)
+            identity = (artifact_stat.st_dev, artifact_stat.st_ino)
+        finally:
+            os.close(descriptor)
+        self.verify()
+        return filename, identity
+
+    def verify_artifact(
+        self,
+        reservation: tuple[str, tuple[int, int]],
+    ) -> bool:
+        filename, identity = reservation
+        try:
+            self.verify()
+            destination = self.output_path(filename)
+            if _is_link_or_reparse(destination):
+                return False
+            if self._directory_fd is not None:
+                artifact_stat = os.stat(
+                    filename,
+                    dir_fd=self._directory_fd,
+                    follow_symlinks=False,
+                )
+            else:
+                artifact_stat = os.stat(destination, follow_symlinks=False)
+            return (
+                stat.S_ISREG(artifact_stat.st_mode)
+                and (artifact_stat.st_dev, artifact_stat.st_ino) == identity
+                and artifact_stat.st_size > 0
+            )
+        except (OSError, ValueError):
+            return False
+
+    def discard_artifact(
+        self,
+        reservation: tuple[str, tuple[int, int]],
+    ) -> None:
+        filename, identity = reservation
+        destination = self.output_path(filename)
+        try:
+            if self._directory_fd is not None:
+                artifact_stat = os.stat(
+                    filename,
+                    dir_fd=self._directory_fd,
+                    follow_symlinks=False,
+                )
+            else:
+                artifact_stat = os.stat(destination, follow_symlinks=False)
+            if (artifact_stat.st_dev, artifact_stat.st_ino) == identity:
+                if self._directory_fd is not None:
+                    os.unlink(filename, dir_fd=self._directory_fd)
+                else:
+                    destination.unlink()
+        except OSError:
+            pass
+
     def write_text(self, filename: str, content: str) -> Path:
         destination = self.validate_output(filename)
-        descriptor, temporary_name = tempfile.mkstemp(
-            dir=self.path,
-            prefix=f".{filename}.",
-            suffix=".tmp",
-        )
-        temporary = Path(temporary_name)
+        hook = self._before_create_hook
+        if hook is not None:
+            hook()
+        temporary_filename = f".{filename}.{secrets.token_hex(12)}.tmp"
+        if self._directory_fd is not None:
+            self._pinned_identity()
+            flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+            if hasattr(os, "O_NOFOLLOW"):
+                flags |= os.O_NOFOLLOW
+            descriptor = os.open(
+                temporary_filename,
+                flags,
+                0o600,
+                dir_fd=self._directory_fd,
+            )
+            temporary = self.path / temporary_filename
+        else:
+            descriptor, temporary_name = tempfile.mkstemp(
+                dir=self.path,
+                prefix=f".{filename}.",
+                suffix=".tmp",
+            )
+            temporary = Path(temporary_name)
+            temporary_filename = temporary.name
         try:
-            if _is_link_or_reparse(temporary):
+            if self._directory_fd is None and _is_link_or_reparse(temporary):
                 raise ValueError("exclusive report temporary became a link or reparse point")
             temporary_stat = os.fstat(descriptor)
             temporary_identity = (temporary_stat.st_dev, temporary_stat.st_ino)
@@ -308,15 +533,37 @@ class _SafeReportDirectory:
                 os.fsync(stream.fileno())
             self.verify()
             self.validate_output(filename)
-            current_temporary_stat = os.stat(temporary, follow_symlinks=False)
+            if self._directory_fd is not None:
+                current_temporary_stat = os.stat(
+                    temporary_filename,
+                    dir_fd=self._directory_fd,
+                    follow_symlinks=False,
+                )
+            else:
+                current_temporary_stat = os.stat(temporary, follow_symlinks=False)
             if (
                 current_temporary_stat.st_dev,
                 current_temporary_stat.st_ino,
             ) != temporary_identity:
                 raise ValueError("exclusive report temporary identity changed")
-            os.replace(temporary, destination)
+            if self._directory_fd is not None:
+                os.replace(
+                    temporary_filename,
+                    filename,
+                    src_dir_fd=self._directory_fd,
+                    dst_dir_fd=self._directory_fd,
+                )
+            else:
+                os.replace(temporary, destination)
             self.verify()
-            final_stat = os.stat(destination, follow_symlinks=False)
+            if self._directory_fd is not None:
+                final_stat = os.stat(
+                    filename,
+                    dir_fd=self._directory_fd,
+                    follow_symlinks=False,
+                )
+            else:
+                final_stat = os.stat(destination, follow_symlinks=False)
             if (
                 _is_link_or_reparse(destination)
                 or not stat.S_ISREG(final_stat.st_mode)
@@ -327,7 +574,12 @@ class _SafeReportDirectory:
         finally:
             if descriptor >= 0:
                 os.close(descriptor)
-            if os.path.lexists(temporary):
+            if self._directory_fd is not None:
+                try:
+                    os.unlink(temporary_filename, dir_fd=self._directory_fd)
+                except FileNotFoundError:
+                    pass
+            elif os.path.lexists(temporary):
                 temporary.unlink()
 
 
@@ -417,6 +669,14 @@ class _WindowsJob:
         kernel32.QueryInformationJobObject.restype = wintypes.BOOL
         kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
         kernel32.CloseHandle.restype = wintypes.BOOL
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.IsProcessInJob.argtypes = [
+            wintypes.HANDLE,
+            wintypes.HANDLE,
+            ctypes.POINTER(wintypes.BOOL),
+        ]
+        kernel32.IsProcessInJob.restype = wintypes.BOOL
         self._handle = kernel32.CreateJobObjectW(None, None)
         if not self._handle:
             raise ctypes.WinError(ctypes.get_last_error())
@@ -456,6 +716,22 @@ class _WindowsJob:
         if not queried:
             raise ctypes.WinError(ctypes.get_last_error())
         return int(information.ActiveProcesses)
+
+    def contains_pid(self, pid: int) -> bool:
+        process_handle = self._kernel32.OpenProcess(0x1000, False, pid)
+        if not process_handle:
+            return False
+        try:
+            contained = wintypes.BOOL()
+            if not self._kernel32.IsProcessInJob(
+                process_handle,
+                self._handle,
+                ctypes.byref(contained),
+            ):
+                return False
+            return bool(contained.value)
+        finally:
+            self._kernel32.CloseHandle(process_handle)
 
     def terminate_and_verify(self) -> bool:
         verified = False
@@ -499,10 +775,59 @@ class _ProcessContainment:
         *,
         process_group_id: int | None = None,
         windows_job: _WindowsJob | None = None,
+        status_fd: int | None = None,
+        control_fd: int | None = None,
     ) -> None:
         self.process = process
         self.process_group_id = process_group_id
         self.windows_job = windows_job
+        self.status_fd = status_fd
+        self.control_fd = control_fd
+        self.candidate_exit_code: int | None = None
+
+    @staticmethod
+    def _linux_process_session(pid: int) -> int | None:
+        try:
+            content = Path(f"/proc/{pid}/stat").read_text(encoding="ascii")
+            fields = content.rsplit(")", 1)[1].split()
+            return int(fields[3])
+        except (OSError, ValueError, IndexError):
+            return None
+
+    def owns_pid(self, pid: int) -> bool:
+        if self.windows_job is not None:
+            return self.windows_job.contains_pid(pid)
+        assert self.process_group_id is not None
+        return self._linux_process_session(pid) == self.process_group_id
+
+    def candidate_alive(self) -> bool:
+        if self.candidate_exit_code is not None:
+            return False
+        if self.status_fd is None:
+            return self.process.poll() is None
+        ready, _, _ = select.select([self.status_fd], [], [], 0)
+        if ready:
+            try:
+                self.wait_candidate(0)
+            except (OSError, subprocess.TimeoutExpired):
+                pass
+            return False
+        return self.process.poll() is None
+
+    def wait_candidate(self, timeout_seconds: float) -> int:
+        if self.status_fd is None:
+            self.candidate_exit_code = self.process.wait(timeout=timeout_seconds)
+            return self.candidate_exit_code
+        ready, _, _ = select.select([self.status_fd], [], [], timeout_seconds)
+        if not ready:
+            raise subprocess.TimeoutExpired("contained candidate", timeout_seconds)
+        status = os.read(self.status_fd, 64).decode("ascii").strip()
+        os.close(self.status_fd)
+        self.status_fd = None
+        if not status or not re.fullmatch(r"-?\d+", status):
+            raise OSError("trusted supervisor returned invalid candidate status")
+        self.candidate_exit_code = int(status)
+        return self.candidate_exit_code
 
     @staticmethod
     def _posix_group_exists(process_group_id: int) -> bool:
@@ -519,34 +844,91 @@ class _ProcessContainment:
             verified = self.windows_job.terminate_and_verify()
         else:
             assert self.process_group_id is not None
-            process_group_id = self.process_group_id
-            try:
-                os.killpg(process_group_id, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            grace_deadline = time.monotonic() + 0.5
-            while (
-                self._posix_group_exists(process_group_id)
-                and time.monotonic() < grace_deadline
-            ):
-                time.sleep(0.05)
-            if self._posix_group_exists(process_group_id):
+            verified = self._terminate_linux_session_members()
+            if self.control_fd is not None:
                 try:
-                    os.killpg(process_group_id, signal.SIGKILL)
-                except ProcessLookupError:
+                    os.write(self.control_fd, b"x")
+                except OSError:
+                    verified = False
+                try:
+                    os.close(self.control_fd)
+                except OSError:
+                    verified = False
+                self.control_fd = None
+            if self.status_fd is not None:
+                try:
+                    os.close(self.status_fd)
+                except OSError:
                     pass
-            verify_deadline = time.monotonic() + 5
-            while (
-                self._posix_group_exists(process_group_id)
-                and time.monotonic() < verify_deadline
-            ):
-                time.sleep(0.05)
-            verified = not self._posix_group_exists(process_group_id)
+                self.status_fd = None
         try:
             self.process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             verified = False
         return verified and self.process.poll() is not None
+
+    def _linux_session_members(self) -> list[int] | None:
+        if not sys.platform.startswith("linux"):
+            return None
+        members: list[int] = []
+        try:
+            entries = list(Path("/proc").iterdir())
+        except OSError:
+            return None
+        for entry in entries:
+            if not entry.name.isdigit():
+                continue
+            pid = int(entry.name)
+            if pid == self.process.pid:
+                continue
+            if self._linux_process_session(pid) == self.process_group_id:
+                members.append(pid)
+        return members
+
+    def _signal_linux_members(self, members: Iterable[int], signum: int) -> bool:
+        if not hasattr(os, "pidfd_open") or not hasattr(signal, "pidfd_send_signal"):
+            return False
+        verified = True
+        for pid in members:
+            descriptor: int | None = None
+            try:
+                descriptor = os.pidfd_open(pid)
+                if not self.owns_pid(pid):
+                    continue
+                signal.pidfd_send_signal(descriptor, signum)
+            except ProcessLookupError:
+                continue
+            except OSError:
+                verified = False
+            finally:
+                if descriptor is not None:
+                    os.close(descriptor)
+        return verified
+
+    def _terminate_linux_session_members(self) -> bool:
+        members = self._linux_session_members()
+        if members is None:
+            if self.process_group_id is not None:
+                try:
+                    os.killpg(self.process_group_id, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            return False
+        verified = self._signal_linux_members(members, signal.SIGTERM)
+        grace_deadline = time.monotonic() + 0.5
+        while time.monotonic() < grace_deadline:
+            remaining = self._linux_session_members()
+            if not remaining:
+                return verified
+            time.sleep(0.05)
+        remaining = self._linux_session_members() or []
+        verified = self._signal_linux_members(remaining, signal.SIGKILL) and verified
+        verify_deadline = time.monotonic() + 5
+        while time.monotonic() < verify_deadline:
+            if not self._linux_session_members():
+                return verified
+            time.sleep(0.05)
+        return False
 
 
 def _launch_contained_process(
@@ -556,17 +938,37 @@ def _launch_contained_process(
     environment: Mapping[str, str],
 ) -> _ProcessContainment:
     if os.name != "nt":
+        status_read, status_write = os.pipe()
+        control_read, control_write = os.pipe()
         process = subprocess.Popen(
-            command,
+            [
+                sys.executable,
+                "-I",
+                "-c",
+                _POSIX_SUPERVISOR,
+                str(status_write),
+                str(control_read),
+            ],
             cwd=cwd,
             env=environment,
             shell=False,
             start_new_session=True,
-            stdin=subprocess.DEVNULL,
+            pass_fds=(status_write, control_read),
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        return _ProcessContainment(process, process_group_id=process.pid)
+        os.close(status_write)
+        os.close(control_read)
+        assert process.stdin is not None
+        process.stdin.write(json.dumps({"argv": command}).encode("utf-8") + b"\n")
+        process.stdin.close()
+        return _ProcessContainment(
+            process,
+            process_group_id=process.pid,
+            status_fd=status_read,
+            control_fd=control_write,
+        )
 
     job = _WindowsJob()
     process: subprocess.Popen[bytes] | None = None
@@ -650,6 +1052,16 @@ class GateRunner:
         deadline: float,
     ) -> GateResult:
         self._safe_report_directory.verify()
+        artifact_reservations: list[tuple[str, tuple[int, int]]] = []
+        try:
+            for artifact_path in gate.artifact_paths:
+                artifact_reservations.append(
+                    self._safe_report_directory.reserve_artifact(artifact_path)
+                )
+        except BaseException:
+            for reservation in artifact_reservations:
+                self._safe_report_directory.discard_artifact(reservation)
+            raise
         started = time.monotonic()
         command = list(gate.argv)
         sensitive_paths = (
@@ -701,7 +1113,7 @@ class GateRunner:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise subprocess.TimeoutExpired(command, 0)
-                process.wait(timeout=remaining)
+                containment.wait_candidate(remaining)
             except subprocess.TimeoutExpired:
                 timed_out = True
         except OSError as error:
@@ -713,7 +1125,17 @@ class GateRunner:
                 capture_complete = _finish_capture(process, threads)
 
         duration = time.monotonic() - started
-        exit_code = process.returncode if process is not None else None
+        if containment is not None and containment.candidate_exit_code is not None:
+            exit_code = containment.candidate_exit_code
+        else:
+            exit_code = process.returncode if process is not None else None
+        artifacts_complete = all(
+            self._safe_report_directory.verify_artifact(reservation)
+            for reservation in artifact_reservations
+        )
+        if not artifacts_complete or timed_out or exit_code != 0:
+            for reservation in artifact_reservations:
+                self._safe_report_directory.discard_artifact(reservation)
         stdout = _record_output(
             stdout_tail.decode(),
             maximum_bytes=self.max_output_bytes,
@@ -725,6 +1147,15 @@ class GateRunner:
             raw_stderr = "\n".join(
                 part for part in (raw_stderr, cleanup_error) if part
             )
+        if not artifacts_complete:
+            raw_stderr = "\n".join(
+                part
+                for part in (
+                    raw_stderr,
+                    "gate artifact output could not be verified",
+                )
+                if part
+            )
         stderr = _record_output(
             raw_stderr,
             maximum_bytes=self.max_output_bytes,
@@ -734,10 +1165,10 @@ class GateRunner:
             gate.name,
             sensitive_paths=sensitive_paths,
         )
-        recorded_command = [
-            redact_gate_output(argument, sensitive_paths=sensitive_paths)
-            for argument in command
-        ]
+        recorded_command = _redact_command(
+            command,
+            sensitive_paths=sensitive_paths,
+        )
         return GateResult(
             name=recorded_name,
             command=recorded_command,
@@ -746,6 +1177,7 @@ class GateRunner:
                 and exit_code == 0
                 and cleanup_complete
                 and capture_complete
+                and artifacts_complete
             ),
             exit_code=exit_code,
             duration_seconds=duration,
@@ -803,6 +1235,7 @@ def default_gate_definitions(
                 str(reports / "nova-sbom.json"),
             ),
             timeout_seconds=120,
+            artifact_paths=(str(reports / "nova-sbom.json"),),
         ),
         GateDefinition(
             name="javascript",
@@ -848,6 +1281,7 @@ def default_gate_definitions(
                 str(reports / "conversation-560.json"),
             ),
             timeout_seconds=1_800,
+            artifact_paths=(str(reports / "conversation-560.json"),),
         ),
         GateDefinition(
             name="clean_start_smoke",
@@ -868,6 +1302,106 @@ def _unused_loopback_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
         listener.bind(("127.0.0.1", 0))
         return int(listener.getsockname()[1])
+
+
+def _windows_listener_owner_pids(port: int) -> set[int] | None:
+    if os.name != "nt":
+        return None
+
+    class _TcpRowOwnerPid(ctypes.Structure):
+        _fields_ = [
+            ("state", wintypes.DWORD),
+            ("local_address", wintypes.DWORD),
+            ("local_port", wintypes.DWORD),
+            ("remote_address", wintypes.DWORD),
+            ("remote_port", wintypes.DWORD),
+            ("owning_pid", wintypes.DWORD),
+        ]
+
+    iphlpapi = ctypes.WinDLL("iphlpapi", use_last_error=True)
+    function = iphlpapi.GetExtendedTcpTable
+    function.argtypes = [
+        ctypes.c_void_p,
+        ctypes.POINTER(wintypes.ULONG),
+        wintypes.BOOL,
+        wintypes.ULONG,
+        ctypes.c_int,
+        wintypes.ULONG,
+    ]
+    function.restype = wintypes.DWORD
+    size = wintypes.ULONG()
+    first = function(None, ctypes.byref(size), False, socket.AF_INET, 3, 0)
+    if first not in (0, 122) or not size.value:
+        return None
+    table = ctypes.create_string_buffer(size.value)
+    if function(table, ctypes.byref(size), False, socket.AF_INET, 3, 0) != 0:
+        return None
+    count = ctypes.cast(table, ctypes.POINTER(wintypes.DWORD)).contents.value
+    row_size = ctypes.sizeof(_TcpRowOwnerPid)
+    base = ctypes.addressof(table) + ctypes.sizeof(wintypes.DWORD)
+    owners: set[int] = set()
+    for index in range(count):
+        row = _TcpRowOwnerPid.from_address(base + index * row_size)
+        if socket.ntohs(int(row.local_port) & 0xFFFF) == port:
+            owners.add(int(row.owning_pid))
+    return owners
+
+
+def _linux_listener_owner_pids(port: int) -> set[int] | None:
+    if not sys.platform.startswith("linux"):
+        return None
+    inodes: set[str] = set()
+    try:
+        lines = Path("/proc/net/tcp").read_text(encoding="ascii").splitlines()[1:]
+        for line in lines:
+            fields = line.split()
+            if len(fields) >= 10:
+                local_port = int(fields[1].rsplit(":", 1)[1], 16)
+                if local_port == port and fields[3] == "0A":
+                    inodes.add(fields[9])
+    except (OSError, ValueError, IndexError):
+        return None
+    owners: set[int] = set()
+    try:
+        processes = list(Path("/proc").iterdir())
+    except OSError:
+        return None
+    for process in processes:
+        if not process.name.isdigit():
+            continue
+        try:
+            descriptors = list((process / "fd").iterdir())
+        except OSError:
+            continue
+        for descriptor in descriptors:
+            try:
+                target = os.readlink(descriptor)
+            except OSError:
+                continue
+            if target.startswith("socket:[") and target[8:-1] in inodes:
+                owners.add(int(process.name))
+                break
+    return owners
+
+
+def _listener_owned_by_containment(
+    port: int,
+    containment: _ProcessContainment,
+) -> tuple[bool, str]:
+    owners = (
+        _windows_listener_owner_pids(port)
+        if os.name == "nt"
+        else _linux_listener_owner_pids(port)
+    )
+    if owners is None:
+        return False, "listener ownership could not be resolved on this platform"
+    if not owners:
+        return False, "listener ownership could not be resolved"
+    if not containment.candidate_alive():
+        return False, "candidate exited before listener ownership proof"
+    if not all(containment.owns_pid(pid) for pid in owners):
+        return False, "listener ownership is outside candidate containment"
+    return True, ""
 
 
 def _remaining_seconds(deadline: float) -> float:
@@ -951,27 +1485,30 @@ def _read_health_response(port: int, deadline: float) -> bool:
 def _wait_for_health(
     port: int,
     deadline: float,
-    process: subprocess.Popen[bytes],
-) -> tuple[bool, bool]:
+    containment: _ProcessContainment,
+) -> tuple[bool, bool, str]:
     while time.monotonic() < deadline:
-        if process.poll() is not None:
-            return False, False
+        if not containment.candidate_alive():
+            return False, False, "candidate exited before readiness"
         try:
             ready = _read_health_response(port, deadline)
         except _HealthResponseRejected:
-            return False, True
+            return False, True, ""
         except (OSError, ValueError, json.JSONDecodeError):
             ready = False
         if ready:
-            try:
-                process.wait(timeout=min(0.05, _remaining_seconds(deadline)))
-            except subprocess.TimeoutExpired:
-                return True, False
-            except TimeoutError:
-                return False, False
-            return False, False
+            owned, reason = _listener_owned_by_containment(port, containment)
+            if not owned:
+                return False, False, reason
+            time.sleep(min(0.05, max(0, deadline - time.monotonic())))
+            if not containment.candidate_alive():
+                return False, False, "candidate exited after readiness"
+            owned, reason = _listener_owned_by_containment(port, containment)
+            if not owned:
+                return False, False, reason
+            return True, False, ""
         time.sleep(min(0.05, max(0, deadline - time.monotonic())))
-    return False, False
+    return False, False, ""
 
 
 def run_clean_start_smoke(
@@ -1045,19 +1582,32 @@ def run_clean_start_smoke(
         for thread in server_threads:
             thread.start()
 
-        startup_healthy, health_rejected = _wait_for_health(
+        startup_healthy, health_rejected, ownership_error = _wait_for_health(
             port,
             deadline,
-            server,
+            server_containment,
         )
         if health_rejected:
             launch_error = "health response exceeded its allowed byte boundary"
-        if not startup_healthy and not health_rejected and server.poll() is None:
+        elif ownership_error:
+            launch_error = ownership_error
+        if (
+            not startup_healthy
+            and not health_rejected
+            and server_containment.candidate_alive()
+        ):
             timed_out = time.monotonic() >= deadline
         if startup_healthy:
-            if server.poll() is not None:
+            if not server_containment.candidate_alive():
                 startup_healthy = False
                 launch_error = "candidate server exited after readiness"
+            owned_before_probe, ownership_reason = _listener_owned_by_containment(
+                port,
+                server_containment,
+            )
+            if startup_healthy and not owned_before_probe:
+                startup_healthy = False
+                launch_error = ownership_reason
             remaining = deadline - time.monotonic()
             if startup_healthy and remaining <= 0:
                 timed_out = True
@@ -1075,9 +1625,18 @@ def run_clean_start_smoke(
                     deadline,
                 )
                 timed_out = probe_result.timed_out
-                server_alive_after_probe = server.poll() is None
+                owned_after_probe, ownership_reason = _listener_owned_by_containment(
+                    port,
+                    server_containment,
+                )
+                server_alive_after_probe = (
+                    server_containment.candidate_alive() and owned_after_probe
+                )
                 if not server_alive_after_probe:
-                    launch_error = "candidate server exited during smoke probe"
+                    launch_error = (
+                        ownership_reason
+                        or "candidate server exited during smoke probe"
+                    )
     except OSError as error:
         launch_error = str(error)
     finally:
@@ -1123,10 +1682,10 @@ def run_clean_start_smoke(
         exit_code = None
     result = GateResult(
         name="clean_start_smoke",
-        command=[
-            redact_gate_output(argument, sensitive_paths=sensitive_paths)
-            for argument in (probe_command if startup_healthy else server_command)
-        ],
+        command=_redact_command(
+            probe_command if startup_healthy else server_command,
+            sensitive_paths=sensitive_paths,
+        ),
         passed=startup_healthy and probe_passed and cleanup_complete,
         exit_code=exit_code,
         duration_seconds=time.monotonic() - started,
@@ -1137,11 +1696,11 @@ def run_clean_start_smoke(
 
     stdout_file = safe_reports.write_text(
         stdout_filename,
-        recorded_server_stdout + ("\n" if recorded_server_stdout else ""),
+        _persisted_log_content(recorded_server_stdout, 65_536),
     )
     stderr_file = safe_reports.write_text(
         stderr_filename,
-        recorded_server_stderr + ("\n" if recorded_server_stderr else ""),
+        _persisted_log_content(recorded_server_stderr, 65_536),
     )
     payload = asdict(result)
     payload.update(

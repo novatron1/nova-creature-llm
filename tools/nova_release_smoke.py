@@ -25,11 +25,19 @@ def main() -> int:
     parser.add_argument("--timeout-seconds", type=int, default=60)
     args = parser.parse_args()
 
-    result = run_clean_start_smoke(
-        args.root,
-        args.report,
-        timeout_seconds=args.timeout_seconds,
-    )
+    try:
+        result = run_clean_start_smoke(
+            args.root,
+            args.report,
+            timeout_seconds=args.timeout_seconds,
+        )
+    except Exception:
+        message = json.dumps(
+            {"error": "release smoke setup failed"},
+            sort_keys=True,
+        )
+        sys.stderr.write(message[:4095] + "\n")
+        return 2
     print(json.dumps(asdict(result), sort_keys=True))
     return 0 if result.passed else 1
 

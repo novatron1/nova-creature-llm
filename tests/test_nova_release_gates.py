@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,11 @@ import pytest
 from nova_release_gates import (
     GateDefinition,
     GateRunner,
+    _SafeReportDirectory,
+    _launch_contained_process,
+    _listener_owned_by_containment,
+    _sanitized_environment,
+    _unused_loopback_port,
     default_gate_definitions,
     redact_gate_output,
     run_clean_start_smoke,
@@ -66,6 +72,19 @@ def _force_kill_test_process(pid: int) -> None:
         os.kill(pid, signal.SIGTERM if os.name == "nt" else signal.SIGKILL)
     except ProcessLookupError:
         return
+
+
+def _wait_for_listener(port: int, timeout_seconds: float = 5) -> bool:
+    import socket
+
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.1):
+                return True
+        except OSError:
+            time.sleep(0.05)
+    return False
 
 
 def _gate_paths(tmp_path: Path) -> tuple[Path, Path]:
@@ -212,6 +231,41 @@ def test_gate_runner_redacts_name_and_every_command_argument(
     assert "[REDACTED]" in recorded
 
 
+def test_gate_runner_redacts_sensitive_option_value_sequences(tmp_path: Path) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    secrets = {
+        "prompt": "private prompt words",
+        "response": "private response words",
+        "memory": "private memory contents",
+        "password": "password-value-should-not-escape",
+        "token": "token-value-should-not-escape",
+    }
+    gate = GateDefinition(
+        name="contextual-redaction",
+        argv=(
+            sys.executable,
+            "-c",
+            "print('safe')",
+            "--prompt",
+            secrets["prompt"],
+            "--response",
+            secrets["response"],
+            "--memory",
+            secrets["memory"],
+            "--password",
+            secrets["password"],
+            f"--api-token={secrets['token']}",
+        ),
+        timeout_seconds=5,
+    )
+
+    result = GateRunner(candidate, reports).run(gate)
+
+    recorded = "\n".join(result.command)
+    assert all(secret not in recorded for secret in secrets.values())
+    assert recorded.count("[REDACTED]") >= len(secrets)
+
+
 def test_redact_gate_output_handles_json_escaped_and_slash_path_variants() -> None:
     windows_path = r"C:\Sensitive\Candidate Root"
     escaped_windows_path = json.dumps(windows_path)[1:-1]
@@ -231,7 +285,7 @@ def test_redact_gate_output_handles_json_escaped_and_slash_path_variants() -> No
 
 @pytest.mark.parametrize(
     "marker",
-    ["prompt", "response", "memory", "database_row"],
+    ["prompt", "response", "memory", "database_row", "private"],
 )
 def test_redact_gate_output_suppresses_entire_multiline_private_record(
     marker: str,
@@ -431,6 +485,95 @@ def test_gate_runner_kills_sigterm_ignoring_descendant_after_leader_exit(
         _force_kill_test_process(child_pid)
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX supervisor behavior")
+def test_posix_supervisor_pins_session_after_candidate_exit(
+    tmp_path: Path,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    containment = _launch_contained_process(
+        [sys.executable, "-c", "raise SystemExit(0)"],
+        cwd=candidate,
+        environment=_sanitized_environment(candidate, None),
+    )
+    unrelated = subprocess.Popen(
+        [sys.executable, "-c", "import time; time.sleep(30)"],
+        start_new_session=True,
+    )
+    try:
+        assert containment.wait_candidate(5) == 0
+        assert containment.process.poll() is None
+        assert containment.owns_pid(unrelated.pid) is False
+        assert containment.terminate_and_verify() is True
+        assert _process_is_running(unrelated.pid) is True
+    finally:
+        if containment.process.poll() is None:
+            containment.terminate_and_verify()
+        _force_kill_test_process(unrelated.pid)
+
+
+@pytest.mark.skipif(
+    os.name != "nt" and not sys.platform.startswith("linux"),
+    reason="listener PID proof is implemented for Windows and Linux",
+)
+def test_listener_ownership_accepts_only_contained_listener(tmp_path: Path) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    port = _unused_loopback_port()
+    listener_script = (
+        "from http.server import HTTPServer, BaseHTTPRequestHandler; import sys; "
+        "HTTPServer(('127.0.0.1', int(sys.argv[1])), BaseHTTPRequestHandler).serve_forever()"
+    )
+    containment = _launch_contained_process(
+        [sys.executable, "-c", listener_script, str(port)],
+        cwd=candidate,
+        environment=_sanitized_environment(candidate, os.environ),
+    )
+    try:
+        assert _wait_for_listener(port)
+        owned, reason = _listener_owned_by_containment(port, containment)
+        assert owned is True, reason
+    finally:
+        assert containment.terminate_and_verify()
+
+
+@pytest.mark.skipif(
+    os.name != "nt" and not sys.platform.startswith("linux"),
+    reason="listener PID proof is implemented for Windows and Linux",
+)
+def test_listener_ownership_rejects_live_contained_competitor(tmp_path: Path) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    port = _unused_loopback_port()
+    listener_script = (
+        "from http.server import HTTPServer, BaseHTTPRequestHandler; import sys; "
+        "HTTPServer(('127.0.0.1', int(sys.argv[1])), BaseHTTPRequestHandler).serve_forever()"
+    )
+    competitor = subprocess.Popen(
+        [sys.executable, "-c", listener_script, str(port)],
+        cwd=candidate,
+        env=_sanitized_environment(candidate, os.environ),
+        shell=False,
+    )
+    containment = None
+    try:
+        assert _wait_for_listener(port)
+        containment = _launch_contained_process(
+            [sys.executable, "-c", "import time; time.sleep(30)"],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+        )
+        owned, reason = _listener_owned_by_containment(port, containment)
+        assert owned is False
+        assert "ownership" in reason
+    finally:
+        if containment is not None:
+            assert containment.terminate_and_verify()
+        competitor.terminate()
+        try:
+            competitor.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            competitor.kill()
+            competitor.wait(timeout=5)
+
+
 def test_gate_runner_requires_pipe_drains_to_finish_after_tree_cleanup(
     tmp_path: Path,
 ) -> None:
@@ -481,6 +624,28 @@ def test_gate_runner_rejects_linked_report_directory(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="link|reparse"):
         GateRunner(candidate, report_link)
+
+
+def test_safe_report_write_never_follows_directory_substitution(tmp_path: Path) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    reports.mkdir()
+    moved = tmp_path / "moved-reports"
+    external = tmp_path / "external"
+    external.mkdir()
+    safe = _SafeReportDirectory(candidate, reports)
+
+    def substitute_directory() -> None:
+        os.replace(reports, moved)
+        _make_directory_link(reports, external)
+
+    safe._before_create_hook = substitute_directory
+    try:
+        with pytest.raises((OSError, ValueError)):
+            safe.write_text("result.json", "must-not-escape")
+        assert not (external / "result.json").exists()
+        assert not any(external.iterdir())
+    finally:
+        safe.close()
 
 
 @pytest.mark.parametrize(
@@ -611,6 +776,89 @@ def test_default_gate_definitions_cover_required_release_checks(
         str(reports / "smoke.json"),
     )
     assert all(gate.required for gate in gates)
+    assert by_name["sbom"].artifact_paths == (
+        str(reports / "nova-sbom.json"),
+    )
+    assert by_name["conversation_560"].artifact_paths == (
+        str(reports / "conversation-560.json"),
+    )
+
+
+@pytest.mark.parametrize(
+    ("gate_name", "artifact_name"),
+    [("sbom", "nova-sbom.json"), ("conversation_560", "conversation-560.json")],
+)
+def test_default_artifact_gate_rejects_redirect_before_launch(
+    tmp_path: Path,
+    gate_name: str,
+    artifact_name: str,
+) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    reports.mkdir()
+    _make_directory_link(
+        reports / artifact_name,
+        tmp_path / f"redirect-{artifact_name}",
+    )
+    marker = candidate / "gate-started"
+    gate = next(
+        item
+        for item in default_gate_definitions(candidate, reports)
+        if item.name == gate_name
+    )
+    gate = replace(
+        gate,
+        argv=(
+            sys.executable,
+            "-c",
+            f"from pathlib import Path; Path({str(marker)!r}).write_text('yes')",
+        ),
+    )
+
+    with pytest.raises(ValueError, match="artifact|link|reparse"):
+        GateRunner(candidate, reports).run(gate)
+
+    assert not marker.exists()
+
+
+def test_gate_artifact_must_retain_reserved_identity_and_content(tmp_path: Path) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    reports.mkdir()
+    artifact = reports / "result.json"
+    success = GateDefinition(
+        name="artifact-success",
+        argv=(
+            sys.executable,
+            "-c",
+            f"from pathlib import Path; Path({str(artifact)!r}).write_text('{{}}')",
+        ),
+        timeout_seconds=5,
+        artifact_paths=(str(artifact),),
+    )
+
+    result = GateRunner(candidate, reports).run(success)
+
+    assert result.passed is True
+    assert artifact.read_text(encoding="utf-8") == "{}"
+
+    artifact.unlink()
+    replacement = GateDefinition(
+        name="artifact-replacement",
+        argv=(
+            sys.executable,
+            "-c",
+            (
+                "from pathlib import Path; "
+                f"p=Path({str(artifact)!r}); p.unlink(); p.write_text('replacement')"
+            ),
+        ),
+        timeout_seconds=5,
+        artifact_paths=(str(artifact),),
+    )
+
+    replaced = GateRunner(candidate, reports).run(replacement)
+
+    assert replaced.passed is False
+    assert "artifact output could not be verified" in replaced.stderr_tail
 
 
 def _write_fake_smoke_candidate(candidate: Path, server_source: str) -> None:
@@ -707,6 +955,45 @@ def test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup(
     server_output = stdout_path.read_text(encoding="utf-8")
     child_pid = int(server_output.split("CHILD_PID=", 1)[1].splitlines()[0])
     assert _wait_for_process_exit(child_pid), f"server child {child_pid} survived"
+
+
+def test_clean_start_smoke_persisted_log_honors_exact_byte_cap(tmp_path: Path) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    _write_fake_smoke_candidate(
+        candidate,
+        r"""
+        import json
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        import sys
+
+        sys.stdout.buffer.write(b"x" * 65530 + b"\xff" + b"\xf0\x9f\x92\xa5END")
+        sys.stdout.buffer.flush()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = json.dumps({"ok": True}).encode()
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format, *args):
+                return
+
+        ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+        """,
+    )
+    report_path = tmp_path / "reports" / "smoke.json"
+
+    result = run_clean_start_smoke(candidate, report_path, timeout_seconds=5)
+
+    assert result.passed is True
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    persisted = report_path.parent / report["server_stdout_file"]
+    raw = persisted.read_bytes()
+    assert len(raw) <= 65_536
+    assert raw.decode("utf-8").endswith("💥END")
 
 
 def test_clean_start_smoke_records_server_exit_before_health_as_failure(
@@ -977,3 +1264,36 @@ def test_release_smoke_cli_runs_isolated_candidate_and_writes_report(
     assert report["probe_passed"] is True
     assert report["cleanup_complete"] is True
     assert _wait_for_process_exit(report["server_pid"])
+
+
+def test_release_smoke_cli_sanitizes_unsafe_report_path_error(tmp_path: Path) -> None:
+    candidate = tmp_path / "private candidate"
+    candidate.mkdir()
+    report_path = candidate / "private reports" / "smoke.json"
+    repository_root = Path(__file__).resolve().parents[1]
+    tool = repository_root / "tools" / "nova_release_smoke.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(tool),
+            "--root",
+            str(candidate),
+            "--report",
+            str(report_path),
+        ],
+        cwd=repository_root,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        shell=False,
+    )
+
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert "Traceback" not in completed.stderr
+    assert str(candidate) not in completed.stderr
+    assert str(report_path) not in completed.stderr
+    assert len(completed.stderr.encode("utf-8")) <= 4096
+    error = json.loads(completed.stderr)
+    assert error == {"error": "release smoke setup failed"}
