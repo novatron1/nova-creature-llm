@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import os
 import re
-import shutil
+import secrets
 import stat
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 from nova_release_policy import SnapshotClass, SnapshotDecision, SnapshotReport
+
+if os.name == "nt":
+    import ctypes
+    from ctypes import wintypes
 
 
 class GitError(RuntimeError):
@@ -27,6 +31,55 @@ class AmbiguousSnapshotError(ValueError):
 
 _GIT_TIMEOUT_SECONDS = 60
 _MAX_GIT_STDERR = 2_000
+_COPY_BLOCK_SIZE = 1024 * 1024
+
+if os.name == "nt":
+    _FILE_LIST_DIRECTORY = 0x0001
+    _FILE_READ_ATTRIBUTES = 0x0080
+    _FILE_SHARE_READ = 0x00000001
+    _FILE_SHARE_WRITE = 0x00000002
+    _OPEN_EXISTING = 3
+    _FILE_ATTRIBUTE_DIRECTORY = 0x00000010
+    _FILE_ATTRIBUTE_REPARSE_POINT = 0x00000400
+    _FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
+    _FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
+    _INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+
+    class _ByHandleFileInformation(ctypes.Structure):
+        _fields_ = [
+            ("dwFileAttributes", wintypes.DWORD),
+            ("ftCreationTime", wintypes.FILETIME),
+            ("ftLastAccessTime", wintypes.FILETIME),
+            ("ftLastWriteTime", wintypes.FILETIME),
+            ("dwVolumeSerialNumber", wintypes.DWORD),
+            ("nFileSizeHigh", wintypes.DWORD),
+            ("nFileSizeLow", wintypes.DWORD),
+            ("nNumberOfLinks", wintypes.DWORD),
+            ("nFileIndexHigh", wintypes.DWORD),
+            ("nFileIndexLow", wintypes.DWORD),
+        ]
+
+    _kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    _create_file = _kernel32.CreateFileW
+    _create_file.argtypes = [
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    ]
+    _create_file.restype = wintypes.HANDLE
+    _get_file_information = _kernel32.GetFileInformationByHandle
+    _get_file_information.argtypes = [
+        wintypes.HANDLE,
+        ctypes.POINTER(_ByHandleFileInformation),
+    ]
+    _get_file_information.restype = wintypes.BOOL
+    _close_handle = _kernel32.CloseHandle
+    _close_handle.argtypes = [wintypes.HANDLE]
+    _close_handle.restype = wintypes.BOOL
 
 
 def _redacted_stderr(root: Path, args: tuple[str, ...], stderr: str) -> str:
@@ -46,17 +99,18 @@ def _redacted_stderr(root: Path, args: tuple[str, ...], stderr: str) -> str:
 
 
 def _run_git(root: str | Path, *args: str) -> subprocess.CompletedProcess[str]:
-    git_root = Path(root)
     try:
         return subprocess.run(
-            ["git", "-C", str(git_root), *args],
+            ["git", "-C", str(Path(root)), *args],
             shell=False,
             capture_output=True,
             text=True,
             timeout=_GIT_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.TimeoutExpired) as error:
-        raise GitError("Git command could not be completed.") from error
+    except subprocess.TimeoutExpired:
+        raise GitError("Git command timed out after 60 seconds.") from None
+    except OSError:
+        raise GitError("Git executable is unavailable.") from None
 
 
 def git_output(root: str | Path, *args: str) -> str:
@@ -90,87 +144,467 @@ def _nul_paths(output: str) -> list[str]:
 
 
 def list_tracked_paths(root: str | Path) -> list[str]:
-    """Return the index's tracked paths in deterministic order."""
-
     return _nul_paths(git_output(root, "ls-files", "-z"))
 
 
 def list_deleted_paths(root: str | Path) -> list[str]:
-    """Return tracked paths deleted from the index or working tree versus HEAD."""
-
     return _nul_paths(
         git_output(root, "diff", "--name-only", "--diff-filter=D", "-z", "HEAD", "--")
     )
 
 
-def _is_link_or_reparse(path: Path) -> bool:
-    metadata = path.lstat()
+def _is_link_or_reparse(metadata: os.stat_result) -> bool:
     if stat.S_ISLNK(metadata.st_mode):
         return True
     reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
-    file_attributes = getattr(metadata, "st_file_attributes", 0)
-    return bool(reparse_flag and file_attributes & reparse_flag)
+    attributes = getattr(metadata, "st_file_attributes", 0)
+    return bool(reparse_flag and attributes & reparse_flag)
 
 
-def _existing_path_has_link(path: Path) -> bool:
-    absolute = path.absolute()
-    current = Path(absolute.anchor) if absolute.anchor else Path()
-    start_index = 1 if absolute.anchor else 0
-    for part in absolute.parts[start_index:]:
-        current /= part
-        if not os.path.lexists(current):
-            break
-        if _is_link_or_reparse(current):
-            return True
-    return False
+def _same_identity_and_type(left: os.stat_result, right: os.stat_result) -> bool:
+    return (
+        (left.st_dev, left.st_ino) == (right.st_dev, right.st_ino)
+        and stat.S_IFMT(left.st_mode) == stat.S_IFMT(right.st_mode)
+    )
 
 
-def _resolved_input(path: str | Path, label: str) -> Path:
+class _DirectoryAnchor:
+    path: Path
+
+    def validate_path(self) -> None:
+        raise NotImplementedError
+
+    def stat_entry(self, name: str) -> os.stat_result:
+        raise NotImplementedError
+
+    def entries(self) -> list[tuple[str, os.stat_result]]:
+        raise NotImplementedError
+
+    def open_file(self, name: str, flags: int, mode: int = 0o666) -> int:
+        raise NotImplementedError
+
+    def mkdir_entry(self, name: str) -> None:
+        raise NotImplementedError
+
+    def unlink_entry(self, name: str) -> None:
+        raise NotImplementedError
+
+    def rmdir_entry(self, name: str) -> None:
+        raise NotImplementedError
+
+    def replace_entry(self, source: str, destination: str) -> None:
+        raise NotImplementedError
+
+    def close(self) -> None:
+        raise NotImplementedError
+
+
+class _PosixDirectoryAnchor(_DirectoryAnchor):
+    def __init__(self, path: Path, descriptor: int, opened: os.stat_result) -> None:
+        self.path = path
+        self.descriptor = descriptor
+        self.opened = opened
+
+    def validate_path(self) -> None:
+        current = self.path.stat(follow_symlinks=False)
+        opened = os.fstat(self.descriptor)
+        if (
+            _is_link_or_reparse(current)
+            or not stat.S_ISDIR(current.st_mode)
+            or not _same_identity_and_type(self.opened, current)
+            or not _same_identity_and_type(self.opened, opened)
+        ):
+            raise ReleasePathError("anchored directory identity changed")
+
+    def stat_entry(self, name: str) -> os.stat_result:
+        return os.stat(name, dir_fd=self.descriptor, follow_symlinks=False)
+
+    def entries(self) -> list[tuple[str, os.stat_result]]:
+        with os.scandir(self.descriptor) as iterator:
+            return sorted(
+                ((entry.name, entry.stat(follow_symlinks=False)) for entry in iterator),
+                key=lambda item: item[0],
+            )
+
+    def open_file(self, name: str, flags: int, mode: int = 0o666) -> int:
+        self.validate_path()
+        return os.open(name, flags, mode, dir_fd=self.descriptor)
+
+    def mkdir_entry(self, name: str) -> None:
+        self.validate_path()
+        os.mkdir(name, dir_fd=self.descriptor)
+
+    def unlink_entry(self, name: str) -> None:
+        self.validate_path()
+        os.unlink(name, dir_fd=self.descriptor)
+
+    def rmdir_entry(self, name: str) -> None:
+        self.validate_path()
+        os.rmdir(name, dir_fd=self.descriptor)
+
+    def replace_entry(self, source: str, destination: str) -> None:
+        self.validate_path()
+        os.replace(source, destination, src_dir_fd=self.descriptor, dst_dir_fd=self.descriptor)
+
+    def close(self) -> None:
+        os.close(self.descriptor)
+
+
+if os.name == "nt":
+
+    def _windows_information(handle: int) -> _ByHandleFileInformation:
+        information = _ByHandleFileInformation()
+        if not _get_file_information(handle, ctypes.byref(information)):
+            raise ctypes.WinError(ctypes.get_last_error())
+        return information
+
+
+    def _windows_index(information: _ByHandleFileInformation) -> int:
+        return (information.nFileIndexHigh << 32) | information.nFileIndexLow
+
+
+    class _WindowsDirectoryAnchor(_DirectoryAnchor):
+        def __init__(self, path: Path, handle: int, opened: os.stat_result, index: int) -> None:
+            self.path = path
+            self.handle = handle
+            self.opened = opened
+            self.index = index
+
+        def validate_path(self) -> None:
+            current = self.path.stat(follow_symlinks=False)
+            information = _windows_information(self.handle)
+            if (
+                _is_link_or_reparse(current)
+                or not stat.S_ISDIR(current.st_mode)
+                or not _same_identity_and_type(self.opened, current)
+                or information.dwFileAttributes & _FILE_ATTRIBUTE_REPARSE_POINT
+                or not information.dwFileAttributes & _FILE_ATTRIBUTE_DIRECTORY
+                or _windows_index(information) != self.index
+            ):
+                raise ReleasePathError("anchored directory identity changed")
+
+        def stat_entry(self, name: str) -> os.stat_result:
+            self.validate_path()
+            return (self.path / name).stat(follow_symlinks=False)
+
+        def entries(self) -> list[tuple[str, os.stat_result]]:
+            self.validate_path()
+            with os.scandir(self.path) as iterator:
+                return sorted(
+                    (
+                        (entry.name, (self.path / entry.name).stat(follow_symlinks=False))
+                        for entry in iterator
+                    ),
+                    key=lambda item: item[0],
+                )
+
+        def open_file(self, name: str, flags: int, mode: int = 0o666) -> int:
+            self.validate_path()
+            return os.open(self.path / name, flags, mode)
+
+        def mkdir_entry(self, name: str) -> None:
+            self.validate_path()
+            (self.path / name).mkdir()
+
+        def unlink_entry(self, name: str) -> None:
+            self.validate_path()
+            (self.path / name).unlink()
+
+        def rmdir_entry(self, name: str) -> None:
+            self.validate_path()
+            (self.path / name).rmdir()
+
+        def replace_entry(self, source: str, destination: str) -> None:
+            self.validate_path()
+            os.replace(self.path / source, self.path / destination)
+
+        def close(self) -> None:
+            if not _close_handle(self.handle):
+                raise ctypes.WinError(ctypes.get_last_error())
+
+
+def _open_directory_anchor(
+    path: Path,
+    expected: os.stat_result | None = None,
+    *,
+    parent: _DirectoryAnchor | None = None,
+    name: str | None = None,
+) -> _DirectoryAnchor:
+    if parent is not None:
+        parent.validate_path()
+    if os.name == "nt":
+        before = path.stat(follow_symlinks=False)
+        if expected is not None and not _same_identity_and_type(expected, before):
+            raise ReleasePathError("directory identity changed before secure open")
+        if _is_link_or_reparse(before) or not stat.S_ISDIR(before.st_mode):
+            raise ReleasePathError("refusing linked or non-directory path")
+        handle = _create_file(
+            str(path.absolute()),
+            _FILE_LIST_DIRECTORY | _FILE_READ_ATTRIBUTES,
+            _FILE_SHARE_READ | _FILE_SHARE_WRITE,
+            None,
+            _OPEN_EXISTING,
+            _FILE_FLAG_BACKUP_SEMANTICS | _FILE_FLAG_OPEN_REPARSE_POINT,
+            None,
+        )
+        if handle == _INVALID_HANDLE_VALUE:
+            raise ReleasePathError("could not securely anchor directory")
+        try:
+            information = _windows_information(handle)
+            after = path.stat(follow_symlinks=False)
+            if (
+                not _same_identity_and_type(before, after)
+                or information.dwFileAttributes & _FILE_ATTRIBUTE_REPARSE_POINT
+                or not information.dwFileAttributes & _FILE_ATTRIBUTE_DIRECTORY
+                or _windows_index(information) != after.st_ino
+            ):
+                raise ReleasePathError("directory identity changed during secure open")
+            return _WindowsDirectoryAnchor(path, handle, after, _windows_index(information))
+        except BaseException:
+            _close_handle(handle)
+            raise
+
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    if parent is None:
+        before = path.stat(follow_symlinks=False)
+        descriptor = os.open(path, flags)
+    else:
+        if not isinstance(parent, _PosixDirectoryAnchor) or name is None:
+            raise ReleasePathError("invalid anchored parent")
+        before = parent.stat_entry(name)
+        descriptor = os.open(name, flags, dir_fd=parent.descriptor)
+    try:
+        opened = os.fstat(descriptor)
+        if (
+            (expected is not None and not _same_identity_and_type(expected, before))
+            or _is_link_or_reparse(before)
+            or not stat.S_ISDIR(before.st_mode)
+            or not _same_identity_and_type(before, opened)
+        ):
+            raise ReleasePathError("directory identity changed during secure open")
+        return _PosixDirectoryAnchor(path, descriptor, opened)
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _close_anchors(anchors: list[_DirectoryAnchor]) -> None:
+    first_error: BaseException | None = None
+    for anchor in reversed(anchors):
+        try:
+            anchor.close()
+        except BaseException as error:
+            if first_error is None:
+                first_error = error
+    if first_error is not None:
+        raise first_error
+
+
+def _open_chain(
+    root: _DirectoryAnchor,
+    parts: tuple[str, ...],
+    *,
+    create: bool = False,
+) -> list[_DirectoryAnchor]:
+    anchors: list[_DirectoryAnchor] = []
+    parent = root
+    try:
+        for name in parts:
+            try:
+                metadata = parent.stat_entry(name)
+            except FileNotFoundError:
+                if not create:
+                    raise ReleasePathError("required directory is missing") from None
+                parent.mkdir_entry(name)
+                metadata = parent.stat_entry(name)
+            if _is_link_or_reparse(metadata) or not stat.S_ISDIR(metadata.st_mode):
+                raise ReleasePathError("path component is linked or not a directory")
+            child = _open_directory_anchor(
+                parent.path / name,
+                metadata,
+                parent=parent,
+                name=name,
+            )
+            anchors.append(child)
+            parent = child
+        return anchors
+    except BaseException:
+        _close_anchors(anchors)
+        raise
+
+
+def _absolute_input(path: str | Path, label: str) -> Path:
     raw = os.fspath(path)
     if not raw or not raw.strip():
         raise ReleasePathError(f"{label} must not be empty")
-    return Path(path).resolve()
-
-
-def _is_drive_root(path: Path) -> bool:
-    return bool(path.anchor) and path == Path(path.anchor)
+    return Path(path).absolute()
 
 
 def _strict_descendant(path: Path, root: Path) -> bool:
     try:
-        relative = path.relative_to(root)
+        return path.relative_to(root) != Path(".")
     except ValueError:
         return False
-    return relative != Path(".")
 
 
-def _safe_destination(
-    path: str | Path,
+def _protected_root(path: Path) -> bool:
+    resolved = path.resolve()
+    return resolved == Path.home().resolve() or (
+        bool(resolved.anchor) and resolved == Path(resolved.anchor).resolve()
+    )
+
+
+def _verified_temp_root(
     approved_temp_root: str | Path,
-    repository_root: str | Path | None = None,
-) -> Path:
-    destination = _resolved_input(path, "destination")
-    temp_root = _resolved_input(approved_temp_root, "approved temporary root")
-    forbidden = {Path.home().resolve()}
-    if destination.anchor:
-        forbidden.add(Path(destination.anchor).resolve())
-    if repository_root is not None:
-        forbidden.add(_resolved_input(repository_root, "repository root"))
-    if destination in forbidden or _is_drive_root(destination):
-        raise ReleasePathError("destination is a protected filesystem root")
-    if not _strict_descendant(destination, temp_root):
+    protected_root: str | Path,
+) -> tuple[Path, _DirectoryAnchor]:
+    raw_root = _absolute_input(approved_temp_root, "approved temporary root")
+    try:
+        metadata = raw_root.stat(follow_symlinks=False)
+    except OSError:
+        raise ReleasePathError("approved temporary root must already exist") from None
+    if _is_link_or_reparse(metadata) or not stat.S_ISDIR(metadata.st_mode):
+        raise ReleasePathError("approved temporary root must be an unlinked directory")
+    resolved = raw_root.resolve(strict=True)
+    if resolved != raw_root or _protected_root(resolved):
+        raise ReleasePathError("approved temporary root is protected or linked")
+    protected = _absolute_input(protected_root, "protected root").resolve()
+    if resolved == protected or _strict_descendant(resolved, protected) or _strict_descendant(protected, resolved):
+        raise ReleasePathError("approved temporary root overlaps the protected repository")
+    anchor = _open_directory_anchor(raw_root)
+    try:
+        anchor.validate_path()
+    except BaseException:
+        anchor.close()
+        raise
+    return resolved, anchor
+
+
+def _safe_destination(path: str | Path, approved_temp_root: Path) -> tuple[Path, tuple[str, ...]]:
+    absolute = _absolute_input(path, "destination")
+    resolved = absolute.resolve()
+    if _protected_root(resolved) or not _strict_descendant(resolved, approved_temp_root):
         raise ReleasePathError("destination is outside the approved temporary root")
-    return destination
+    try:
+        relative = absolute.relative_to(approved_temp_root)
+    except ValueError:
+        raise ReleasePathError("destination path uses a linked temporary ancestor") from None
+    if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+        raise ReleasePathError("destination is not a safe temporary child")
+    return absolute, relative.parts
 
 
-def _validated_root(path: str | Path, label: str) -> Path:
-    unresolved = Path(path).absolute()
-    resolved = _resolved_input(path, label)
-    if not unresolved.is_dir():
-        raise ReleasePathError(f"{label} is not an existing directory")
-    if _existing_path_has_link(unresolved):
-        raise ReleasePathError(f"{label} contains a filesystem link")
-    return resolved
+def _entry_or_none(anchor: _DirectoryAnchor, name: str) -> os.stat_result | None:
+    try:
+        return anchor.stat_entry(name)
+    except FileNotFoundError:
+        return None
+
+
+def _destination_parent(
+    temp_anchor: _DirectoryAnchor,
+    relative_parts: tuple[str, ...],
+    *,
+    create: bool,
+) -> tuple[_DirectoryAnchor, list[_DirectoryAnchor], str]:
+    anchors = _open_chain(temp_anchor, relative_parts[:-1], create=create)
+    parent = anchors[-1] if anchors else temp_anchor
+    return parent, anchors, relative_parts[-1]
+
+
+def _create_worktree_in_root(
+    repository: GitRepository,
+    branch_name: str,
+    destination: Path,
+    temp_anchor: _DirectoryAnchor,
+    relative_parts: tuple[str, ...],
+) -> None:
+    temp_anchor.validate_path()
+    parent, parents, name = _destination_parent(temp_anchor, relative_parts, create=True)
+    candidate_anchor: _DirectoryAnchor | None = None
+    try:
+        if _entry_or_none(parent, name) is not None:
+            raise GitError("candidate worktree destination already exists")
+        parent.mkdir_entry(name)
+        metadata = parent.stat_entry(name)
+        candidate_anchor = _open_directory_anchor(
+            parent.path / name,
+            metadata,
+            parent=parent,
+            name=name,
+        )
+        candidate_anchor.validate_path()
+        git_output(repository.root, "worktree", "add", str(destination), branch_name)
+        candidate_anchor.validate_path()
+        temp_anchor.validate_path()
+    except BaseException:
+        if candidate_anchor is not None:
+            candidate_anchor.close()
+            candidate_anchor = None
+        try:
+            metadata = _entry_or_none(parent, name)
+            if metadata is not None and stat.S_ISDIR(metadata.st_mode):
+                parent.rmdir_entry(name)
+        except OSError:
+            pass
+        raise
+    finally:
+        if candidate_anchor is not None:
+            candidate_anchor.close()
+        _close_anchors(parents)
+
+
+def create_candidate_worktree(
+    repository: GitRepository,
+    source_ref: str,
+    branch_name: str,
+    destination: str | Path,
+    approved_temp_root: str | Path,
+) -> Path:
+    """Create a branch and linked worktree beneath a verified external temp root."""
+
+    temp_root, temp_anchor = _verified_temp_root(approved_temp_root, repository.root)
+    destination_path, relative_parts = _safe_destination(destination, temp_root)
+    branch_created = False
+    created_oid = ""
+    try:
+        parent, parents, name = _destination_parent(temp_anchor, relative_parts, create=False)
+        try:
+            if _entry_or_none(parent, name) is not None:
+                raise GitError("candidate worktree destination already exists")
+        finally:
+            _close_anchors(parents)
+        git_output(repository.root, "check-ref-format", "--branch", branch_name)
+        if git_output(repository.root, "branch", "--list", "--format=%(refname)", branch_name):
+            raise GitError("candidate branch already exists")
+        git_output(repository.root, "branch", branch_name, source_ref)
+        branch_created = True
+        created_oid = git_output(repository.root, "rev-parse", branch_name)
+        _create_worktree_in_root(
+            repository,
+            branch_name,
+            destination_path,
+            temp_anchor,
+            relative_parts,
+        )
+        return destination_path
+    except BaseException as original:
+        if branch_created:
+            try:
+                current_oid = git_output(repository.root, "rev-parse", branch_name)
+                if current_oid != created_oid:
+                    raise GitError("candidate branch changed; automatic rollback refused")
+                git_output(repository.root, "branch", "-D", branch_name)
+            except BaseException:
+                raise GitError("candidate creation failed and branch rollback requires recovery") from None
+        raise original
+    finally:
+        temp_anchor.close()
+
+
+def _metadata_alias(part: str) -> bool:
+    win32_base = part.split(":", 1)[0].rstrip(" .").lower()
+    return win32_base == ".git"
 
 
 def _normalized_relative_path(path: str) -> str:
@@ -182,96 +616,378 @@ def _normalized_relative_path(path: str) -> str:
         or "\0" in normalized
     ):
         raise ReleasePathError("snapshot path must be workspace-relative")
-    pure_path = PurePosixPath(normalized)
-    if pure_path == PurePosixPath(".") or ".." in pure_path.parts:
+    pure = PurePosixPath(normalized)
+    if pure == PurePosixPath(".") or ".." in pure.parts:
         raise ReleasePathError("snapshot path must not escape its workspace")
-    if pure_path.parts[0].lower() == ".git":
+    if any(_metadata_alias(part) for part in pure.parts):
         raise ReleasePathError("snapshot path must not address Git metadata")
-    return pure_path.as_posix()
+    return pure.as_posix()
 
 
-def _guarded_target(candidate_root: Path, relative_path: str) -> Path:
-    target = candidate_root.joinpath(*PurePosixPath(relative_path).parts)
-    resolved_target = target.resolve()
-    if not _strict_descendant(resolved_target, candidate_root):
-        raise ReleasePathError("candidate target escapes the candidate root")
-    if _existing_path_has_link(target):
-        raise ReleasePathError("candidate target contains a filesystem link")
-    return target
+def _parts(path: str) -> tuple[str, ...]:
+    return PurePosixPath(path).parts
 
 
-def _source_file(source_root: Path, relative_path: str) -> Path:
-    source_path = source_root.joinpath(*PurePosixPath(relative_path).parts)
-    resolved_source = source_path.resolve()
-    if not _strict_descendant(resolved_source, source_root):
-        raise ReleasePathError("source path escapes the source root")
-    if _existing_path_has_link(source_path):
-        raise ReleasePathError("source path contains a filesystem link")
-    return source_path
+def _prefix(left: str, right: str) -> bool:
+    left_parts = _parts(left)
+    right_parts = _parts(right)
+    return len(left_parts) <= len(right_parts) and right_parts[: len(left_parts)] == left_parts
 
 
-def _guarded_remove(candidate_root: Path, target: Path) -> None:
-    guarded = _guarded_target(candidate_root, target.relative_to(candidate_root).as_posix())
-    if not os.path.lexists(guarded):
-        return
-    if guarded.is_dir():
-        shutil.rmtree(guarded)
-    else:
-        guarded.unlink()
+@dataclass(frozen=True)
+class _CopyOperation:
+    path: str
+    source_stat: os.stat_result
 
 
-def create_candidate_worktree(
-    repository: GitRepository,
-    source_ref: str,
-    branch_name: str,
-    destination: str | Path,
-) -> Path:
-    """Create a new branch and linked worktree without altering the source checkout."""
-
-    destination_path = _safe_destination(
-        destination,
-        Path(destination).absolute().parent,
-        repository.root,
-    )
-    if os.path.lexists(destination_path):
-        raise GitError("candidate worktree destination already exists")
-    git_output(repository.root, "check-ref-format", "--branch", branch_name)
-    existing_branch = git_output(
-        repository.root,
-        "branch",
-        "--list",
-        "--format=%(refname)",
-        branch_name,
-    )
-    if existing_branch:
-        raise GitError("candidate branch already exists")
-    destination_path.parent.mkdir(parents=True, exist_ok=True)
-    git_output(repository.root, "branch", branch_name, source_ref)
-    git_output(repository.root, "worktree", "add", str(destination_path), branch_name)
-    return destination_path
+@dataclass(frozen=True)
+class _MutationPlan:
+    removals: tuple[str, ...]
+    copies: tuple[_CopyOperation, ...]
 
 
-def _preflight_snapshot(
-    source_root: Path,
-    candidate_root: Path,
+def _canonical_decisions(
     report: SnapshotReport,
-) -> list[tuple[SnapshotDecision, str, Path | None, Path]]:
-    prepared: list[tuple[SnapshotDecision, str, Path | None, Path]] = []
-    seen: set[str] = set()
+) -> tuple[dict[str, SnapshotDecision], set[str], set[str], set[str]]:
+    groups: dict[str, list[SnapshotDecision]] = {}
     for decision in report.decisions:
-        relative_path = _normalized_relative_path(decision.path)
-        if relative_path in seen:
-            raise ReleasePathError("snapshot report contains a duplicate path")
-        seen.add(relative_path)
-        candidate_path = _guarded_target(candidate_root, relative_path)
-        source_path = _source_file(source_root, relative_path)
-        if decision.classification is SnapshotClass.INCLUDE and decision.change != "deleted":
-            if not source_path.exists() or not stat.S_ISREG(source_path.lstat().st_mode):
-                raise ReleasePathError("included snapshot path is not a present regular file")
-            prepared.append((decision, relative_path, source_path, candidate_path))
+        groups.setdefault(_normalized_relative_path(decision.path), []).append(decision)
+    exclusions = {
+        path
+        for path, decisions in groups.items()
+        if any(item.classification is SnapshotClass.EXCLUDE for item in decisions)
+    }
+    copies: dict[str, SnapshotDecision] = {}
+    removals: set[str] = set()
+    for path, decisions in groups.items():
+        if path in exclusions:
+            if any(item.tracked for item in decisions):
+                removals.add(path)
+            continue
+        includes = [item for item in decisions if item.classification is SnapshotClass.INCLUDE]
+        if not includes:
+            continue
+        if any(item.change == "deleted" for item in includes):
+            removals.add(path)
         else:
-            prepared.append((decision, relative_path, None, candidate_path))
-    return prepared
+            copies[path] = includes[0]
+    for path in list(copies):
+        if any(_prefix(excluded, path) or _prefix(path, excluded) for excluded in exclusions):
+            copies.pop(path)
+            removals.add(path)
+    return copies, removals, exclusions, set(groups)
+
+
+def _source_stat(root: _DirectoryAnchor, path: str) -> os.stat_result:
+    parts = _parts(path)
+    anchors = _open_chain(root, parts[:-1])
+    parent = anchors[-1] if anchors else root
+    try:
+        metadata = parent.stat_entry(parts[-1])
+        if _is_link_or_reparse(metadata) or not stat.S_ISREG(metadata.st_mode):
+            raise ReleasePathError("included snapshot path is not a regular unlinked file")
+        return metadata
+    finally:
+        _close_anchors(anchors)
+
+
+def _validate_source_path_if_present(root: _DirectoryAnchor, path: str) -> None:
+    parts = _parts(path)
+    parent = root
+    anchors: list[_DirectoryAnchor] = []
+    try:
+        for index, name in enumerate(parts):
+            metadata = _entry_or_none(parent, name)
+            if metadata is None:
+                return
+            if _is_link_or_reparse(metadata):
+                raise ReleasePathError("source path contains a filesystem link")
+            if index == len(parts) - 1:
+                if not (stat.S_ISREG(metadata.st_mode) or stat.S_ISDIR(metadata.st_mode)):
+                    raise ReleasePathError("source path has an unsupported type")
+                return
+            if not stat.S_ISDIR(metadata.st_mode):
+                return
+            child = _open_directory_anchor(
+                parent.path / name,
+                metadata,
+                parent=parent,
+                name=name,
+            )
+            anchors.append(child)
+            parent = child
+    finally:
+        _close_anchors(anchors)
+
+
+def _inspect_candidate(
+    root: _DirectoryAnchor,
+    path: str,
+) -> tuple[str, str | None]:
+    parts = _parts(path)
+    parent = root
+    anchors: list[_DirectoryAnchor] = []
+    try:
+        for index, name in enumerate(parts):
+            metadata = _entry_or_none(parent, name)
+            if metadata is None:
+                return "missing", None
+            if _is_link_or_reparse(metadata):
+                raise ReleasePathError("candidate path contains a filesystem link")
+            current = PurePosixPath(*parts[: index + 1]).as_posix()
+            if index == len(parts) - 1:
+                if stat.S_ISDIR(metadata.st_mode):
+                    return "directory", current
+                if stat.S_ISREG(metadata.st_mode):
+                    return "file", current
+                raise ReleasePathError("candidate path has an unsupported type")
+            if not stat.S_ISDIR(metadata.st_mode):
+                return "ancestor_file", current
+            child = _open_directory_anchor(
+                parent.path / name,
+                metadata,
+                parent=parent,
+                name=name,
+            )
+            anchors.append(child)
+            parent = child
+        raise AssertionError("unreachable")
+    finally:
+        _close_anchors(anchors)
+
+
+def _build_mutation_plan(
+    source_root: _DirectoryAnchor,
+    candidate_root: _DirectoryAnchor,
+    report: SnapshotReport,
+) -> _MutationPlan:
+    copies, removals, _exclusions, all_paths = _canonical_decisions(report)
+    for path in sorted(all_paths):
+        _validate_source_path_if_present(source_root, path)
+        _inspect_candidate(candidate_root, path)
+    copy_paths = sorted(copies)
+    for index, left in enumerate(copy_paths):
+        for right in copy_paths[index + 1 :]:
+            if _prefix(left, right) or _prefix(right, left):
+                raise ReleasePathError("snapshot copies contain a file/ancestor conflict")
+
+    operations: list[_CopyOperation] = []
+    for path in copy_paths:
+        operations.append(_CopyOperation(path, _source_stat(source_root, path)))
+        kind, conflicting_path = _inspect_candidate(candidate_root, path)
+        if kind in {"directory", "ancestor_file"}:
+            assert conflicting_path is not None
+            removals.add(conflicting_path)
+    for path in sorted(removals):
+        _inspect_candidate(candidate_root, path)
+    return _MutationPlan(
+        removals=tuple(sorted(removals, key=lambda item: (-len(_parts(item)), item))),
+        copies=tuple(operations),
+    )
+
+
+def _remove_directory_contents(anchor: _DirectoryAnchor, *, keep_git: bool = False) -> None:
+    for name, metadata in anchor.entries():
+        if keep_git and name.lower() == ".git":
+            continue
+        if _is_link_or_reparse(metadata):
+            raise ReleasePathError("recursive removal encountered a filesystem link")
+        if stat.S_ISDIR(metadata.st_mode):
+            child = _open_directory_anchor(
+                anchor.path / name,
+                metadata,
+                parent=anchor,
+                name=name,
+            )
+            try:
+                _remove_directory_contents(child)
+                child.validate_path()
+            finally:
+                child.close()
+            anchor.rmdir_entry(name)
+        elif stat.S_ISREG(metadata.st_mode):
+            anchor.unlink_entry(name)
+        else:
+            raise ReleasePathError("recursive removal encountered an unsupported type")
+
+
+def _remove_relative(root: _DirectoryAnchor, path: str) -> None:
+    parts = _parts(path)
+    try:
+        anchors = _open_chain(root, parts[:-1])
+    except ReleasePathError:
+        kind, _ = _inspect_candidate(root, path)
+        if kind in {"missing", "ancestor_file"}:
+            return
+        raise
+    parent = anchors[-1] if anchors else root
+    try:
+        metadata = _entry_or_none(parent, parts[-1])
+        if metadata is None:
+            return
+        if _is_link_or_reparse(metadata):
+            raise ReleasePathError("removal target is a filesystem link")
+        if stat.S_ISDIR(metadata.st_mode):
+            child = _open_directory_anchor(
+                parent.path / parts[-1],
+                metadata,
+                parent=parent,
+                name=parts[-1],
+            )
+            try:
+                _remove_directory_contents(child)
+                child.validate_path()
+            finally:
+                child.close()
+            parent.rmdir_entry(parts[-1])
+        elif stat.S_ISREG(metadata.st_mode):
+            parent.unlink_entry(parts[-1])
+        else:
+            raise ReleasePathError("removal target has an unsupported type")
+    finally:
+        _close_anchors(anchors)
+
+
+def _open_source_file(
+    root: _DirectoryAnchor,
+    operation: _CopyOperation,
+) -> tuple[int, list[_DirectoryAnchor]]:
+    parts = _parts(operation.path)
+    anchors = _open_chain(root, parts[:-1])
+    parent = anchors[-1] if anchors else root
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = parent.open_file(parts[-1], flags)
+        opened = os.fstat(descriptor)
+        if (
+            _is_link_or_reparse(opened)
+            or not stat.S_ISREG(opened.st_mode)
+            or not _same_identity_and_type(operation.source_stat, opened)
+            or operation.source_stat.st_size != opened.st_size
+            or operation.source_stat.st_mtime_ns != opened.st_mtime_ns
+        ):
+            os.close(descriptor)
+            raise ReleasePathError("source file identity changed before copy")
+        return descriptor, anchors
+    except BaseException:
+        _close_anchors(anchors)
+        raise
+
+
+def _set_temp_metadata(
+    parent: _DirectoryAnchor,
+    name: str,
+    source_stat: os.stat_result,
+    descriptor: int,
+) -> None:
+    if isinstance(parent, _PosixDirectoryAnchor):
+        os.fchmod(descriptor, stat.S_IMODE(source_stat.st_mode))
+        os.utime(descriptor, ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns))
+    else:
+        target = parent.path / name
+        target.chmod(stat.S_IMODE(source_stat.st_mode))
+        os.utime(target, ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns))
+
+
+def _copy_regular_file_anchored(
+    source_root: _DirectoryAnchor,
+    candidate_root: _DirectoryAnchor,
+    operation: _CopyOperation,
+) -> None:
+    source_descriptor, source_anchors = _open_source_file(source_root, operation)
+    parts = _parts(operation.path)
+    candidate_anchors = _open_chain(candidate_root, parts[:-1], create=True)
+    parent = candidate_anchors[-1] if candidate_anchors else candidate_root
+    temporary = f".nova-release-{secrets.token_hex(12)}.tmp"
+    destination_descriptor = -1
+    temporary_created = False
+    try:
+        existing = _entry_or_none(parent, parts[-1])
+        if existing is not None and (
+            _is_link_or_reparse(existing) or not stat.S_ISREG(existing.st_mode)
+        ):
+            raise ReleasePathError("copy destination changed to an unsafe type")
+        flags = (
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+        )
+        destination_descriptor = parent.open_file(temporary, flags, 0o600)
+        temporary_created = True
+        while block := os.read(source_descriptor, _COPY_BLOCK_SIZE):
+            view = memoryview(block)
+            while view:
+                written = os.write(destination_descriptor, view)
+                view = view[written:]
+        os.fsync(destination_descriptor)
+        if isinstance(parent, _PosixDirectoryAnchor):
+            _set_temp_metadata(
+                parent,
+                temporary,
+                operation.source_stat,
+                destination_descriptor,
+            )
+        os.close(destination_descriptor)
+        destination_descriptor = -1
+        if not isinstance(parent, _PosixDirectoryAnchor):
+            _set_temp_metadata(parent, temporary, operation.source_stat, -1)
+        current_source = os.fstat(source_descriptor)
+        if (
+            not _same_identity_and_type(operation.source_stat, current_source)
+            or operation.source_stat.st_size != current_source.st_size
+            or operation.source_stat.st_mtime_ns != current_source.st_mtime_ns
+        ):
+            raise ReleasePathError("source file changed during copy")
+        source_parent = source_anchors[-1] if source_anchors else source_root
+        source_name = _parts(operation.path)[-1]
+        current_source_path = source_parent.stat_entry(source_name)
+        if (
+            _is_link_or_reparse(current_source_path)
+            or not _same_identity_and_type(operation.source_stat, current_source_path)
+            or operation.source_stat.st_size != current_source_path.st_size
+            or operation.source_stat.st_mtime_ns != current_source_path.st_mtime_ns
+        ):
+            raise ReleasePathError("source pathname changed during copy")
+        parent.validate_path()
+        parent.replace_entry(temporary, parts[-1])
+        temporary_created = False
+    finally:
+        if destination_descriptor >= 0:
+            os.close(destination_descriptor)
+        if temporary_created:
+            metadata = _entry_or_none(parent, temporary)
+            if metadata is not None and stat.S_ISREG(metadata.st_mode):
+                parent.unlink_entry(temporary)
+        os.close(source_descriptor)
+        _close_anchors(candidate_anchors)
+        _close_anchors(source_anchors)
+
+
+def _apply_mutation_plan(
+    source_root: _DirectoryAnchor,
+    candidate_root: _DirectoryAnchor,
+    plan: _MutationPlan,
+) -> None:
+    source_root.validate_path()
+    candidate_root.validate_path()
+    for path in plan.removals:
+        _remove_relative(candidate_root, path)
+    for operation in plan.copies:
+        _copy_regular_file_anchored(source_root, candidate_root, operation)
+    source_root.validate_path()
+    candidate_root.validate_path()
+
+
+def _open_candidate_from_temp(
+    temp_anchor: _DirectoryAnchor,
+    relative_parts: tuple[str, ...],
+) -> tuple[_DirectoryAnchor, list[_DirectoryAnchor]]:
+    anchors = _open_chain(temp_anchor, relative_parts)
+    if not anchors:
+        raise ReleasePathError("candidate must be a strict temporary descendant")
+    return anchors[-1], anchors
 
 
 def apply_snapshot(
@@ -280,37 +996,76 @@ def apply_snapshot(
     report: SnapshotReport,
     approved_temp_root: str | Path,
 ) -> None:
-    """Overlay a validated snapshot report onto an isolated candidate worktree."""
+    """Apply a fully preflighted snapshot through anchored filesystem operations."""
 
     if report.ambiguous:
         raise AmbiguousSnapshotError("snapshot report contains ambiguous decisions")
-    source_root = _validated_root(source, "source root")
-    candidate_root = _safe_destination(candidate, approved_temp_root, source_root)
-    candidate_root = _validated_root(candidate_root, "candidate root")
-    prepared = _preflight_snapshot(source_root, candidate_root, report)
-
-    for decision, _relative_path, source_path, candidate_path in prepared:
-        if decision.classification is SnapshotClass.INCLUDE and decision.change != "deleted":
-            assert source_path is not None
-            candidate_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source_path, candidate_path)
-        elif decision.tracked and (
-            decision.classification is SnapshotClass.EXCLUDE
-            or (
-                decision.classification is SnapshotClass.INCLUDE
-                and decision.change == "deleted"
-            )
-        ):
-            _guarded_remove(candidate_root, candidate_path)
+    source_path = _absolute_input(source, "source root")
+    if source_path.resolve() != source_path:
+        raise ReleasePathError("source root is below a linked filesystem ancestor")
+    source_anchor = _open_directory_anchor(source_path)
+    temp_anchor: _DirectoryAnchor | None = None
+    candidate_anchors: list[_DirectoryAnchor] = []
+    try:
+        temp_root, temp_anchor = _verified_temp_root(approved_temp_root, source_path)
+        _candidate_path, relative_parts = _safe_destination(candidate, temp_root)
+        candidate_anchor, candidate_anchors = _open_candidate_from_temp(temp_anchor, relative_parts)
+        plan = _build_mutation_plan(source_anchor, candidate_anchor, report)
+        _apply_mutation_plan(source_anchor, candidate_anchor, plan)
+        temp_anchor.validate_path()
+    finally:
+        _close_anchors(candidate_anchors)
+        if temp_anchor is not None:
+            temp_anchor.close()
+        source_anchor.close()
 
 
 def commit_candidate(candidate: str | Path, message: str) -> str:
-    """Commit the candidate's exact overlaid filesystem state and return its commit ID."""
+    candidate_path = _absolute_input(candidate, "candidate root")
+    if candidate_path.resolve() != candidate_path:
+        raise ReleasePathError("candidate root is below a linked filesystem ancestor")
+    anchor = _open_directory_anchor(candidate_path)
+    try:
+        git_output(candidate_path, "add", "-A")
+        anchor.validate_path()
+        git_output(candidate_path, "commit", "-m", message)
+        anchor.validate_path()
+        return git_output(candidate_path, "rev-parse", "HEAD")
+    finally:
+        anchor.close()
 
-    candidate_root = _validated_root(candidate, "candidate root")
-    git_output(candidate_root, "add", "-A")
-    git_output(candidate_root, "commit", "-m", message)
-    return git_output(candidate_root, "rev-parse", "HEAD")
+
+def _remove_candidate_tree_anchored(candidate_anchor: _DirectoryAnchor) -> None:
+    candidate_anchor.validate_path()
+    _remove_directory_contents(candidate_anchor, keep_git=True)
+    candidate_anchor.validate_path()
+
+
+def _worktree_is_registered(repository: GitRepository, destination: Path) -> bool:
+    expected = os.path.normcase(str(destination.resolve()))
+    for line in git_output(repository.root, "worktree", "list", "--porcelain").splitlines():
+        if not line.startswith("worktree "):
+            continue
+        registered = os.path.normcase(str(Path(line.removeprefix("worktree ")).resolve()))
+        if registered == expected:
+            return True
+    return False
+
+
+def _lock_posix_temp_mutations(anchor: _DirectoryAnchor) -> int | None:
+    if not isinstance(anchor, _PosixDirectoryAnchor):
+        return None
+    original_mode = stat.S_IMODE(os.fstat(anchor.descriptor).st_mode)
+    os.fchmod(anchor.descriptor, original_mode & ~0o222)
+    anchor.validate_path()
+    return original_mode
+
+
+def _restore_posix_temp_mutations(anchor: _DirectoryAnchor, mode: int | None) -> None:
+    if mode is not None:
+        assert isinstance(anchor, _PosixDirectoryAnchor)
+        os.fchmod(anchor.descriptor, mode)
+        anchor.validate_path()
 
 
 def cleanup_worktree(
@@ -318,15 +1073,68 @@ def cleanup_worktree(
     destination: str | Path,
     approved_temp_root: str | Path,
 ) -> None:
-    """Remove a linked worktree only when it is contained by the approved temp root."""
+    """Clean and unregister one verified candidate without following substitutions."""
 
-    destination_path = _safe_destination(
-        destination,
-        approved_temp_root,
-        repository.root,
-    )
-    if _existing_path_has_link(destination_path):
-        raise ReleasePathError("worktree destination contains a filesystem link")
-    git_output(repository.root, "worktree", "remove", "--force", str(destination_path))
-    if os.path.lexists(destination_path):
-        _guarded_remove(Path(approved_temp_root).resolve(), destination_path)
+    temp_root, temp_anchor = _verified_temp_root(approved_temp_root, repository.root)
+    candidate_anchors: list[_DirectoryAnchor] = []
+    try:
+        destination_path, relative_parts = _safe_destination(destination, temp_root)
+        candidate_anchor, candidate_anchors = _open_candidate_from_temp(
+            temp_anchor,
+            relative_parts,
+        )
+        _remove_candidate_tree_anchored(candidate_anchor)
+        candidate_anchor.validate_path()
+        candidate_identity = candidate_anchor.opened
+        candidate_parent = (
+            candidate_anchors[-2] if len(candidate_anchors) > 1 else temp_anchor
+        )
+        candidate_name = relative_parts[-1]
+        original_parent_mode = _lock_posix_temp_mutations(candidate_parent)
+        try:
+            completed = _run_git(
+                repository.root,
+                "worktree",
+                "remove",
+                "--force",
+                str(destination_path),
+            )
+        finally:
+            _restore_posix_temp_mutations(candidate_parent, original_parent_mode)
+        if _worktree_is_registered(repository, destination_path):
+            diagnostic = _redacted_stderr(
+                repository.root,
+                ("worktree", "remove", "--force", str(destination_path)),
+                completed.stderr,
+            )
+            raise GitError(
+                f"Git failed to unregister candidate worktree: {diagnostic}"
+            )
+        remaining = _entry_or_none(candidate_parent, candidate_name)
+        if remaining is not None:
+            if (
+                _is_link_or_reparse(remaining)
+                or not stat.S_ISDIR(remaining.st_mode)
+                or not _same_identity_and_type(candidate_identity, remaining)
+            ):
+                raise ReleasePathError("candidate identity changed before final removal")
+            candidate_anchor.validate_path()
+            if any(True for _entry in candidate_anchor.entries()):
+                raise ReleasePathError("Git left candidate content after unregistering")
+        candidate_anchor.close()
+        candidate_anchors.pop()
+        if remaining is not None:
+            current = candidate_parent.stat_entry(candidate_name)
+            if (
+                _is_link_or_reparse(current)
+                or not stat.S_ISDIR(current.st_mode)
+                or not _same_identity_and_type(candidate_identity, current)
+            ):
+                raise ReleasePathError("candidate identity changed before final removal")
+            candidate_parent.rmdir_entry(candidate_name)
+        _close_anchors(candidate_anchors)
+        candidate_anchors = []
+        temp_anchor.validate_path()
+    finally:
+        _close_anchors(candidate_anchors)
+        temp_anchor.close()
