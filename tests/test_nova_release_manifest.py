@@ -13,6 +13,20 @@ from nova_release_manifest import (
 )
 
 
+def _make_directory_link(link: Path, target: Path) -> None:
+    if os.name != "nt":
+        link.symlink_to(target, target_is_directory=True)
+        return
+    result = subprocess.run(
+        ["cmd", "/c", "mklink", "/J", str(link), str(target)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"directory link creation is unavailable: {result.stderr or result.stdout}")
+
+
 def test_manifest_is_stable_and_excludes_itself(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "nova.py").write_text("answer = 42\n", encoding="utf-8")
@@ -138,6 +152,58 @@ def test_sha256_file_uses_file_bytes(tmp_path: Path) -> None:
     )
 
 
+def test_sha256_file_rejects_replacement_between_inspection_and_open(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "payload.txt"
+    target.write_text("trusted", encoding="utf-8")
+    replacement = tmp_path / "replacement.txt"
+    replacement.write_text("replaced", encoding="utf-8")
+    real_open = os.open
+
+    def replace_then_open(path: str | bytes | os.PathLike[str], flags: int, *args: int) -> int:
+        if Path(path) == target:
+            os.replace(replacement, target)
+        return real_open(path, flags, *args)
+
+    monkeypatch.setattr(release_manifest_module.os, "open", replace_then_open)
+
+    with pytest.raises(OSError, match="file identity changed"):
+        sha256_file(target)
+
+
+def test_manifest_rejects_file_replacement_before_descriptor_open(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    target = candidate / "nova.py"
+    target.write_text("trusted = True\n", encoding="utf-8")
+    replacement = tmp_path / "replacement.py"
+    replacement.write_text("trusted = False\n", encoding="utf-8")
+    real_open = os.open
+
+    def replace_then_open(path: str | bytes | os.PathLike[str], flags: int, *args: int) -> int:
+        if Path(path) == target:
+            os.replace(replacement, target)
+        return real_open(path, flags, *args)
+
+    monkeypatch.setattr(release_manifest_module.os, "open", replace_then_open)
+
+    with pytest.raises(OSError, match="file identity changed"):
+        build_content_manifest(
+            candidate,
+            source_branch="codex/test",
+            source_commit="f" * 40,
+            candidate_branch="codex/release-lock-test",
+            excluded_counts={},
+            deletions=[],
+            gates={},
+        )
+
+
 def test_manifest_skips_git_administration_and_file_links(tmp_path: Path) -> None:
     (tmp_path / ".git").mkdir()
     (tmp_path / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
@@ -181,6 +247,25 @@ def test_manifest_skips_git_administrative_pointer_file(tmp_path: Path) -> None:
     assert [item.path for item in manifest.files] == ["nova.py"]
 
 
+def test_manifest_skips_nested_git_administrative_pointer_file(tmp_path: Path) -> None:
+    module = tmp_path / "vendor" / "module"
+    module.mkdir(parents=True)
+    (module / ".git").write_text("gitdir: ../../../modules/module\n", encoding="utf-8")
+    (module / "library.py").write_text("value = 1\n", encoding="utf-8")
+
+    manifest = build_content_manifest(
+        tmp_path,
+        source_branch="codex/test",
+        source_commit="d" * 40,
+        candidate_branch="codex/release-lock-test",
+        excluded_counts={},
+        deletions=[],
+        gates={},
+    )
+
+    assert [item.path for item in manifest.files] == ["vendor/module/library.py"]
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows junction coverage")
 def test_manifest_does_not_follow_windows_junction(tmp_path: Path) -> None:
     candidate = tmp_path / "candidate"
@@ -212,6 +297,53 @@ def test_manifest_does_not_follow_windows_junction(tmp_path: Path) -> None:
     assert manifest.files == []
 
 
+def test_manifest_rejects_linked_root(tmp_path: Path) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    (candidate / "nova.py").write_text("answer = 42\n", encoding="utf-8")
+    linked_root = tmp_path / "linked-candidate"
+    _make_directory_link(linked_root, candidate)
+
+    with pytest.raises(OSError, match="manifest root.*link"):
+        build_content_manifest(
+            linked_root,
+            source_branch="codex/test",
+            source_commit="f" * 40,
+            candidate_branch="codex/release-lock-test",
+            excluded_counts={},
+            deletions=[],
+            gates={},
+        )
+
+
+def test_manifest_fails_closed_on_directory_enumeration_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    blocked = tmp_path / "blocked"
+    blocked.mkdir()
+    (blocked / "secret.txt").write_text("private", encoding="utf-8")
+    real_scandir = os.scandir
+
+    def deny_blocked_directory(path: str | bytes | os.PathLike[str]):
+        if Path(path) == blocked:
+            raise PermissionError("injected traversal denial")
+        return real_scandir(path)
+
+    monkeypatch.setattr(release_manifest_module.os, "scandir", deny_blocked_directory)
+
+    with pytest.raises(PermissionError, match="injected traversal denial"):
+        build_content_manifest(
+            tmp_path,
+            source_branch="codex/test",
+            source_commit="f" * 40,
+            candidate_branch="codex/release-lock-test",
+            excluded_counts={},
+            deletions=[],
+            gates={},
+        )
+
+
 def test_run_report_is_local_to_git_common_dir_and_written_atomically(
     tmp_path: Path,
 ) -> None:
@@ -222,6 +354,7 @@ def test_run_report_is_local_to_git_common_dir_and_written_atomically(
     candidate.mkdir()
     (candidate / "nova.py").write_text("answer = 42\n", encoding="utf-8")
     git_common_dir = candidate / ".git"
+    git_common_dir.mkdir()
     report = run_report_type(
         schema_version="1.0",
         run_id="run-001",
@@ -259,3 +392,159 @@ def test_run_report_is_local_to_git_common_dir_and_written_atomically(
     assert not report_path.with_name("run-001.json.tmp").exists()
     assert report_path.is_relative_to(git_common_dir)
     assert [item.path for item in manifest.files] == ["nova.py"]
+
+
+def test_release_state_root_rejects_linked_git_common_directory(
+    tmp_path: Path,
+) -> None:
+    real_common_dir = tmp_path / "repo.git"
+    real_common_dir.mkdir()
+    linked_common_dir = tmp_path / "linked-repo.git"
+    _make_directory_link(linked_common_dir, real_common_dir)
+
+    with pytest.raises(OSError, match="Git common directory.*link"):
+        release_manifest_module.release_state_root(linked_common_dir)
+
+
+def test_release_state_root_rejects_linked_state_directory(tmp_path: Path) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    _make_directory_link(git_common_dir / "nova-release-lock", outside)
+
+    with pytest.raises(OSError, match="release state root.*link"):
+        release_manifest_module.release_state_root(git_common_dir)
+
+
+def test_atomic_write_rejects_linked_report_parent(tmp_path: Path) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    state_root = release_manifest_module.release_state_root(git_common_dir)
+    state_root.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    _make_directory_link(state_root / "runs", outside)
+    report_path = state_root / "runs" / "run-001.json"
+
+    with pytest.raises(OSError, match="release state path.*link"):
+        release_manifest_module.write_json_atomic(report_path, {"status": "running"})
+
+    assert not (outside / "run-001.json").exists()
+
+
+def test_atomic_write_refuses_preexisting_temporary_entry(tmp_path: Path) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    report_path = (
+        release_manifest_module.release_state_root(git_common_dir)
+        / "runs"
+        / "run-001.json"
+    )
+    report_path.parent.mkdir(parents=True)
+    report_path.write_text('{"old":true}\n', encoding="utf-8")
+    temporary = report_path.with_name("run-001.json.tmp")
+    temporary.write_text("untrusted temporary content", encoding="utf-8")
+
+    with pytest.raises(FileExistsError):
+        release_manifest_module.write_json_atomic(report_path, {"status": "running"})
+
+    assert temporary.read_text(encoding="utf-8") == "untrusted temporary content"
+    assert report_path.read_text(encoding="utf-8") == '{"old":true}\n'
+
+
+def test_atomic_write_refuses_preexisting_temporary_link(tmp_path: Path) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    report_path = (
+        release_manifest_module.release_state_root(git_common_dir)
+        / "runs"
+        / "run-001.json"
+    )
+    report_path.parent.mkdir(parents=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "sentinel.txt").write_text("outside", encoding="utf-8")
+    temporary = report_path.with_name("run-001.json.tmp")
+    _make_directory_link(temporary, outside)
+
+    with pytest.raises(OSError):
+        release_manifest_module.write_json_atomic(report_path, {"status": "running"})
+
+    assert (outside / "sentinel.txt").read_text(encoding="utf-8") == "outside"
+    if os.name == "nt":
+        assert temporary.stat(follow_symlinks=False).st_file_attributes & (
+            stat.FILE_ATTRIBUTE_REPARSE_POINT
+        )
+    else:
+        assert temporary.is_symlink()
+
+
+def test_atomic_write_cleans_owned_temporary_after_fsync_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    report_path = (
+        release_manifest_module.release_state_root(git_common_dir)
+        / "runs"
+        / "run-001.json"
+    )
+    report_path.parent.mkdir(parents=True)
+    report_path.write_text('{"old":true}\n', encoding="utf-8")
+    temporary = report_path.with_name("run-001.json.tmp")
+
+    def fail_fsync(_descriptor: int) -> None:
+        raise OSError("injected fsync failure")
+
+    monkeypatch.setattr(release_manifest_module.os, "fsync", fail_fsync)
+
+    with pytest.raises(OSError, match="injected fsync failure"):
+        release_manifest_module.write_json_atomic(report_path, {"status": "running"})
+
+    assert not temporary.exists()
+    assert report_path.read_text(encoding="utf-8") == '{"old":true}\n'
+
+
+def test_atomic_write_leaves_no_temporary_after_serialization_failure(
+    tmp_path: Path,
+) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    state_root = release_manifest_module.release_state_root(git_common_dir)
+    report_path = state_root / "runs" / "run-001.json"
+    temporary = report_path.with_name("run-001.json.tmp")
+
+    with pytest.raises(TypeError):
+        release_manifest_module.write_json_atomic(report_path, {"bad": object()})
+
+    assert not temporary.exists()
+    assert not state_root.exists()
+
+
+def test_atomic_write_cleans_owned_temporary_after_replace_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    git_common_dir = tmp_path / "repo.git"
+    git_common_dir.mkdir()
+    report_path = (
+        release_manifest_module.release_state_root(git_common_dir)
+        / "runs"
+        / "run-001.json"
+    )
+    report_path.parent.mkdir(parents=True)
+    report_path.write_text('{"old":true}\n', encoding="utf-8")
+    temporary = report_path.with_name("run-001.json.tmp")
+
+    def fail_replace(_source: Path, _destination: Path) -> None:
+        raise OSError("injected replace failure")
+
+    monkeypatch.setattr(release_manifest_module.os, "replace", fail_replace)
+
+    with pytest.raises(OSError, match="injected replace failure"):
+        release_manifest_module.write_json_atomic(report_path, {"status": "running"})
+
+    assert not temporary.exists()
+    assert report_path.read_text(encoding="utf-8") == '{"old":true}\n'

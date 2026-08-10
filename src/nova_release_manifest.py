@@ -75,30 +75,124 @@ def canonical_json(value: object) -> str:
 def sha256_file(path: str | os.PathLike[str]) -> str:
     """Return a file's SHA-256 digest, reading it in bounded blocks."""
 
+    _, digest = _hash_regular_file(Path(path))
+    return digest
+
+
+def _stat_identity(stat_result: os.stat_result) -> tuple[int, int]:
+    return stat_result.st_dev, stat_result.st_ino
+
+
+def _stable_file_metadata(left: os.stat_result, right: os.stat_result) -> bool:
+    return (
+        _stat_identity(left) == _stat_identity(right)
+        and stat.S_IFMT(left.st_mode) == stat.S_IFMT(right.st_mode)
+        and left.st_size == right.st_size
+        and left.st_mtime_ns == right.st_mtime_ns
+    )
+
+
+def _same_identity_and_type(left: os.stat_result, right: os.stat_result) -> bool:
+    return (
+        _stat_identity(left) == _stat_identity(right)
+        and stat.S_IFMT(left.st_mode) == stat.S_IFMT(right.st_mode)
+    )
+
+
+def _hash_regular_file(
+    path: Path,
+    expected_stat: os.stat_result | None = None,
+) -> tuple[int, str]:
+    before_open = path.stat(follow_symlinks=False)
+    if _is_link_or_reparse(before_open) or not stat.S_ISREG(before_open.st_mode):
+        raise OSError(f"refusing to hash non-regular or linked file: {path}")
+    if expected_stat is not None and not _stable_file_metadata(
+        expected_stat, before_open
+    ):
+        raise OSError(f"file identity changed before secure open: {path}")
+
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags)
     digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        while block := handle.read(_HASH_BLOCK_SIZE):
-            digest.update(block)
-    return digest.hexdigest()
+    try:
+        opened = os.fstat(descriptor)
+        if (
+            _is_link_or_reparse(opened)
+            or not stat.S_ISREG(opened.st_mode)
+            or not _stable_file_metadata(before_open, opened)
+        ):
+            raise OSError(f"file identity changed during secure open: {path}")
+        with os.fdopen(descriptor, "rb", closefd=True) as handle:
+            descriptor = -1
+            size_bytes = 0
+            while block := handle.read(_HASH_BLOCK_SIZE):
+                size_bytes += len(block)
+                digest.update(block)
+            after_read = os.fstat(handle.fileno())
+        if not _stable_file_metadata(opened, after_read) or size_bytes != opened.st_size:
+            raise OSError(f"file changed while hashing: {path}")
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+    return size_bytes, digest.hexdigest()
 
 
 def release_state_root(git_common_dir: str | os.PathLike[str]) -> Path:
     """Return the repository-local administrative root for release state."""
 
-    return Path(git_common_dir) / "nova-release-lock"
+    common_dir = Path(git_common_dir)
+    common_resolved = _validated_directory(common_dir, "Git common directory")
+    state_root = common_dir / "nova-release-lock"
+    try:
+        state_stat = state_root.stat(follow_symlinks=False)
+    except FileNotFoundError:
+        return state_root
+    if _is_link_or_reparse(state_stat):
+        raise OSError(f"release state root is a filesystem link or reparse point: {state_root}")
+    if not stat.S_ISDIR(state_stat.st_mode):
+        raise OSError(f"release state root is not a directory: {state_root}")
+    state_resolved = state_root.resolve(strict=True)
+    if not state_resolved.is_relative_to(common_resolved):
+        raise OSError(f"release state root escapes Git common directory: {state_root}")
+    return state_root
 
 
 def write_json_atomic(path: str | os.PathLike[str], value: object) -> None:
     """Durably write canonical JSON before atomically replacing ``path``."""
 
     destination = Path(path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    serialized = canonical_json(value)
+    _prepare_write_parent(destination)
+    _validate_destination_entry(destination)
     temporary = destination.with_name(f"{destination.name}.tmp")
-    with temporary.open("w", encoding="utf-8", newline="\n") as handle:
-        handle.write(canonical_json(value))
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temporary, destination)
+    flags = (
+        os.O_WRONLY
+        | os.O_CREAT
+        | os.O_EXCL
+        | getattr(os, "O_BINARY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    descriptor = -1
+    created_stat: os.stat_result | None = None
+    try:
+        descriptor = os.open(temporary, flags, 0o600)
+        created_stat = os.fstat(descriptor)
+        if _is_link_or_reparse(created_stat) or not stat.S_ISREG(created_stat.st_mode):
+            raise OSError(f"atomic temporary path is not a regular file: {temporary}")
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+            descriptor = -1
+            handle.write(serialized)
+            handle.flush()
+            os.fsync(handle.fileno())
+        _validate_owned_temporary(temporary, created_stat)
+        _prepare_write_parent(destination)
+        _validate_destination_entry(destination)
+        os.replace(temporary, destination)
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+        if created_stat is not None:
+            _remove_owned_temporary(temporary, created_stat)
 
 
 def _is_link_or_reparse(stat_result: os.stat_result) -> bool:
@@ -109,16 +203,104 @@ def _is_link_or_reparse(stat_result: os.stat_result) -> bool:
     return bool(reparse_flag and file_attributes & reparse_flag)
 
 
-def _path_is_link_or_reparse(path: Path) -> bool:
+def _validated_directory(path: Path, label: str) -> Path:
+    stat_result = path.stat(follow_symlinks=False)
+    if _is_link_or_reparse(stat_result):
+        raise OSError(f"{label} is a filesystem link or reparse point: {path}")
+    if not stat.S_ISDIR(stat_result.st_mode):
+        raise OSError(f"{label} is not a directory: {path}")
+    return path.resolve(strict=True)
+
+
+def _release_state_ancestor(path: Path) -> Path | None:
+    matches = [parent for parent in path.parents if parent.name == "nova-release-lock"]
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise OSError(f"ambiguous release state path: {path}")
+    return matches[0]
+
+
+def _prepare_write_parent(destination: Path) -> None:
+    state_root = _release_state_ancestor(destination)
+    if state_root is None:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        return
+
+    common_dir = state_root.parent
+    trusted_common = _validated_directory(common_dir, "Git common directory")
+    if release_state_root(common_dir) != state_root:
+        raise OSError(f"invalid release state path: {destination}")
+    relative_parent = destination.parent.relative_to(common_dir)
+    current = common_dir
+    for part in relative_parent.parts:
+        if part in {".", ".."}:
+            raise OSError(f"release state path contains unsafe traversal: {destination}")
+        current = current / part
+        try:
+            current.mkdir()
+        except FileExistsError:
+            pass
+        resolved = _validated_directory(current, "release state path component")
+        if not resolved.is_relative_to(trusted_common):
+            raise OSError(f"release state path escapes Git common directory: {destination}")
+
+
+def _validate_destination_entry(destination: Path) -> None:
     try:
-        return _is_link_or_reparse(path.stat(follow_symlinks=False))
+        destination_stat = destination.stat(follow_symlinks=False)
     except FileNotFoundError:
-        return True
+        return
+    if _is_link_or_reparse(destination_stat) or not stat.S_ISREG(
+        destination_stat.st_mode
+    ):
+        raise OSError(f"atomic destination is not a regular unlinked file: {destination}")
 
 
-def _regular_files(root: Path) -> list[Path]:
-    files: list[Path] = []
-    for current, directory_names, file_names in os.walk(root, followlinks=False):
+def _validate_owned_temporary(temporary: Path, created_stat: os.stat_result) -> None:
+    current = temporary.stat(follow_symlinks=False)
+    if (
+        _is_link_or_reparse(current)
+        or not stat.S_ISREG(current.st_mode)
+        or not _same_identity_and_type(created_stat, current)
+    ):
+        raise OSError(f"atomic temporary identity changed: {temporary}")
+
+
+def _remove_owned_temporary(temporary: Path, created_stat: os.stat_result) -> None:
+    try:
+        current = temporary.stat(follow_symlinks=False)
+    except FileNotFoundError:
+        return
+    if (
+        not _is_link_or_reparse(current)
+        and stat.S_ISREG(current.st_mode)
+        and _same_identity_and_type(created_stat, current)
+    ):
+        temporary.unlink()
+
+
+def _path_is_link_or_reparse(path: Path) -> bool:
+    return _is_link_or_reparse(path.stat(follow_symlinks=False))
+
+
+def _validated_manifest_root(root: Path) -> Path:
+    stat_result = root.stat(follow_symlinks=False)
+    if _is_link_or_reparse(stat_result):
+        raise OSError(f"manifest root is a filesystem link or reparse point: {root}")
+    if not stat.S_ISDIR(stat_result.st_mode):
+        raise OSError(f"manifest root is not a directory: {root}")
+    return root
+
+
+def _regular_files(root: Path) -> list[tuple[Path, os.stat_result]]:
+    files: list[tuple[Path, os.stat_result]] = []
+    for current, directory_names, file_names in os.walk(
+        root,
+        topdown=True,
+        onerror=_raise_traversal_error,
+        followlinks=False,
+    ):
         current_path = Path(current)
         relative_current = current_path.relative_to(root)
         directory_names[:] = sorted(
@@ -130,18 +312,19 @@ def _regular_files(root: Path) -> list[Path]:
         for name in sorted(file_names):
             path = current_path / name
             relative = (relative_current / name).as_posix()
-            if relative in {".git", MANIFEST_NAME}:
+            if name == ".git" or relative == MANIFEST_NAME:
                 continue
-            try:
-                stat_result = path.stat(follow_symlinks=False)
-            except FileNotFoundError:
-                continue
+            stat_result = path.stat(follow_symlinks=False)
             if (
                 not _is_link_or_reparse(stat_result)
                 and stat.S_ISREG(stat_result.st_mode)
             ):
-                files.append(path)
-    return sorted(files, key=lambda path: path.relative_to(root).as_posix())
+                files.append((path, stat_result))
+    return sorted(files, key=lambda item: item[0].relative_to(root).as_posix())
+
+
+def _raise_traversal_error(error: OSError) -> None:
+    raise error
 
 
 def build_content_manifest(
@@ -156,15 +339,17 @@ def build_content_manifest(
 ) -> ReleaseManifest:
     """Build a canonical content manifest from the regular files under ``root``."""
 
-    root_path = Path(root)
-    files = [
-        FileDigest(
-            path=path.relative_to(root_path).as_posix(),
-            size_bytes=path.stat().st_size,
-            sha256=sha256_file(path),
+    root_path = _validated_manifest_root(Path(root))
+    files: list[FileDigest] = []
+    for path, expected_stat in _regular_files(root_path):
+        size_bytes, digest = _hash_regular_file(path, expected_stat)
+        files.append(
+            FileDigest(
+                path=path.relative_to(root_path).as_posix(),
+                size_bytes=size_bytes,
+                sha256=digest,
+            )
         )
-        for path in _regular_files(root_path)
-    ]
     sorted_excluded_counts = dict(sorted(excluded_counts.items()))
     sorted_deletions = sorted(deletions)
     sorted_gates = [
