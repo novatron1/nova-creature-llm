@@ -1241,15 +1241,53 @@ def _remove_placeholder(
 def _rollback_quarantined_candidate(
     parent: _DirectoryAnchor,
     candidate_name: str,
-    placeholder_stat: os.stat_result,
+    placeholder_stat: os.stat_result | None,
     quarantine_name: str,
     candidate_identity: os.stat_result,
 ) -> None:
-    _remove_placeholder(parent, candidate_name, placeholder_stat)
+    quarantined = _entry_or_none(parent, quarantine_name)
+    current_candidate = _entry_or_none(parent, candidate_name)
+    if quarantined is None:
+        if (
+            current_candidate is not None
+            and not _is_link_or_reparse(current_candidate)
+            and stat.S_ISDIR(current_candidate.st_mode)
+            and _same_identity_and_type(candidate_identity, current_candidate)
+        ):
+            return
+        raise ReleasePathError("cleanup quarantine is unavailable for rollback")
+    if (
+        _is_link_or_reparse(quarantined)
+        or not stat.S_ISDIR(quarantined.st_mode)
+        or not _same_identity_and_type(candidate_identity, quarantined)
+    ):
+        raise ReleasePathError("cleanup quarantine identity changed before rollback")
+    if current_candidate is not None:
+        expected_placeholder = placeholder_stat or current_candidate
+        if (
+            _is_link_or_reparse(current_candidate)
+            or not stat.S_ISDIR(current_candidate.st_mode)
+            or not _same_identity_and_type(expected_placeholder, current_candidate)
+        ):
+            raise ReleasePathError("cleanup placeholder identity changed before rollback")
+        _remove_placeholder(parent, candidate_name, expected_placeholder)
     parent.replace_entry(quarantine_name, candidate_name)
     restored = parent.stat_entry(candidate_name)
     if not _same_identity_and_type(candidate_identity, restored):
         raise ReleasePathError("candidate identity changed during cleanup rollback")
+
+
+def _bounded_recovery_path(path: Path) -> str:
+    rendered = str(path)
+    return rendered if len(rendered) <= 900 else "..." + rendered[-897:]
+
+
+def _cleanup_recovery_error(destination: Path, quarantine: Path) -> GitError:
+    return GitError(
+        "Cleanup rollback failed; manual recovery is required. "
+        f"Candidate path: {_bounded_recovery_path(destination)}; "
+        f"intact quarantine path: {_bounded_recovery_path(quarantine)}"
+    )
 
 
 def _git_failure(repository: GitRepository, args: tuple[str, ...], stderr: str) -> GitError:
@@ -1289,37 +1327,43 @@ def cleanup_worktree(
             raise ReleasePathError("cleanup quarantine already exists")
         candidate_anchors.pop()
         candidate_anchor.close()
-        candidate_parent.replace_entry(candidate_name, quarantine_name)
-        quarantined = candidate_parent.stat_entry(quarantine_name)
-        if not _same_identity_and_type(candidate_identity, quarantined):
-            raise ReleasePathError("candidate identity changed during quarantine")
-        candidate_parent.mkdir_entry(candidate_name)
-        placeholder_stat = candidate_parent.stat_entry(candidate_name)
-        placeholder_anchor = _open_directory_anchor(
-            candidate_parent.path / candidate_name,
-            placeholder_stat,
-            parent=candidate_parent,
-            name=candidate_name,
-        )
+        placeholder_stat: os.stat_result | None = None
+        placeholder_anchor: _DirectoryAnchor | None = None
         try:
+            candidate_parent.replace_entry(candidate_name, quarantine_name)
+            quarantined = candidate_parent.stat_entry(quarantine_name)
+            if not _same_identity_and_type(candidate_identity, quarantined):
+                raise ReleasePathError("candidate identity changed during quarantine")
+            candidate_parent.mkdir_entry(candidate_name)
+            placeholder_stat = candidate_parent.stat_entry(candidate_name)
+            placeholder_anchor = _open_directory_anchor(
+                candidate_parent.path / candidate_name,
+                placeholder_stat,
+                parent=candidate_parent,
+                name=candidate_name,
+            )
+            _write_anchored_regular_file(placeholder_anchor, ".git", git_pointer)
+            git_args = ("worktree", "remove", "--force", str(destination_path))
             try:
-                _write_anchored_regular_file(placeholder_anchor, ".git", git_pointer)
-                git_args = ("worktree", "remove", "--force", str(destination_path))
-                try:
-                    completed = _run_git(repository.root, *git_args)
-                    registered_after = _worktree_is_registered(repository, destination_path)
-                except GitError as error:
-                    registered_after = True
-                    git_error: GitError = error
-                else:
-                    git_error = _git_failure(repository, git_args, completed.stderr)
+                completed = _run_git(repository.root, *git_args)
+                registered_after = _worktree_is_registered(repository, destination_path)
+            except GitError as error:
+                registered_after = True
+                git_error: GitError = error
+            else:
+                git_error = _git_failure(repository, git_args, completed.stderr)
 
-                placeholder_entries = placeholder_anchor.entries()
-                if registered_after or placeholder_entries:
-                    raise git_error
-            except BaseException:
-                placeholder_anchor.close()
+            placeholder_entries = placeholder_anchor.entries()
+            if registered_after or placeholder_entries:
+                raise git_error
+        except Exception:
+            if placeholder_anchor is not None:
+                try:
+                    placeholder_anchor.close()
+                except Exception:
+                    pass
                 placeholder_anchor = None
+            try:
                 _rollback_quarantined_candidate(
                     candidate_parent,
                     candidate_name,
@@ -1327,12 +1371,18 @@ def cleanup_worktree(
                     quarantine_name,
                     candidate_identity,
                 )
-                raise
+            except Exception:
+                raise _cleanup_recovery_error(
+                    destination_path,
+                    candidate_parent.path / quarantine_name,
+                ) from None
+            raise
         finally:
             if placeholder_anchor is not None:
                 placeholder_anchor.close()
 
         remaining = _entry_or_none(candidate_parent, candidate_name)
+        assert placeholder_stat is not None
         if remaining is not None:
             if (
                 _is_link_or_reparse(remaining)

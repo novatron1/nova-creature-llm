@@ -77,6 +77,19 @@ def remove_directory_link(link: Path) -> None:
         link.unlink()
 
 
+def tree_bytes(root: Path) -> dict[str, bytes | None]:
+    return {
+        path.relative_to(root).as_posix(): None if path.is_dir() else path.read_bytes()
+        for path in sorted(root.rglob("*"))
+    }
+
+
+def concrete_anchor_type() -> type:
+    if os.name == "nt":
+        return worktree_module._WindowsDirectoryAnchor
+    return worktree_module._PosixDirectoryAnchor
+
+
 def test_repository_discovery_and_inventory_observe_real_git_state(tmp_path: Path) -> None:
     repo = init_repo(tmp_path / "repo")
     source = repo.root
@@ -1146,6 +1159,146 @@ def test_cleanup_placeholder_setup_failure_restores_candidate(
 
     assert sentinel.read_text(encoding="utf-8") == "keep\n"
     assert not any(temp_root.glob(".nova-release-cleanup-*"))
+
+
+@pytest.mark.parametrize(
+    "failure_stage",
+    ["quarantine_stat", "placeholder_mkdir", "placeholder_stat", "anchor_open"],
+)
+def test_cleanup_restores_candidate_for_each_pre_unregister_setup_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_stage: str,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(
+        repo,
+        "HEAD",
+        f"codex/cleanup-{failure_stage}",
+        candidate,
+        temp_root,
+    )
+    (candidate / "payload.bin").write_bytes(b"\x00release-lock\xff")
+    nested = candidate / "nested"
+    nested.mkdir()
+    (nested / "second.bin").write_bytes(bytes(range(32)))
+    expected = tree_bytes(candidate)
+    anchor_type = concrete_anchor_type()
+    injected = False
+
+    if failure_stage == "quarantine_stat":
+        real_stat = anchor_type.stat_entry
+
+        def fail_stat(anchor: object, name: str) -> os.stat_result:
+            nonlocal injected
+            if (
+                not injected
+                and name.startswith(".nova-release-cleanup-")
+                and not candidate.exists()
+            ):
+                injected = True
+                raise OSError("injected quarantine stat failure")
+            return real_stat(anchor, name)
+
+        monkeypatch.setattr(anchor_type, "stat_entry", fail_stat)
+    elif failure_stage == "placeholder_mkdir":
+        real_mkdir = anchor_type.mkdir_entry
+
+        def fail_mkdir(anchor: object, name: str) -> None:
+            nonlocal injected
+            if not injected and name == candidate.name and not candidate.exists():
+                injected = True
+                raise OSError("injected placeholder mkdir failure")
+            real_mkdir(anchor, name)
+
+        monkeypatch.setattr(anchor_type, "mkdir_entry", fail_mkdir)
+    elif failure_stage == "placeholder_stat":
+        real_mkdir = anchor_type.mkdir_entry
+        real_stat = anchor_type.stat_entry
+        placeholder_created = False
+
+        def mark_placeholder(anchor: object, name: str) -> None:
+            nonlocal placeholder_created
+            real_mkdir(anchor, name)
+            if name == candidate.name:
+                placeholder_created = True
+
+        def fail_stat(anchor: object, name: str) -> os.stat_result:
+            nonlocal injected
+            if not injected and placeholder_created and name == candidate.name:
+                injected = True
+                raise OSError("injected placeholder stat failure")
+            return real_stat(anchor, name)
+
+        monkeypatch.setattr(anchor_type, "mkdir_entry", mark_placeholder)
+        monkeypatch.setattr(anchor_type, "stat_entry", fail_stat)
+    else:
+        real_open = worktree_module._open_directory_anchor
+
+        def fail_placeholder_open(path: Path, *args: object, **kwargs: object):
+            nonlocal injected
+            if (
+                not injected
+                and path == candidate
+                and candidate.exists()
+                and not (candidate / "payload.bin").exists()
+            ):
+                injected = True
+                raise OSError("injected placeholder anchor failure")
+            return real_open(path, *args, **kwargs)
+
+        monkeypatch.setattr(worktree_module, "_open_directory_anchor", fail_placeholder_open)
+
+    with pytest.raises(OSError, match="injected"):
+        cleanup_worktree(repo, candidate, temp_root)
+
+    assert injected
+    assert tree_bytes(candidate) == expected
+    assert not any(temp_root.glob(".nova-release-cleanup-*"))
+    assert worktree_module._worktree_is_registered(repo, candidate)
+
+
+def test_cleanup_rollback_failure_reports_bounded_recovery_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/cleanup-rollback-fail", candidate, temp_root)
+    (candidate / "payload.bin").write_bytes(b"recovery payload\x00")
+    expected = tree_bytes(candidate)
+    anchor_type = concrete_anchor_type()
+    real_mkdir = anchor_type.mkdir_entry
+    real_replace = anchor_type.replace_entry
+
+    def fail_placeholder_mkdir(anchor: object, name: str) -> None:
+        if name == candidate.name and not candidate.exists():
+            raise OSError("injected setup failure")
+        real_mkdir(anchor, name)
+
+    def fail_restore(anchor: object, source: str, destination: str) -> None:
+        if source.startswith(".nova-release-cleanup-") and destination == candidate.name:
+            raise OSError("injected rollback failure")
+        real_replace(anchor, source, destination)
+
+    monkeypatch.setattr(anchor_type, "mkdir_entry", fail_placeholder_mkdir)
+    monkeypatch.setattr(anchor_type, "replace_entry", fail_restore)
+
+    with pytest.raises(GitError) as raised:
+        cleanup_worktree(repo, candidate, temp_root)
+
+    quarantines = list(temp_root.glob(".nova-release-cleanup-*"))
+    assert len(quarantines) == 1
+    assert tree_bytes(quarantines[0]) == expected
+    message = str(raised.value)
+    assert str(candidate) in message
+    assert str(quarantines[0]) in message
+    assert len(message) <= 2200
 
 
 def test_cleanup_refuses_repository_root_home_and_empty_path(tmp_path: Path) -> None:
