@@ -1,4 +1,9 @@
+import os
+import stat
+import subprocess
 from pathlib import Path
+
+import pytest
 
 from nova_release_policy import SnapshotClass, SnapshotPolicy, scan_workspace
 
@@ -10,7 +15,7 @@ def test_exclusion_overrides_inclusion(tmp_path: Path) -> None:
           "schema_version": "1.0",
           "include": ["src/**", "config/*.example.json"],
           "exclude": ["**/*.db", "config/*.local.json"],
-          "ambiguous": ["**/*.exe"],
+          "ambiguous": ["src/private.*", "**/*.exe"],
           "allowed_binary_suffixes": [".png"],
           "max_static_asset_bytes": 5242880
         }""",
@@ -19,8 +24,13 @@ def test_exclusion_overrides_inclusion(tmp_path: Path) -> None:
     policy = SnapshotPolicy.load(policy_path)
 
     assert policy.classify("src/nova.py", size_bytes=12).classification is SnapshotClass.INCLUDE
-    assert policy.classify("src/private.db", size_bytes=12).classification is SnapshotClass.EXCLUDE
-    assert policy.classify("config/workflow.local.json", size_bytes=12).classification is SnapshotClass.EXCLUDE
+    overlapping = policy.classify("src/private.db", size_bytes=12)
+    excluded_link = policy.classify("config/workflow.local.json", size_bytes=12, is_link=True)
+
+    assert overlapping.classification is SnapshotClass.EXCLUDE
+    assert overlapping.rule == "**/*.db"
+    assert excluded_link.classification is SnapshotClass.EXCLUDE
+    assert excluded_link.rule == "config/*.local.json"
     assert policy.classify("tools/cloudflared.exe", size_bytes=12).classification is SnapshotClass.AMBIGUOUS
     assert policy.classify("mystery.xyz", size_bytes=12).classification is SnapshotClass.AMBIGUOUS
 
@@ -119,3 +129,55 @@ def test_workspace_scan_prunes_policy_excluded_directories(tmp_path: Path) -> No
 
     assert [item.path for item in report.decisions] == ["src/nova.py"]
     assert report.passed is True
+
+
+def test_workspace_scan_records_directory_symlink_without_following(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    assets = repo_root / "assets"
+    assets.mkdir(parents=True)
+    external_target = tmp_path / "external"
+    external_target.mkdir()
+    (external_target / "sentinel.txt").write_text("must not be scanned", encoding="utf-8")
+    linked_directory = assets / "linked"
+    try:
+        linked_directory.symlink_to(external_target, target_is_directory=True)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"directory symlinks are not supported for this test user: {error}")
+    policy = SnapshotPolicy.load(Path("config/nova_release_snapshot_policy.json"))
+
+    report = scan_workspace(repo_root, policy, tracked_paths=set(), deleted_paths=set())
+
+    paths = [item.path for item in report.decisions]
+    assert paths == ["assets/linked"]
+    assert report.decisions[0].classification is SnapshotClass.AMBIGUOUS
+    assert report.decisions[0].rule == "filesystem_link_requires_boundary_check"
+    assert "assets/linked/sentinel.txt" not in paths
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows junction coverage")
+def test_workspace_scan_records_windows_junction_without_following(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    assets = repo_root / "assets"
+    assets.mkdir(parents=True)
+    external_target = tmp_path / "external-junction-target"
+    external_target.mkdir()
+    (external_target / "sentinel.txt").write_text("must not be scanned", encoding="utf-8")
+    junction = assets / "junction"
+    result = subprocess.run(
+        ["cmd", "/c", "mklink", "/J", str(junction), str(external_target)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"junction creation is not supported: {result.stderr or result.stdout}")
+    assert junction.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+    policy = SnapshotPolicy.load(Path("config/nova_release_snapshot_policy.json"))
+
+    report = scan_workspace(repo_root, policy, tracked_paths=set(), deleted_paths=set())
+
+    paths = [item.path for item in report.decisions]
+    assert paths == ["assets/junction"]
+    assert report.decisions[0].classification is SnapshotClass.AMBIGUOUS
+    assert report.decisions[0].rule == "filesystem_link_requires_boundary_check"
+    assert "assets/junction/sentinel.txt" not in paths
