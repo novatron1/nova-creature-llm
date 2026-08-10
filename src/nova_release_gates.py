@@ -60,14 +60,47 @@ _WINDOWS_LAUNCHER = (
 _POSIX_SUPERVISOR = """
 import json
 import os
+import select
 import signal
 import subprocess
 import sys
+import time
 
 status_fd = int(sys.argv[1])
 control_fd = int(sys.argv[2])
-payload = json.loads(sys.stdin.buffer.readline())
-child = subprocess.Popen(payload["argv"], shell=False, stdin=subprocess.DEVNULL)
+ready_fd = int(sys.argv[3])
+child = None
+try:
+    payload_bytes = sys.stdin.buffer.readline(262145)
+    if len(payload_bytes) > 262144 or not payload_bytes.endswith(b"\\n"):
+        raise ValueError("invalid payload")
+    payload = json.loads(payload_bytes)
+    argv = payload.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(x, str) for x in argv):
+        raise ValueError("invalid argv")
+    readable, _, _ = select.select([control_fd], [], [], 0)
+    if readable:
+        raise RuntimeError("controller cancelled launch")
+    child = subprocess.Popen(argv, shell=False, stdin=subprocess.DEVNULL)
+except BaseException:
+    os.write(ready_fd, b'{"started":false,"error":"candidate spawn failed"}\\n')
+    raise SystemExit(72)
+else:
+    os.write(ready_fd, b'{"started":true}\\n')
+finally:
+    os.close(ready_fd)
+
+while child.poll() is None:
+    readable, _, _ = select.select([control_fd], [], [], 0.05)
+    if readable:
+        os.read(control_fd, 1)
+        child.terminate()
+        try:
+            child.wait(timeout=0.5)
+        except subprocess.TimeoutExpired:
+            child.kill()
+            child.wait()
+        break
 exit_code = child.wait()
 os.write(status_fd, (str(exit_code) + "\\n").encode("ascii"))
 os.close(status_fd)
@@ -78,10 +111,31 @@ raise SystemExit(0)
 """
 _MAX_HEALTH_HEADER_BYTES = 16_384
 _MAX_HEALTH_BODY_BYTES = 65_536
+_MAX_TCP_TABLE_BYTES = 4 * 1024 * 1024
+_MAX_TCP_ROWS = 65_536
+_MAX_PROC_PIDS = 32_768
+_MAX_PROC_FDS_PER_PID = 4_096
+_MAX_PROC_LINK_BYTES = 512
+_MAX_PROC_COMPONENT_BYTES = 32
+_PLATFORM_OS_NAME = os.name
+_PLATFORM_SYSTEM = sys.platform
+_SUPERVISOR_HANDSHAKE_SECONDS = 5.0
 
 
 class _HealthResponseRejected(Exception):
     pass
+
+
+class _ConnectionOwnershipRejected(Exception):
+    pass
+
+
+def _ensure_supported_platform() -> None:
+    if _PLATFORM_OS_NAME == "nt":
+        return
+    if _PLATFORM_OS_NAME == "posix" and _PLATFORM_SYSTEM.startswith("linux"):
+        return
+    raise RuntimeError("unsupported release-gate platform")
 
 
 @dataclass(frozen=True)
@@ -323,6 +377,7 @@ class _SafeReportDirectory:
         self._identity = self._directory_identity()
         self._directory_fd: int | None = None
         self._directory_handle: int | None = None
+        self._directory_handles: list[int] = []
         self._before_create_hook = None
         self._pin_directory()
 
@@ -347,37 +402,91 @@ class _SafeReportDirectory:
             wintypes.HANDLE,
         ]
         kernel32.CreateFileW.restype = wintypes.HANDLE
-        handle = kernel32.CreateFileW(
-            str(self.path),
-            0x0001,
-            0x00000001 | 0x00000002,
-            None,
-            3,
-            0x02000000 | 0x00200000,
-            None,
-        )
-        if handle == wintypes.HANDLE(-1).value:
-            raise ctypes.WinError(ctypes.get_last_error())
-        self._directory_handle = int(handle)
-        if self._directory_identity() != self._identity:
+        current = Path(self.path.anchor)
+        chain = [current]
+        for component in self.path.parts[1:]:
+            current /= component
+            chain.append(current)
+        try:
+            for directory in chain:
+                handle = kernel32.CreateFileW(
+                    str(directory),
+                    0x0001 | 0x0080,
+                    0x00000001 | 0x00000002,
+                    None,
+                    3,
+                    0x02000000 | 0x00200000,
+                    None,
+                )
+                if handle == wintypes.HANDLE(-1).value:
+                    raise ctypes.WinError(ctypes.get_last_error())
+                numeric_handle = int(handle)
+                self._directory_handles.append(numeric_handle)
+                path_stat = os.stat(directory, follow_symlinks=False)
+                path_identity = (path_stat.st_dev, path_stat.st_ino)
+                if self._windows_handle_identity(numeric_handle) != path_identity:
+                    raise ValueError("report ancestor changed while pinning")
+        except BaseException:
+            self.close()
+            raise
+        self._directory_handle = self._directory_handles[-1]
+        if self._pinned_identity() != self._identity:
             self.close()
             raise ValueError("run-report directory changed while pinning")
+
+    @staticmethod
+    def _windows_handle_identity(handle: int) -> tuple[int, int]:
+        class _FileInformation(ctypes.Structure):
+            _fields_ = [
+                ("FileAttributes", wintypes.DWORD),
+                ("CreationTime", wintypes.FILETIME),
+                ("LastAccessTime", wintypes.FILETIME),
+                ("LastWriteTime", wintypes.FILETIME),
+                ("VolumeSerialNumber", wintypes.DWORD),
+                ("FileSizeHigh", wintypes.DWORD),
+                ("FileSizeLow", wintypes.DWORD),
+                ("NumberOfLinks", wintypes.DWORD),
+                ("FileIndexHigh", wintypes.DWORD),
+                ("FileIndexLow", wintypes.DWORD),
+            ]
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.GetFileInformationByHandle.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(_FileInformation),
+        ]
+        kernel32.GetFileInformationByHandle.restype = wintypes.BOOL
+        information = _FileInformation()
+        if not kernel32.GetFileInformationByHandle(
+            wintypes.HANDLE(handle),
+            ctypes.byref(information),
+        ):
+            raise ctypes.WinError(ctypes.get_last_error())
+        file_index = (int(information.FileIndexHigh) << 32) | int(
+            information.FileIndexLow
+        )
+        return int(information.VolumeSerialNumber), file_index
 
     def _pinned_identity(self) -> tuple[int, int]:
         if self._directory_fd is not None:
             directory_stat = os.fstat(self._directory_fd)
             return (directory_stat.st_dev, directory_stat.st_ino)
-        return self._identity
+        if self._directory_handle is not None:
+            return self._windows_handle_identity(self._directory_handle)
+        raise ValueError("run-report directory pin is closed")
 
     def close(self) -> None:
         if self._directory_fd is not None:
             os.close(self._directory_fd)
             self._directory_fd = None
-        if self._directory_handle is not None:
-            ctypes.WinDLL("kernel32", use_last_error=True).CloseHandle(
-                wintypes.HANDLE(self._directory_handle)
-            )
-            self._directory_handle = None
+        if self._directory_handles:
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+            kernel32.CloseHandle.restype = wintypes.BOOL
+            for handle in reversed(self._directory_handles):
+                kernel32.CloseHandle(wintypes.HANDLE(handle))
+            self._directory_handles.clear()
+        self._directory_handle = None
 
     def __del__(self) -> None:
         try:
@@ -931,44 +1040,125 @@ class _ProcessContainment:
         return False
 
 
+def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> None:
+    containment = _ProcessContainment(
+        process,
+        process_group_id=process.pid,
+    )
+    members = containment._linux_session_members() or []
+    containment._signal_linux_members(members, signal.SIGKILL)
+    supervisor_descriptor: int | None = None
+    try:
+        if hasattr(os, "pidfd_open") and hasattr(signal, "pidfd_send_signal"):
+            supervisor_descriptor = os.pidfd_open(process.pid)
+            signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
+        elif process.poll() is None:
+            process.kill()
+    except ProcessLookupError:
+        pass
+    finally:
+        if supervisor_descriptor is not None:
+            os.close(supervisor_descriptor)
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        remaining = containment._linux_session_members()
+        if not remaining:
+            break
+        containment._signal_linux_members(remaining, signal.SIGKILL)
+        time.sleep(0.02)
+    try:
+        process.wait(timeout=max(0.1, deadline - time.monotonic()))
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=5)
+
+
 def _launch_contained_process(
     command: list[str],
     *,
     cwd: Path,
     environment: Mapping[str, str],
 ) -> _ProcessContainment:
+    _ensure_supported_platform()
     if os.name != "nt":
-        status_read, status_write = os.pipe()
-        control_read, control_write = os.pipe()
-        process = subprocess.Popen(
-            [
-                sys.executable,
-                "-I",
-                "-c",
-                _POSIX_SUPERVISOR,
-                str(status_write),
-                str(control_read),
-            ],
-            cwd=cwd,
-            env=environment,
-            shell=False,
-            start_new_session=True,
-            pass_fds=(status_write, control_read),
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        os.close(status_write)
-        os.close(control_read)
-        assert process.stdin is not None
-        process.stdin.write(json.dumps({"argv": command}).encode("utf-8") + b"\n")
-        process.stdin.close()
-        return _ProcessContainment(
-            process,
-            process_group_id=process.pid,
-            status_fd=status_read,
-            control_fd=control_write,
-        )
+        descriptors: set[int] = set()
+        process: subprocess.Popen[bytes] | None = None
+        try:
+            status_read, status_write = os.pipe()
+            descriptors.update((status_read, status_write))
+            control_read, control_write = os.pipe()
+            descriptors.update((control_read, control_write))
+            ready_read, ready_write = os.pipe()
+            descriptors.update((ready_read, ready_write))
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    "-I",
+                    "-c",
+                    _POSIX_SUPERVISOR,
+                    str(status_write),
+                    str(control_read),
+                    str(ready_write),
+                ],
+                cwd=cwd,
+                env=environment,
+                shell=False,
+                start_new_session=True,
+                pass_fds=(status_write, control_read, ready_write),
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            for descriptor in (status_write, control_read, ready_write):
+                os.close(descriptor)
+                descriptors.discard(descriptor)
+            payload = json.dumps({"argv": command}).encode("utf-8") + b"\n"
+            if len(payload) > 262_144:
+                raise ValueError("candidate command exceeds supervisor payload bound")
+            assert process.stdin is not None
+            process.stdin.write(payload)
+            process.stdin.close()
+            ready, _, _ = select.select(
+                [ready_read],
+                [],
+                [],
+                _SUPERVISOR_HANDSHAKE_SECONDS,
+            )
+            if not ready:
+                raise TimeoutError("trusted supervisor handshake timed out")
+            response = os.read(ready_read, 257)
+            os.close(ready_read)
+            descriptors.discard(ready_read)
+            if len(response) > 256 or not response.endswith(b"\n"):
+                raise OSError("trusted supervisor returned invalid launch status")
+            try:
+                launch_status = json.loads(response)
+            except (UnicodeError, json.JSONDecodeError) as error:
+                raise OSError(
+                    "trusted supervisor returned invalid launch status"
+                ) from error
+            if launch_status != {"started": True}:
+                raise OSError("candidate spawn failed")
+            return _ProcessContainment(
+                process,
+                process_group_id=process.pid,
+                status_fd=status_read,
+                control_fd=control_write,
+            )
+        except BaseException:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    process.stdin.close()
+                _terminate_failed_posix_launch(process)
+                for stream in (process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        stream.close()
+            for descriptor in descriptors:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+            raise
 
     job = _WindowsJob()
     process: subprocess.Popen[bytes] | None = None
@@ -1029,6 +1219,7 @@ class GateRunner:
         base_environment: Mapping[str, str] | None = None,
         max_output_bytes: int = 65_536,
     ) -> None:
+        _ensure_supported_platform()
         if max_output_bytes <= 0:
             raise ValueError("max_output_bytes must be positive")
         self.candidate_root = Path(candidate_root).resolve()
@@ -1304,8 +1495,220 @@ def _unused_loopback_port() -> int:
         return int(listener.getsockname()[1])
 
 
-def _windows_listener_owner_pids(port: int) -> set[int] | None:
-    if os.name != "nt":
+def _deadline_expired(deadline: float) -> bool:
+    return time.monotonic() >= deadline
+
+
+def _windows_connection_owner_pids(
+    server_endpoint: tuple[str, int],
+    client_endpoint: tuple[str, int],
+    deadline: float,
+    *,
+    maximum_table_bytes: int = _MAX_TCP_TABLE_BYTES,
+) -> set[int] | None:
+    if os.name != "nt" or _deadline_expired(deadline):
+        return None
+
+    class _TcpRowOwnerPid(ctypes.Structure):
+        _fields_ = [
+            ("state", wintypes.DWORD),
+            ("local_address", wintypes.DWORD),
+            ("local_port", wintypes.DWORD),
+            ("remote_address", wintypes.DWORD),
+            ("remote_port", wintypes.DWORD),
+            ("owning_pid", wintypes.DWORD),
+        ]
+
+    iphlpapi = ctypes.WinDLL("iphlpapi", use_last_error=True)
+    function = iphlpapi.GetExtendedTcpTable
+    function.argtypes = [
+        ctypes.c_void_p,
+        ctypes.POINTER(wintypes.ULONG),
+        wintypes.BOOL,
+        wintypes.ULONG,
+        ctypes.c_int,
+        wintypes.ULONG,
+    ]
+    function.restype = wintypes.DWORD
+    size = wintypes.ULONG()
+    first = function(None, ctypes.byref(size), False, socket.AF_INET, 5, 0)
+    if (
+        first not in (0, 122)
+        or not size.value
+        or size.value > maximum_table_bytes
+        or _deadline_expired(deadline)
+    ):
+        return None
+    table = ctypes.create_string_buffer(size.value)
+    if function(table, ctypes.byref(size), False, socket.AF_INET, 5, 0) != 0:
+        return None
+    count = ctypes.cast(table, ctypes.POINTER(wintypes.DWORD)).contents.value
+    row_size = ctypes.sizeof(_TcpRowOwnerPid)
+    if count > _MAX_TCP_ROWS or 4 + count * row_size > size.value:
+        return None
+    expected_local_address = int.from_bytes(
+        socket.inet_aton(server_endpoint[0]),
+        sys.byteorder,
+    )
+    expected_remote_address = int.from_bytes(
+        socket.inet_aton(client_endpoint[0]),
+        sys.byteorder,
+    )
+    base = ctypes.addressof(table) + ctypes.sizeof(wintypes.DWORD)
+    owners: set[int] = set()
+    for index in range(count):
+        if index % 256 == 0 and _deadline_expired(deadline):
+            return None
+        row = _TcpRowOwnerPid.from_address(base + index * row_size)
+        if (
+            int(row.state) == 5
+            and int(row.local_address) == expected_local_address
+            and socket.ntohs(int(row.local_port) & 0xFFFF) == server_endpoint[1]
+            and int(row.remote_address) == expected_remote_address
+            and socket.ntohs(int(row.remote_port) & 0xFFFF) == client_endpoint[1]
+        ):
+            owners.add(int(row.owning_pid))
+    return owners
+
+
+def _linux_connection_owner_pids(
+    server_endpoint: tuple[str, int],
+    client_endpoint: tuple[str, int],
+    deadline: float,
+    *,
+    proc_root: Path = Path("/proc"),
+    maximum_tcp_bytes: int = _MAX_TCP_TABLE_BYTES,
+    maximum_processes: int = _MAX_PROC_PIDS,
+    maximum_fds_per_process: int = _MAX_PROC_FDS_PER_PID,
+) -> set[int] | None:
+    if _deadline_expired(deadline):
+        return None
+    expected_local = (
+        f"{int.from_bytes(socket.inet_aton(server_endpoint[0]), 'little'):08X}:"
+        f"{server_endpoint[1]:04X}"
+    )
+    expected_remote = (
+        f"{int.from_bytes(socket.inet_aton(client_endpoint[0]), 'little'):08X}:"
+        f"{client_endpoint[1]:04X}"
+    )
+    inodes: set[str] = set()
+    total_bytes = 0
+    try:
+        with (proc_root / "net" / "tcp").open("rb") as stream:
+            for row_index in range(_MAX_TCP_ROWS + 1):
+                if _deadline_expired(deadline):
+                    return None
+                line = stream.readline(4096)
+                if not line:
+                    break
+                total_bytes += len(line)
+                if total_bytes > maximum_tcp_bytes or not line.endswith(b"\n"):
+                    return None
+                if row_index == 0:
+                    continue
+                fields = line.decode("ascii", errors="strict").split()
+                if (
+                    len(fields) >= 10
+                    and fields[1].upper() == expected_local
+                    and fields[2].upper() == expected_remote
+                    and fields[3] == "01"
+                ):
+                    inodes.add(fields[9])
+            else:
+                return None
+    except (OSError, UnicodeError, ValueError):
+        return None
+    if not inodes:
+        return set()
+    owners: set[int] = set()
+    try:
+        with os.scandir(proc_root) as processes:
+            process_count = 0
+            for process in processes:
+                if _deadline_expired(deadline):
+                    return None
+                if not process.name.isdigit():
+                    continue
+                if len(os.fsencode(process.name)) > _MAX_PROC_COMPONENT_BYTES:
+                    return None
+                process_count += 1
+                if process_count > maximum_processes:
+                    return None
+                try:
+                    with os.scandir(Path(process.path) / "fd") as descriptors:
+                        for descriptor_count, descriptor in enumerate(
+                            descriptors,
+                            start=1,
+                        ):
+                            if (
+                                descriptor_count > maximum_fds_per_process
+                                or _deadline_expired(deadline)
+                            ):
+                                return None
+                            if (
+                                len(os.fsencode(descriptor.name))
+                                > _MAX_PROC_COMPONENT_BYTES
+                            ):
+                                return None
+                            try:
+                                target = os.readlink(descriptor.path)
+                            except OSError:
+                                continue
+                            if len(os.fsencode(target)) > _MAX_PROC_LINK_BYTES:
+                                return None
+                            if target.startswith("socket:[") and target[8:-1] in inodes:
+                                owners.add(int(process.name))
+                                break
+                except OSError:
+                    continue
+    except OSError:
+        return None
+    return owners
+
+
+def _connection_owned_by_containment(
+    connection: socket.socket,
+    containment: _ProcessContainment,
+    deadline: float,
+) -> tuple[bool, str]:
+    try:
+        client_endpoint = connection.getsockname()
+        server_endpoint = connection.getpeername()
+    except OSError:
+        return False, "connection ownership tuple could not be resolved"
+    resolution_deadline = min(deadline, time.monotonic() + 0.5)
+    while time.monotonic() < resolution_deadline:
+        owners = (
+            _windows_connection_owner_pids(
+                server_endpoint,
+                client_endpoint,
+                deadline,
+            )
+            if os.name == "nt"
+            else _linux_connection_owner_pids(
+                server_endpoint,
+                client_endpoint,
+                deadline,
+            )
+        )
+        if owners is None:
+            return False, "connection ownership resolution exceeded its bound"
+        if owners:
+            if not containment.candidate_alive():
+                return False, "candidate exited before connection ownership proof"
+            if all(containment.owns_pid(pid) for pid in owners):
+                return True, ""
+            return False, "connection ownership is outside candidate containment"
+        time.sleep(min(0.01, max(0, resolution_deadline - time.monotonic())))
+    return False, "connection ownership could not be resolved"
+
+
+def _windows_listener_owner_pids(
+    port: int,
+    deadline: float | None = None,
+) -> set[int] | None:
+    deadline = time.monotonic() + 1 if deadline is None else deadline
+    if os.name != "nt" or _deadline_expired(deadline):
         return None
 
     class _TcpRowOwnerPid(ctypes.Structure):
@@ -1331,67 +1734,117 @@ def _windows_listener_owner_pids(port: int) -> set[int] | None:
     function.restype = wintypes.DWORD
     size = wintypes.ULONG()
     first = function(None, ctypes.byref(size), False, socket.AF_INET, 3, 0)
-    if first not in (0, 122) or not size.value:
+    if (
+        first not in (0, 122)
+        or not size.value
+        or size.value > _MAX_TCP_TABLE_BYTES
+        or _deadline_expired(deadline)
+    ):
         return None
     table = ctypes.create_string_buffer(size.value)
     if function(table, ctypes.byref(size), False, socket.AF_INET, 3, 0) != 0:
         return None
     count = ctypes.cast(table, ctypes.POINTER(wintypes.DWORD)).contents.value
     row_size = ctypes.sizeof(_TcpRowOwnerPid)
+    if count > _MAX_TCP_ROWS or 4 + count * row_size > size.value:
+        return None
     base = ctypes.addressof(table) + ctypes.sizeof(wintypes.DWORD)
     owners: set[int] = set()
     for index in range(count):
+        if index % 256 == 0 and _deadline_expired(deadline):
+            return None
         row = _TcpRowOwnerPid.from_address(base + index * row_size)
         if socket.ntohs(int(row.local_port) & 0xFFFF) == port:
             owners.add(int(row.owning_pid))
     return owners
 
 
-def _linux_listener_owner_pids(port: int) -> set[int] | None:
+def _linux_listener_owner_pids(
+    port: int,
+    deadline: float | None = None,
+) -> set[int] | None:
+    deadline = time.monotonic() + 1 if deadline is None else deadline
     if not sys.platform.startswith("linux"):
         return None
     inodes: set[str] = set()
+    total_bytes = 0
     try:
-        lines = Path("/proc/net/tcp").read_text(encoding="ascii").splitlines()[1:]
-        for line in lines:
-            fields = line.split()
-            if len(fields) >= 10:
-                local_port = int(fields[1].rsplit(":", 1)[1], 16)
-                if local_port == port and fields[3] == "0A":
-                    inodes.add(fields[9])
-    except (OSError, ValueError, IndexError):
+        with Path("/proc/net/tcp").open("rb") as stream:
+            for row_index in range(_MAX_TCP_ROWS + 1):
+                if _deadline_expired(deadline):
+                    return None
+                line = stream.readline(4096)
+                if not line:
+                    break
+                total_bytes += len(line)
+                if total_bytes > _MAX_TCP_TABLE_BYTES or not line.endswith(b"\n"):
+                    return None
+                if row_index == 0:
+                    continue
+                fields = line.decode("ascii", errors="strict").split()
+                if len(fields) >= 10:
+                    local_port = int(fields[1].rsplit(":", 1)[1], 16)
+                    if local_port == port and fields[3] == "0A":
+                        inodes.add(fields[9])
+            else:
+                return None
+    except (OSError, UnicodeError, ValueError, IndexError):
         return None
     owners: set[int] = set()
     try:
-        processes = list(Path("/proc").iterdir())
+        processes = os.scandir("/proc")
     except OSError:
         return None
-    for process in processes:
-        if not process.name.isdigit():
-            continue
-        try:
-            descriptors = list((process / "fd").iterdir())
-        except OSError:
-            continue
-        for descriptor in descriptors:
+    with processes:
+        process_count = 0
+        for process in processes:
+            if _deadline_expired(deadline):
+                return None
+            if not process.name.isdigit():
+                continue
+            if len(os.fsencode(process.name)) > _MAX_PROC_COMPONENT_BYTES:
+                return None
+            process_count += 1
+            if process_count > _MAX_PROC_PIDS:
+                return None
             try:
-                target = os.readlink(descriptor)
+                descriptors = os.scandir(Path(process.path) / "fd")
             except OSError:
                 continue
-            if target.startswith("socket:[") and target[8:-1] in inodes:
-                owners.add(int(process.name))
-                break
+            with descriptors:
+                for descriptor_count, descriptor in enumerate(descriptors, start=1):
+                    if (
+                        descriptor_count > _MAX_PROC_FDS_PER_PID
+                        or _deadline_expired(deadline)
+                    ):
+                        return None
+                    if (
+                        len(os.fsencode(descriptor.name))
+                        > _MAX_PROC_COMPONENT_BYTES
+                    ):
+                        return None
+                    try:
+                        target = os.readlink(descriptor.path)
+                    except OSError:
+                        continue
+                    if len(os.fsencode(target)) > _MAX_PROC_LINK_BYTES:
+                        return None
+                    if target.startswith("socket:[") and target[8:-1] in inodes:
+                        owners.add(int(process.name))
+                        break
     return owners
 
 
 def _listener_owned_by_containment(
     port: int,
     containment: _ProcessContainment,
+    deadline: float | None = None,
 ) -> tuple[bool, str]:
+    deadline = time.monotonic() + 1 if deadline is None else deadline
     owners = (
-        _windows_listener_owner_pids(port)
+        _windows_listener_owner_pids(port, deadline)
         if os.name == "nt"
-        else _linux_listener_owner_pids(port)
+        else _linux_listener_owner_pids(port, deadline)
     )
     if owners is None:
         return False, "listener ownership could not be resolved on this platform"
@@ -1416,11 +1869,22 @@ def _receive_with_deadline(connection: socket.socket, deadline: float) -> bytes:
     return connection.recv(8192)
 
 
-def _read_health_response(port: int, deadline: float) -> bool:
+def _read_health_response(
+    port: int,
+    deadline: float,
+    containment: _ProcessContainment,
+) -> bool:
     with socket.create_connection(
         ("127.0.0.1", port),
         timeout=_remaining_seconds(deadline),
     ) as connection:
+        owned, reason = _connection_owned_by_containment(
+            connection,
+            containment,
+            deadline,
+        )
+        if not owned:
+            raise _ConnectionOwnershipRejected(reason)
         connection.settimeout(_remaining_seconds(deadline))
         connection.sendall(
             b"GET /healthz HTTP/1.1\r\n"
@@ -1491,24 +1955,137 @@ def _wait_for_health(
         if not containment.candidate_alive():
             return False, False, "candidate exited before readiness"
         try:
-            ready = _read_health_response(port, deadline)
+            ready = _read_health_response(port, deadline, containment)
         except _HealthResponseRejected:
             return False, True, ""
+        except _ConnectionOwnershipRejected as error:
+            return False, False, str(error)
         except (OSError, ValueError, json.JSONDecodeError):
             ready = False
         if ready:
-            owned, reason = _listener_owned_by_containment(port, containment)
-            if not owned:
-                return False, False, reason
             time.sleep(min(0.05, max(0, deadline - time.monotonic())))
             if not containment.candidate_alive():
                 return False, False, "candidate exited after readiness"
-            owned, reason = _listener_owned_by_containment(port, containment)
-            if not owned:
-                return False, False, reason
             return True, False, ""
         time.sleep(min(0.05, max(0, deadline - time.monotonic())))
     return False, False, ""
+
+
+class _OwnershipProxy:
+    def __init__(
+        self,
+        upstream_port: int,
+        containment: _ProcessContainment,
+        deadline: float,
+    ) -> None:
+        self._upstream_port = upstream_port
+        self._containment = containment
+        self._deadline = deadline
+        self._listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._listener.bind(("127.0.0.1", 0))
+        self._listener.listen(8)
+        self._listener.settimeout(0.1)
+        self.port = int(self._listener.getsockname()[1])
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._serve, daemon=True)
+        self._observed_connections = 0
+        self._error = ""
+        self._stopped = False
+
+    def start(self) -> None:
+        self._thread.start()
+
+    def _serve(self) -> None:
+        while not self._stop.is_set() and time.monotonic() < self._deadline:
+            try:
+                client, _ = self._listener.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                return
+            with client:
+                try:
+                    upstream = socket.create_connection(
+                        ("127.0.0.1", self._upstream_port),
+                        timeout=_remaining_seconds(self._deadline),
+                    )
+                except (OSError, TimeoutError):
+                    self._error = "probe proxy could not connect to candidate"
+                    continue
+                with upstream:
+                    owned, reason = _connection_owned_by_containment(
+                        upstream,
+                        self._containment,
+                        self._deadline,
+                    )
+                    if not owned:
+                        self._error = reason
+                        continue
+                    self._observed_connections += 1
+                    if not self._relay(client, upstream):
+                        return
+
+    def _relay(self, client: socket.socket, upstream: socket.socket) -> bool:
+        sources: dict[socket.socket, socket.socket] = {
+            client: upstream,
+            upstream: client,
+        }
+        transferred = 0
+        while sources and not self._stop.is_set():
+            if _deadline_expired(self._deadline):
+                self._error = "probe proxy exceeded smoke deadline"
+                return False
+            try:
+                readable, _, _ = select.select(
+                    list(sources),
+                    [],
+                    [],
+                    min(0.1, _remaining_seconds(self._deadline)),
+                )
+            except (OSError, TimeoutError):
+                self._error = "probe proxy relay failed"
+                return False
+            for source in readable:
+                destination = sources[source]
+                try:
+                    content = source.recv(65_536)
+                except OSError:
+                    content = b""
+                if not content:
+                    sources.pop(source, None)
+                    try:
+                        destination.shutdown(socket.SHUT_WR)
+                    except OSError:
+                        pass
+                    continue
+                transferred += len(content)
+                if transferred > 4 * 1024 * 1024:
+                    self._error = "probe proxy exceeded transfer byte limit"
+                    return False
+                try:
+                    destination.settimeout(_remaining_seconds(self._deadline))
+                    destination.sendall(content)
+                except (OSError, TimeoutError):
+                    self._error = "probe proxy relay failed"
+                    return False
+        return True
+
+    def stop_and_verify(self) -> tuple[bool, str]:
+        if not self._stopped:
+            self._stopped = True
+            self._stop.set()
+            try:
+                self._listener.close()
+            except OSError:
+                pass
+            self._thread.join(timeout=min(2, max(0, self._deadline - time.monotonic())))
+        if self._thread.is_alive():
+            return False, "probe ownership proxy did not stop"
+        if self._error:
+            return False, self._error
+        if self._observed_connections < 1:
+            return False, "probe connection ownership was not observed"
+        return True, ""
 
 
 def run_clean_start_smoke(
@@ -1519,6 +2096,7 @@ def run_clean_start_smoke(
 ) -> GateResult:
     """Start, probe, report, and terminate one isolated candidate server."""
 
+    _ensure_supported_platform()
     if timeout_seconds <= 0:
         raise ValueError("timeout_seconds must be positive")
     candidate = Path(candidate_root).resolve()
@@ -1533,13 +2111,12 @@ def run_clean_start_smoke(
     started = time.monotonic()
     deadline = started + timeout_seconds
     port = _unused_loopback_port()
-    base_url = f"http://127.0.0.1:{port}"
     server_command = [sys.executable, "nova_enhanced_server.py", str(port)]
     probe_command = [
         sys.executable,
         "tools/nova_smoke_check.py",
         "--url",
-        base_url,
+        f"http://127.0.0.1:{port}",
     ]
     sensitive_paths = (
         candidate,
@@ -1550,6 +2127,7 @@ def run_clean_start_smoke(
     server_stderr = _BoundedTail(65_536, sensitive_paths=sensitive_paths)
     server: subprocess.Popen[bytes] | None = None
     server_containment: _ProcessContainment | None = None
+    ownership_proxy: _OwnershipProxy | None = None
     server_threads: list[threading.Thread] = []
     startup_healthy = False
     probe_result: GateResult | None = None
@@ -1601,17 +2179,22 @@ def run_clean_start_smoke(
             if not server_containment.candidate_alive():
                 startup_healthy = False
                 launch_error = "candidate server exited after readiness"
-            owned_before_probe, ownership_reason = _listener_owned_by_containment(
-                port,
-                server_containment,
-            )
-            if startup_healthy and not owned_before_probe:
-                startup_healthy = False
-                launch_error = ownership_reason
             remaining = deadline - time.monotonic()
             if startup_healthy and remaining <= 0:
                 timed_out = True
             elif startup_healthy:
+                ownership_proxy = _OwnershipProxy(
+                    port,
+                    server_containment,
+                    deadline,
+                )
+                ownership_proxy.start()
+                probe_command = [
+                    sys.executable,
+                    "tools/nova_smoke_check.py",
+                    "--url",
+                    f"http://127.0.0.1:{ownership_proxy.port}",
+                ]
                 probe_runner = GateRunner(
                     candidate,
                     safe_reports.path,
@@ -1625,12 +2208,11 @@ def run_clean_start_smoke(
                     deadline,
                 )
                 timed_out = probe_result.timed_out
-                owned_after_probe, ownership_reason = _listener_owned_by_containment(
-                    port,
-                    server_containment,
+                ownership_complete, ownership_reason = (
+                    ownership_proxy.stop_and_verify()
                 )
                 server_alive_after_probe = (
-                    server_containment.candidate_alive() and owned_after_probe
+                    server_containment.candidate_alive() and ownership_complete
                 )
                 if not server_alive_after_probe:
                     launch_error = (
@@ -1642,11 +2224,16 @@ def run_clean_start_smoke(
     finally:
         containment_complete = True
         capture_complete = True
+        proxy_complete = True
+        if ownership_proxy is not None:
+            proxy_complete, proxy_error = ownership_proxy.stop_and_verify()
+            if not proxy_complete and not launch_error:
+                launch_error = proxy_error
         if server_containment is not None:
             containment_complete = server_containment.terminate_and_verify()
         if server is not None:
             capture_complete = _finish_capture(server, server_threads)
-        cleanup_complete = containment_complete and capture_complete
+        cleanup_complete = containment_complete and capture_complete and proxy_complete
 
     recorded_server_stdout = _record_output(
         server_stdout.decode(),

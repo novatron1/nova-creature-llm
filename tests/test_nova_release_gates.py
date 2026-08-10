@@ -12,12 +12,15 @@ import textwrap
 import time
 
 import pytest
+import nova_release_gates
 
 from nova_release_gates import (
     GateDefinition,
     GateRunner,
     _SafeReportDirectory,
+    _connection_owned_by_containment,
     _launch_contained_process,
+    _linux_connection_owner_pids,
     _listener_owned_by_containment,
     _sanitized_environment,
     _unused_loopback_port,
@@ -87,10 +90,35 @@ def _wait_for_listener(port: int, timeout_seconds: float = 5) -> bool:
     return False
 
 
+def _wait_for_path(path: Path, timeout_seconds: float = 5) -> bool:
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        if path.exists():
+            return True
+        time.sleep(0.05)
+    return path.exists()
+
+
 def _gate_paths(tmp_path: Path) -> tuple[Path, Path]:
     candidate = tmp_path / "candidate"
     candidate.mkdir()
     return candidate, tmp_path / "reports"
+
+
+def test_unsupported_posix_is_rejected_before_report_mutation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    reports = tmp_path / "reports"
+    monkeypatch.setattr(nova_release_gates, "_PLATFORM_OS_NAME", "posix")
+    monkeypatch.setattr(nova_release_gates, "_PLATFORM_SYSTEM", "darwin")
+
+    with pytest.raises(RuntimeError, match="unsupported release-gate platform"):
+        GateRunner(candidate, reports)
+
+    assert not reports.exists()
 
 
 def _make_directory_link(link: Path, target: Path) -> None:
@@ -511,6 +539,65 @@ def test_posix_supervisor_pins_session_after_candidate_exit(
         _force_kill_test_process(unrelated.pid)
 
 
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux FD/process proof")
+def test_posix_supervisor_reports_spawn_failure_without_fd_leak(tmp_path: Path) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    before = len(list(Path("/proc/self/fd").iterdir()))
+
+    with pytest.raises(OSError, match="candidate spawn failed"):
+        _launch_contained_process(
+            [str(candidate / "does-not-exist")],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+        )
+
+    after = len(list(Path("/proc/self/fd").iterdir()))
+    assert after <= before
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux FD/process proof")
+def test_posix_payload_encoding_failure_closes_all_descriptors(tmp_path: Path) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    before = len(list(Path("/proc/self/fd").iterdir()))
+
+    with pytest.raises(TypeError):
+        _launch_contained_process(
+            [object()],  # type: ignore[list-item]
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+        )
+
+    after = len(list(Path("/proc/self/fd").iterdir()))
+    assert after <= before
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux handshake proof")
+def test_posix_handshake_timeout_reaps_supervisor_before_late_spawn(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    late_marker = candidate / "late-spawn"
+    delayed_supervisor = (
+        "import pathlib, time; time.sleep(1); "
+        f"pathlib.Path({str(late_marker)!r}).write_text('late'); time.sleep(30)"
+    )
+    monkeypatch.setattr(nova_release_gates, "_POSIX_SUPERVISOR", delayed_supervisor)
+    monkeypatch.setattr(nova_release_gates, "_SUPERVISOR_HANDSHAKE_SECONDS", 0.1)
+    started = time.monotonic()
+
+    with pytest.raises(TimeoutError, match="handshake"):
+        _launch_contained_process(
+            [sys.executable, "-c", "print('must not launch')"],
+            cwd=candidate,
+            environment=_sanitized_environment(candidate, os.environ),
+        )
+
+    assert time.monotonic() - started < 2
+    time.sleep(0.2)
+    assert not late_marker.exists()
+
+
 @pytest.mark.skipif(
     os.name != "nt" and not sys.platform.startswith("linux"),
     reason="listener PID proof is implemented for Windows and Linux",
@@ -572,6 +659,158 @@ def test_listener_ownership_rejects_live_contained_competitor(tmp_path: Path) ->
         except subprocess.TimeoutExpired:
             competitor.kill()
             competitor.wait(timeout=5)
+
+
+@pytest.mark.skipif(
+    os.name != "nt" and not sys.platform.startswith("linux"),
+    reason="connection PID proof is implemented for Windows and Linux",
+)
+def test_connection_ownership_rejects_handoff_after_valid_listener_sample(
+    tmp_path: Path,
+) -> None:
+    import socket
+
+    candidate, _ = _gate_paths(tmp_path)
+    ready = candidate / "ready"
+    released = candidate / "released"
+    port = _unused_loopback_port()
+    candidate_script = textwrap.dedent(
+        f"""
+        import pathlib, socket, time
+        listener = socket.socket()
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", {port}))
+        listener.listen()
+        pathlib.Path({str(ready)!r}).write_text("ready")
+        connection, _ = listener.accept()
+        connection.close()
+        listener.close()
+        pathlib.Path({str(released)!r}).write_text("released")
+        time.sleep(30)
+        """
+    )
+    containment = _launch_contained_process(
+        [sys.executable, "-c", candidate_script],
+        cwd=candidate,
+        environment=_sanitized_environment(candidate, os.environ),
+    )
+    competitor = None
+    try:
+        assert _wait_for_path(ready)
+        sampled, reason = _listener_owned_by_containment(port, containment)
+        assert sampled is True, reason
+        with socket.create_connection(("127.0.0.1", port), timeout=1):
+            pass
+        assert _wait_for_path(released)
+        competitor_script = (
+            "from http.server import HTTPServer, BaseHTTPRequestHandler; import sys; "
+            "HTTPServer(('127.0.0.1', int(sys.argv[1])), BaseHTTPRequestHandler).serve_forever()"
+        )
+        competitor = subprocess.Popen(
+            [sys.executable, "-c", competitor_script, str(port)],
+            cwd=candidate,
+            shell=False,
+        )
+        assert _wait_for_listener(port)
+        with socket.create_connection(("127.0.0.1", port), timeout=1) as connection:
+            owned, reason = _connection_owned_by_containment(
+                connection,
+                containment,
+                time.monotonic() + 2,
+            )
+        assert owned is False
+        assert "connection ownership" in reason
+    finally:
+        assert containment.terminate_and_verify()
+        if competitor is not None:
+            competitor.terminate()
+            try:
+                competitor.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                competitor.kill()
+                competitor.wait(timeout=5)
+
+
+def test_linux_connection_resolver_rejects_oversized_tcp_table(
+    tmp_path: Path,
+) -> None:
+    proc_root = tmp_path / "proc"
+    tcp_table = proc_root / "net" / "tcp"
+    tcp_table.parent.mkdir(parents=True)
+    tcp_table.write_bytes(b"header\n" + b"x" * 1024)
+    started = time.monotonic()
+
+    owners = _linux_connection_owner_pids(
+        ("127.0.0.1", 12345),
+        ("127.0.0.1", 54321),
+        time.monotonic() + 1,
+        proc_root=proc_root,
+        maximum_tcp_bytes=128,
+    )
+
+    assert owners is None
+    assert time.monotonic() - started < 0.5
+
+
+def test_linux_connection_resolver_caps_process_and_fd_enumeration(
+    tmp_path: Path,
+) -> None:
+    proc_root = tmp_path / "proc"
+    tcp_table = proc_root / "net" / "tcp"
+    tcp_table.parent.mkdir(parents=True)
+    tcp_table.write_text(
+        "header\n"
+        "0: 0100007F:3039 0100007F:D431 01 0 0 0 0 0 999\n",
+        encoding="ascii",
+    )
+    for pid in ("1", "2", "3"):
+        (proc_root / pid / "fd").mkdir(parents=True)
+
+    process_capped = _linux_connection_owner_pids(
+        ("127.0.0.1", 12345),
+        ("127.0.0.1", 54321),
+        time.monotonic() + 1,
+        proc_root=proc_root,
+        maximum_processes=2,
+    )
+
+    assert process_capped is None
+
+    for index in range(3):
+        (proc_root / "1" / "fd" / str(index)).write_text("fd", encoding="ascii")
+    fd_capped = _linux_connection_owner_pids(
+        ("127.0.0.1", 12345),
+        ("127.0.0.1", 54321),
+        time.monotonic() + 1,
+        proc_root=proc_root,
+        maximum_processes=4,
+        maximum_fds_per_process=2,
+    )
+
+    assert fd_capped is None
+
+
+def test_linux_connection_resolver_rejects_oversized_proc_component(
+    tmp_path: Path,
+) -> None:
+    proc_root = tmp_path / "proc"
+    tcp_table = proc_root / "net" / "tcp"
+    tcp_table.parent.mkdir(parents=True)
+    tcp_table.write_text(
+        "header\n"
+        "0: 0100007F:3039 0100007F:D431 01 0 0 0 0 0 999\n",
+        encoding="ascii",
+    )
+    (proc_root / ("1" * 100) / "fd").mkdir(parents=True)
+
+    owners = _linux_connection_owner_pids(
+        ("127.0.0.1", 12345),
+        ("127.0.0.1", 54321),
+        time.monotonic() + 1,
+        proc_root=proc_root,
+    )
+
+    assert owners is None
 
 
 def test_gate_runner_requires_pipe_drains_to_finish_after_tree_cleanup(
@@ -644,6 +883,44 @@ def test_safe_report_write_never_follows_directory_substitution(tmp_path: Path) 
             safe.write_text("result.json", "must-not-escape")
         assert not (external / "result.json").exists()
         assert not any(external.iterdir())
+    finally:
+        safe.close()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows ancestor handle semantics")
+def test_windows_report_write_pins_every_existing_ancestor(tmp_path: Path) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    ancestor = tmp_path / "trusted-tree"
+    reports = ancestor / "reports"
+    reports.mkdir(parents=True)
+    moved = tmp_path / "moved-tree"
+    external = tmp_path / "external-tree"
+    (external / "reports").mkdir(parents=True)
+    safe = _SafeReportDirectory(candidate, reports)
+
+    def substitute_ancestor() -> None:
+        os.replace(ancestor, moved)
+        _make_directory_link(ancestor, external)
+
+    safe._before_create_hook = substitute_ancestor
+    try:
+        with pytest.raises((OSError, ValueError)):
+            safe.write_text("result.json", "must-not-escape")
+        assert not (external / "reports" / "result.json").exists()
+    finally:
+        safe.close()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows retained-handle identity")
+def test_windows_pinned_identity_is_queried_from_retained_handle(tmp_path: Path) -> None:
+    candidate, reports = _gate_paths(tmp_path)
+    reports.mkdir()
+    safe = _SafeReportDirectory(candidate, reports)
+    try:
+        observed = safe._pinned_identity()
+        safe._identity = (-1, -1)
+        assert safe._pinned_identity() == observed
     finally:
         safe.close()
 
