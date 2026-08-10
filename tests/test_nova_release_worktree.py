@@ -443,6 +443,51 @@ def test_staged_deletion_is_removed_even_after_leaving_the_index(tmp_path: Path)
     assert not (candidate / "src" / "nova.py").exists()
 
 
+def test_staged_excluded_deletion_is_removed_when_reported_untracked(
+    tmp_path: Path,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    source = repo.root
+    run_test_git(source, "rm", "src/nova.py")
+    report = SnapshotReport(
+        "1.0",
+        [
+            SnapshotDecision(
+                "src/nova.py",
+                SnapshotClass.EXCLUDE,
+                "exclude",
+                tracked=False,
+                change="deleted",
+            )
+        ],
+    )
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/excluded-delete", candidate, temp_root)
+
+    apply_snapshot(source, candidate, report, temp_root)
+
+    assert not (candidate / "src" / "nova.py").exists()
+
+
+def test_untracked_ancestor_exclusion_removes_baseline_tree(tmp_path: Path) -> None:
+    repo = init_repo(tmp_path / "repo")
+    source = repo.root
+    report = SnapshotReport(
+        "1.0",
+        [SnapshotDecision("src", SnapshotClass.EXCLUDE, "exclude", tracked=False)],
+    )
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/untracked-exclude", candidate, temp_root)
+
+    apply_snapshot(source, candidate, report, temp_root)
+
+    assert not (candidate / "src").exists()
+
+
 def test_exclusion_wins_for_normalized_duplicate_and_ancestor(tmp_path: Path) -> None:
     repo = init_repo(tmp_path / "repo")
     source = repo.root
@@ -521,6 +566,40 @@ def test_overlay_preflights_file_directory_transitions_before_mutating(
         apply_snapshot(source, candidate, report, temp_root)
 
     assert (candidate / "src" / "nova.py").read_text(encoding="utf-8") == "committed\n"
+
+
+def test_overlay_preflights_nested_link_before_any_mutation(tmp_path: Path) -> None:
+    repo = init_repo(tmp_path / "repo")
+    source = repo.root
+    removal = source / "remove"
+    removal.mkdir()
+    (removal / "baseline.txt").write_text("baseline\n", encoding="utf-8")
+    run_test_git(source, "add", "remove/baseline.txt")
+    run_test_git(source, "commit", "-m", "nested removal fixture")
+    (source / "src" / "nova.py").write_text("release\n", encoding="utf-8")
+    report = SnapshotReport(
+        "1.0",
+        [
+            SnapshotDecision("src/nova.py", SnapshotClass.INCLUDE, "include", tracked=True),
+            SnapshotDecision("remove", SnapshotClass.EXCLUDE, "exclude", tracked=False),
+        ],
+    )
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/nested-preflight", candidate, temp_root)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    sentinel = outside / "sentinel.txt"
+    sentinel.write_text("outside\n", encoding="utf-8")
+    make_directory_link(candidate / "remove" / "linked", outside)
+
+    with pytest.raises(ReleasePathError):
+        apply_snapshot(source, candidate, report, temp_root)
+
+    assert (candidate / "src" / "nova.py").read_text(encoding="utf-8") == "committed\n"
+    assert (candidate / "remove" / "baseline.txt").read_text(encoding="utf-8") == "baseline\n"
+    assert sentinel.read_text(encoding="utf-8") == "outside\n"
 
 
 def test_overlay_applies_directory_file_transitions_as_exact_tree(tmp_path: Path) -> None:
@@ -822,6 +901,93 @@ def test_apply_snapshot_rejects_source_file_replacement_during_read(
             os.replace(parked, source_file)
 
 
+def test_apply_snapshot_rejects_candidate_regular_file_swap_before_replace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    candidate = tmp_path / "temp" / "candidate"
+    source.mkdir()
+    candidate.mkdir(parents=True)
+    (source / "nova.py").write_text("release\n", encoding="utf-8")
+    candidate_file = candidate / "nova.py"
+    candidate_file.write_text("committed\n", encoding="utf-8")
+    outside = tmp_path / "outside.txt"
+    outside.write_text("outside\n", encoding="utf-8")
+    replacement = candidate / "replacement.txt"
+    os.link(outside, replacement)
+    report = SnapshotReport(
+        "1.0",
+        [SnapshotDecision("nova.py", SnapshotClass.INCLUDE, "include")],
+    )
+    real_metadata = worktree_module._set_temp_metadata
+    attempted = False
+
+    def swap_candidate_then_set_metadata(*args: object, **kwargs: object) -> None:
+        nonlocal attempted
+        if not attempted:
+            attempted = True
+            os.replace(replacement, candidate_file)
+        real_metadata(*args, **kwargs)
+
+    monkeypatch.setattr(worktree_module, "_set_temp_metadata", swap_candidate_then_set_metadata)
+
+    with pytest.raises(ReleasePathError):
+        apply_snapshot(source, candidate, report, tmp_path / "temp")
+
+    assert attempted
+    assert outside.read_text(encoding="utf-8") == "outside\n"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows descriptor metadata coverage")
+def test_windows_metadata_keeps_temp_entry_pinned_until_applied(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    candidate = tmp_path / "temp" / "candidate"
+    source.mkdir()
+    candidate.mkdir(parents=True)
+    (source / "nova.py").write_text("release\n", encoding="utf-8")
+    outside = tmp_path / "outside.txt"
+    outside.write_text("outside\n", encoding="utf-8")
+    report = SnapshotReport(
+        "1.0",
+        [SnapshotDecision("nova.py", SnapshotClass.INCLUDE, "include")],
+    )
+    real_metadata = worktree_module._set_temp_metadata
+    attempted = False
+    substitution_blocked = False
+
+    def substitute_temp_then_set_metadata(
+        parent: object,
+        name: str,
+        source_stat: os.stat_result,
+        descriptor: int,
+    ) -> None:
+        nonlocal attempted, substitution_blocked
+        attempted = True
+        temporary = parent.path / name
+        parked = candidate / "parked.tmp"
+        try:
+            os.replace(temporary, parked)
+        except OSError:
+            substitution_blocked = True
+        real_metadata(parent, name, source_stat, descriptor)
+
+    monkeypatch.setattr(worktree_module, "_set_temp_metadata", substitute_temp_then_set_metadata)
+    try:
+        try:
+            apply_snapshot(source, candidate, report, tmp_path / "temp")
+        except (OSError, ReleasePathError):
+            pass
+        assert attempted
+        assert substitution_blocked
+        assert outside.read_text(encoding="utf-8") == "outside\n"
+    finally:
+        (candidate / "parked.tmp").unlink(missing_ok=True)
+
+
 def test_cleanup_removes_real_worktree_inside_approved_root(tmp_path: Path) -> None:
     repo = init_repo(tmp_path / "repo")
     temp_root = tmp_path / "release-temp"
@@ -846,6 +1012,140 @@ def test_cleanup_refuses_destination_outside_approved_root(tmp_path: Path) -> No
         cleanup_worktree(repo, outside, tmp_path / "release-temp")
 
     assert sentinel.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_cleanup_refuses_unregistered_directory_without_mutating_content(
+    tmp_path: Path,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    candidate = temp_root / "not-a-worktree"
+    candidate.mkdir(parents=True)
+    sentinel = candidate / "sentinel.txt"
+    sentinel.write_text("keep\n", encoding="utf-8")
+
+    with pytest.raises(GitError, match="registered"):
+        cleanup_worktree(repo, candidate, temp_root)
+
+    assert sentinel.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_cleanup_preflights_nested_link_without_mutating_candidate(
+    tmp_path: Path,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/cleanup-nested-link", candidate, temp_root)
+    kept = candidate / "kept.txt"
+    kept.write_text("keep\n", encoding="utf-8")
+    nested = candidate / "nested"
+    nested.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    sentinel = outside / "sentinel.txt"
+    sentinel.write_text("outside\n", encoding="utf-8")
+    make_directory_link(nested / "linked", outside)
+
+    with pytest.raises(ReleasePathError, match="link"):
+        cleanup_worktree(repo, candidate, temp_root)
+
+    assert kept.read_text(encoding="utf-8") == "keep\n"
+    assert sentinel.read_text(encoding="utf-8") == "outside\n"
+    assert worktree_module._worktree_is_registered(repo, candidate)
+
+
+def test_cleanup_git_preflight_failure_leaves_content_untouched(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/cleanup-preflight-fail", candidate, temp_root)
+    sentinel = candidate / "sentinel.txt"
+    sentinel.write_text("keep\n", encoding="utf-8")
+    real_run_git = worktree_module._run_git
+
+    def fail_worktree_list(root: Path, *args: str):
+        if args[:2] == ("worktree", "list"):
+            return subprocess.CompletedProcess(
+                ["git", *args], returncode=1, stdout="", stderr="injected list failure"
+            )
+        return real_run_git(root, *args)
+
+    monkeypatch.setattr(worktree_module, "_run_git", fail_worktree_list)
+
+    with pytest.raises(GitError):
+        cleanup_worktree(repo, candidate, temp_root)
+
+    assert sentinel.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_cleanup_unregister_failure_restores_all_candidate_content(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/cleanup-remove-fail", candidate, temp_root)
+    sentinel = candidate / "sentinel.txt"
+    sentinel.write_text("keep\n", encoding="utf-8")
+    git_pointer = (candidate / ".git").read_text(encoding="utf-8")
+    real_run_git = worktree_module._run_git
+
+    def fail_worktree_remove(root: Path, *args: str):
+        if args[:2] == ("worktree", "remove"):
+            return subprocess.CompletedProcess(
+                ["git", *args], returncode=1, stdout="", stderr="injected remove failure"
+            )
+        return real_run_git(root, *args)
+
+    monkeypatch.setattr(worktree_module, "_run_git", fail_worktree_remove)
+
+    with pytest.raises(GitError):
+        cleanup_worktree(repo, candidate, temp_root)
+
+    assert sentinel.read_text(encoding="utf-8") == "keep\n"
+    assert (candidate / ".git").read_text(encoding="utf-8") == git_pointer
+    registered = {
+        Path(line.removeprefix("worktree ")).resolve()
+        for line in run_test_git(repo.root, "worktree", "list", "--porcelain").splitlines()
+        if line.startswith("worktree ")
+    }
+    assert candidate.resolve() in registered
+
+
+def test_cleanup_placeholder_setup_failure_restores_candidate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/cleanup-setup-fail", candidate, temp_root)
+    sentinel = candidate / "sentinel.txt"
+    sentinel.write_text("keep\n", encoding="utf-8")
+
+    def fail_placeholder_write(*args: object, **kwargs: object) -> None:
+        raise OSError("injected placeholder write failure")
+
+    monkeypatch.setattr(
+        worktree_module,
+        "_write_anchored_regular_file",
+        fail_placeholder_write,
+    )
+
+    with pytest.raises(OSError, match="placeholder write"):
+        cleanup_worktree(repo, candidate, temp_root)
+
+    assert sentinel.read_text(encoding="utf-8") == "keep\n"
+    assert not any(temp_root.glob(".nova-release-cleanup-*"))
 
 
 def test_cleanup_refuses_repository_root_home_and_empty_path(tmp_path: Path) -> None:

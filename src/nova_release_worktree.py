@@ -1,4 +1,11 @@
-"""Guarded Git worktrees and fail-closed release snapshot overlays."""
+"""Guarded release worktrees for one cooperative local controller.
+
+The controller exclusively owns each verified temporary root. Static links,
+escapes, identity/type mismatches, registration mismatches, and operation
+errors fail closed. POSIX directory-FD provenance remains authoritative after
+opening; deliberate same-UID/root concurrent mutation of owned paths is out of
+scope. Windows additionally denies delete sharing while directories are held.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +21,7 @@ from nova_release_policy import SnapshotClass, SnapshotDecision, SnapshotReport
 
 if os.name == "nt":
     import ctypes
+    import msvcrt
     from ctypes import wintypes
 
 
@@ -44,6 +52,8 @@ if os.name == "nt":
     _FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
     _FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
     _INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+    _FILE_BASIC_INFO_CLASS = 0
+    _WINDOWS_EPOCH_TICKS = 116_444_736_000_000_000
 
     class _ByHandleFileInformation(ctypes.Structure):
         _fields_ = [
@@ -57,6 +67,15 @@ if os.name == "nt":
             ("nNumberOfLinks", wintypes.DWORD),
             ("nFileIndexHigh", wintypes.DWORD),
             ("nFileIndexLow", wintypes.DWORD),
+        ]
+
+    class _FileBasicInformation(ctypes.Structure):
+        _fields_ = [
+            ("CreationTime", ctypes.c_longlong),
+            ("LastAccessTime", ctypes.c_longlong),
+            ("LastWriteTime", ctypes.c_longlong),
+            ("ChangeTime", ctypes.c_longlong),
+            ("FileAttributes", wintypes.DWORD),
         ]
 
     _kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -80,6 +99,14 @@ if os.name == "nt":
     _close_handle = _kernel32.CloseHandle
     _close_handle.argtypes = [wintypes.HANDLE]
     _close_handle.restype = wintypes.BOOL
+    _set_file_information = _kernel32.SetFileInformationByHandle
+    _set_file_information.argtypes = [
+        wintypes.HANDLE,
+        ctypes.c_int,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+    ]
+    _set_file_information.restype = wintypes.BOOL
 
 
 def _redacted_stderr(root: Path, args: tuple[str, ...], stderr: str) -> str:
@@ -661,8 +688,7 @@ def _canonical_decisions(
     removals: set[str] = set()
     for path, decisions in groups.items():
         if path in exclusions:
-            if any(item.tracked for item in decisions):
-                removals.add(path)
+            removals.add(path)
             continue
         includes = [item for item in decisions if item.classification is SnapshotClass.INCLUDE]
         if not includes:
@@ -780,10 +806,66 @@ def _build_mutation_plan(
             removals.add(conflicting_path)
     for path in sorted(removals):
         _inspect_candidate(candidate_root, path)
+    for path in sorted(removals):
+        _preflight_removal(candidate_root, path)
     return _MutationPlan(
         removals=tuple(sorted(removals, key=lambda item: (-len(_parts(item)), item))),
         copies=tuple(operations),
     )
+
+
+def _preflight_directory_contents(anchor: _DirectoryAnchor) -> None:
+    for name, metadata in anchor.entries():
+        if _is_link_or_reparse(metadata):
+            raise ReleasePathError("removal tree contains a filesystem link")
+        if stat.S_ISDIR(metadata.st_mode):
+            child = _open_directory_anchor(
+                anchor.path / name,
+                metadata,
+                parent=anchor,
+                name=name,
+            )
+            try:
+                _preflight_directory_contents(child)
+                child.validate_path()
+            finally:
+                child.close()
+        elif not stat.S_ISREG(metadata.st_mode):
+            raise ReleasePathError("removal tree contains an unsupported entry")
+
+
+def _preflight_removal(root: _DirectoryAnchor, path: str) -> None:
+    parts = _parts(path)
+    try:
+        anchors = _open_chain(root, parts[:-1])
+    except ReleasePathError:
+        kind, _ = _inspect_candidate(root, path)
+        if kind in {"missing", "ancestor_file"}:
+            return
+        raise
+    parent = anchors[-1] if anchors else root
+    try:
+        metadata = _entry_or_none(parent, parts[-1])
+        if metadata is None:
+            return
+        if _is_link_or_reparse(metadata):
+            raise ReleasePathError("removal target is a filesystem link")
+        if stat.S_ISDIR(metadata.st_mode):
+            child = _open_directory_anchor(
+                parent.path / parts[-1],
+                metadata,
+                parent=parent,
+                name=parts[-1],
+            )
+            try:
+                _preflight_directory_contents(child)
+                child.validate_path()
+            finally:
+                child.close()
+        elif not stat.S_ISREG(metadata.st_mode):
+            raise ReleasePathError("removal target has an unsupported type")
+    finally:
+        _close_anchors(anchors)
 
 
 def _remove_directory_contents(anchor: _DirectoryAnchor, *, keep_git: bool = False) -> None:
@@ -884,9 +966,23 @@ def _set_temp_metadata(
         os.fchmod(descriptor, stat.S_IMODE(source_stat.st_mode))
         os.utime(descriptor, ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns))
     else:
-        target = parent.path / name
-        target.chmod(stat.S_IMODE(source_stat.st_mode))
-        os.utime(target, ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns))
+        assert os.name == "nt"
+        handle = msvcrt.get_osfhandle(descriptor)
+        attributes = getattr(source_stat, "st_file_attributes", 0) or 0x80
+        information = _FileBasicInformation(
+            0,
+            source_stat.st_atime_ns // 100 + _WINDOWS_EPOCH_TICKS,
+            source_stat.st_mtime_ns // 100 + _WINDOWS_EPOCH_TICKS,
+            0,
+            attributes,
+        )
+        if not _set_file_information(
+            handle,
+            _FILE_BASIC_INFO_CLASS,
+            ctypes.byref(information),
+            ctypes.sizeof(information),
+        ):
+            raise ReleasePathError("could not apply metadata through open file handle")
 
 
 def _copy_regular_file_anchored(
@@ -922,17 +1018,14 @@ def _copy_regular_file_anchored(
                 written = os.write(destination_descriptor, view)
                 view = view[written:]
         os.fsync(destination_descriptor)
-        if isinstance(parent, _PosixDirectoryAnchor):
-            _set_temp_metadata(
-                parent,
-                temporary,
-                operation.source_stat,
-                destination_descriptor,
-            )
+        _set_temp_metadata(
+            parent,
+            temporary,
+            operation.source_stat,
+            destination_descriptor,
+        )
         os.close(destination_descriptor)
         destination_descriptor = -1
-        if not isinstance(parent, _PosixDirectoryAnchor):
-            _set_temp_metadata(parent, temporary, operation.source_stat, -1)
         current_source = os.fstat(source_descriptor)
         if (
             not _same_identity_and_type(operation.source_stat, current_source)
@@ -950,6 +1043,17 @@ def _copy_regular_file_anchored(
             or operation.source_stat.st_mtime_ns != current_source_path.st_mtime_ns
         ):
             raise ReleasePathError("source pathname changed during copy")
+        current_destination = _entry_or_none(parent, parts[-1])
+        if existing is None:
+            if current_destination is not None:
+                raise ReleasePathError("candidate entry appeared before atomic replace")
+        elif (
+            current_destination is None
+            or _is_link_or_reparse(current_destination)
+            or not stat.S_ISREG(current_destination.st_mode)
+            or not _same_identity_and_type(existing, current_destination)
+        ):
+            raise ReleasePathError("candidate entry identity changed before atomic replace")
         parent.validate_path()
         parent.replace_entry(temporary, parts[-1])
         temporary_created = False
@@ -1037,35 +1141,122 @@ def commit_candidate(candidate: str | Path, message: str) -> str:
 
 def _remove_candidate_tree_anchored(candidate_anchor: _DirectoryAnchor) -> None:
     candidate_anchor.validate_path()
-    _remove_directory_contents(candidate_anchor, keep_git=True)
+    _remove_directory_contents(candidate_anchor)
     candidate_anchor.validate_path()
 
 
-def _worktree_is_registered(repository: GitRepository, destination: Path) -> bool:
+def _registered_worktree_count(repository: GitRepository, destination: Path) -> int:
     expected = os.path.normcase(str(destination.resolve()))
+    matches = 0
     for line in git_output(repository.root, "worktree", "list", "--porcelain").splitlines():
         if not line.startswith("worktree "):
             continue
         registered = os.path.normcase(str(Path(line.removeprefix("worktree ")).resolve()))
         if registered == expected:
-            return True
-    return False
+            matches += 1
+    return matches
 
 
-def _lock_posix_temp_mutations(anchor: _DirectoryAnchor) -> int | None:
-    if not isinstance(anchor, _PosixDirectoryAnchor):
-        return None
-    original_mode = stat.S_IMODE(os.fstat(anchor.descriptor).st_mode)
-    os.fchmod(anchor.descriptor, original_mode & ~0o222)
-    anchor.validate_path()
-    return original_mode
+def _worktree_is_registered(repository: GitRepository, destination: Path) -> bool:
+    return _registered_worktree_count(repository, destination) == 1
 
 
-def _restore_posix_temp_mutations(anchor: _DirectoryAnchor, mode: int | None) -> None:
-    if mode is not None:
-        assert isinstance(anchor, _PosixDirectoryAnchor)
-        os.fchmod(anchor.descriptor, mode)
+def _read_anchored_regular_file(anchor: _DirectoryAnchor, name: str) -> bytes:
+    expected = anchor.stat_entry(name)
+    if _is_link_or_reparse(expected) or not stat.S_ISREG(expected.st_mode):
+        raise ReleasePathError("worktree administrative pointer is not a regular file")
+    if expected.st_size > 1024 * 1024:
+        raise ReleasePathError("worktree administrative pointer is unexpectedly large")
+    descriptor = anchor.open_file(
+        name,
+        os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0),
+    )
+    try:
+        opened = os.fstat(descriptor)
+        if not _same_identity_and_type(expected, opened):
+            raise ReleasePathError("worktree administrative pointer identity changed")
+        chunks: list[bytes] = []
+        total = 0
+        while block := os.read(descriptor, 64 * 1024):
+            total += len(block)
+            if total > 1024 * 1024:
+                raise ReleasePathError("worktree administrative pointer is unexpectedly large")
+            chunks.append(block)
+        current = anchor.stat_entry(name)
+        if not _same_identity_and_type(expected, current):
+            raise ReleasePathError("worktree administrative pointer identity changed")
+        return b"".join(chunks)
+    finally:
+        os.close(descriptor)
+
+
+def _write_anchored_regular_file(anchor: _DirectoryAnchor, name: str, data: bytes) -> None:
+    descriptor = anchor.open_file(
+        name,
+        os.O_WRONLY
+        | os.O_CREAT
+        | os.O_EXCL
+        | getattr(os, "O_BINARY", 0)
+        | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    try:
+        view = memoryview(data)
+        while view:
+            written = os.write(descriptor, view)
+            view = view[written:]
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _remove_placeholder(
+    parent: _DirectoryAnchor,
+    name: str,
+    expected: os.stat_result,
+) -> None:
+    current = _entry_or_none(parent, name)
+    if current is None:
+        return
+    if (
+        _is_link_or_reparse(current)
+        or not stat.S_ISDIR(current.st_mode)
+        or not _same_identity_and_type(expected, current)
+    ):
+        raise ReleasePathError("cleanup placeholder identity changed")
+    anchor = _open_directory_anchor(
+        parent.path / name,
+        current,
+        parent=parent,
+        name=name,
+    )
+    try:
+        _remove_directory_contents(anchor)
         anchor.validate_path()
+    finally:
+        anchor.close()
+    parent.rmdir_entry(name)
+
+
+def _rollback_quarantined_candidate(
+    parent: _DirectoryAnchor,
+    candidate_name: str,
+    placeholder_stat: os.stat_result,
+    quarantine_name: str,
+    candidate_identity: os.stat_result,
+) -> None:
+    _remove_placeholder(parent, candidate_name, placeholder_stat)
+    parent.replace_entry(quarantine_name, candidate_name)
+    restored = parent.stat_entry(candidate_name)
+    if not _same_identity_and_type(candidate_identity, restored):
+        raise ReleasePathError("candidate identity changed during cleanup rollback")
+
+
+def _git_failure(repository: GitRepository, args: tuple[str, ...], stderr: str) -> GitError:
+    return GitError(
+        "Git failed during reversible worktree cleanup: "
+        + _redacted_stderr(repository.root, args, stderr)
+    )
 
 
 def cleanup_worktree(
@@ -1073,65 +1264,102 @@ def cleanup_worktree(
     destination: str | Path,
     approved_temp_root: str | Path,
 ) -> None:
-    """Clean and unregister one verified candidate without following substitutions."""
+    """Reversibly unregister, then delete one exactly registered candidate."""
 
     temp_root, temp_anchor = _verified_temp_root(approved_temp_root, repository.root)
     candidate_anchors: list[_DirectoryAnchor] = []
     try:
         destination_path, relative_parts = _safe_destination(destination, temp_root)
+        if _registered_worktree_count(repository, destination_path) != 1:
+            raise GitError("cleanup destination is not exactly one registered worktree")
         candidate_anchor, candidate_anchors = _open_candidate_from_temp(
             temp_anchor,
             relative_parts,
         )
-        _remove_candidate_tree_anchored(candidate_anchor)
+        _preflight_directory_contents(candidate_anchor)
         candidate_anchor.validate_path()
         candidate_identity = candidate_anchor.opened
+        git_pointer = _read_anchored_regular_file(candidate_anchor, ".git")
         candidate_parent = (
             candidate_anchors[-2] if len(candidate_anchors) > 1 else temp_anchor
         )
         candidate_name = relative_parts[-1]
-        original_parent_mode = _lock_posix_temp_mutations(candidate_parent)
+        quarantine_name = f".nova-release-cleanup-{secrets.token_hex(12)}"
+        if _entry_or_none(candidate_parent, quarantine_name) is not None:
+            raise ReleasePathError("cleanup quarantine already exists")
+        candidate_anchors.pop()
+        candidate_anchor.close()
+        candidate_parent.replace_entry(candidate_name, quarantine_name)
+        quarantined = candidate_parent.stat_entry(quarantine_name)
+        if not _same_identity_and_type(candidate_identity, quarantined):
+            raise ReleasePathError("candidate identity changed during quarantine")
+        candidate_parent.mkdir_entry(candidate_name)
+        placeholder_stat = candidate_parent.stat_entry(candidate_name)
+        placeholder_anchor = _open_directory_anchor(
+            candidate_parent.path / candidate_name,
+            placeholder_stat,
+            parent=candidate_parent,
+            name=candidate_name,
+        )
         try:
-            completed = _run_git(
-                repository.root,
-                "worktree",
-                "remove",
-                "--force",
-                str(destination_path),
-            )
+            try:
+                _write_anchored_regular_file(placeholder_anchor, ".git", git_pointer)
+                git_args = ("worktree", "remove", "--force", str(destination_path))
+                try:
+                    completed = _run_git(repository.root, *git_args)
+                    registered_after = _worktree_is_registered(repository, destination_path)
+                except GitError as error:
+                    registered_after = True
+                    git_error: GitError = error
+                else:
+                    git_error = _git_failure(repository, git_args, completed.stderr)
+
+                placeholder_entries = placeholder_anchor.entries()
+                if registered_after or placeholder_entries:
+                    raise git_error
+            except BaseException:
+                placeholder_anchor.close()
+                placeholder_anchor = None
+                _rollback_quarantined_candidate(
+                    candidate_parent,
+                    candidate_name,
+                    placeholder_stat,
+                    quarantine_name,
+                    candidate_identity,
+                )
+                raise
         finally:
-            _restore_posix_temp_mutations(candidate_parent, original_parent_mode)
-        if _worktree_is_registered(repository, destination_path):
-            diagnostic = _redacted_stderr(
-                repository.root,
-                ("worktree", "remove", "--force", str(destination_path)),
-                completed.stderr,
-            )
-            raise GitError(
-                f"Git failed to unregister candidate worktree: {diagnostic}"
-            )
+            if placeholder_anchor is not None:
+                placeholder_anchor.close()
+
         remaining = _entry_or_none(candidate_parent, candidate_name)
         if remaining is not None:
             if (
                 _is_link_or_reparse(remaining)
                 or not stat.S_ISDIR(remaining.st_mode)
-                or not _same_identity_and_type(candidate_identity, remaining)
+                or not _same_identity_and_type(placeholder_stat, remaining)
             ):
-                raise ReleasePathError("candidate identity changed before final removal")
-            candidate_anchor.validate_path()
-            if any(True for _entry in candidate_anchor.entries()):
-                raise ReleasePathError("Git left candidate content after unregistering")
-        candidate_anchor.close()
-        candidate_anchors.pop()
-        if remaining is not None:
-            current = candidate_parent.stat_entry(candidate_name)
-            if (
-                _is_link_or_reparse(current)
-                or not stat.S_ISDIR(current.st_mode)
-                or not _same_identity_and_type(candidate_identity, current)
-            ):
-                raise ReleasePathError("candidate identity changed before final removal")
+                raise ReleasePathError("cleanup placeholder identity changed")
             candidate_parent.rmdir_entry(candidate_name)
+
+        quarantine_stat = candidate_parent.stat_entry(quarantine_name)
+        if not _same_identity_and_type(candidate_identity, quarantine_stat):
+            raise ReleasePathError("quarantined candidate identity changed")
+        quarantine_anchor = _open_directory_anchor(
+            candidate_parent.path / quarantine_name,
+            quarantine_stat,
+            parent=candidate_parent,
+            name=quarantine_name,
+        )
+        try:
+            _remove_candidate_tree_anchored(quarantine_anchor)
+            quarantine_anchor.validate_path()
+        finally:
+            quarantine_anchor.close()
+        current_quarantine = candidate_parent.stat_entry(quarantine_name)
+        if not _same_identity_and_type(candidate_identity, current_quarantine):
+            raise ReleasePathError("quarantined candidate identity changed before removal")
+        candidate_parent.rmdir_entry(quarantine_name)
         _close_anchors(candidate_anchors)
         candidate_anchors = []
         temp_anchor.validate_path()
