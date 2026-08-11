@@ -1421,6 +1421,14 @@ def _terminate_failed_posix_launch_process(
     )
     deadline = time.monotonic() + _PROCESS_CLEANUP_SECONDS
     verified = True
+    if process.returncode is not None:
+        if supervisor_descriptor is not None:
+            try:
+                signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
+            except (OSError, ProcessLookupError):
+                pass
+        return False
+
     try:
         scan = containment._linux_cleanup_scan(deadline)
     except BaseException:
@@ -1436,48 +1444,25 @@ def _terminate_failed_posix_launch_process(
             verified = False
     except BaseException:
         verified = False
-    if process.poll() is None:
+    try:
+        if not containment._kill_linux_process_group(group_identity_pinned=True):
+            verified = False
+    except BaseException:
+        verified = False
+
+    if supervisor_descriptor is not None:
         try:
-            if not containment._kill_linux_process_group(
-                group_identity_pinned=True
-            ):
-                verified = False
+            signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
         except BaseException:
             verified = False
     else:
         verified = False
-
-    try:
-        if supervisor_descriptor is not None:
-            signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
-        else:
-            verified = False
-            if process.poll() is None:
-                process.kill()
-    except ProcessLookupError:
-        pass
-    except BaseException:
-        verified = False
-        if process.poll() is None:
-            try:
-                process.kill()
-            except (OSError, ProcessLookupError):
-                pass
-    try:
-        process.wait(timeout=max(0, deadline - time.monotonic()))
-    except subprocess.TimeoutExpired:
-        verified = False
-        if process.poll() is None:
-            try:
-                process.kill()
-            except (OSError, ProcessLookupError):
-                pass
         try:
-            process.wait(timeout=max(0, deadline - time.monotonic()))
-        except subprocess.TimeoutExpired:
+            process.kill()
+        except BaseException:
             pass
-    except OSError:
-        verified = False
 
     session_empty = False
     while time.monotonic() < deadline:
@@ -1502,7 +1487,28 @@ def _terminate_failed_posix_launch_process(
             session_empty = True
             break
         time.sleep(min(0.02, max(0, deadline - time.monotonic())))
-    return verified and session_empty and process.poll() is not None
+
+    supervisor_reaped = False
+    try:
+        process.wait(timeout=max(0, deadline - time.monotonic()))
+        supervisor_reaped = True
+    except subprocess.TimeoutExpired:
+        verified = False
+        try:
+            if supervisor_descriptor is not None:
+                signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
+            else:
+                process.kill()
+        except BaseException:
+            pass
+        try:
+            process.wait(timeout=max(0, deadline - time.monotonic()))
+            supervisor_reaped = True
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    except OSError:
+        verified = False
+    return verified and session_empty and supervisor_reaped
 
 
 def _supervisor_payload(command: list[str], *, deadline: float) -> bytes:
