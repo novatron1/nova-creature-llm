@@ -1396,6 +1396,25 @@ def _terminate_failed_posix_launch(
     process: subprocess.Popen[bytes],
     supervisor_descriptor: int | None,
 ) -> bool:
+    cleanup_complete = False
+    try:
+        cleanup_complete = _terminate_failed_posix_launch_process(
+            process,
+            supervisor_descriptor,
+        )
+    finally:
+        if supervisor_descriptor is not None:
+            try:
+                os.close(supervisor_descriptor)
+            except OSError:
+                cleanup_complete = False
+    return cleanup_complete
+
+
+def _terminate_failed_posix_launch_process(
+    process: subprocess.Popen[bytes],
+    supervisor_descriptor: int | None,
+) -> bool:
     containment = _ProcessContainment(
         process,
         process_group_id=process.pid,
@@ -1431,10 +1450,10 @@ def _terminate_failed_posix_launch(
     try:
         if supervisor_descriptor is not None:
             signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
-        elif process.poll() is None:
-            process.kill()
         else:
             verified = False
+            if process.poll() is None:
+                process.kill()
     except ProcessLookupError:
         pass
     except BaseException:
@@ -1444,13 +1463,6 @@ def _terminate_failed_posix_launch(
                 process.kill()
             except (OSError, ProcessLookupError):
                 pass
-    finally:
-        if supervisor_descriptor is not None:
-            try:
-                os.close(supervisor_descriptor)
-            except OSError:
-                verified = False
-
     try:
         process.wait(timeout=max(0, deadline - time.monotonic()))
     except subprocess.TimeoutExpired:

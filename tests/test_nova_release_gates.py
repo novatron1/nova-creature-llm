@@ -1001,6 +1001,94 @@ def test_failed_posix_launch_does_not_reacquire_reaped_supervisor_pid(
     assert sent == []
 
 
+def test_failed_posix_launch_without_retained_pidfd_is_indeterminate_while_live(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(signal, "SIGKILL", 9, raising=False)
+
+    class LiveSupervisor:
+        pid = 4242
+        returncode: int | None = None
+        killed = False
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def kill(self) -> None:
+            self.killed = True
+            self.returncode = -9
+
+        def wait(self, timeout: float) -> int:
+            assert self.returncode is not None
+            return self.returncode
+
+    supervisor = LiveSupervisor()
+    monkeypatch.setattr(
+        os,
+        "pidfd_open",
+        lambda pid: pytest.fail("must not reacquire the supervisor PID"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        nova_release_gates._ProcessContainment,
+        "_linux_cleanup_scan",
+        lambda containment, deadline: nova_release_gates._LinuxSessionScan((), True),
+    )
+
+    def missing_process_group(process_group_id: int, signum: int) -> None:
+        raise ProcessLookupError
+
+    monkeypatch.setattr(
+        os,
+        "killpg",
+        missing_process_group,
+        raising=False,
+    )
+
+    assert nova_release_gates._terminate_failed_posix_launch(
+        supervisor,  # type: ignore[arg-type]
+        None,
+    ) is False
+    assert supervisor.killed is True
+
+
+def test_failed_posix_launch_closes_retained_pidfd_when_setup_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    descriptor = os.open(os.devnull, os.O_RDONLY)
+    real_close = os.close
+    closed: list[int] = []
+
+    def fail_containment(*args: object, **kwargs: object) -> object:
+        raise RuntimeError("containment setup failed")
+
+    def close_descriptor(candidate: int) -> None:
+        closed.append(candidate)
+        real_close(candidate)
+
+    monkeypatch.setattr(nova_release_gates, "_ProcessContainment", fail_containment)
+    monkeypatch.setattr(os, "close", close_descriptor)
+
+    try:
+        with pytest.raises(RuntimeError, match="containment setup failed"):
+            nova_release_gates._terminate_failed_posix_launch(
+                SimpleNamespace(pid=4242),  # type: ignore[arg-type]
+                descriptor,
+            )
+        with pytest.raises(OSError) as closed_descriptor:
+            os.fstat(descriptor)
+        assert closed_descriptor.value.errno == errno.EBADF
+    finally:
+        try:
+            os.fstat(descriptor)
+        except OSError:
+            pass
+        else:
+            real_close(descriptor)
+
+    assert closed == [descriptor]
+
+
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux PID reuse proof")
 def test_real_posix_cleanup_does_not_reuse_reaped_group_identity(
     tmp_path: Path,
