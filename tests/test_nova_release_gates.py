@@ -5,6 +5,7 @@ import ctypes
 from dataclasses import replace
 import errno
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -108,6 +109,103 @@ def _gate_paths(tmp_path: Path) -> tuple[Path, Path]:
     candidate = tmp_path / "candidate"
     candidate.mkdir()
     return candidate, tmp_path / "reports"
+
+
+class _FakePosixLaunch:
+    def __init__(self) -> None:
+        self.descriptor = os.open(os.devnull, os.O_RDONLY)
+        self.real_close = os.close
+        self.events: list[str] = []
+        self.opened: list[int] = []
+        self.closed: list[int] = []
+        self.process = SimpleNamespace(
+            pid=4242,
+            returncode=None,
+            stdin=io.BytesIO(),
+            stdout=io.BytesIO(),
+            stderr=io.BytesIO(),
+        )
+        self.process.poll = lambda: self.process.returncode
+        self.process.wait = self.wait
+        self.process.kill = lambda: pytest.fail("must not use numeric PID fallback")
+        self.os = SimpleNamespace(
+            name="posix",
+            pipe=os.pipe,
+            pidfd_open=self.open_pidfd,
+            close=self.close_descriptor,
+            read=self.read_launch_status,
+        )
+
+    def popen(self, *_: object, **__: object) -> object:
+        self.events.append("popen")
+        return self.process
+
+    def open_pidfd(self, pid: int) -> int:
+        self.events.append("pidfd")
+        self.opened.append(pid)
+        return self.descriptor
+
+    def close_descriptor(self, descriptor: int) -> None:
+        if descriptor == self.descriptor:
+            self.closed.append(descriptor)
+        self.real_close(descriptor)
+
+    def write_payload(self, stream: io.BytesIO, *_: object) -> None:
+        self.events.append("payload")
+        stream.close()
+
+    def wait(self, timeout: float) -> int:
+        self.events.append("wait")
+        self.process.returncode = 0
+        return 0
+
+    def ready_handshake(
+        self,
+        readers: list[int],
+        *_: object,
+    ) -> tuple[list[int], list[int], list[int]]:
+        self.events.append("handshake")
+        return readers, [], []
+
+    def reaping_handshake(
+        self,
+        readers: list[int],
+        _writers: list[int],
+        _errors: list[int],
+        timeout: float,
+    ) -> tuple[list[int], list[int], list[int]]:
+        self.events.append("handshake")
+        self.process.wait(timeout)
+        return [], [], []
+
+    def read_launch_status(self, *_: object) -> bytes:
+        self.events.append("read")
+        return b'{"started":true}\n'
+
+    def patch(self, monkeypatch: pytest.MonkeyPatch, selector: object) -> None:
+        monkeypatch.setattr(nova_release_gates, "os", self.os)
+        monkeypatch.setattr(nova_release_gates, "_ensure_supported_platform", lambda: None)
+        monkeypatch.setattr(nova_release_gates.subprocess, "Popen", self.popen)
+        monkeypatch.setattr(
+            nova_release_gates,
+            "_write_posix_payload_with_deadline",
+            self.write_payload,
+        )
+        monkeypatch.setattr(nova_release_gates.select, "select", selector)
+
+    def close_leaks(self, containment: object | None = None) -> None:
+        if containment is not None:
+            for attribute in ("status_fd", "control_fd"):
+                descriptor = getattr(containment, attribute)
+                if descriptor is not None:
+                    self.real_close(descriptor)
+                    setattr(containment, attribute, None)
+        try:
+            os.fstat(self.descriptor)
+        except OSError:
+            pass
+        else:
+            self.real_close(self.descriptor)
 
 
 def test_unsupported_posix_is_rejected_before_report_mutation(
@@ -764,14 +862,20 @@ def test_posix_cleanup_never_signals_numeric_group_after_supervisor_reap(
     assert post_reap_group_signals == []
 
 
-def test_failed_posix_launch_never_signals_numeric_group_after_supervisor_reap(
+@pytest.mark.parametrize(
+    "initial_returncode",
+    [None, 0],
+    ids=("live", "reaped"),
+)
+def test_failed_posix_launch_uses_and_closes_retained_supervisor_pidfd(
     monkeypatch: pytest.MonkeyPatch,
+    initial_returncode: int | None,
 ) -> None:
     monkeypatch.setattr(signal, "SIGKILL", 9, raising=False)
 
     class FakeSupervisor:
         pid = 4242
-        returncode: int | None = None
+        returncode: int | None = initial_returncode
 
         def poll(self) -> int | None:
             return self.returncode
@@ -781,15 +885,25 @@ def test_failed_posix_launch_never_signals_numeric_group_after_supervisor_reap(
             return 0
 
         def kill(self) -> None:
-            self.returncode = -9
+            raise AssertionError("retained PIDFD signaling must not fall back to kill()")
 
     supervisor = FakeSupervisor()
     descriptor = os.open(os.devnull, os.O_RDONLY)
-    monkeypatch.setattr(os, "pidfd_open", lambda pid: descriptor, raising=False)
+    real_close = os.close
+    closed: list[int] = []
+    sent: list[tuple[int, int]] = []
+    monkeypatch.setattr(
+        os,
+        "pidfd_open",
+        lambda pid: pytest.fail("must not reacquire the supervisor PID"),
+        raising=False,
+    )
     monkeypatch.setattr(
         signal,
         "pidfd_send_signal",
-        lambda process_descriptor, signum: None,
+        lambda process_descriptor, signum: sent.append(
+            (process_descriptor, signum)
+        ),
         raising=False,
     )
     monkeypatch.setattr(
@@ -808,12 +922,83 @@ def test_failed_posix_launch_never_signals_numeric_group_after_supervisor_reap(
 
     monkeypatch.setattr(os, "killpg", observe_group_signal, raising=False)
 
-    cleanup_complete = nova_release_gates._terminate_failed_posix_launch(
-        supervisor,  # type: ignore[arg-type]
-    )
+    def close_descriptor(candidate: int) -> None:
+        closed.append(candidate)
+        real_close(candidate)
+
+    monkeypatch.setattr(os, "close", close_descriptor)
+
+    try:
+        cleanup_complete = nova_release_gates._terminate_failed_posix_launch(
+            supervisor,  # type: ignore[arg-type]
+            descriptor,
+        )
+        with pytest.raises(OSError) as closed_descriptor:
+            os.fstat(descriptor)
+        assert closed_descriptor.value.errno == errno.EBADF
+    finally:
+        try:
+            os.fstat(descriptor)
+        except OSError:
+            pass
+        else:
+            real_close(descriptor)
 
     assert cleanup_complete is False
+    assert sent == [(descriptor, signal.SIGKILL)]
+    assert closed == [descriptor]
     assert post_reap_group_signals == []
+
+
+def test_failed_posix_launch_does_not_reacquire_reaped_supervisor_pid(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class ReapedSupervisor:
+        pid = 4242
+        returncode = 0
+
+        def poll(self) -> int:
+            return 0
+
+        def wait(self, timeout: float) -> int:
+            return 0
+
+        def kill(self) -> None:
+            raise AssertionError("must not signal a reaped numeric PID")
+
+    opened: list[int] = []
+    sent: list[tuple[int, int]] = []
+    monkeypatch.setattr(os, "pidfd_open", lambda pid: opened.append(pid), raising=False)
+    monkeypatch.setattr(
+        signal,
+        "pidfd_send_signal",
+        lambda descriptor, signum: sent.append((descriptor, signum)),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        os,
+        "killpg",
+        lambda pgid, signum: pytest.fail("killpg"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        os,
+        "kill",
+        lambda pid, signum: pytest.fail("kill"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        nova_release_gates._ProcessContainment,
+        "_linux_cleanup_scan",
+        lambda containment, deadline: nova_release_gates._LinuxSessionScan((), True),
+    )
+
+    assert nova_release_gates._terminate_failed_posix_launch(
+        ReapedSupervisor(),  # type: ignore[arg-type]
+        None,
+    ) is False
+    assert opened == []
+    assert sent == []
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux PID reuse proof")
@@ -989,6 +1174,148 @@ def test_windows_launch_propagates_known_writer_cleanup_failure(
     assert result.passed is False
     assert result.timed_out is True
     assert "process containment cleanup could not be verified" in result.stderr_tail
+
+
+def test_posix_launch_retains_supervisor_pidfd_before_handshake_reaps_process(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    launch = _FakePosixLaunch()
+    cleanup_descriptors: list[int | None] = []
+
+    def terminate_failed_launch(
+        process: object,
+        descriptor: int | None,
+    ) -> bool:
+        launch.events.append("cleanup")
+        assert process is launch.process
+        cleanup_descriptors.append(descriptor)
+        if descriptor is not None:
+            launch.close_descriptor(descriptor)
+        return False
+
+    launch.patch(monkeypatch, launch.reaping_handshake)
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_terminate_failed_posix_launch",
+        terminate_failed_launch,
+    )
+
+    try:
+        with pytest.raises(
+            nova_release_gates._ContainedLaunchTimeout,
+            match="handshake exceeded launch deadline",
+        ) as raised:
+            _launch_contained_process(
+                [sys.executable, "-c", "pass"],
+                cwd=candidate,
+                environment={},
+                deadline=time.monotonic() + 5,
+            )
+    finally:
+        launch.close_leaks()
+
+    assert raised.value.cleanup_complete is False
+    assert launch.opened == [launch.process.pid]
+    assert cleanup_descriptors == [launch.descriptor]
+    assert launch.closed == [launch.descriptor]
+    assert launch.events == [
+        "popen",
+        "pidfd",
+        "payload",
+        "handshake",
+        "wait",
+        "cleanup",
+    ]
+
+
+def test_successful_posix_launch_closes_setup_only_supervisor_pidfd(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    launch = _FakePosixLaunch()
+    launch.process.poll = lambda: pytest.fail("successful setup must not poll")
+    launch.process.wait = lambda timeout: pytest.fail("successful setup must not wait")
+    launch.patch(monkeypatch, launch.ready_handshake)
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_terminate_failed_posix_launch",
+        lambda process, descriptor: pytest.fail("successful launch must not clean up"),
+    )
+
+    containment: object | None = None
+    try:
+        containment = _launch_contained_process(
+            [sys.executable, "-c", "pass"],
+            cwd=candidate,
+            environment={},
+            deadline=time.monotonic() + 5,
+        )
+
+        assert launch.opened == [launch.process.pid]
+        assert launch.closed == [launch.descriptor]
+        with pytest.raises(OSError) as closed_descriptor:
+            os.fstat(launch.descriptor)
+        assert closed_descriptor.value.errno == errno.EBADF
+        assert launch.events == ["popen", "pidfd", "payload", "handshake", "read"]
+    finally:
+        launch.close_leaks(containment)
+
+
+def test_posix_launch_clears_pidfd_ownership_when_setup_close_raises(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate, _ = _gate_paths(tmp_path)
+    launch = _FakePosixLaunch()
+    cleanup_descriptors: list[int | None] = []
+
+    def close_then_raise(descriptor: int) -> None:
+        launch.close_descriptor(descriptor)
+        if descriptor == launch.descriptor:
+            raise OSError(errno.EIO, "descriptor close status unknown")
+
+    def terminate_failed_launch(process: object, descriptor: int | None) -> bool:
+        launch.events.append("cleanup")
+        assert process is launch.process
+        cleanup_descriptors.append(descriptor)
+        return False
+
+    launch.os.close = close_then_raise
+    launch.patch(monkeypatch, launch.ready_handshake)
+    monkeypatch.setattr(
+        nova_release_gates,
+        "_terminate_failed_posix_launch",
+        terminate_failed_launch,
+    )
+
+    try:
+        with pytest.raises(
+            nova_release_gates._ContainedLaunchFailure,
+            match="descriptor close status unknown",
+        ) as raised:
+            _launch_contained_process(
+                [sys.executable, "-c", "pass"],
+                cwd=candidate,
+                environment={},
+                deadline=time.monotonic() + 5,
+            )
+    finally:
+        launch.close_leaks()
+
+    assert raised.value.cleanup_complete is False
+    assert cleanup_descriptors == [None]
+    assert launch.closed == [launch.descriptor]
+    assert launch.events == [
+        "popen",
+        "pidfd",
+        "payload",
+        "handshake",
+        "read",
+        "cleanup",
+    ]
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX supervisor behavior")

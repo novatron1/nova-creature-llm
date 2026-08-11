@@ -1392,7 +1392,10 @@ class _ProcessContainment:
         return False
 
 
-def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> bool:
+def _terminate_failed_posix_launch(
+    process: subprocess.Popen[bytes],
+    supervisor_descriptor: int | None,
+) -> bool:
     containment = _ProcessContainment(
         process,
         process_group_id=process.pid,
@@ -1425,10 +1428,13 @@ def _terminate_failed_posix_launch(process: subprocess.Popen[bytes]) -> bool:
     else:
         verified = False
 
-    supervisor_descriptor: int | None = None
     try:
-        supervisor_descriptor = os.pidfd_open(process.pid)
-        signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
+        if supervisor_descriptor is not None:
+            signal.pidfd_send_signal(supervisor_descriptor, signal.SIGKILL)
+        elif process.poll() is None:
+            process.kill()
+        else:
+            verified = False
     except ProcessLookupError:
         pass
     except BaseException:
@@ -1620,6 +1626,7 @@ def _launch_contained_process(
     if os.name != "nt":
         descriptors: set[int] = set()
         process: subprocess.Popen[bytes] | None = None
+        supervisor_descriptor: int | None = None
         try:
             status_read, status_write = os.pipe()
             descriptors.update((status_read, status_write))
@@ -1646,6 +1653,7 @@ def _launch_contained_process(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+            supervisor_descriptor = os.pidfd_open(process.pid)
             for descriptor in (status_write, control_read, ready_write):
                 os.close(descriptor)
                 descriptors.discard(descriptor)
@@ -1685,12 +1693,17 @@ def _launch_contained_process(
                 raise TimeoutError(
                     "trusted supervisor handshake exceeded launch deadline"
                 )
-            return _ProcessContainment(
+            containment = _ProcessContainment(
                 process,
                 process_group_id=process.pid,
                 status_fd=status_read,
                 control_fd=control_write,
             )
+            try:
+                os.close(supervisor_descriptor)
+            finally:
+                supervisor_descriptor = None
+            return containment
         except BaseException as error:
             cleanup_complete = (
                 error.cleanup_complete
@@ -1707,10 +1720,16 @@ def _launch_contained_process(
                     except OSError:
                         cleanup_complete = False
                 try:
-                    cleanup_complete = (
-                        _terminate_failed_posix_launch(process)
-                        and cleanup_complete
-                    )
+                    try:
+                        cleanup_complete = (
+                            _terminate_failed_posix_launch(
+                                process,
+                                supervisor_descriptor,
+                            )
+                            and cleanup_complete
+                        )
+                    finally:
+                        supervisor_descriptor = None
                 except BaseException:
                     cleanup_complete = False
                 for stream in (process.stdout, process.stderr):
