@@ -30,6 +30,14 @@ class GitError(RuntimeError):
     """Raised when a Git command or repository operation fails."""
 
 
+class PromotionError(GitError):
+    """Raised when promotion fails with a stable, reportable category."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
 class ReleasePathError(ValueError):
     """Raised when a release path crosses an approved filesystem boundary."""
 
@@ -165,6 +173,14 @@ class GitRepository:
         if not common.is_absolute():
             common = (top / common).resolve()
         return cls(root=top, common_dir=common)
+
+
+@dataclass(frozen=True)
+class GitPromotionResult:
+    master_before: str
+    master_after: str
+    candidate_commit: str
+    rollback_ref: str
 
 
 def _nul_paths(output: str) -> list[str]:
@@ -1162,6 +1178,151 @@ def remove_candidate_paths(
     finally:
         _close_anchors(candidate_anchors)
         temp_anchor.close()
+
+
+def _branch_checked_out(repository: GitRepository, branch: str) -> bool:
+    expected = f"refs/heads/{branch}"
+    return any(
+        line == f"branch {expected}"
+        for line in git_output(
+            repository.root,
+            "worktree",
+            "list",
+            "--porcelain",
+        ).splitlines()
+    )
+
+
+def promote_candidate(
+    repository: GitRepository,
+    *,
+    candidate_commit: str,
+    master_before: str,
+    destination: str | Path,
+    approved_temp_root: str | Path,
+    run_id: str,
+) -> GitPromotionResult:
+    """Merge one verified candidate into local master with a rollback ref."""
+
+    current_master = git_output(
+        repository.root,
+        "rev-parse",
+        "refs/heads/master",
+    )
+    if current_master != master_before:
+        raise PromotionError(
+            "promotion_master_changed",
+            "local master changed after Release Lock preflight",
+        )
+    verified_candidate = git_output(
+        repository.root,
+        "rev-parse",
+        f"{candidate_commit}^{{commit}}",
+    )
+    if verified_candidate != candidate_commit:
+        raise PromotionError(
+            "promotion_candidate_changed",
+            "candidate commit does not match the verified release",
+        )
+    if _branch_checked_out(repository, "master"):
+        raise PromotionError(
+            "promotion_master_checked_out",
+            "local master is already checked out in another worktree",
+        )
+
+    rollback_branch = f"codex/rollback-release-lock-{run_id}"
+    git_output(repository.root, "check-ref-format", "--branch", rollback_branch)
+    if git_output(
+        repository.root,
+        "branch",
+        "--list",
+        "--format=%(refname)",
+        rollback_branch,
+    ):
+        raise PromotionError(
+            "promotion_rollback_exists",
+            "release rollback reference already exists",
+        )
+    git_output(repository.root, "branch", rollback_branch, master_before)
+
+    temp_root, temp_anchor = _verified_temp_root(
+        approved_temp_root,
+        repository.root,
+    )
+    master_path, relative_parts = _safe_destination(destination, temp_root)
+    try:
+        parent, parents, name = _destination_parent(
+            temp_anchor,
+            relative_parts,
+            create=False,
+        )
+        try:
+            if _entry_or_none(parent, name) is not None:
+                raise GitError("master worktree destination already exists")
+        finally:
+            _close_anchors(parents)
+        _create_worktree_in_root(
+            repository,
+            "master",
+            master_path,
+            temp_anchor,
+            relative_parts,
+        )
+    finally:
+        temp_anchor.close()
+
+    merge = _run_git(
+        master_path,
+        "merge",
+        "--no-ff",
+        "--no-edit",
+        candidate_commit,
+    )
+    if merge.returncode != 0:
+        merge_in_progress = _run_git(
+            master_path,
+            "rev-parse",
+            "-q",
+            "--verify",
+            "MERGE_HEAD",
+        ).returncode == 0
+        if not merge_in_progress:
+            raise PromotionError(
+                "promotion_merge_failed",
+                "candidate merge failed before creating a merge state",
+            )
+        aborted = _run_git(master_path, "merge", "--abort")
+        recovered_head = git_output(master_path, "rev-parse", "HEAD")
+        recovered_status = git_output(master_path, "status", "--porcelain")
+        if (
+            aborted.returncode != 0
+            or recovered_head != master_before
+            or recovered_status
+        ):
+            raise PromotionError(
+                "promotion_recovery_required",
+                "candidate merge failed and automatic recovery could not be verified",
+            )
+        raise PromotionError(
+            "promotion_conflict",
+            "candidate merge conflicted and was safely aborted",
+        )
+    master_after = git_output(master_path, "rev-parse", "HEAD")
+    parents = git_output(
+        master_path,
+        "show",
+        "-s",
+        "--format=%P",
+        master_after,
+    ).split()
+    if parents != [master_before, candidate_commit]:
+        raise GitError("promoted master does not have the expected merge parents")
+    return GitPromotionResult(
+        master_before=master_before,
+        master_after=master_after,
+        candidate_commit=candidate_commit,
+        rollback_ref=rollback_branch,
+    )
 
 
 def commit_candidate(candidate: str | Path, message: str) -> str:

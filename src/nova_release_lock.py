@@ -30,12 +30,14 @@ from nova_release_policy import (
 )
 from nova_release_worktree import (
     GitRepository,
+    PromotionError,
     apply_snapshot,
     commit_candidate,
     create_candidate_worktree,
     git_output,
     list_deleted_paths,
     list_tracked_paths,
+    promote_candidate,
     remove_candidate_paths,
 )
 from nova_release_security import inspect_release
@@ -80,6 +82,16 @@ class ReleaseRun:
     rollback_ref: str | None = None
     failure_gate: str | None = None
     report_path: Path | None = None
+
+
+@dataclass(frozen=True)
+class PromotionResult:
+    status: ReleaseStatus
+    master_before: str
+    master_after: str
+    candidate_commit: str
+    rollback_ref: str
+    rollback_command: list[str]
 
 
 def _utc_now() -> datetime:
@@ -419,3 +431,48 @@ class NovaReleaseLock:
         current.failure_gate = None
         self._persist_run(current)
         return current
+
+    def promote(self, run_id: str) -> PromotionResult:
+        current = self.load_run(run_id)
+        if current.status is not ReleaseStatus.VERIFIED:
+            raise ValueError("only a verified Release Lock run can be promoted")
+        if not current.candidate_commit:
+            raise ValueError("verified Release Lock run has no candidate commit")
+        current.paths.master_worktree.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            promoted = promote_candidate(
+                self.repository,
+                candidate_commit=current.candidate_commit,
+                master_before=current.master_before,
+                destination=current.paths.master_worktree,
+                approved_temp_root=self.temp_root,
+                run_id=current.run_id,
+            )
+        except PromotionError as error:
+            self._fail(current, error.code)
+            raise
+        except BaseException:
+            self._fail(current, "promotion_exception")
+            raise
+        current.status = ReleaseStatus.PROMOTED
+        current.master_after = promoted.master_after
+        current.rollback_ref = promoted.rollback_ref
+        current.failure_gate = None
+        self._persist_run(current)
+        rollback_command = [
+            "git",
+            "-C",
+            str(self.repo_root),
+            "revert",
+            "-m",
+            "1",
+            promoted.master_after,
+        ]
+        return PromotionResult(
+            status=current.status,
+            master_before=current.master_before,
+            master_after=promoted.master_after,
+            candidate_commit=promoted.candidate_commit,
+            rollback_ref=promoted.rollback_ref,
+            rollback_command=rollback_command,
+        )

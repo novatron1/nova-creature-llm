@@ -10,6 +10,7 @@ import pytest
 
 from nova_release_gates import GateDefinition
 from nova_release_lock import NovaReleaseLock, ReleaseStatus
+from nova_release_worktree import GitError
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -293,3 +294,111 @@ def test_build_exception_persists_failed_state(tmp_path: Path) -> None:
     assert persisted.status is ReleaseStatus.FAILED
     assert persisted.failure_gate == "build_exception"
     assert persisted.candidate_commit is None
+
+
+def make_verified_release(tmp_path: Path) -> tuple[Path, NovaReleaseLock, str]:
+    repo = make_repo(tmp_path / "repo")
+    lock = NovaReleaseLock(
+        repo_root=repo,
+        temp_root=tmp_path / "release-temp",
+        gate_definitions=[passing_gate()],
+    )
+    verified = lock.build(lock.preflight())
+    assert verified.status is ReleaseStatus.VERIFIED
+    return repo, lock, verified.run_id
+
+
+def test_promote_creates_rollback_ref_and_merge_commit(tmp_path: Path) -> None:
+    repo, lock, run_id = make_verified_release(tmp_path)
+    source_text = (repo / "src" / "nova.py").read_text(encoding="utf-8")
+
+    result = lock.promote(run_id)
+
+    assert result.status is ReleaseStatus.PROMOTED
+    assert git_head(repo, "master") == result.master_after
+    assert git_head(repo, result.rollback_ref) == result.master_before
+    parents = run_git(repo, "show", "-s", "--format=%P", result.master_after).split()
+    assert parents == [result.master_before, result.candidate_commit]
+    assert result.rollback_command == [
+        "git",
+        "-C",
+        str(repo),
+        "revert",
+        "-m",
+        "1",
+        result.master_after,
+    ]
+    assert (repo / "src" / "nova.py").read_text(encoding="utf-8") == source_text
+    assert run_git(repo, "status", "--short") == "M src/nova.py"
+
+
+def test_promote_fails_closed_when_master_moved(tmp_path: Path) -> None:
+    repo, lock, run_id = make_verified_release(tmp_path)
+    changed_master = advance_ref_without_checkout(repo, "master")
+
+    with pytest.raises(GitError, match="master changed"):
+        lock.promote(run_id)
+
+    persisted = lock.load_run(run_id)
+    assert persisted.status is ReleaseStatus.FAILED
+    assert persisted.failure_gate == "promotion_master_changed"
+    assert persisted.master_after is None
+    assert git_head(repo, "master") == changed_master
+
+
+def test_promote_aborts_conflict_and_preserves_master(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path / "repo")
+    master_seed = tmp_path / "master-seed"
+    run_git(repo, "worktree", "add", str(master_seed), "master")
+    (master_seed / "src" / "nova.py").write_text("master version\n", encoding="utf-8")
+    run_git(master_seed, "add", "src/nova.py")
+    run_git(master_seed, "commit", "-m", "diverge master")
+    run_git(repo, "worktree", "remove", str(master_seed))
+    master_before = git_head(repo, "master")
+    lock = NovaReleaseLock(
+        repo_root=repo,
+        temp_root=tmp_path / "release-temp",
+        gate_definitions=[passing_gate()],
+    )
+    verified = lock.build(lock.preflight())
+
+    with pytest.raises(GitError, match="merge conflicted"):
+        lock.promote(verified.run_id)
+
+    persisted = lock.load_run(verified.run_id)
+    assert persisted.status is ReleaseStatus.FAILED
+    assert persisted.failure_gate == "promotion_conflict"
+    assert persisted.master_after is None
+    assert git_head(repo, "master") == master_before
+    assert run_git(persisted.paths.master_worktree, "status", "--short") == ""
+    rollback = f"codex/rollback-release-lock-{verified.run_id}"
+    assert git_head(repo, rollback) == master_before
+
+
+def test_promote_refuses_master_checked_out_elsewhere(tmp_path: Path) -> None:
+    repo, lock, run_id = make_verified_release(tmp_path)
+    checked_out = tmp_path / "checked-out-master"
+    run_git(repo, "worktree", "add", str(checked_out), "master")
+    master_before = git_head(repo, "master")
+
+    with pytest.raises(GitError, match="already checked out"):
+        lock.promote(run_id)
+
+    persisted = lock.load_run(run_id)
+    assert persisted.status is ReleaseStatus.FAILED
+    assert persisted.failure_gate == "promotion_master_checked_out"
+    assert git_head(repo, "master") == master_before
+    rollback = f"codex/rollback-release-lock-{run_id}"
+    assert run_git(repo, "branch", "--list", rollback) == ""
+
+
+def test_promote_cannot_run_twice(tmp_path: Path) -> None:
+    repo, lock, run_id = make_verified_release(tmp_path)
+    first = lock.promote(run_id)
+
+    with pytest.raises(ValueError, match="only a verified"):
+        lock.promote(run_id)
+
+    assert git_head(repo, "master") == first.master_after
+    persisted = lock.load_run(run_id)
+    assert persisted.status is ReleaseStatus.PROMOTED
