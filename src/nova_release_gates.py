@@ -150,6 +150,7 @@ _MAX_PROC_STAT_BYTES = 4_096
 _PLATFORM_OS_NAME = os.name
 _PLATFORM_SYSTEM = sys.platform
 _PROCESS_CLEANUP_SECONDS = 5.0
+_SMOKE_GLOBAL_CLEANUP_RESERVE_SECONDS = 1.0
 _LINUX_SIGNAL_RESERVE_SECONDS = 0.25
 _LINUX_FINAL_CLEANUP_RESERVE_SECONDS = 1.0
 _LINUX_SUPERVISOR_GRACE_SECONDS = 0.25
@@ -3118,7 +3119,14 @@ def run_clean_start_smoke(
     started = time.monotonic()
     if timeout_seconds <= 0:
         raise ValueError("timeout_seconds must be positive")
-    deadline = started + timeout_seconds
+    global_deadline = started + timeout_seconds
+    cleanup_reserve = min(
+        _SMOKE_GLOBAL_CLEANUP_RESERVE_SECONDS,
+        timeout_seconds * 0.9,
+    )
+    # Stop launch/probe work early enough to terminate the isolated process,
+    # drain output, and persist the report inside the caller's global budget.
+    deadline = global_deadline - cleanup_reserve
     _ensure_supported_platform()
     if _deadline_expired(deadline):
         raise TimeoutError("clean-start smoke deadline expired during preflight")
