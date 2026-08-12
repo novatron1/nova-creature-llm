@@ -16,6 +16,7 @@ import stat
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from typing import Iterable
 
 from nova_release_policy import SnapshotClass, SnapshotDecision, SnapshotReport
 
@@ -1122,6 +1123,45 @@ def apply_snapshot(
         if temp_anchor is not None:
             temp_anchor.close()
         source_anchor.close()
+
+
+def remove_candidate_paths(
+    candidate: str | Path,
+    paths: Iterable[str],
+    approved_temp_root: str | Path,
+    protected_repository_root: str | Path,
+) -> None:
+    """Remove approved candidate-relative paths through anchored operations."""
+
+    candidate_path = _absolute_input(candidate, "candidate root")
+    temp_root, temp_anchor = _verified_temp_root(
+        approved_temp_root,
+        protected_repository_root,
+    )
+    candidate_anchors: list[_DirectoryAnchor] = []
+    try:
+        _candidate_path, relative_parts = _safe_destination(candidate_path, temp_root)
+        candidate_anchor, candidate_anchors = _open_candidate_from_temp(
+            temp_anchor,
+            relative_parts,
+        )
+        normalized = sorted(
+            {_normalized_relative_path(path) for path in paths},
+            key=lambda item: (len(_parts(item)), item),
+        )
+        roots: list[str] = []
+        for path in normalized:
+            if not any(_prefix(existing, path) for existing in roots):
+                roots.append(path)
+        for path in roots:
+            _preflight_removal(candidate_anchor, path)
+        for path in roots:
+            _remove_relative(candidate_anchor, path)
+        candidate_anchor.validate_path()
+        temp_anchor.validate_path()
+    finally:
+        _close_anchors(candidate_anchors)
+        temp_anchor.close()
 
 
 def commit_candidate(candidate: str | Path, message: str) -> str:
