@@ -47,6 +47,24 @@ def test_large_static_asset_and_link_fail_closed() -> None:
     assert linked.rule == "filesystem_link_requires_boundary_check"
 
 
+def test_production_policy_excludes_known_local_development_artifacts() -> None:
+    policy = SnapshotPolicy.load(Path("config/nova_release_snapshot_policy.json"))
+
+    scratch = policy.classify(
+        ".superpowers/brainstorm/session/content/design.html",
+        size_bytes=12,
+    )
+    tunnel = policy.classify("tools/cloudflared.exe", size_bytes=12)
+    unknown_executable = policy.classify("tools/unknown.exe", size_bytes=12)
+
+    assert scratch.classification is SnapshotClass.EXCLUDE
+    assert scratch.rule == ".superpowers/**"
+    assert tunnel.classification is SnapshotClass.EXCLUDE
+    assert tunnel.rule == "tools/cloudflared.exe"
+    assert unknown_executable.classification is SnapshotClass.AMBIGUOUS
+    assert unknown_executable.rule == "**/*.exe"
+
+
 def test_unsafe_paths_fail_closed_and_separators_are_normalized(tmp_path: Path) -> None:
     policy_path = tmp_path / "policy.json"
     policy_path.write_text(
