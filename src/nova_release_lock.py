@@ -32,6 +32,7 @@ from nova_release_worktree import (
     GitRepository,
     PromotionError,
     apply_snapshot,
+    cleanup_worktree,
     commit_candidate,
     create_candidate_worktree,
     git_output,
@@ -476,3 +477,17 @@ class NovaReleaseLock:
             rollback_ref=promoted.rollback_ref,
             rollback_command=rollback_command,
         )
+
+    def cleanup(self, run_id: str) -> ReleaseRun:
+        current = self.load_run(run_id)
+        for path in (
+            current.paths.candidate_worktree,
+            current.paths.master_worktree,
+        ):
+            if path.exists():
+                cleanup_worktree(
+                    self.repository,
+                    path,
+                    self.temp_root,
+                )
+        return self.load_run(run_id)

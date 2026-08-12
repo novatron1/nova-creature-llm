@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -402,3 +404,137 @@ def test_promote_cannot_run_twice(tmp_path: Path) -> None:
     assert git_head(repo, "master") == first.master_after
     persisted = lock.load_run(run_id)
     assert persisted.status is ReleaseStatus.PROMOTED
+
+
+def run_cli(repo: Path, arguments: list[str]) -> subprocess.CompletedProcess[str]:
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(ROOT / "src")
+    return subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "tools" / "nova_release_lock.py"),
+            "--repo",
+            str(repo),
+            *arguments,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        env=environment,
+    )
+
+
+def test_cli_defaults_to_plan_and_never_promotes(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path / "repo")
+    master_before = git_head(repo, "master")
+
+    completed = run_cli(repo, [])
+
+    payload = json.loads(completed.stdout)
+    assert completed.returncode == 0, completed.stderr
+    assert payload["operation"] == "plan"
+    assert payload["status"] == "PLANNED"
+    assert payload["promoted"] is False
+    assert payload["candidate_commit"] is None
+    assert git_head(repo, "master") == master_before
+
+
+def test_cli_promote_requires_explicit_run_id(tmp_path: Path) -> None:
+    completed = run_cli(tmp_path, ["promote"])
+
+    assert completed.returncode == 2
+    assert "--run-id" in completed.stderr
+
+
+def test_cleanup_removes_worktrees_but_preserves_refs_and_reports(tmp_path: Path) -> None:
+    repo, lock, run_id = make_verified_release(tmp_path)
+    promoted = lock.promote(run_id)
+    persisted = lock.load_run(run_id)
+    candidate_path = persisted.paths.candidate_worktree
+    master_path = persisted.paths.master_worktree
+    candidate_branch = str(persisted.candidate_branch)
+    report_path = persisted.paths.run_report
+
+    result = lock.cleanup(run_id)
+
+    assert result.status is ReleaseStatus.PROMOTED
+    assert not candidate_path.exists()
+    assert not master_path.exists()
+    assert git_head(repo, candidate_branch) == promoted.candidate_commit
+    assert git_head(repo, promoted.rollback_ref) == promoted.master_before
+    assert report_path.is_file()
+
+
+def test_cli_rejects_malformed_run_id_without_traceback(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path / "repo")
+
+    completed = run_cli(repo, ["status", "--run-id", "../private"])
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stderr)
+    assert payload["error"] == "unsafe_state"
+    assert "invalid Release Lock run ID" in payload["message"]
+    assert "Traceback" not in completed.stderr
+
+
+def load_cli_module():
+    spec = importlib.util.spec_from_file_location(
+        "nova_release_lock_cli_test",
+        ROOT / "tools" / "nova_release_lock.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_cli_end_to_end_in_disposable_repository(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo = make_repo(tmp_path / "repo")
+    (repo / "data").mkdir()
+    (repo / "data" / "private.db").write_bytes(b"private")
+    (repo / "tests").mkdir()
+    (repo / "tests" / "test_new.py").write_text(
+        "def test_new():\n    assert True\n",
+        encoding="utf-8",
+    )
+    lock = NovaReleaseLock(
+        repo_root=repo,
+        temp_root=tmp_path / "release-temp",
+        gate_definitions=[passing_gate()],
+    )
+    cli = load_cli_module()
+    factory = lambda **_kwargs: lock
+
+    assert cli.main(
+        ["--repo", str(repo), "plan"], controller_factory=factory
+    ) == 0
+    planned = json.loads(capsys.readouterr().out)
+    assert cli.main(
+        ["--repo", str(repo), "build", "--run-id", planned["run_id"]],
+        controller_factory=factory,
+    ) == 0
+    built = json.loads(capsys.readouterr().out)
+    candidate = lock.load_run(built["run_id"]).paths.candidate_worktree
+    assert (candidate / "tests" / "test_new.py").is_file()
+    assert not (candidate / "data" / "private.db").exists()
+
+    assert cli.main(
+        ["--repo", str(repo), "promote", "--run-id", built["run_id"]],
+        controller_factory=factory,
+    ) == 0
+    promoted = json.loads(capsys.readouterr().out)
+    assert promoted["promoted"] is True
+    assert git_head(repo, promoted["rollback_ref"]) == promoted["master_before"]
+    assert len(run_git(repo, "show", "-s", "--format=%P", "master").split()) == 2
+    assert (repo / "src" / "nova.py").read_text(encoding="utf-8") == "working copy\n"
+
+    assert cli.main(
+        ["--repo", str(repo), "cleanup", "--run-id", built["run_id"]],
+        controller_factory=factory,
+    ) == 0
+    cleaned = json.loads(capsys.readouterr().out)
+    assert cleaned["status"] == "PROMOTED"
+    assert not candidate.exists()
