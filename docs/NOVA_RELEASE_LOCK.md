@@ -126,4 +126,3 @@ root. It never deletes the candidate branch, rollback reference, run reports,
 manifest commit, source files, or local `master` history. Cleanup is therefore
 safe after either inspection or promotion, while the durable audit trail
 remains available.
-

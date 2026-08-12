@@ -433,5 +433,3 @@ or API behavior.
   process, environment, network, and output controls still apply.
 - The release scanner was tested against clean and intentionally contaminated
   fixtures. The entire development worktree is not itself a release candidate.
-
-
