@@ -3432,6 +3432,30 @@ def test_clean_start_smoke_persisted_log_honors_exact_byte_cap(tmp_path: Path) -
     assert raw.decode("utf-8").endswith("💥END")
 
 
+def test_clean_start_smoke_durably_syncs_only_authoritative_report(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    _write_fake_smoke_candidate(candidate, "raise SystemExit(3)")
+    sync_calls = 0
+
+    def record_sync(_descriptor: int) -> None:
+        nonlocal sync_calls
+        sync_calls += 1
+
+    monkeypatch.setattr(nova_release_gates.os, "fsync", record_sync)
+
+    run_clean_start_smoke(
+        candidate,
+        tmp_path / "reports" / "smoke.json",
+        timeout_seconds=2,
+    )
+
+    assert sync_calls == 1
+
+
 def test_clean_start_smoke_records_server_exit_before_health_as_failure(
     tmp_path: Path,
 ) -> None:

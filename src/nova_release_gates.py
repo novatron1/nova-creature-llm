@@ -798,7 +798,13 @@ class _SafeReportDirectory:
         except OSError:
             pass
 
-    def write_text(self, filename: str, content: str) -> Path:
+    def write_text(
+        self,
+        filename: str,
+        content: str,
+        *,
+        durable: bool = True,
+    ) -> Path:
         destination = self.validate_output(filename)
         hook = self._before_create_hook
         if hook is not None:
@@ -833,7 +839,8 @@ class _SafeReportDirectory:
                 descriptor = -1
                 stream.write(content)
                 stream.flush()
-                os.fsync(stream.fileno())
+                if durable:
+                    os.fsync(stream.fileno())
             self.verify()
             self.validate_output(filename)
             if self._directory_fd is not None:
@@ -3342,10 +3349,12 @@ def run_clean_start_smoke(
     stdout_file = safe_reports.write_text(
         stdout_filename,
         _persisted_log_content(recorded_server_stdout, 65_536),
+        durable=False,
     )
     stderr_file = safe_reports.write_text(
         stderr_filename,
         _persisted_log_content(recorded_server_stderr, 65_536),
+        durable=False,
     )
     payload = asdict(result)
     payload.update(
