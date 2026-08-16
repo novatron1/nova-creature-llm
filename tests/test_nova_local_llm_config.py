@@ -17,6 +17,20 @@ def test_default_local_llm_model_is_deepseek_r1_7b():
     assert llm.LocalLLMConfig.DEFAULT_CONFIG["NOVA_FAST_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
     assert llm.LocalLLMConfig.DEFAULT_CONFIG["NOVA_DEEP_LOCAL_LLM_MODEL"] == "deepseek-r1:7b"
 
+def test_optional_strong_model_configuration_is_explicit_and_does_not_replace_default():
+    config = llm.LocalLLMConfig()
+    env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")
+    json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
+
+    assert config.optional_strong_model == "qwen3:8b"
+    assert config.optional_strong_timeout == 240
+    assert config.optional_strong_keep_alive == "5m"
+    assert "NOVA_OPTIONAL_STRONG_MODEL=qwen3:8b" in env_config
+    assert json_config["NOVA_OPTIONAL_STRONG_MODEL"] == "qwen3:8b"
+    assert json_config["NOVA_OPTIONAL_STRONG_TIMEOUT"] == 240
+    assert json_config["NOVA_OPTIONAL_STRONG_KEEP_ALIVE"] == "5m"
+    assert config.deep_model != config.optional_strong_model
+
 
 def test_checked_in_local_llm_configs_select_deepseek_r1_7b():
     env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")

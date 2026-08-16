@@ -54,6 +54,9 @@ class LocalLLMConfig:
         "NOVA_LOCAL_LLM_MODEL": DEFAULT_LOCAL_LLM_MODEL,
         "NOVA_FAST_LOCAL_LLM_MODEL": DEFAULT_FAST_LOCAL_LLM_MODEL,
         "NOVA_DEEP_LOCAL_LLM_MODEL": DEFAULT_DEEP_LOCAL_LLM_MODEL,
+        "NOVA_OPTIONAL_STRONG_MODEL": "qwen3:8b",
+        "NOVA_OPTIONAL_STRONG_TIMEOUT": 240,
+        "NOVA_OPTIONAL_STRONG_KEEP_ALIVE": "5m",
         "NOVA_LOCAL_LLM_URL": "http://127.0.0.1:11434/api/generate",
         "NOVA_LOCAL_LLM_TIMEOUT": 120,
         "NOVA_LOCAL_LLM_FALLBACK": True,
@@ -128,6 +131,18 @@ class LocalLLMConfig:
     @property
     def deep_model(self) -> str:
         return self.config.get("NOVA_DEEP_LOCAL_LLM_MODEL", DEFAULT_DEEP_LOCAL_LLM_MODEL)
+    @property
+    def optional_strong_model(self) -> str:
+        return str(self.config.get("NOVA_OPTIONAL_STRONG_MODEL", "qwen3:8b") or "qwen3:8b")
+
+    @property
+    def optional_strong_timeout(self) -> int:
+        return max(30, min(int(self.config.get("NOVA_OPTIONAL_STRONG_TIMEOUT", 240) or 240), 600))
+
+    @property
+    def optional_strong_keep_alive(self) -> str:
+        return str(self.config.get("NOVA_OPTIONAL_STRONG_KEEP_ALIVE", "5m") or "5m")
+
     
     @property
     def url(self) -> str:
