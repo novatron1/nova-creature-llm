@@ -24,10 +24,12 @@ case "$NOVA_WORKER_ENGINE" in
       --host "$host" --port "$NOVA_WORKER_PORT" --model-path "$NOVA_WORKER_MODEL"
     ;;
   ollama)
-    command -v ollama >/dev/null
-    ollama show "$NOVA_WORKER_MODEL" >/dev/null
-    export OLLAMA_HOST="$host:$NOVA_WORKER_PORT"
-    exec ollama serve
+    # `ollama serve` exposes every installed model on its OpenAI-compatible API.
+    # It cannot be safely limited to NOVA_WORKER_MODEL, so refuse this deployment
+    # until a model-scoped proxy/worker is explicitly supplied.
+    echo "Ollama cannot safely start a model-scoped OpenAI worker for NOVA_WORKER_MODEL=$NOVA_WORKER_MODEL." >&2
+    echo "Use NOVA_WORKER_ENGINE=vllm or sglang, or provide a private model-scoped proxy." >&2
+    exit 2
     ;;
   *)
     echo "Unsupported NOVA_WORKER_ENGINE: $NOVA_WORKER_ENGINE" >&2

@@ -100,6 +100,31 @@ The package includes two servers:
 
 People names and lessons are stored in-memory by default. Memory persists for the duration of the server session. To restart memory, restart the server.
 
+## GPU Hub (Optional)
+
+Run `NOVA_GPU_HUB_INSTALL.bat` on Windows, or use:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\\INSTALL_NOVA_GPU_HUB_WINDOWS.ps1 -CheckOnly
+```
+
+It checks Python, prepares Nova's `data` folder, and runs a core smoke check. It
+does not start Nova, alter model files, expose a model server, or collect keys.
+Open the standalone **GPU Hub** in Nova to select **CPU only**, **Local GPU**,
+**Remote GPU**, or **Auto**. A non-Auto choice reports an unavailable GPU instead
+of silently switching modes. Nova itself remains available at
+`http://127.0.0.1:3000/healthz`.
+
+For Vast.ai, add your key yourself to the Windows environment and restart Nova:
+
+```powershell
+setx NOVA_VAST_API_KEY "paste-your-Vast-api-key-here"
+```
+
+Nova reads this key only on the server. It is never displayed in the browser or
+saved in Nova runtime state. Starting, stopping, or releasing a paid Vast.ai
+machine always requires an explicit confirmation in GPU Hub.
+
 ## Voice/Camera
 
 Mic and camera are available through the browser UI. They require:

@@ -31,6 +31,13 @@ def test_worker_bootstrap_requires_explicit_engine_model_and_port() -> None:
     assert "Unsupported NOVA_WORKER_ENGINE" in content
 
 
+def test_ollama_bootstrap_fails_closed_instead_of_launching_unscoped_serve() -> None:
+    content = read_asset("tools/nova_vast_worker_bootstrap.sh")
+    assert "exec ollama serve" not in content
+    assert "NOVA_WORKER_MODEL=$NOVA_WORKER_MODEL" in content
+    assert "Ollama cannot safely start a model-scoped OpenAI worker" in content
+
+
 def test_windows_installer_is_checkable_and_does_not_collect_vast_key() -> None:
     content = read_asset("INSTALL_NOVA_GPU_HUB_WINDOWS.ps1")
     assert "[switch]$CheckOnly" in content
@@ -50,7 +57,9 @@ def test_batch_launcher_delegates_without_changing_server_startup() -> None:
 
 
 def test_docs_point_to_standalone_gpu_hub_and_health_check() -> None:
-    docs = read_asset("QUICK_START_LAPTOP.txt") + read_asset("README_LAPTOP_INSTALL.md")
-    assert "GPU Hub" in docs
-    assert "INSTALL_NOVA_GPU_HUB_WINDOWS.ps1" in docs
-    assert "/healthz" in docs
+    quick_start = read_asset("QUICK_START_LAPTOP.txt")
+    readme = read_asset("README_LAPTOP_INSTALL.md")
+    assert "GPU Hub" in quick_start
+    assert "## GPU Hub (Optional)" in readme
+    assert "INSTALL_NOVA_GPU_HUB_WINDOWS.ps1" in readme
+    assert "/healthz" in readme
