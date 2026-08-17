@@ -30,6 +30,12 @@ Try these:
 
 The full README is at README_LAPTOP_INSTALL.md
 
+GPU HUB (optional)
+  Double-click NOVA_GPU_HUB_INSTALL.bat to check that Nova is ready for the
+  standalone GPU Hub. It does not start Nova, download models, or collect keys.
+  In Nova, open GPU Hub and choose CPU only, Local GPU, Remote GPU, or Auto.
+  Nova health: http://127.0.0.1:3000/healthz
+
 ============================================================
   Nova Creature — Trained v900+ | Score: 0.89
   7 Brain Roles | Whole-Brain Jump Method
