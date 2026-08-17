@@ -121,3 +121,41 @@ def test_controller_reads_api_key_only_from_environment_and_never_returns_it(mon
     assert controller.vast_instances() == [{"id": "i-1"}]
     assert "SECRET" not in json.dumps(controller.status())
 
+
+def test_status_resolves_auto_to_cpu_when_no_local_or_vast(monkeypatch, tmp_path):
+    monkeypatch.setattr("src.nova_gpu_hub.detect_local_gpu", lambda: {"available": False, "usable": False, "reason": "none"})
+    status = GpuHubController(tmp_path, env={}).status()
+    assert status["mode"] == "auto"
+    assert status["effective_mode"] == "cpu"
+    assert status["available"] is True
+
+
+def test_explicit_unavailable_mode_is_not_silently_changed(monkeypatch, tmp_path):
+    monkeypatch.setattr("src.nova_gpu_hub.detect_local_gpu", lambda: {"available": False, "usable": False, "reason": "none"})
+    status = GpuHubController(tmp_path, env={}).set_mode("local_gpu")
+    assert status["mode"] == "local_gpu"
+    assert status["effective_mode"] == "local_gpu"
+    assert status["available"] is False
+
+
+def test_missing_vast_key_fails_before_network(monkeypatch, tmp_path):
+    called = []
+    monkeypatch.setattr("src.nova_gpu_hub.urllib.request.urlopen", lambda *_args, **_kwargs: called.append(True))
+    with pytest.raises(GpuHubError) as exc:
+        GpuHubController(tmp_path, env={}).vast_instances()
+    assert exc.value.code == "vast_unavailable"
+    assert not called
+
+
+def test_state_sanitizes_credentials_embedded_in_endpoint_url(tmp_path):
+    path = tmp_path / "state.json"
+    store = GpuHubStateStore(path)
+    saved = store.save({"mode": "vast_gpu", "endpoint": {"url": "https://user:SECRET@example.test:8000/api?token=SECRET", "model": "qwen"}})
+    assert saved["endpoint"]["url"] == "https://example.test:8000/api"
+    assert "SECRET" not in path.read_text(encoding="utf-8")
+
+
+def test_set_instance_state_requires_confirmation():
+    with pytest.raises(GpuHubError) as exc:
+        VastAIClient("SECRET").set_instance_state("i-1", "stopped")
+    assert exc.value.code == "confirmation_required"

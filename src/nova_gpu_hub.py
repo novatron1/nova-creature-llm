@@ -98,14 +98,33 @@ def _safe_state(state: Mapping[str, object]) -> dict[str, object]:
     mode = state.get("mode", ComputeMode.AUTO)
     if mode not in ComputeMode.ALL:
         mode = ComputeMode.AUTO
-    endpoint = state.get("endpoint")
-    endpoint = endpoint if isinstance(endpoint, Mapping) else {}
-    endpoint = {k: v for k, v in endpoint.items() if k in {"url", "model", "provider", "region"} and not _looks_secret(k, v)}
+    raw_endpoint = state.get("endpoint")
+    raw_endpoint = raw_endpoint if isinstance(raw_endpoint, Mapping) else {}
+    endpoint = {}
+    for key, value in raw_endpoint.items():
+        if key not in {"url", "model", "provider", "region"} or not isinstance(value, (str, int, float, bool, type(None))):
+            continue
+        if key == "url":
+            value = _sanitize_url(str(value))
+        endpoint[key] = value
     return {"mode": mode, "selected_instance_id": state.get("selected_instance_id"), "endpoint": endpoint, "updated_at": state.get("updated_at")}
 
 
 def _looks_secret(key: object, value: object) -> bool:
     return bool(re.search(r"key|token|secret|password|credential", str(key), re.I)) or "SECRET" in str(value)
+
+
+def _sanitize_url(value: str) -> str:
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            return ""
+        host = parsed.hostname
+        if parsed.port:
+            host += f":{parsed.port}"
+        return urllib.parse.urlunsplit((parsed.scheme, host, parsed.path, "", ""))
+    except ValueError:
+        return ""
 
 
 class VastAIClient:
@@ -115,6 +134,8 @@ class VastAIClient:
         self.timeout = min(max(int(timeout), 1), 15)
 
     def _request(self, method: str, path: str, payload: object | None = None) -> object:
+        if not self.api_key:
+            raise GpuHubError("vast_unavailable", "Vast.ai is unavailable because NOVA_VAST_API_KEY is not configured.")
         url = self.base_url + "/" + path.lstrip("/")
         body = json.dumps(payload).encode() if payload is not None else None
         request = urllib.request.Request(url, data=body, method=method, headers={"Authorization": f"Bearer {self.api_key}", "Accept": "application/json", "Content-Type": "application/json"})
@@ -181,14 +202,30 @@ class GpuHubController:
 
     def status(self) -> dict[str, object]:
         state = self.store.load()
-        return {"mode": state["mode"], "selected_instance_id": state.get("selected_instance_id"), "endpoint": state.get("endpoint", {})}
+        mode = str(state["mode"])
+        local = detect_local_gpu()
+        if mode == ComputeMode.AUTO:
+            if bool(local.get("usable")):
+                effective, available, reason = ComputeMode.LOCAL_GPU, True, "Local GPU selected automatically."
+            elif self.env.get("NOVA_VAST_API_KEY"):
+                effective, available, reason = ComputeMode.VAST_GPU, True, "Vast.ai GPU is configured for automatic use."
+            else:
+                effective, available, reason = ComputeMode.CPU, True, "No GPU configured; using CPU."
+        elif mode == ComputeMode.CPU:
+            effective, available, reason = ComputeMode.CPU, True, "CPU-only mode selected."
+        elif mode == ComputeMode.LOCAL_GPU:
+            effective, available, reason = mode, bool(local.get("usable")), str(local.get("reason", "Local GPU unavailable."))
+        else:
+            effective, available, reason = mode, bool(self.env.get("NOVA_VAST_API_KEY")), "Vast.ai credentials configured." if self.env.get("NOVA_VAST_API_KEY") else "NOVA_VAST_API_KEY is not configured."
+        return {"mode": mode, "effective_mode": effective, "available": available, "reason": reason, "selected_instance_id": state.get("selected_instance_id"), "endpoint": state.get("endpoint", {})}
 
     def set_mode(self, mode: str) -> dict[str, object]:
         if mode not in ComputeMode.ALL:
             raise ValueError(f"invalid compute mode: {mode}")
         state = self.store.load()
         state["mode"] = mode
-        return self.store.save(state)
+        self.store.save(state)
+        return self.status()
 
     def local_status(self) -> dict[str, object]:
         return detect_local_gpu()
