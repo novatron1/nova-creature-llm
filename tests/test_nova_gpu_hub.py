@@ -159,3 +159,15 @@ def test_set_instance_state_requires_confirmation():
     with pytest.raises(GpuHubError) as exc:
         VastAIClient("SECRET").set_instance_state("i-1", "stopped")
     assert exc.value.code == "confirmation_required"
+
+
+def test_state_redacts_secret_looking_scalar_metadata(tmp_path):
+    path = tmp_path / "state.json"
+    store = GpuHubStateStore(path)
+    saved = store.save({"mode": "vast_gpu", "endpoint": {"model": "SECRET", "provider": "vllm", "region": "us-east"}})
+    assert "model" not in saved["endpoint"]
+    assert saved["endpoint"]["provider"] == "vllm"
+    assert "SECRET" not in path.read_text(encoding="utf-8")
+    controller = GpuHubController(tmp_path, env={})
+    controller.store = store
+    assert "SECRET" not in json.dumps(controller.status())

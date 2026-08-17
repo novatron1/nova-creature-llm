@@ -106,6 +106,8 @@ def _safe_state(state: Mapping[str, object]) -> dict[str, object]:
             continue
         if key == "url":
             value = _sanitize_url(str(value))
+        elif _looks_secret(key, value):
+            continue
         endpoint[key] = value
     return {"mode": mode, "selected_instance_id": state.get("selected_instance_id"), "endpoint": endpoint, "updated_at": state.get("updated_at")}
 
