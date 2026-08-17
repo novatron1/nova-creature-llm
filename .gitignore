@@ -47,3 +47,6 @@ nova_creature_llm_lab_complete.zip
 # Large model checkpoints (exclude by default, force-add specific trained ones)
 *.pt
 *.pth
+
+# Nova GPU Hub machine-local selection and connection state
+data/nova_gpu_hub_state.json
