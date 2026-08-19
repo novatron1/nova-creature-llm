@@ -1,0 +1,15 @@
+{
+  "name": "Nova Sky Shooter",
+  "kind": "browser_game",
+  "entry": "index.html",
+  "engine": "Three.js",
+  "renderer": "three-webgl",
+  "genre": "top_down_flying_shooter",
+  "waves": true,
+  "boss_fights": true,
+  "powerups": true,
+  "touch_controls": true,
+  "autopilot": true,
+  "scoring": true,
+  "safe_sandbox": true
+}

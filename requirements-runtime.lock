@@ -1,0 +1,5 @@
+# Reproducible minimum runtime dependency set for Nova's core services.
+# Regenerate intentionally after testing dependency upgrades.
+qrcode==8.2
+cryptography==49.0.0
+Pillow==12.0.0

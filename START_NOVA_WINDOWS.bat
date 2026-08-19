@@ -42,12 +42,22 @@ if %errorlevel% neq 0 (
     )
 )
 
+REM Add the small offline helpers for phone QR pairing, scene inspection, and
+REM encrypted portable backups. Nova still starts if they cannot be added.
+%PYTHON% -c "import qrcode, qrcode.image.svg, cryptography, PIL" 2>nul
+if %errorlevel% neq 0 (
+    if exist requirements-runtime.txt (
+        echo [INSTALL] Adding phone QR and encrypted backup support...
+        %PYTHON% -m pip install -r requirements-runtime.txt
+    )
+)
+
 echo.
 echo [START] Launching Nova Server on http://127.0.0.1:3000
 echo.
 
-REM Start the server
-%PYTHON% nova_web_server.py 3000
+REM Start the enhanced Cognitive OS server
+%PYTHON% nova_enhanced_server.py 3000
 
 if %errorlevel% neq 0 (
     echo [ERROR] Nova server failed to start.

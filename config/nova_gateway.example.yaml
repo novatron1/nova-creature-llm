@@ -1,0 +1,184 @@
+# Nova Gateway configuration example. This file contains no real secrets.
+# The current build reads the equivalent NOVA_* environment variables.
+
+server:
+  enabled: true                    # NOVA_API_ENABLED
+  host: 127.0.0.1                 # NOVA_API_HOST; use 0.0.0.0 only for intentional LAN access
+  port: 8765                      # NOVA_API_PORT
+  debug: false
+  remote_access: false            # NOVA_ENABLE_REMOTE_ACCESS
+  allowed_origins: []             # NOVA_ALLOWED_ORIGINS, comma-separated
+  trust_proxy_headers: false      # NOVA_TRUST_PROXY_HEADERS
+  request_timeout_seconds: 120    # NOVA_REQUEST_TIMEOUT
+  max_request_size_bytes: 16777216 # NOVA_MAX_REQUEST_SIZE
+
+authentication:
+  required: false                 # Set NOVA_ALLOW_LOCAL_NO_AUTH=false to require keys locally
+  allow_localhost_without_key: true # NOVA_ALLOW_LOCAL_NO_AUTH
+  client_registry_path: data/nova_gateway_clients.json # NOVA_CLIENT_REGISTRY_PATH
+  api_keys: []                    # Prefer the hashed client registry; NOVA_API_KEYS is for temporary keys
+
+rate_limit:
+  enabled: true                   # NOVA_RATE_LIMIT_ENABLED
+  per_minute: 60                  # NOVA_RATE_LIMIT_PER_MINUTE
+
+providers:
+  default: existing-nova          # NOVA_DEFAULT_PROVIDER
+  expose_raw_provider_models: false # NOVA_EXPOSE_PROVIDER_MODELS
+  allow_model_downloads: false    # NOVA_ALLOW_MODEL_DOWNLOADS; explicit opt-in only
+  model_warmup: true              # NOVA_MODEL_WARMUP; preload the preferred cached/local model
+  model_warmup_delay_seconds: 3   # NOVA_MODEL_WARMUP_DELAY_SECONDS; let the UI connect first
+  model_warmup_timeout_seconds: 180 # NOVA_MODEL_WARMUP_TIMEOUT
+  reviewer_warmup: true           # NOVA_REVIEWER_WARMUP; RAM-gated preload of one installed larger reviewer
+  reviewer_warmup_task: reasoning # NOVA_REVIEWER_WARMUP_TASK; general, reasoning, or coding preference order
+  reviewer_warmup_min_available_gb: 8 # NOVA_REVIEWER_WARMUP_MIN_AVAILABLE_GB; preserve system headroom
+  middle_reviewer_warmup_min_available_gb: 5 # NOVA_MIDDLE_REVIEWER_WARMUP_MIN_AVAILABLE_GB
+  ollama:
+    enabled: false                # Existing NOVA_USE_LOCAL_LLM setting
+    base_url: http://127.0.0.1:11434/api/generate # Existing NOVA_LOCAL_LLM_URL
+    default_model: qwen2.5:1.5b   # Existing NOVA_LOCAL_LLM_MODEL; regular chat primary
+    timeout_seconds: 60           # Existing NOVA_LOCAL_LLM_TIMEOUT; allows CPU Qwen to finish honestly
+    keep_alive: 30m               # NOVA_OLLAMA_KEEP_ALIVE; used when Ollama is the warm-up target
+    reviewer_keep_alive: 10m      # NOVA_REVIEWER_KEEP_ALIVE; bounded warm window after managed review
+
+resources:
+  adaptive_model_memory: true     # NOVA_ADAPTIVE_MODEL_MEMORY; coordinate primary, reviewer, and vision RAM
+  reserve_memory_gb: 1.5          # NOVA_MODEL_MEMORY_RESERVE_GB; bounded 0.5-64 GB outside a new model
+  vision_model_estimated_bytes: 1800000000 # NOVA_VISION_MODEL_ESTIMATED_BYTES; used before first load
+  vision_timeout_seconds: 45      # NOVA_VISION_TIMEOUT; waits for real CPU vision instead of orphaning work
+  vision_cold_timeout_seconds: 60 # NOVA_VISION_COLD_TIMEOUT; bounded to 120 for a first model load
+  never_delete_model_files: true  # Fixed safety rule
+  protect_busy_models: true       # Fixed safety rule
+  protect_raw_user_models: true   # Fixed: automatic transitions never evict raw Qwen/Dolphin choices
+  model_quality_enabled: true      # NOVA_MODEL_QUALITY_ENABLED; content-free health/circuit breaker
+  model_quality_auto_check_loaded: true # NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED; checks only resident managed models
+  model_quality_failure_threshold: 2 # NOVA_MODEL_QUALITY_FAILURE_THRESHOLD; bounded 2-10
+  model_quality_quarantine_seconds: 3600 # NOVA_MODEL_QUALITY_QUARANTINE_SECONDS; bounded 60-86400
+  model_quality_max_models: 3      # NOVA_MODEL_QUALITY_MAX_MODELS; bounded 1-8 per job
+  model_quality_timeout_seconds: 45 # NOVA_MODEL_QUALITY_TIMEOUT; bounded 5-120
+  model_quality_store: data/nova_model_quality.json # NOVA_MODEL_QUALITY_PATH; contains no prompts or responses
+  capability_eval_enabled: true    # NOVA_CAPABILITY_EVAL_ENABLED; private advisory benchmark lab
+  capability_eval_auto_run: false  # Fixed: manual approval is always required
+  capability_eval_max_models: 3    # NOVA_CAPABILITY_EVAL_MAX_MODELS; bounded 1-8 resident managed models
+  capability_recommendation_min_runs: 3 # NOVA_CAPABILITY_RECOMMENDATION_MIN_RUNS; bounded 2-10 before advice
+  capability_shadow_router_enabled: true # NOVA_CAPABILITY_SHADOW_ROUTER_ENABLED; observes evidence only and never changes routing
+  capability_eval_timeout_seconds: 60 # NOVA_CAPABILITY_EVAL_TIMEOUT_SECONDS; bounded 5-60 per text case
+  capability_eval_vision_timeout_seconds: 60 # NOVA_CAPABILITY_EVAL_VISION_TIMEOUT_SECONDS; bounded 5-120
+  capability_eval_store: data/nova_capability_evaluations.json # NOVA_CAPABILITY_EVAL_PATH; scores only, no content
+  capability_eval_store_prompt_content: false # Fixed privacy rule
+  capability_eval_store_response_content: false # Fixed privacy rule
+  capability_eval_training_enabled: false # Fixed: evaluations never train
+  capability_eval_raw_adapters: false # Fixed: Raw Qwen/Dolphin are excluded
+
+routing:
+  execution_policy: local_preferred # NOVA_EXECUTION_POLICY
+  fallback_enabled: true          # NOVA_PROVIDER_FALLBACK
+  default_alias: nova             # NOVA_DEFAULT_MODEL_ALIAS
+  deterministic_verifier_enabled: true # NOVA_DETERMINISTIC_VERIFIER_ENABLED; exact bounded math/logic before model loading
+  candidate_retry_enabled: true   # NOVA_CANDIDATE_RETRY_ENABLED; bounded middle review plus deep fallback
+  regular_chat_model_policy: ollama_qwen_first # NOVA_LORA_AUTO_MODE; Nova context/memory then local Qwen 2.5 1.5B
+  escalation_enabled: true         # NOVA_REGULAR_CHAT_ESCALATION_ENABLED
+  direct_middle_enabled: true      # NOVA_DIRECT_MIDDLE_ENABLED; clearly hard requests start on the installed 3B-class local model
+  direct_middle_threshold: 0.84    # NOVA_DIRECT_MIDDLE_THRESHOLD; keeps ordinary chat on the faster 1.5B model
+  direct_middle_max_tokens: 256    # NOVA_DIRECT_MIDDLE_MAX_TOKENS; bounded 128-512
+  middle_reviewer_enabled: true    # NOVA_MIDDLE_REVIEWER_ENABLED; try a configured 3B-class model before 7B
+  middle_reviewer_min_model_bytes: 1500000000 # NOVA_MIDDLE_REVIEWER_MIN_MODEL_BYTES
+  middle_reviewer_max_model_bytes: 3000000000 # NOVA_MIDDLE_REVIEWER_MAX_MODEL_BYTES
+  middle_reviewer_general_models: qwen2.5:3b,qwen2.5-coder:3b,phi3:mini,gemma2:2b
+  middle_reviewer_reasoning_models: qwen2.5:3b,qwen2.5-coder:3b,phi3:mini
+  middle_reviewer_coding_models: qwen2.5-coder:3b,qwen2.5:3b,phi3:mini
+  difficulty_escalation_enabled: true # NOVA_DIFFICULTY_ESCALATION_ENABLED; hard requests get one larger-local review
+  difficulty_escalation_threshold: 0.68 # NOVA_DIFFICULTY_ESCALATION_THRESHOLD; bounded 0.50-0.95
+  technical_consistency_enabled: true # NOVA_TECHNICAL_CONSISTENCY_ENABLED; high-confidence invariant checks
+  escalation_min_model_bytes: 3000000000 # NOVA_ESCALATION_MIN_MODEL_BYTES; excludes other small models
+  escalation_max_model_bytes: 8000000000 # NOVA_ESCALATION_MAX_MODEL_BYTES; local disk-size guard
+  escalation_timeout_seconds: 180  # NOVA_ESCALATION_TIMEOUT_SECONDS; bounded 5-600 seconds
+  escalation_max_tokens: 256       # NOVA_CANDIDATE_MAX_TOKENS; bounded 64-512 with concise-complete prompting
+  escalation_context_window: 4096  # NOVA_CANDIDATE_CONTEXT_WINDOW; bounded 2048-32768
+  escalation_general_models: nova-dolphin3-lora,dolphin3,deepseek-r1:7b,qwen2.5-coder:7b
+  escalation_reasoning_models: deepseek-r1:7b,qwen2.5-coder:7b,nova-dolphin3-lora,dolphin3
+  escalation_coding_models: qwen2.5-coder:7b,deepseek-r1:7b,nova-dolphin3-lora,dolphin3
+
+grounding:
+  enabled: true                    # NOVA_FACT_GROUNDING_ENABLED
+  evidence_store: data/nova_grounding_evidence.json # NOVA_FACT_EVIDENCE_PATH
+  freshness_max_age_days: 30       # NOVA_FACT_MAX_AGE_DAYS; bounded 1-3650
+  block_unverified_current: true   # NOVA_BLOCK_UNVERIFIED_CURRENT
+
+web_retrieval:
+  enabled: true                    # NOVA_WEB_RETRIEVAL_ENABLED
+  require_explicit_request: true   # NOVA_WEB_RETRIEVAL_REQUIRE_EXPLICIT
+  block_private: true              # NOVA_WEB_RETRIEVAL_BLOCK_PRIVATE
+  max_sources: 3                   # NOVA_WEB_RETRIEVAL_MAX_SOURCES; bounded 1-5
+  timeout_seconds: 6               # NOVA_WEB_RETRIEVAL_TIMEOUT_SECONDS; bounded 2-15
+  search_url: https://lite.duckduckgo.com/lite/ # NOVA_WEB_RETRIEVAL_SEARCH_URL; replaceable public search index
+
+source_consensus:
+  enabled: true                    # NOVA_SOURCE_CONSENSUS_ENABLED
+  minimum_publishers: 2            # NOVA_SOURCE_CONSENSUS_MIN_PUBLISHERS; bounded 2-5
+  semantic_enabled: true           # NOVA_SOURCE_CONSENSUS_SEMANTIC_ENABLED
+  semantic_similarity: 0.62        # NOVA_SOURCE_CONSENSUS_SEMANTIC_SIMILARITY; bounded 0.55-0.90
+  volatile_ttl_seconds: 21600      # NOVA_SOURCE_CONSENSUS_VOLATILE_TTL_SECONDS; current facts, default 6 hours
+  changing_ttl_seconds: 604800     # NOVA_SOURCE_CONSENSUS_CHANGING_TTL_SECONDS; changing facts, default 7 days
+  stable_ttl_seconds: 2592000      # NOVA_SOURCE_CONSENSUS_STABLE_TTL_SECONDS; stable facts, default 30 days
+
+privacy:
+  allow_remote_models: false      # NOVA_ALLOW_REMOTE_MODELS
+  allow_private_data_remote: false # NOVA_ALLOW_PRIVATE_DATA_REMOTE
+  allow_private_files_remote: false # NOVA_ALLOW_PRIVATE_FILES_REMOTE
+
+cost:
+  allow_paid_tools: false         # NOVA_ALLOW_PAID_TOOLS
+  monthly_cloud_budget: 0         # NOVA_MONTHLY_CLOUD_BUDGET
+  per_request_limit: 0            # NOVA_PER_REQUEST_LIMIT
+  require_confirmation_over: 0    # NOVA_REQUIRE_CONFIRMATION_OVER
+
+memory:
+  enabled: true
+  mode: automatic_safe_write      # NOVA_MEMORY_MODE: disabled/read_only/explicit_write/automatic_safe_write
+  store: existing_nova_long_term_memory
+  schema_version: "1.0"
+
+world_model:
+  persistence: checkpoint         # NOVA_WORLD_MODEL_PERSISTENCE: checkpoint/session
+  checkpoint_path: data/nova_world_model.json # NOVA_WORLD_MODEL_PATH
+  max_age_days: 30                # NOVA_WORLD_MODEL_MAX_AGE_DAYS; bounded 1-3650
+  persist_prompt_content: false   # Fixed safety rule; not configurable
+  persist_response_content: false # Fixed safety rule; not configurable
+  persist_chain_of_thought: false # Fixed safety rule; not configurable
+
+dream_lab:
+  enabled: true                    # NOVA_DREAM_LAB_ENABLED
+  bounded_counterfactuals: true    # Fixed: no open-ended hidden reasoning
+  execute_actions: false           # Fixed: Dream Lab plans but never acts
+  store_prompt_content: false      # Fixed privacy rule
+  store_response_content: false    # Fixed privacy rule
+
+engines:
+  comfyui:
+    enabled: true                  # NOVA_COMFYUI_ENABLED; unavailable is non-fatal
+    base_url: http://127.0.0.1:8188 # NOVA_COMFYUI_BASE_URL; loopback only
+    image_workflow: ""             # NOVA_COMFYUI_IMAGE_WORKFLOW; API-format JSON
+    video_workflow: ""             # NOVA_COMFYUI_VIDEO_WORKFLOW; API-format JSON
+    job_store: data/nova_comfyui_jobs.json # NOVA_COMFYUI_JOB_STORE; stores no prompts
+    timeout_seconds: 15            # NOVA_COMFYUI_TIMEOUT; bounded 1-120
+    allow_remote: false            # Fixed in this release
+    allow_model_downloads: false   # Fixed: Nova never downloads ComfyUI models
+  video_lite:
+    enabled: true                  # NOVA_VIDEO_LITE_ENABLED
+    ffmpeg_path: ""                # NOVA_FFMPEG_PATH; auto-discovered when empty
+    output_dir: data/nova_video_lite # NOVA_VIDEO_LITE_OUTPUT_DIR
+    job_store: data/nova_video_lite_jobs.json # NOVA_VIDEO_LITE_JOB_STORE; no prompts
+    encode_timeout_seconds: 180    # NOVA_VIDEO_LITE_ENCODE_TIMEOUT; bounded 30-1800
+    execution: local_only          # Fixed: no cloud upload and no paid provider
+
+tools:
+  enabled: true
+  require_schema_validation: true
+  default_timeout_seconds: 30
+
+logging:
+  level: INFO                     # Python/Nova logging configuration
+  log_prompt_content: false       # NOVA_LOG_GATEWAY_CONTENT; keep false for normal operation
+  log_response_content: false
+  redact_secrets: true

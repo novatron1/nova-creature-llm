@@ -517,14 +517,15 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         )
 
     if re.search(
-        r"\b(?:what|who|where|when|how many|how much|define|calculate|"
+        r"\b(?:what|who|where|when|how|define|calculate|"
         r"explain|compare|analyze|debug|design|architecture|why)\b",
         canonical,
     ):
         deep = bool(
             re.search(
                 r"\b(?:calculate|analyze|compare|debug|design|architecture|"
-                r"tradeoff|step by step|root cause|prove)\b",
+                r"tradeoff|step by step|root cause|prove|think deep|go deep|"
+                r"in depth|philosophy|origin of life|abiogenesis)\b",
                 canonical,
             )
         )

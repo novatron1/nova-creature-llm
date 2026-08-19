@@ -8,17 +8,35 @@ STEP 2: Navigate to this folder
 STEP 3: Run the server
 
   Windows:
-    Double-click START_NOVA_WINDOWS.bat
+    PC only (local-only):
+      Double-click START_NOVA_WINDOWS.bat
+
+    PC + phone, including away from home Wi-Fi:
+      Double-click START_NOVA_ANYWHERE_WINDOWS.bat
 
   Mac/Linux:
     bash START_NOVA_MAC_LINUX.sh
 
   Or manually:
-    python3 nova_web_server.py 3000
+    python3 nova_enhanced_server.py 3000
 
 STEP 4: Open http://127.0.0.1:3000 in Chrome/Firefox
 
 STEP 5: Start chatting!
+
+For app installation, phone pairing, verified backups, encrypted portable copies,
+recovery, and durable background self-checks, open:
+  Settings -> Nova Foundation
+
+The "Install Nova App" control adds a clean app window when the browser supports it.
+"Start with Windows" is optional and stays off until you enable it yourself.
+
+For private phone access, install Tailscale on the PC and phone and sign into the
+same private network. The Anywhere launcher keeps Nova on 127.0.0.1 and gives it
+a private HTTPS address ending in .ts.net:8443. In Settings, create a one-time
+pairing QR code, scan it on the phone, then use Add to Home Screen if desired.
+Keep the PC awake, Nova running, and Tailscale connected while using the phone.
+The phone cannot reach Nova while the PC is off.
 
 Try these:
   "What can you do?"
@@ -34,6 +52,11 @@ GPU HUB (optional)
   Double-click NOVA_GPU_HUB_INSTALL.bat to check that Nova is ready for the
   standalone GPU Hub. It does not start Nova, download models, or collect keys.
   In Nova, open GPU Hub and choose CPU only, Local GPU, Remote GPU, or Auto.
+  Auto may use a healthy verified Local or Vast worker; otherwise it uses CPU.
+  For a GPU worker, use a loopback/private/Tailscale endpoint. Enter its endpoint,
+  exact model, and provider in GPU Hub, then click Test / Verify worker. Public
+  worker names require an exact NOVA_GPU_HUB_REMOTE_MODEL_ALLOWLIST entry on the
+  Nova server. Never expose a model worker publicly or type a key into the page.
   Nova health: http://127.0.0.1:3000/healthz
 
 ============================================================

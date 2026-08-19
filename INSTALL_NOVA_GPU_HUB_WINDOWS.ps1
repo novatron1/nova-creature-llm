@@ -40,6 +40,10 @@ try {
 
     Write-Host "GPU Hub is available inside Nova after you start Nova normally."
     Write-Host "Health check: http://127.0.0.1:3000/healthz"
+    Write-Host "Use a loopback, private-network, or Tailscale worker endpoint."
+    Write-Host "In GPU Hub enter endpoint, exact model, and provider, then choose Test / Verify worker."
+    Write-Host "Public worker names require an exact NOVA_GPU_HUB_REMOTE_MODEL_ALLOWLIST server setting."
+    Write-Host "Auto may use a healthy verified Local or Vast worker; otherwise it uses CPU."
     Write-Host "Optional Vast.ai setup (do this yourself in a new PowerShell window):"
     Write-Host '  setx NOVA_VAST_API_KEY "paste-your-Vast-api-key-here"'
     Write-Host "This installer never reads, saves, or displays your Vast.ai key."

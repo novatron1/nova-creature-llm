@@ -2,7 +2,7 @@
 # Starts a private, OpenAI-compatible model worker inside a GPU machine.
 set -euo pipefail
 
-: "${NOVA_WORKER_ENGINE:?Set NOVA_WORKER_ENGINE to vllm, sglang, or ollama.}"
+: "${NOVA_WORKER_ENGINE:?Set NOVA_WORKER_ENGINE to vllm or sglang.}"
 : "${NOVA_WORKER_MODEL:?Set NOVA_WORKER_MODEL to the model name or path.}"
 : "${NOVA_WORKER_PORT:?Set NOVA_WORKER_PORT to a private worker port.}"
 
@@ -22,14 +22,6 @@ case "$NOVA_WORKER_ENGINE" in
   sglang)
     exec python -m sglang.launch_server \
       --host "$host" --port "$NOVA_WORKER_PORT" --model-path "$NOVA_WORKER_MODEL"
-    ;;
-  ollama)
-    # `ollama serve` exposes every installed model on its OpenAI-compatible API.
-    # It cannot be safely limited to NOVA_WORKER_MODEL, so refuse this deployment
-    # until a model-scoped proxy/worker is explicitly supplied.
-    echo "Ollama cannot safely start a model-scoped OpenAI worker for NOVA_WORKER_MODEL=$NOVA_WORKER_MODEL." >&2
-    echo "Use NOVA_WORKER_ENGINE=vllm or sglang, or provide a private model-scoped proxy." >&2
-    exit 2
     ;;
   *)
     echo "Unsupported NOVA_WORKER_ENGINE: $NOVA_WORKER_ENGINE" >&2

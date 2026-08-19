@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nova Sensor HUD Mockups</title>
+<style>
+:root{--bg:#050611;--panel:#101327;--purple:#8b7cff;--cyan:#48f7ff;--green:#7cffaa;--red:#ff3b3b;--orange:#ffb347}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#181a3a,#050611 52%);color:#eef;font-family:Inter,Segoe UI,system-ui,sans-serif;padding:18px}
+.wrap{max-width:1180px;margin:0 auto}.top{margin-bottom:18px}.top h1{font-size:clamp(24px,5vw,42px);margin:0 0 8px;color:#fff}.top p{color:#b7bddf;line-height:1.45;margin:0;max-width:930px}
+.notice{margin:12px 0 18px;border:1px solid #3f477a;background:#0c1024cc;border-radius:14px;padding:10px 12px;color:#cfd5ff}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{border:1px solid #2c315e;background:linear-gradient(135deg,#090a17,#11142a);border-radius:22px;overflow:hidden;cursor:pointer;box-shadow:0 18px 50px #0007;transition:.18s}
+.card:hover{transform:translateY(-3px);border-color:var(--purple)}.card.selected{border-color:var(--green);box-shadow:0 0 0 2px #7cffaa55,0 22px 70px #7cffaa22}
+.preview{height:360px;position:relative;background:#070914;overflow:hidden;border-bottom:1px solid #24284d}
+.world{position:absolute;inset:0;background:radial-gradient(circle at 70% 20%,#ffffff1a,#0000 13%),linear-gradient(145deg,#0b1628,#0d0e18 42%,#141028)}
+.world:before{content:"";position:absolute;left:8%;right:8%;bottom:18%;height:34%;border-radius:18px;background:linear-gradient(90deg,#273654,#182039);opacity:.85}
+.world:after{content:"";position:absolute;width:120px;height:170px;right:20%;bottom:20%;border-radius:56px 56px 30px 30px;background:linear-gradient(#23283f,#111421);box-shadow:0 0 30px #48f7ff18}
+.scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 8px,#ffffff08 9px 10px);pointer-events:none}
+.reticle{position:absolute;left:50%;top:46%;width:130px;height:130px;border-radius:50%;transform:translate(-50%,-50%);border:1px solid currentColor;color:var(--cyan);box-shadow:0 0 25px currentColor}
+.reticle:before,.reticle:after{content:"";position:absolute;background:currentColor;opacity:.8}.reticle:before{left:50%;top:-26px;width:1px;height:180px}.reticle:after{top:50%;left:-26px;height:1px;width:180px}
+.corner{position:absolute;width:72px;height:72px;color:var(--cyan)}.tl{left:18px;top:18px;border-left:2px solid;border-top:2px solid}.tr{right:18px;top:18px;border-right:2px solid;border-top:2px solid}.bl{left:18px;bottom:18px;border-left:2px solid;border-bottom:2px solid}.br{right:18px;bottom:18px;border-right:2px solid;border-bottom:2px solid}
+.pill{position:absolute;border:1px solid currentColor;background:#050611cc;border-radius:999px;padding:5px 9px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);backdrop-filter:blur(6px)}
+.panel{position:absolute;border:1px solid #384170;background:#050611cc;border-radius:12px;padding:8px 10px;color:#dce3ff;font-size:11px;line-height:1.45;backdrop-filter:blur(7px)}
+.panel strong{display:block;color:var(--green);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}.col{position:absolute;display:grid;gap:7px}.bar{height:5px;border-radius:999px;background:#1d2441;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.bad{color:var(--orange)}.code{font-family:Consolas,monospace;font-size:10px;color:#9cf}.body{padding:14px 16px 16px}.body h2{font-size:19px;margin:0 0 6px}.body p{color:#aeb6dc;line-height:1.4;margin:0 0 10px}
+.tags{display:flex;flex-wrap:wrap;gap:5px}.tags span{border:1px solid #333b67;background:#090b18;border-radius:999px;padding:4px 7px;font-size:10px;color:#bfc8ee}
+.compass{position:absolute;right:22px;top:22px;width:88px;height:88px;border:1px solid currentColor;border-radius:50%;color:var(--cyan);display:grid;place-items:center;text-align:center;font-size:11px}.compass:after{content:"";position:absolute;width:2px;height:34px;background:currentColor;transform:rotate(32deg);transform-origin:50% 90%;box-shadow:0 0 12px currentColor}
+.graph{position:absolute;left:22px;right:22px;bottom:22px;height:52px;border:1px solid #394270;background:#050611c9;border-radius:8px;overflow:hidden}.graph svg{width:100%;height:100%}
+.red *{--cyan:#ff3b3b;--green:#ff6969}.red .preview{background:#120202}.red .world{filter:sepia(1) saturate(1.8) hue-rotate(310deg);background:radial-gradient(circle at 65% 35%,#ff000035,#0000 17%),linear-gradient(145deg,#190606,#090304)}.red .panel,.red .pill{border-color:#ff3b3b;color:#ff6969;background:#120000d9;text-shadow:0 0 8px #f00}.red .scan{background:repeating-linear-gradient(0deg,#0000 0 6px,#ff000018 7px 8px)}
+.soft .preview{background:linear-gradient(135deg,#0b0820,#071423)}.soft .reticle{border-radius:42% 58% 50% 44%;color:#b899ff}.soft .panel{border-color:#6d5dba;background:#130d2dcc}.soft .pill{color:#9affc4;border-color:#54c98d;background:#0b2118cc}
+.engineer .preview{background:#02040a}.engineer .world{opacity:.5;filter:grayscale(.65)}.engineer .panel{border-radius:4px;border-color:#3dff9d;background:#00150acc;font-family:Consolas,monospace}.engineer .pill{border-radius:4px;font-family:Consolas,monospace}
+.pick{position:fixed;left:14px;right:14px;bottom:14px;background:#101427ee;border:1px solid #3c4375;border-radius:16px;padding:10px 14px;color:#dfe3ff;backdrop-filter:blur(10px);box-shadow:0 12px 40px #0008}.pick strong{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<h1>Nova “Terminator Vision” Sensor HUD Mockups</h1>
+<p>Pick the camera overlay style for Nova’s sensor vision. These are visual directions only: camera feed underneath, browser-accessible sensors overlaid on top, and honest labels for sensors phones/browsers usually block like internal temperature.</p>
+</div>
+<div class="notice">Tap a card to select it. Then tell Codex A, B, C, or D.</div>
+<div class="grid">
+
+<div class="card" data-choice="A" onclick="selectCard(this)">
+<div class="preview">
+<div class="world"></div><div class="scan"></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div><div class="reticle"></div><div class="compass">NOVA<br>32°</div>
+<div class="pill" style="left:22px;top:22px">FRONT CAM • LIVE</div>
+<div class="col" style="left:22px;top:66px;width:142px"><div class="panel"><strong>Orientation</strong>α 122° β -4° γ 8°</div><div class="panel"><strong>Motion</strong>Accel 0.2 / 0.1 / 9.7</div><div class="panel"><strong>GPS</strong>±26m accuracy</div></div>
+<div class="col" style="right:22px;bottom:86px;width:150px"><div class="panel"><strong>System</strong>Battery 76%<div class="bar"><i style="width:76%"></i></div></div><div class="panel"><strong>Network</strong>online • 4G • 55ms</div></div>
+<div class="graph"><svg viewBox="0 0 400 80" preserveAspectRatio="none"><path d="M0,56 L32,48 L64,50 L96,34 L128,42 L160,20 L192,32 L224,28 L256,54 L288,35 L320,44 L352,18 L400,30" fill="none" stroke="#48f7ff" stroke-width="3"/></svg></div>
+</div><div class="body"><h2>A — Clean Tactical HUD</h2><p>Readable and useful while walking around. Feels advanced without hiding the camera.</p><div class="tags"><span>best daily use</span><span>clear labels</span><span>phone friendly</span></div></div>
+</div>
+
+<div class="card red" data-choice="B" onclick="selectCard(this)">
+<div class="preview">
+<div class="world"></div><div class="scan"></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div><div class="reticle" style="width:164px;height:164px;color:#ff3b3b"></div>
+<div style="position:absolute;left:18px;top:18px;color:#ff3b3b;font-weight:800;letter-spacing:.12em;font-size:12px;text-shadow:0 0 14px #f00">NOVA TARGET ACQUISITION</div>
+<div class="panel" style="left:20px;top:54px;width:180px"><strong>VISUAL LOCK</strong>person-like object<br>confidence 88%<br>distance estimate: near</div>
+<div class="panel" style="right:20px;top:54px;width:160px"><strong>SENSOR STACK</strong>GYRO: active<br>ACCEL: active<br>GPS: active<br><span class="bad">TEMP: not exposed</span></div>
+<div class="panel code" style="left:20px;bottom:84px;width:205px">SCAN: 001100<br>LIGHT: browser blocked<br>PROXIMITY: not exposed<br>MAGNETOMETER: browser gated</div>
+<div class="pill" style="right:22px;bottom:24px;color:#ff3b3b">THREAT: NONE • CURIOUS MODE</div>
+</div><div class="body"><h2>B — Red Terminator Scan</h2><p>The strongest movie-like look: red scan lines, target lock, intense sensor readouts.</p><div class="tags"><span>most sci-fi</span><span>target reticle</span><span>high drama</span></div></div>
+</div>
+
+<div class="card soft" data-choice="C" onclick="selectCard(this)">
+<div class="preview">
+<div class="world"></div><div class="scan"></div><div class="reticle"></div>
+<div class="pill" style="left:22px;top:22px">Nova is looking • front camera</div>
+<div class="panel" style="left:24px;bottom:86px;width:178px"><strong>What Nova notices</strong>phone is upright<br>room motion is low<br>network is steady</div>
+<div class="panel" style="right:24px;top:72px;width:172px"><strong>Body senses</strong>tilt: slight right<br>step/motion: calm<br>voice: ready</div>
+<div class="panel" style="right:24px;bottom:28px;width:210px"><strong>Honest limits</strong><span class="bad">temperature, air pressure, proximity need external/native access.</span></div>
+<div style="position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:210px;height:210px;border-radius:44% 56% 47% 53%;border:1px solid #b899ff66;box-shadow:0 0 50px #8b7cff44"></div>
+</div><div class="body"><h2>C — Nova Creature Sense Overlay</h2><p>Friendlier and alive. Feels like Nova’s own perception instead of a weapon system.</p><div class="tags"><span>most Nova</span><span>social</span><span>clear limits</span></div></div>
+</div>
+
+<div class="card engineer" data-choice="D" onclick="selectCard(this)">
+<div class="preview">
+<div class="world"></div><div class="scan"></div><div class="pill" style="left:18px;top:18px">RAW SENSOR MODE</div>
+<div class="panel code" style="left:18px;top:58px;width:188px"><strong>DEVICE</strong>viewport=390x844<br>dpr=3<br>touch=5<br>mem=8GB*<br>cpu=8 threads*</div>
+<div class="panel code" style="right:18px;top:58px;width:190px"><strong>IMU</strong>alpha=122.4<br>beta=-4.1<br>gamma=8.2<br>accel=[0.2,0.1,9.7]</div>
+<div class="panel code" style="left:18px;bottom:92px;width:220px"><strong>EXTERNAL / BLOCKED</strong>ambient light: unavailable<br>temperature: unavailable<br>barometer: unavailable<br>proximity: unavailable</div>
+<div class="panel code" style="right:18px;bottom:92px;width:190px"><strong>ROUTE</strong>camera → sensors → vision<br>snapshot every 3s<br>privacy: opt-in only</div>
+<div class="graph"><svg viewBox="0 0 400 80" preserveAspectRatio="none"><path d="M0,60 L20,20 L40,66 L60,24 L80,58 L100,35 L120,55 L140,22 L160,44 L180,70 L200,26 L220,62 L240,31 L260,54 L280,18 L300,50 L320,29 L340,62 L360,21 L400,56" fill="none" stroke="#3dff9d" stroke-width="2"/></svg></div>
+</div><div class="body"><h2>D — Engineer Debug AR</h2><p>Dense robot telemetry with raw readings, graphs, blocked sensors, and routing info always visible.</p><div class="tags"><span>raw data</span><span>debug graphs</span><span>developer mode</span></div></div>
+</div>
+</div>
+</div>
+<div class="pick" id="pick">Pick one: <strong>none yet</strong></div>
+<script>
+function selectCard(card){
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  const choice=card.dataset.choice;
+  document.getElementById('pick').innerHTML='Selected: <strong>'+choice+'</strong> — tell Codex "'+choice+'" to build it.';
+  localStorage.setItem('nova_hud_mockup_choice', choice);
+}
+</script>
+</body>
+</html>

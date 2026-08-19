@@ -14,6 +14,9 @@ from nova_byte_tokenizer import NovaByteTokenizer
 from nova_torch_transformer import load_checkpoint, save_checkpoint
 from nova_training_types import ROLE_NAMES
 
+TARGETED_CURRICULUM_SOURCE = "targeted_transformer_answer_curriculum"
+TARGETED_CURRICULUM_TRAIN_WEIGHT = 64
+
 
 def build_supervised_sequence(
     tokenizer: NovaByteTokenizer,
@@ -82,6 +85,8 @@ def train_role_candidate(
     baseline_role = baseline_metadata.get("role") if isinstance(baseline_metadata, Mapping) else None
     if baseline_role is not None and baseline_role != role:
         raise ValueError(f"baseline role {baseline_role!r} does not match requested role {role!r}")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
 
     tokenizer = NovaByteTokenizer()
     block_size = model.config.block_size
@@ -104,7 +109,7 @@ def train_role_candidate(
     torch_rng_state = torch.random.get_rng_state()
     try:
         torch.manual_seed(seed)
-        baseline_validation_loss = _validation_loss(model, validation_examples, batch_size)
+        baseline_validation_loss = _validation_loss(model, validation_examples, batch_size, device)
 
         for epoch in range(epochs):
             model.train()
@@ -112,6 +117,8 @@ def train_role_candidate(
             shuffle_rng.shuffle(shuffled_examples)
 
             for tokens, targets in _iter_batches(shuffled_examples, batch_size):
+                tokens = tokens.to(device)
+                targets = targets.to(device)
                 optimizer.zero_grad(set_to_none=True)
                 _, loss = model(tokens, targets)
                 if loss is None or not torch.isfinite(loss):
@@ -145,6 +152,7 @@ def train_role_candidate(
     if best_state is None:
         raise RuntimeError("training completed without a validation checkpoint")
     model.load_state_dict(best_state, strict=True)
+    model.to("cpu")
 
     duration_seconds = time.perf_counter() - start_time
     checkpoint_validation_loss = best_validation_loss
@@ -198,12 +206,19 @@ def _prepare_examples(
         if not isinstance(answer, str) or not answer.strip():
             raise ValueError(f"{split_name} row {index} must have a non-empty answer")
         try:
-            examples.append(build_supervised_sequence(tokenizer, prompt, answer, block_size))
+            example = build_supervised_sequence(tokenizer, prompt, answer, block_size)
         except ValueError as exc:
             raise ValueError(f"{split_name} row {index}: {exc}") from exc
+        examples.extend([example] * _training_weight(row, split_name))
     if not examples:
         raise ValueError(f"{split_name} rows produced no answer examples")
     return examples
+
+
+def _training_weight(row: Mapping[str, Any], split_name: str) -> int:
+    if split_name == "train" and row.get("source") == TARGETED_CURRICULUM_SOURCE:
+        return TARGETED_CURRICULUM_TRAIN_WEIGHT
+    return 1
 
 
 def _iter_batches(
@@ -229,12 +244,16 @@ def _validation_loss(
     model: torch.nn.Module,
     examples: Sequence[tuple[list[int], list[int]]],
     batch_size: int,
+    device: torch.device | str | None = None,
 ) -> float:
     model.eval()
+    device = device or next(model.parameters()).device
     total_loss = 0.0
     total_targets = 0
     with torch.no_grad():
         for tokens, targets in _iter_batches(examples, batch_size):
+            tokens = tokens.to(device)
+            targets = targets.to(device)
             _, loss = model(tokens, targets)
             if loss is None or not torch.isfinite(loss):
                 raise FloatingPointError("non-finite validation loss")

@@ -32,7 +32,8 @@ or expose Ollama/vLLM directly to the public internet.
 The GPU Hub is a separate top-level surface, not a chat-model selector. The
 user chooses one compute mode:
 
-- **Auto**: use a verified local GPU when available; otherwise use CPU.
+- **Auto**: use the healthy verified GPU endpoint (local or Vast.ai) when one is
+  configured; otherwise use CPU.
 - **CPU only**: never use local or remote GPU.
 - **Local GPU**: require a verified local GPU and fail clearly if unavailable.
 - **Vast.ai GPU**: use the configured Vast instance/endpoint only after the
@@ -62,14 +63,18 @@ All hub routes are served by the existing Nova HTTP server under
 from `NOVA_VAST_API_KEY` (with an optional local-only environment-file entry),
 and only redacted connection state is returned. Remote model endpoints are
 validated as private/Tailscale or explicitly approved remote endpoints before
-they can be selected.
+they can be selected. The same host check runs again for inference traffic,
+redirects are rejected, and public workers require an exact hostname in
+`NOVA_GPU_HUB_REMOTE_MODEL_ALLOWLIST`.
 
 For Vast.ai, Nova uses Vast's documented REST API for instance discovery and
 lifecycle control and an SSH/proxy tunnel or an explicitly configured
 OpenAI-compatible endpoint for inference. The hub does not assume a particular
-model image; the installer provides a worker bootstrap that can launch vLLM,
-SGLang, or Ollama on the rented machine. This keeps the control plane
-independent from model choice.
+model image; the installer provides a worker bootstrap that can launch vLLM
+or SGLang on the rented machine. This keeps the control plane independent from
+model choice. The shipped bootstrap accepts only `vllm` and `sglang`; it does
+not advertise Ollama because an unscoped `ollama serve`
+process would expose every installed model rather than only the selected one.
 
 ## State and failure handling
 
@@ -89,8 +94,9 @@ continues to work even when all GPU code is unavailable.
 - Vast API keys remain server-side and are never placed in browser storage,
   HTML, logs, traces, or chat metadata.
 - Start/stop/release are explicit, auditable actions; no automatic spending.
-- Only the documented Vast API host and the configured model endpoint are
-  contacted.
+- Vast control traffic uses only `https://console.vast.ai/api/v0`; arbitrary
+  `NOVA_VAST_API_BASE_URL` values and every redirect are rejected before secrets
+  can be forwarded.
 - The remote worker is an inference/training endpoint, not an unrestricted
   command-execution bridge. Any future computer-control capability must use
   Nova's existing scoped tool/approval policy.

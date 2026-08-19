@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nova Temple Runner</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #26366f 0, #090b17 56%, #02030a 100%);
+      color: #f7f7ff;
+    }
+    #game {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #070914;
+    }
+    #game canvas { display: block; width: 100%; height: 100%; }
+    .hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 2;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      pointer-events: none;
+    }
+    .chip {
+      min-width: 94px;
+      border: 1px solid rgba(139, 154, 255, 0.42);
+      border-radius: 14px;
+      padding: 9px 12px;
+      background: rgba(7, 10, 30, 0.76);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.26);
+      backdrop-filter: blur(10px);
+    }
+    .chip span {
+      display: block;
+      color: #9eabff;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .chip strong { display: block; font-size: 22px; }
+    .hint {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 2;
+      max-width: min(620px, calc(100vw - 32px));
+      border: 1px solid rgba(139, 154, 255, 0.32);
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(7, 10, 30, 0.66);
+      color: #cad2ff;
+      font-size: 14px;
+      pointer-events: none;
+    }
+    kbd { background: #20295f; border-radius: 6px; padding: 2px 6px; border: 1px solid #3d4bb0; }
+  </style>
+</head>
+<body data-renderer="three-webgl">
+  <section class="hud" aria-label="Runner stats">
+    <div class="chip"><span>Score</span><strong id="score">0</strong></div>
+    <div class="chip"><span>Distance</span><strong id="distance">0</strong></div>
+    <div class="chip"><span>Coins</span><strong id="coins">0</strong></div>
+    <div class="chip"><span>Level</span><strong id="level">1</strong></div>
+    <div class="chip"><span>Stage</span><strong id="levelName">Dawn Gate</strong></div>
+    <div class="chip"><span>Age</span><strong id="age">0</strong></div>
+    <div class="chip"><span>Mode</span><strong id="mode">AUTO</strong></div>
+  </section>
+  <section id="game" data-renderer="three-webgl" aria-label="Nova Temple Runner Three.js playfield"></section>
+  <p class="hint">Nova autopilot runs by itself. Use <kbd>←</kbd>/<kbd>→</kbd> to change lanes, <kbd>Space</kbd> to jump, <kbd>↓</kbd> to slide. Stop pressing keys and autopilot resumes.</p>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.165.0/build/three.module.js";
+
+    const host = document.getElementById("game");
+    const lanes = [-2.8, 0, 2.8];
+    const LEVELS = [
+      { name: "Dawn Gate", goal: 0, maxSpeed: 0.58, acceleration: 0.00072, obstacleEvery: 12, obstacleJitter: 7, coinEvery: 12, fogFar: 58, roadColor: "#47321d" },
+      { name: "Sunken Steps", goal: 180, maxSpeed: 0.64, acceleration: 0.00082, obstacleEvery: 10, obstacleJitter: 6, coinEvery: 11, fogFar: 52, roadColor: "#4c3b29" },
+      { name: "Moonlit Bridge", goal: 380, maxSpeed: 0.70, acceleration: 0.00092, obstacleEvery: 8.8, obstacleJitter: 5, coinEvery: 10, fogFar: 48, roadColor: "#374057" },
+      { name: "Storm Vault", goal: 650, maxSpeed: 0.78, acceleration: 0.00102, obstacleEvery: 7.6, obstacleJitter: 4.5, coinEvery: 9, fogFar: 44, roadColor: "#53323a" },
+      { name: "Solar Crown", goal: 1000, maxSpeed: 0.86, acceleration: 0.00112, obstacleEvery: 6.6, obstacleJitter: 4, coinEvery: 8, fogFar: 40, roadColor: "#5d4826" }
+    ];
+    const state = {
+      lane: 1,
+      targetLane: 1,
+      y: 0,
+      yVelocity: 0,
+      sliding: false,
+      slideTicks: 0,
+      score: 0,
+      distance: 0,
+      coins: 0,
+      levelIndex: 0,
+      level: 1,
+      levelName: LEVELS[0].name,
+      levelGoal: LEVELS[1].goal,
+      ageTicks: 0,
+      speed: 0.38,
+      autopilot: true,
+      running: true,
+      lastManualAt: 0,
+      obstacles: [],
+      coinsList: [],
+      nextObstacleAt: 12,
+      nextCoinAt: 7
+    };
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#090b17");
+    scene.fog = new THREE.Fog("#090b17", 18, 58);
+
+    const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 160);
+    camera.position.set(0, 6.2, 10.5);
+    camera.lookAt(0, 1.2, -12);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.domElement.dataset.engine = "three-webgl";
+    renderer.domElement.dataset.threeRevision = THREE.REVISION;
+    host.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight(0x9db5ff, 0x120815, 1.2));
+    const sun = new THREE.DirectionalLight(0xfff0ce, 1.8);
+    sun.position.set(-5, 10, 4);
+    scene.add(sun);
+
+    const roadMaterial = new THREE.MeshStandardMaterial({ color: LEVELS[0].roadColor, roughness: 0.88 });
+    const road = new THREE.Mesh(new THREE.BoxGeometry(9.4, 0.26, 180), roadMaterial);
+    road.position.set(0, -0.14, -54);
+    scene.add(road);
+
+    const laneMaterial = new THREE.MeshBasicMaterial({ color: "#d8b36b", transparent: true, opacity: 0.45 });
+    for (const x of [-1.4, 1.4]) {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.03, 180), laneMaterial);
+      line.position.set(x, 0.04, -54);
+      scene.add(line);
+    }
+
+    const templeMaterial = new THREE.MeshStandardMaterial({ color: "#786247", roughness: 0.7 });
+    for (let i = 0; i < 18; i++) {
+      for (const side of [-1, 1]) {
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.42, 4, 12), templeMaterial);
+        pillar.position.set(side * 5.6, 1.8, -i * 10 - 5);
+        scene.add(pillar);
+      }
+    }
+
+    const runner = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 1.0, 6, 12), new THREE.MeshStandardMaterial({ color: "#5efcff", emissive: "#064b5b", roughness: 0.32 }));
+    const face = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.42, 0.08), new THREE.MeshStandardMaterial({ color: "#0c1028", emissive: "#00e5ff", roughness: 0.15 }));
+    face.position.set(0, 0.42, 0.37);
+    runner.add(body, face);
+    scene.add(runner);
+
+    const obstacleMaterial = new THREE.MeshStandardMaterial({ color: "#ff475e", emissive: "#4a0710", roughness: 0.45 });
+    const coinMaterial = new THREE.MeshStandardMaterial({ color: "#ffd65a", emissive: "#7c5300", roughness: 0.22 });
+
+    function currentLevel() {
+      return LEVELS[state.levelIndex];
+    }
+
+    function updateLevel() {
+      while (state.levelIndex < LEVELS.length - 1 && state.distance >= LEVELS[state.levelIndex + 1].goal) {
+        state.levelIndex += 1;
+        const level = currentLevel();
+        state.level = state.levelIndex + 1;
+        state.levelName = level.name;
+        state.levelGoal = LEVELS[state.levelIndex + 1]?.goal || level.goal;
+        scene.fog.far = level.fogFar;
+        roadMaterial.color.set(level.roadColor);
+        state.score += 100;
+      }
+    }
+
+    function spawnObstacle() {
+      const lane = Math.floor(Math.random() * lanes.length);
+      const obstacle = new THREE.Mesh(new THREE.BoxGeometry(1.28, 1.4, 1.0), obstacleMaterial);
+      obstacle.position.set(lanes[lane], 0.7, -62);
+      scene.add(obstacle);
+      state.obstacles.push({ lane, z: -62, mesh: obstacle, type: "obstacle" });
+    }
+
+    function spawnCoinRow() {
+      const lane = Math.floor(Math.random() * lanes.length);
+      for (let i = 0; i < 4; i++) {
+        const coin = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 10, 18), coinMaterial);
+        coin.position.set(lanes[lane], 1.05, -48 - i * 2.1);
+        coin.rotation.x = Math.PI / 2;
+        scene.add(coin);
+        state.coinsList.push({ lane, z: -48 - i * 2.1, mesh: coin, type: "coin" });
+      }
+    }
+
+    function nearestThreat() {
+      return state.obstacles
+        .filter(item => item.z > -18 && item.z < -4)
+        .sort((a, b) => b.z - a.z)[0];
+    }
+
+    function chooseAutoLane() {
+      const threat = nearestThreat();
+      if (!threat || threat.lane !== state.targetLane) return;
+      const options = [0, 1, 2].filter(lane => lane !== threat.lane);
+      options.sort((a, b) => Math.abs(a - state.targetLane) - Math.abs(b - state.targetLane));
+      state.targetLane = options[0];
+    }
+
+    function moveLane(delta) {
+      state.targetLane = Math.max(0, Math.min(lanes.length - 1, state.targetLane + delta));
+    }
+
+    function laneX(index) {
+      const lower = Math.floor(index);
+      const upper = Math.ceil(index);
+      const blend = index - lower;
+      return THREE.MathUtils.lerp(lanes[lower], lanes[upper], blend);
+    }
+
+    function jump() {
+      if (state.y <= 0.02) state.yVelocity = 0.34;
+    }
+
+    function slide() {
+      state.sliding = true;
+      state.slideTicks = 18;
+    }
+
+    function resetRunner() {
+      state.score = Math.max(0, state.score - 75);
+      state.distance = Math.max(0, state.distance - 20);
+      state.targetLane = 1;
+      state.lane = 1;
+      state.y = 0;
+      state.yVelocity = 0;
+      state.obstacles.forEach(item => scene.remove(item.mesh));
+      state.coinsList.forEach(item => scene.remove(item.mesh));
+      state.obstacles = [];
+      state.coinsList = [];
+      state.nextObstacleAt = state.distance + 16;
+      state.nextCoinAt = state.distance + 7;
+    }
+
+    function tick() {
+      if (!state.running) return;
+      state.ageTicks += 1;
+      state.distance += state.speed;
+      state.score += 1;
+      updateLevel();
+      const level = currentLevel();
+      state.speed = Math.min(level.maxSpeed, state.speed + level.acceleration);
+
+      if (Date.now() - state.lastManualAt > 1200) {
+        state.autopilot = true;
+        chooseAutoLane();
+      }
+
+      state.yVelocity -= 0.026;
+      state.y = Math.max(0, state.y + state.yVelocity);
+      if (state.y === 0 && state.yVelocity < 0) state.yVelocity = 0;
+      if (state.slideTicks > 0) state.slideTicks -= 1;
+      else state.sliding = false;
+
+      if (state.distance > state.nextObstacleAt) {
+        spawnObstacle();
+        state.nextObstacleAt += level.obstacleEvery + Math.random() * level.obstacleJitter;
+      }
+      if (state.distance > state.nextCoinAt) {
+        spawnCoinRow();
+        state.nextCoinAt += level.coinEvery + Math.random() * 7;
+      }
+
+      for (const item of [...state.obstacles]) {
+        item.z += state.speed;
+        item.mesh.position.z = item.z;
+        item.mesh.rotation.y += 0.015;
+        if (item.z > 5) {
+          scene.remove(item.mesh);
+          state.obstacles.splice(state.obstacles.indexOf(item), 1);
+          continue;
+        }
+        if (item.lane === Math.round(state.lane) && item.z > -1.2 && item.z < 0.8 && state.y < 0.6 && !state.sliding) {
+          resetRunner();
+          break;
+        }
+      }
+
+      for (const item of [...state.coinsList]) {
+        item.z += state.speed;
+        item.mesh.position.z = item.z;
+        item.mesh.rotation.z += 0.12;
+        if (item.z > 5) {
+          scene.remove(item.mesh);
+          state.coinsList.splice(state.coinsList.indexOf(item), 1);
+          continue;
+        }
+        if (item.lane === Math.round(state.lane) && item.z > -1 && item.z < 1 && state.y < 1.3) {
+          state.coins += 1;
+          state.score += 25;
+          scene.remove(item.mesh);
+          state.coinsList.splice(state.coinsList.indexOf(item), 1);
+        }
+      }
+
+      state.lane += (state.targetLane - state.lane) * 0.22;
+      runner.position.set(laneX(state.lane), 0.95 + state.y, 0);
+      runner.scale.y = state.sliding ? 0.58 : 1;
+      runner.rotation.z = (state.targetLane - state.lane) * -0.16;
+      updateHud();
+    }
+
+    function updateHud() {
+      document.body.dataset.runnerLane = String(Math.round(state.lane));
+      document.body.dataset.autopilot = String(state.autopilot);
+      document.body.dataset.ageTicks = String(state.ageTicks);
+      document.getElementById("score").textContent = String(Math.floor(state.score));
+      document.getElementById("distance").textContent = String(Math.floor(state.distance));
+      document.getElementById("coins").textContent = String(state.coins);
+      document.getElementById("level").textContent = String(state.level);
+      document.getElementById("levelName").textContent = state.levelName;
+      document.getElementById("age").textContent = String(state.ageTicks);
+      document.getElementById("mode").textContent = state.autopilot ? "AUTO" : "YOU";
+    }
+
+    function resize() {
+      const width = Math.max(320, window.innerWidth);
+      const height = Math.max(320, window.innerHeight);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    }
+
+    function animate() {
+      road.position.z = -54 + (state.distance % 8);
+      for (let i = 0; i < scene.children.length; i++) {
+        const object = scene.children[i];
+        if (object.geometry && object.geometry.type === "CylinderGeometry") {
+          object.position.z += state.speed * 0.16;
+          if (object.position.z > 10) object.position.z -= 180;
+        }
+      }
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    const keyActions = {
+      ArrowLeft: () => moveLane(-1),
+      ArrowRight: () => moveLane(1),
+      ArrowDown: slide,
+      " ": jump,
+      Spacebar: jump
+    };
+    addEventListener("keydown", event => {
+      const action = keyActions[event.key];
+      if (action) {
+        state.autopilot = false;
+        state.lastManualAt = Date.now();
+        action();
+        event.preventDefault();
+      }
+    });
+
+    addEventListener("resize", resize);
+    renderer.domElement.addEventListener("webglcontextlost", event => {
+      event.preventDefault();
+      state.running = false;
+      updateHud();
+    });
+
+    window.NovaTempleRunner = {
+      renderer: "three-webgl",
+      getState() {
+        return {
+          lane: Math.round(state.lane),
+          targetLane: state.targetLane,
+          score: Math.floor(state.score),
+          distance: Math.floor(state.distance),
+          coins: state.coins,
+          level: state.level,
+          levelName: state.levelName,
+          levelGoal: state.levelGoal,
+          ageTicks: state.ageTicks,
+          autopilot: state.autopilot,
+          obstacles: state.obstacles.length,
+          coinsVisible: state.coinsList.length,
+          running: state.running,
+          renderer: "three-webgl"
+        };
+      },
+      forceTick: tick,
+      moveLane,
+      jump,
+      slide
+    };
+
+    spawnCoinRow();
+    resize();
+    updateHud();
+    setInterval(tick, 70);
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

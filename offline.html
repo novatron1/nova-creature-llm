@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#151528">
+<title>Nova Companion is offline</title>
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b18;color:#f5f3ff;font:15px/1.5 system-ui,sans-serif}.card{width:min(520px,calc(100% - 40px));box-sizing:border-box;border:1px solid #393970;border-radius:20px;padding:28px;background:linear-gradient(145deg,#151528,#20203a);box-shadow:0 22px 70px #0009}h1{margin:0 0 8px;font-size:25px}.note{color:#b9b5d0}.privacy{border:1px solid #30305d;background:#0b0b18;border-radius:12px;padding:13px;margin:18px 0}.actions{display:flex;flex-wrap:wrap;gap:10px}button,a{box-sizing:border-box;min-height:44px;border:1px solid #6c62ba;background:#332d70;color:#fff;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;text-decoration:none}a.secondary{background:transparent}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>The Companion shell cannot reach Nova</h1>
+    <p class="note">Keep the PC awake, confirm Nova is running, and confirm Tailscale is connected on both the PC and this phone. Then retry.</p>
+    <p class="privacy">No private content is stored in this offline shell. Conversations, images, memory, pairing details, and Nova responses are never saved here.</p>
+    <div class="actions">
+      <button type="button" onclick="location.reload()">Retry</button>
+      <a href="/companion">Nova Companion</a>
+      <a class="secondary" href="/classic">Nova Classic</a>
+    </div>
+  </main>
+</body>
+</html>

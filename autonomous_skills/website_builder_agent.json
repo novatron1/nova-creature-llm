@@ -1,0 +1,55 @@
+{
+  "agent_id": "website_builder_agent",
+  "name": "Website Builder Agent",
+  "version": "2026-07-03",
+  "status": "active",
+  "purpose": "Plan page count, build every page in a Nova sandbox website, audit the whole site, and report concrete enhancements.",
+  "triggers": [
+    "website builder agent",
+    "website building agent",
+    "website agent",
+    "check my website",
+    "audit my website",
+    "website enhancements",
+    "make sure my website is the best it could be",
+    "multi-page website",
+    "how many pages",
+    "complete website",
+    "need a website for",
+    "website for"
+  ],
+  "quality_baseline": [
+    {
+      "topic": "Core Web Vitals",
+      "guidance": "Track loading, responsiveness, and visual stability with LCP, INP, and CLS.",
+      "source": "https://web.dev/articles/vitals"
+    },
+    {
+      "topic": "WCAG 2.2 accessibility",
+      "guidance": "Check perceivable, operable, understandable, and robust interaction patterns, including keyboard and focus behavior.",
+      "source": "https://www.w3.org/TR/WCAG22/"
+    },
+    {
+      "topic": "Responsive design",
+      "guidance": "Use layouts that render well across screen sizes and resolutions with good usability.",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design"
+    },
+    {
+      "topic": "Baseline compatibility",
+      "guidance": "Prefer web platform features that are widely available or provide fallbacks when support is limited.",
+      "source": "https://web.dev/baseline"
+    }
+  ],
+  "checks": [
+    "viewport metadata",
+    "title and favicon",
+    "page count and site map",
+    "all planned pages created",
+    "cross-page navigation",
+    "responsive layout constraints",
+    "mobile media query",
+    "semantic or accessible labels",
+    "visible app state hook",
+    "performance and polish enhancement list"
+  ]
+}

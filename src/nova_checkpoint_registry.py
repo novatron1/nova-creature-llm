@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 import uuid
 from copy import deepcopy
 from dataclasses import dataclass
@@ -12,6 +13,7 @@ from typing import Any
 from nova_training_types import ROLE_NAMES
 
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+_WINDOWS_REPLACE_RETRY_DELAYS = (0.05, 0.1, 0.2, 0.4, 0.8)
 
 
 @dataclass(frozen=True)
@@ -150,7 +152,23 @@ class CheckpointRegistry:
         with tmp_path.open("w", encoding="utf-8") as file:
             json.dump(self._data, file, indent=2, sort_keys=True)
             file.write("\n")
-        tmp_path.replace(self.registry_path)
+        self._replace_registry_file(tmp_path)
+
+    def _replace_registry_file(self, tmp_path: Path) -> None:
+        last_error: PermissionError | None = None
+        for attempt in range(len(_WINDOWS_REPLACE_RETRY_DELAYS) + 1):
+            try:
+                tmp_path.replace(self.registry_path)
+                return
+            except PermissionError as exc:
+                last_error = exc
+                if attempt >= len(_WINDOWS_REPLACE_RETRY_DELAYS):
+                    break
+                time.sleep(_WINDOWS_REPLACE_RETRY_DELAYS[attempt])
+        raise PermissionError(
+            "could not replace checkpoint registry after retrying; "
+            f"the previous registry is still intact and the pending registry is at {tmp_path}"
+        ) from last_error
 
     def _role_record(self, role: str) -> dict[str, Any]:
         roles = self._data.setdefault("roles", {})

@@ -1,0 +1,4 @@
+# Small runtime-only helpers. Nova keeps manual fallbacks when these are absent.
+qrcode>=7.4,<9
+cryptography>=45,<50
+Pillow>=10,<13

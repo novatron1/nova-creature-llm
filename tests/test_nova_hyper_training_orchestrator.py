@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import sys
 
@@ -50,6 +51,74 @@ def test_role_candidate_output_path_preserves_checkpoint_evidence_contract(tmp_p
         / "abcdef1234567890"
         / "left_hemisphere_20260623.pt"
     )
+
+
+def test_route_candidate_warm_starts_from_promoted_route_model(tmp_path, monkeypatch):
+    train_path = tmp_path / "artifacts" / "transformer_training" / "dataset" / "train.jsonl"
+    validation_path = tmp_path / "artifacts" / "transformer_training" / "dataset" / "validation.jsonl"
+    train_path.parent.mkdir(parents=True)
+    row = '{"task_type":"route","text":"debug it","domain":"coding","primary_role":"left_hemisphere"}\n'
+    train_path.write_text(row, encoding="utf-8")
+    validation_path.write_text(row, encoding="utf-8")
+    promoted_path = tmp_path / "checkpoints" / "route_model" / "promoted.pt"
+    promoted_path.parent.mkdir(parents=True)
+    promoted_path.write_bytes(b"promoted")
+    manifest = {
+        "content_fingerprint": "abcdef1234567890",
+        "outputs": {
+            "train": "artifacts/transformer_training/dataset/train.jsonl",
+            "validation": "artifacts/transformer_training/dataset/validation.jsonl",
+        },
+    }
+    captured = {}
+
+    def fake_load_route_model(path):
+        assert path == promoted_path
+        return "promoted-route-model", {"model_hash": "promoted-hash"}
+
+    def fake_train_route_model(*args, **kwargs):
+        captured["initial_model"] = kwargs.get("initial_model")
+        captured["learning_rate"] = kwargs.get("learning_rate")
+        output_path = Path(kwargs["output_path"])
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(b"candidate")
+        return "candidate-route-model", {"model_hash": "candidate-hash", "initialization": "warm_start"}
+
+    monkeypatch.setattr(orchestrator, "load_route_model", fake_load_route_model)
+    monkeypatch.setattr(orchestrator, "train_route_model", fake_train_route_model)
+
+    candidate = orchestrator._train_route_candidate(tmp_path, manifest, seed=20260622, epochs=1)
+
+    assert captured["initial_model"] == "promoted-route-model"
+    assert captured["learning_rate"] == orchestrator.ROUTE_WARM_START_LEARNING_RATE
+    assert candidate["metadata"]["initialization"] == "warm_start"
+    assert candidate["sha256"] == sha256(Path(candidate["checkpoint_path"]))
+
+
+def test_candidate_registry_view_ignores_non_improving_role_candidate(tmp_path):
+    registry = CheckpointRegistry(tmp_path)
+    baseline = tmp_path / "baseline.pt"
+    candidate = tmp_path / "candidate.pt"
+    baseline_hash = _write_checkpoint(baseline, b"baseline")
+    candidate_hash = _write_checkpoint(candidate, b"candidate")
+    registry.register_baseline("left_hemisphere", baseline, baseline_hash)
+
+    view = orchestrator._CandidateRegistryView(
+        tmp_path,
+        registry,
+        {
+            "left_hemisphere": {
+                "checkpoint_path": str(candidate),
+                "candidate_sha256": candidate_hash,
+                "improves_over_baseline": False,
+            }
+        },
+    )
+
+    resolved = view.resolve_live("left_hemisphere")
+
+    assert resolved.path == baseline
+    assert resolved.sha256 == baseline_hash
 
 
 def test_role_promotion_decisions_promote_only_clean_improving_roles():
@@ -186,6 +255,7 @@ def test_run_hyper_training_follows_guarded_order_and_writes_reports(tmp_path, m
         *(f"role_train:{role}" for role in ROLE_NAMES),
         "reload",
         "candidate",
+        "candidate",
         "negative_controls",
         "decision",
         "apply_decision",
@@ -198,6 +268,34 @@ def test_run_hyper_training_follows_guarded_order_and_writes_reports(tmp_path, m
     assert markdown_report.exists()
     assert markdown_report.read_text(encoding="utf-8").splitlines()[0] == "# REJECTED"
 
+
+
+def test_role_training_rows_keep_targeted_curriculum_when_capped(monkeypatch):
+    monkeypatch.setattr(orchestrator, "MAX_ROLE_TRAIN_ROWS", 3)
+    monkeypatch.setattr(orchestrator, "MAX_ROLE_VALIDATION_ROWS", 2)
+    rows = [
+        {"task_type": "answer", "primary_role": "speech_output_transformer", "answer": "target", "prompt": "target", "source": "targeted_transformer_answer_curriculum"},
+        {"task_type": "answer", "primary_role": "speech_output_transformer", "answer": "filler 1", "prompt": "filler 1", "source": "logs"},
+        {"task_type": "answer", "primary_role": "speech_output_transformer", "answer": "filler 2", "prompt": "filler 2", "source": "logs"},
+        {"task_type": "answer", "primary_role": "speech_output_transformer", "answer": "filler 3", "prompt": "filler 3", "source": "logs"},
+        {"task_type": "answer", "primary_role": "speech_output_transformer", "answer": "filler 4", "prompt": "filler 4", "source": "logs"},
+    ]
+
+    selected = orchestrator._bounded_role_rows(rows, "speech_output_transformer", split_name="train", seed=99)
+
+    assert len(selected) == 3
+    assert rows[0] in selected
+    assert selected == orchestrator._bounded_role_rows(rows, "speech_output_transformer", split_name="train", seed=99)
+
+
+def test_role_training_rows_can_disable_cap(monkeypatch):
+    monkeypatch.setattr(orchestrator, "MAX_ROLE_TRAIN_ROWS", 0)
+    rows = [
+        {"task_type": "answer", "primary_role": "speech_output_transformer", "answer": str(index), "prompt": str(index)}
+        for index in range(5)
+    ]
+
+    assert orchestrator._bounded_role_rows(rows, "speech_output_transformer", split_name="train", seed=1) == rows
 
 def test_promotion_rows_include_sealed_promotion_bank_only_for_evaluation(tmp_path):
     promotion_path = tmp_path / "artifacts" / "transformer_training" / "dataset" / "promotion.jsonl"
@@ -222,6 +320,27 @@ def test_promotion_rows_include_sealed_promotion_bank_only_for_evaluation(tmp_pa
     assert sealed["protected"] is True
     assert sealed["required_terms"] == ["sealed", "evidence"]
     assert sealed["source"] == "promotion_bank"
+
+
+def test_checked_in_promotion_bank_covers_current_and_natural_conversation():
+    path = ROOT / "benchmark_lab" / "test_banks" / "transformer_route_promotion_bank.json"
+    cases = json.loads(path.read_text(encoding="utf-8"))
+    by_id = {case.get("id"): case for case in cases}
+
+    required = {
+        "route-current-context-001": ("critic", "critic_conscience_transformer", ("today", "lookup")),
+        "route-natural-speech-001": ("speech", "speech_output_transformer", ("natural", "question")),
+        "route-long-memory-001": ("memory_recall", "memory_transformer", ("long-term memory", "repeat")),
+        "route-camera-boundary-001": ("critic", "critic_conscience_transformer", ("camera", "pretend")),
+    }
+    for case_id, (domain, role, required_terms) in required.items():
+        assert case_id in by_id
+        case = by_id[case_id]
+        assert case["domain"] == domain
+        assert case["primary_role"] == role
+        assert case["protected"] is True
+        for term in required_terms:
+            assert term in case["required_terms"]
 
 
 def test_blocked_preflight_writes_reports_without_mutating_registry(tmp_path, monkeypatch):
@@ -480,6 +599,14 @@ def _patch_promoted_run(
     )
     monkeypatch.setattr(orchestrator, "_fresh_process_reload_check", lambda project_root, route, candidates: {"reload_ok": True})
     monkeypatch.setattr(orchestrator, "_evaluate_candidate", lambda *args: {"joint": candidate_joint})
+    monkeypatch.setattr(
+        orchestrator,
+        "decide_role_promotions",
+        lambda baseline, candidate: {
+            role: PromotionDecision("PROMOTED", ("role answer gates passed",), 80.0, 88.0, None)
+            for role in roles
+        },
+    )
     monkeypatch.setattr(orchestrator, "_run_negative_controls", lambda project_root, dataset, baseline: {"passed": True})
     monkeypatch.setattr(
         orchestrator,

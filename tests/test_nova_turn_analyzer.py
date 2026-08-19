@@ -31,6 +31,21 @@ def test_calculus_request_selects_deep_reasoning_without_tools():
     assert state.complexity in {"medium", "high"}
 
 
+def test_explicit_deep_origin_of_life_question_stays_deep_with_shared_decision():
+    prompt = (
+        "Now I want you to think deep about how a human could even come to be "
+        "on a cooling planet, how different species and DNA could develop from "
+        "earlier chemistry, and why we cannot demonstrate the whole process in a laboratory."
+    )
+    decision = understand_conversation_turn(prompt)
+
+    state = analyze_turn(prompt, conversation_decision=decision)
+
+    assert state.reasoning_mode == "deep"
+    assert state.requested_depth == "thorough"
+    assert state.tools_required is False
+
+
 def test_hypothetical_deployment_debug_plan_is_not_an_authorized_action():
     state = analyze_turn(
         "API latency tripled immediately after a deployment. Give the first "

@@ -26,16 +26,16 @@ def test_worker_bootstrap_requires_explicit_engine_model_and_port() -> None:
         assert variable in content
     assert "vllm" in content
     assert "sglang" in content
-    assert "ollama" in content
+    assert "Set NOVA_WORKER_ENGINE to vllm or sglang." in content
+    assert "ollama)" not in content
     assert "127.0.0.1" in content
     assert "Unsupported NOVA_WORKER_ENGINE" in content
 
 
-def test_ollama_bootstrap_fails_closed_instead_of_launching_unscoped_serve() -> None:
+def test_worker_bootstrap_never_advertises_or_launches_unscoped_ollama() -> None:
     content = read_asset("tools/nova_vast_worker_bootstrap.sh")
     assert "exec ollama serve" not in content
-    assert "NOVA_WORKER_MODEL=$NOVA_WORKER_MODEL" in content
-    assert "Ollama cannot safely start a model-scoped OpenAI worker" in content
+    assert "ollama)" not in content
 
 
 def test_windows_installer_is_checkable_and_does_not_collect_vast_key() -> None:

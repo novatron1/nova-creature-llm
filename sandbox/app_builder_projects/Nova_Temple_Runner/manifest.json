@@ -1,0 +1,17 @@
+{
+  "name": "Nova Temple Runner",
+  "kind": "browser_game",
+  "entry": "index.html",
+  "engine": "Three.js",
+  "renderer": "three-webgl",
+  "genre": "3d_endless_runner",
+  "lanes": 3,
+  "levels": true,
+  "level_count": 5,
+  "progression": "distance_goals",
+  "autopilot": true,
+  "scoring": true,
+  "jumping": true,
+  "sliding": true,
+  "safe_sandbox": true
+}

@@ -1,0 +1,55 @@
+{
+  "ok": true,
+  "skill": "superpowers_game_check",
+  "passed": true,
+  "score": 100,
+  "project_id": "Nova_Sky_Shooter",
+  "project_name": "Nova Sky Shooter",
+  "project_url": "/sandbox/app_builder_projects/Nova_Sky_Shooter/index.html",
+  "entry_file": "index.html",
+  "checks": {
+    "entry_file": {
+      "passed": true,
+      "detail": "index.html is present"
+    },
+    "metadata": {
+      "passed": true,
+      "detail": "title and mobile viewport are present"
+    },
+    "render_surface": {
+      "passed": true,
+      "detail": "a canvas or game render surface is present"
+    },
+    "webgl": {
+      "passed": true,
+      "detail": "WebGL or Three.js runtime is referenced"
+    },
+    "playable_api": {
+      "passed": true,
+      "detail": "the game exposes a Nova runtime state API"
+    },
+    "input": {
+      "passed": true,
+      "detail": "keyboard, pointer, or touch input is wired"
+    },
+    "runtime_loop": {
+      "passed": true,
+      "detail": "a render or update loop is wired"
+    },
+    "responsive": {
+      "passed": true,
+      "detail": "responsive layout signals are present"
+    },
+    "error_guards": {
+      "passed": true,
+      "detail": "no obvious fatal error markers are embedded"
+    },
+    "no_placeholders": {
+      "passed": true,
+      "detail": "no placeholder or TODO content is embedded"
+    }
+  },
+  "blockers": [],
+  "fixes_applied": [],
+  "report_file": "game_supercheck_report.json"
+}

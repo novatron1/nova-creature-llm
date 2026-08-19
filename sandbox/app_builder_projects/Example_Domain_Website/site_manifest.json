@@ -1,0 +1,73 @@
+{
+  "project_name": "Example Domain Website",
+  "brand_name": "Example Domain",
+  "page_count": 6,
+  "pages": [
+    {
+      "file": "index.html",
+      "nav": "Home",
+      "title": "Example Domain",
+      "heading": "Learn example domain with a complete path.",
+      "intro": "Example Domain turns the topic into a structured website with clear lessons, practical examples, and a quality-checked route through the material.",
+      "focus": "Introduce the subject, the promise, and the full path through the site.",
+      "stat_label": "Site plan",
+      "stat_value": "6 pages",
+      "stat_note": "A complete starter structure instead of a single flat page."
+    },
+    {
+      "file": "foundations.html",
+      "nav": "Foundations",
+      "title": "Example Domain Foundations",
+      "heading": "Build the core ideas first.",
+      "intro": "Foundations explains the essential vocabulary, beginner mistakes, and first principles behind example domain.",
+      "focus": "Give visitors the base layer they need before advanced sections.",
+      "stat_label": "Start here",
+      "stat_value": "Basics",
+      "stat_note": "Strong foundations make the rest of the site easier to trust."
+    },
+    {
+      "file": "strategy.html",
+      "nav": "Strategy",
+      "title": "Example Domain Strategy",
+      "heading": "Turn scattered tips into a usable system.",
+      "intro": "This page organizes the subject into repeatable steps, decision points, and practical checkpoints.",
+      "focus": "Make the learning experience feel directed and professional.",
+      "stat_label": "Method",
+      "stat_value": "Step by step",
+      "stat_note": "A real website needs a route, not loose notes."
+    },
+    {
+      "file": "toolkit.html",
+      "nav": "Toolkit",
+      "title": "Example Domain Toolkit",
+      "heading": "Use the right tools for the right job.",
+      "intro": "The toolkit page explains what to use, when to use it, and what to avoid overcomplicating.",
+      "focus": "Help visitors choose tools without making the site feel like a cheap listicle.",
+      "stat_label": "Tool rule",
+      "stat_value": "Purpose",
+      "stat_note": "Tools matter most when the job is clear."
+    },
+    {
+      "file": "workflow.html",
+      "nav": "Workflow",
+      "title": "Example Domain Workflow",
+      "heading": "Practice with a repeatable workflow.",
+      "intro": "Workflow turns the lessons into a practical sequence that can be repeated, measured, and improved.",
+      "focus": "Give users a way to act on what they learn.",
+      "stat_label": "Practice",
+      "stat_value": "Repeat",
+      "stat_note": "A strong workflow makes progress visible."
+    },
+    {
+      "file": "resources.html",
+      "nav": "Resources",
+      "title": "Example Domain Resources",
+      "heading": "Keep learning with checklists and next steps.",
+      "intro": "Resources collects review prompts, checklists, examples, and a practical next-step plan.",
+      "focus": "Make the site useful after the first visit.",
+      "stat_label": "Next step",
+      "stat_value": "Apply",
+      "stat_note": "The best learning sites help people do the work."
+    }
+  ]
+}

@@ -67,6 +67,7 @@ Rules:
 - Do NOT claim the user has information that is not in memory.
 - If the user asks about saved personal information and memory context is "None", say it is not saved yet.
 - For general explanations, coding help, planning, and creative tasks, answer the user's general question normally.
+- If you are not highly confident about an exact factual value, say "I don't know" or "I'm not sure"; never guess a number. Nova can consult another local model.
 - Do NOT use phrases like "based on memory" or "from my saved knowledge".
 - Answer in second person (you/your) when answering about the user's saved information.
 - Be concise and natural.
@@ -88,6 +89,7 @@ Web Search Results:
         "system_prompt": system_prompt,
         "memory_context": memory_context,
         "dict_context": dict_context,
+        "web_context": web_context,
         "user_question": user_message,
         "route": route,
         "style": style,

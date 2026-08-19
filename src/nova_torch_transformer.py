@@ -179,7 +179,15 @@ def save_checkpoint(
 
 
 def load_checkpoint(path: str | Path) -> tuple[NovaCausalLM, dict[str, Any]]:
-    payload = torch.load(Path(path), map_location="cpu", weights_only=True)
+    try:
+        payload = torch.load(Path(path), map_location="cpu", weights_only=True)
+    except ModuleNotFoundError as exc:
+        if exc.name != "torch.utils.serialization":
+            raise
+        # Some hosted notebooks ship Torch builds whose safe-unpickler is missing
+        # this compatibility module even for trusted Nova checkpoints. Fall back
+        # only for that narrow Torch packaging mismatch.
+        payload = torch.load(Path(path), map_location="cpu", weights_only=False)
     payload = _validate_checkpoint_payload(payload)
     try:
         config = ModelConfig(**payload["config"])

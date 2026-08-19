@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "loads index.html",
+    "renders with Three.js WebGLRenderer",
+    "exposes window.NovaSkyShooter.getState()",
+    "autopilot flies and fires without keyboard input",
+    "enemy waves spawn and move through the playfield",
+    "boss waves create a higher-health enemy",
+    "bullets can destroy enemies and increase score",
+    "powerups can increase fire rate and shield power",
+    "DOM HUD stays synchronized with score, wave, health, and power",
+    "keyboard and touch controls are available"
+  ]
+}

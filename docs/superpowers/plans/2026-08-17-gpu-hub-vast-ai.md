@@ -11,11 +11,11 @@
 ## Global Constraints
 
 - Compute modes are exactly `auto`, `cpu`, `local_gpu`, and `vast_gpu`.
-- Auto may fall back to CPU; the other modes must report unavailability instead of silently changing mode.
+- Auto may use a healthy verified local or Vast.ai endpoint and otherwise falls back to CPU; the other modes must report unavailability instead of silently changing mode.
 - Vast API keys are read from `NOVA_VAST_API_KEY` only, never returned to the browser or written to runtime state.
 - Paid Vast start/create/destroy operations require an explicit confirmation field and are never triggered by health checks.
 - No public Ollama/vLLM exposure or arbitrary shell/desktop control is added.
-- All network calls have bounded timeouts and redact credentials from errors/logs.
+- All network calls have bounded timeouts, reject redirects, revalidate private/Tailscale/exact-allowlist worker hosts, and redact credentials from errors/logs. Vast control calls use only `https://console.vast.ai/api/v0`.
 - Existing chat/provider/raw-memory behavior remains unchanged when the hub is disabled or unused.
 - Runtime state is ignored, atomically written, and safe to reset.
 
@@ -74,7 +74,7 @@
 - Modify: `src/nova_model_provider.py`
 
 **Interfaces:**
-- `GET /api/gpu-hub/status` returns `{ok, enabled, mode, effective_backend, local, vast, selected_instance, endpoint}` with secrets removed.
+- `GET /api/gpu-hub/status` returns `{ok, enabled, mode, effective_mode, effective_backend, available, reason, verified, verified_backend, verified_at, verification_expired, local, vast, selected_instance, endpoint}` with secrets removed.
 - `POST /api/gpu-hub/mode` accepts `{mode}`.
 - `POST /api/gpu-hub/vast/test` validates the configured key without mutating state.
 - `GET /api/gpu-hub/vast/instances` lists instances.
@@ -127,8 +127,8 @@
 
 **Interfaces:**
 - New top-level tab `GPU Hub` opens `gpu-hub-panel`.
-- UI elements use stable ids: `gpuHubMode`, `gpuHubLocalState`, `gpuHubVastState`, `gpuHubInstances`, `gpuHubEndpoint`, `gpuHubMessage`.
-- Browser functions: `loadGpuHubStatus()`, `setGpuHubMode(mode)`, `scanGpuHubLocal()`, `testGpuHubVast()`, `loadGpuHubInstances()`, `setGpuHubVastState(...)`, and `destroyGpuHubInstance(...)`.
+- UI elements use stable ids: `gpuHubMode`, `gpuHubLocalState`, `gpuHubVastState`, `gpuHubInstances`, `gpuHubEndpoint`, `gpuHubWorkerEndpoint`, `gpuHubWorkerModel`, `gpuHubWorkerProvider`, `gpuHubWorkerVerifyBtn`, and `gpuHubMessage`.
+- Browser functions: `loadGpuHubStatus()`, `setGpuHubMode(mode)`, `scanGpuHubLocal()`, `testGpuHubVast()`, `verifyGpuHubWorker()`, `loadGpuHubInstances()`, `setGpuHubVastState(...)`, and `destroyGpuHubInstance(...)`.
 
 - [ ] **Step 1: Write failing browser-contract tests**
 
@@ -142,7 +142,7 @@
 
 - [ ] **Step 3: Add the responsive panel and client code**
 
-  Add one horizontally safe panel that works at phone width, loads status when opened, disables lifecycle buttons while requests are in flight, renders redacted errors, and requires `window.confirm` for start/stop/destroy. Keep Vast keys out of HTML, localStorage, and DOM values.
+  Add one horizontally safe panel that works at phone width, loads status when opened, accepts endpoint/model/provider verification metadata, disables lifecycle buttons while requests are in flight, renders redacted errors, and requires `window.confirm` for start/stop/destroy. Keep Vast and worker keys out of HTML, localStorage, and DOM values.
 
 - [ ] **Step 4: Run UI contracts and a served-page smoke test**
 
@@ -168,7 +168,7 @@
 - Modify: `README_LAPTOP_INSTALL.md`
 
 **Interfaces:**
-- Bootstrap accepts `NOVA_WORKER_MODEL`, `NOVA_WORKER_PORT`, and `NOVA_WORKER_ENGINE` (`vllm`, `sglang`, or `ollama`) and starts only the selected OpenAI-compatible worker.
+- Bootstrap accepts `NOVA_WORKER_MODEL`, `NOVA_WORKER_PORT`, and `NOVA_WORKER_ENGINE` (`vllm` or `sglang`) and starts only the selected OpenAI-compatible worker. Ollama is not accepted because its server cannot be safely scoped to only `NOVA_WORKER_MODEL`.
 - PowerShell installer checks Python, creates `data`, runs the core smoke check, and prints the safe `NOVA_VAST_API_KEY` setup instruction without collecting or echoing the key.
 - Batch launcher invokes the PowerShell installer and leaves existing server startup unchanged.
 
@@ -231,4 +231,3 @@
 - [ ] **Step 5: Write evidence and hand off**
 
   Store redacted results in the report and progress ledger. State clearly whether a real Vast instance/model was live-tested or whether the live check stopped at missing credentials/no paid instance. Do not claim GPU inference passed unless the remote model health and a bounded test response both succeed.
-

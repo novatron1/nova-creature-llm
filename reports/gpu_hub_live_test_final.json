@@ -1,0 +1,37 @@
+{
+  "checked_at_utc": "2026-08-17T23:53:35.6768559Z",
+  "scope": "GPU Hub final local live verification; no paid Vast.ai operation",
+  "server": {
+    "port": 3000,
+    "listener_pid": 47044,
+    "health_http_status": 200,
+    "gpu_hub_status_http_status": 200,
+    "served_page_http_status": 200,
+    "served_gpu_hub_tab": true,
+    "served_worker_verify_controls": true,
+    "served_remote_model_test_route": true
+  },
+  "gpu_hub_status": {
+    "enabled": true,
+    "mode": "cpu",
+    "effective_mode": "cpu",
+    "available": true,
+    "verified": false,
+    "verification_expired": false,
+    "local_usable": false,
+    "local_reason": "nvidia-smi unavailable: FileNotFoundError.",
+    "vast_available": false,
+    "vast_reason": "NOVA_VAST_API_KEY is not configured and no model endpoint is verified."
+  },
+  "paid_remote_operation": {
+    "api_key_present": false,
+    "performed": false,
+    "real_instance_or_remote_model_tested": false
+  },
+  "verification": {
+    "focused_python": "83 passed",
+    "gpu_hub_ui_and_raw_memory_ui": "13 passed",
+    "enhanced_server": "378 passed",
+    "installer_check_only": "passed"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "batch_size": 16,
+  "best_metrics": {
+    "domain_accuracy": 0.9471228615863142,
+    "macro_f1": 0.6348634185619126,
+    "macro_f1_active": 0.6348634185619126,
+    "macro_f1_all_roles": 0.6348634185619126,
+    "per_role_f1": {
+      "critic_conscience_transformer": 0.6666666666666666,
+      "dream_simulation_transformer": 0.5,
+      "left_hemisphere": 0.7735849056603774,
+      "memory_transformer": 0.625,
+      "planner_transformer": 0.42105263157894735,
+      "right_hemisphere": 0.48,
+      "speech_output_transformer": 0.9777397260273972
+    },
+    "per_role_support": {
+      "critic_conscience_transformer": 16,
+      "dream_simulation_transformer": 4,
+      "left_hemisphere": 50,
+      "memory_transformer": 27,
+      "planner_transformer": 10,
+      "right_hemisphere": 16,
+      "speech_output_transformer": 1163
+    },
+    "primary_role_accuracy": 0.9486780715396579,
+    "support": 1286
+  },
+  "block_size": 128,
+  "class_balancing": "inverse_sqrt_frequency",
+  "class_maps": {
+    "domain_to_id": {
+      "coding": 0,
+      "creative": 5,
+      "critic": 8,
+      "dream": 10,
+      "general": 11,
+      "math": 1,
+      "memory_recall": 6,
+      "philosophy": 3,
+      "planning": 7,
+      "psychology": 4,
+      "science": 2,
+      "speech": 9
+    },
+    "id_to_domain": [
+      "coding",
+      "math",
+      "science",
+      "philosophy",
+      "psychology",
+      "creative",
+      "memory_recall",
+      "planning",
+      "critic",
+      "speech",
+      "dream",
+      "general"
+    ],
+    "id_to_role": [
+      "left_hemisphere",
+      "right_hemisphere",
+      "memory_transformer",
+      "planner_transformer",
+      "critic_conscience_transformer",
+      "dream_simulation_transformer",
+      "speech_output_transformer"
+    ],
+    "role_to_id": {
+      "critic_conscience_transformer": 4,
+      "dream_simulation_transformer": 5,
+      "left_hemisphere": 0,
+      "memory_transformer": 2,
+      "planner_transformer": 3,
+      "right_hemisphere": 1,
+      "speech_output_transformer": 6
+    }
+  },
+  "domain_class_weights": {
+    "coding": 7.158401966094971,
+    "creative": 9.37905502319336,
+    "critic": 9.153019905090332,
+    "dream": 15.488999366760254,
+    "general": 1.0,
+    "math": 6.096639633178711,
+    "memory_recall": 7.089899063110352,
+    "philosophy": 29.659175872802734,
+    "planning": 9.539392471313477,
+    "psychology": 22.97389793395996,
+    "science": 11.633285522460938,
+    "speech": 16.667016983032227
+  },
+  "epochs": 20,
+  "hidden_size": 64,
+  "initialization": "warm_start",
+  "initialized_from_model_hash": "f6f8baef939b0cadb2379ea73e13d930154bfe1cae0492701de4aabb47ee38da",
+  "learning_rate": 0.001,
+  "model_hash": "4e2ffe79796d70e4a05d2dad1d4f8ba1f434665e0ddaf2d56c5b233176fbd515",
+  "role_class_weights": {
+    "critic_conscience_transformer": 9.168614387512207,
+    "dream_simulation_transformer": 15.515388488769531,
+    "left_hemisphere": 4.649336338043213,
+    "memory_transformer": 5.73536491394043,
+    "planner_transformer": 9.555644989013672,
+    "right_hemisphere": 9.395033836364746,
+    "speech_output_transformer": 1.0
+  },
+  "seed": 20260622,
+  "train_count": 5905,
+  "validation_count": 1286,
+  "validation_source": "holdout"
+}

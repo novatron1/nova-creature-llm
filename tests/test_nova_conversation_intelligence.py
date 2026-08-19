@@ -148,6 +148,25 @@ def test_existing_decision_is_reused_by_downstream_consumers():
     assert reused is decision
 
 
+def test_explicit_deep_how_question_selects_stable_deep_reasoning():
+    decision = understand_conversation_turn(
+        "Think deep about how humans, species, and DNA could arise from earlier chemistry."
+    )
+
+    assert decision.intent_family == "stable_reasoning"
+    assert decision.intent_subtype == "analysis"
+    assert decision.reasoning_mode == "deep"
+
+
+def test_conceptual_philosophy_why_question_selects_deep_reasoning():
+    decision = understand_conversation_turn(
+        "Why is philosophy so hard to grasp conceptually and explain to other people?"
+    )
+
+    assert decision.intent_family == "stable_reasoning"
+    assert decision.reasoning_mode == "deep"
+
+
 def test_shared_decision_drives_turn_analyzer_planner_and_grounding():
     # "today" used to make the grounding layer mistake this check-in for a
     # volatile fact even though the shared decision identifies its meaning.

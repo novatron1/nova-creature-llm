@@ -9,7 +9,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from nova_byte_tokenizer import NovaByteTokenizer
-from nova_role_trainer import build_supervised_sequence, train_role_candidate
+from nova_role_trainer import (
+    TARGETED_CURRICULUM_TRAIN_WEIGHT,
+    build_supervised_sequence,
+    train_role_candidate,
+    _prepare_examples,
+)
 from nova_torch_transformer import ModelConfig, NovaCausalLM, load_checkpoint, save_checkpoint
 
 
@@ -118,6 +123,24 @@ def test_all_route_split_reports_no_answer_examples(tmp_path):
             seed=5,
             epochs=1,
         )
+
+
+def test_targeted_curriculum_rows_are_weighted_only_for_training_split():
+    tokenizer = NovaByteTokenizer()
+    rows = [
+        {"prompt": "Normal prompt?", "answer": "Normal answer."},
+        {
+            "prompt": "How should Nova answer a claim?",
+            "answer": "Use evidence before saying it is supported.",
+            "source": "targeted_transformer_answer_curriculum",
+        },
+    ]
+
+    train_examples = _prepare_examples(tokenizer, rows, 96, "train")
+    validation_examples = _prepare_examples(tokenizer, rows, 96, "validation")
+
+    assert len(train_examples) == 1 + TARGETED_CURRICULUM_TRAIN_WEIGHT
+    assert len(validation_examples) == 2
 
 
 def test_invalid_role_and_missing_answer_row_are_rejected(tmp_path):

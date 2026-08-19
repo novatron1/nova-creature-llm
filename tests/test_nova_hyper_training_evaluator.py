@@ -91,6 +91,16 @@ def test_hash_change_cannot_override_answer_regression():
     assert any("answer" in reason.lower() for reason in decision.reasons)
 
 
+def test_route_gain_can_promote_when_answers_are_preserved():
+    decision = decide_promotion(
+        baseline=metrics(70.0, 70.0, 70.0),
+        candidate=metrics(74.0, 72.0, 70.0),
+        previous_winner=None,
+    )
+
+    assert decision.verdict == "PROMOTED"
+
+
 def test_repetition_blocks_promotion():
     decision = decide_promotion(
         baseline=metrics(80.0, 80.0, 80.0),

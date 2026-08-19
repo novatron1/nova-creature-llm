@@ -31,7 +31,7 @@ DomainName = Literal[
     "general",
 ]
 PromotionVerdict = Literal["PROMOTED", "REJECTED", "BLOCKED"]
-FinishReason = Literal["eos", "length", "error"]
+FinishReason = Literal["eos", "length", "error", "guarded_fallback"]
 RouteSource = Literal["learned_route_model", "baseline_fallback"]
 
 ROLE_NAMES: Final[tuple[RoleName, ...]] = (
@@ -57,7 +57,7 @@ DOMAIN_NAMES: Final[tuple[DomainName, ...]] = (
     "dream",
     "general",
 )
-FINISH_REASON_NAMES: Final[tuple[FinishReason, ...]] = ("eos", "length", "error")
+FINISH_REASON_NAMES: Final[tuple[FinishReason, ...]] = ("eos", "length", "error", "guarded_fallback")
 PROMOTION_VERDICTS: Final[tuple[PromotionVerdict, ...]] = ("PROMOTED", "REJECTED", "BLOCKED")
 ROUTE_SOURCES: Final[tuple[RouteSource, ...]] = ("learned_route_model", "baseline_fallback")
 

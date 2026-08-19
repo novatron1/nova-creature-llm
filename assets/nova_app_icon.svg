@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">Nova Creature</title><desc id="desc">A glowing purple Nova robot face and lightning bolt.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#282653"/><stop offset="1" stop-color="#090914"/></linearGradient><linearGradient id="bolt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c8b8ff"/><stop offset=".55" stop-color="#826cff"/><stop offset="1" stop-color="#48dcff"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="512" height="512" rx="116" fill="url(#bg)"/>
+<circle cx="256" cy="270" r="154" fill="#111126" stroke="#7368d8" stroke-width="14"/>
+<path d="M171 247c24-37 54-55 85-55s61 18 85 55v74c-23 38-52 57-85 57s-62-19-85-57z" fill="#1e1d3d" stroke="#504d94" stroke-width="8"/>
+<circle cx="215" cy="279" r="20" fill="#8cf6ff" filter="url(#glow)"/><circle cx="297" cy="279" r="20" fill="#8cf6ff" filter="url(#glow)"/>
+<path d="M219 333c24 15 50 15 74 0" fill="none" stroke="#bcb3ff" stroke-width="12" stroke-linecap="round"/>
+<path d="M282 61L169 229h77l-25 136 122-184h-81z" fill="url(#bolt)" stroke="#efeaff" stroke-width="7" stroke-linejoin="round" filter="url(#glow)"/>
+</svg>

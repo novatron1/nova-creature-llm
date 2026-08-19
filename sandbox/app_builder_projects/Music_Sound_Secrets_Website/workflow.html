@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:," />
+  <title>Music Sound Secrets Workflow</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --paper: #f7faf8;
+      --ink: #111521;
+      --muted: #5c6678;
+      --line: rgba(17,21,33,.14);
+      --panel: rgba(255,255,255,.72);
+      --night: #111521;
+      --green: #1f8f72;
+      --blue: #2167c9;
+      --rose: #c44175;
+      --gold: #a86f12;
+    }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        linear-gradient(135deg, rgba(33,103,201,.10), transparent 34%),
+        linear-gradient(315deg, rgba(31,143,114,.14), transparent 28%),
+        var(--paper);
+    }
+    a { color: inherit; }
+    .shell {
+      width: min(calc(100vw - 32px), 1180px);
+      margin: 0 auto;
+      padding: 26px 0 56px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 42px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--night);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(17,21,33,.18);
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 14px;
+    }
+    nav a {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-decoration: none;
+      background: rgba(255,255,255,.54);
+    }
+    nav a[href="workflow.html"] {
+      color: #fff;
+      background: var(--night);
+      border-color: var(--night);
+    }
+    .hero {
+      min-height: min(640px, calc(100vh - 120px));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, .72fr);
+      align-items: center;
+      gap: clamp(28px, 6vw, 74px);
+    }
+    h1 {
+      margin: 0;
+      max-width: 820px;
+      font-size: clamp(42px, 7.2vw, 86px);
+      line-height: .95;
+      letter-spacing: 0;
+    }
+    .lead {
+      margin: 24px 0 0;
+      max-width: 660px;
+      color: #30394b;
+      font-size: clamp(17px, 2.1vw, 22px);
+      line-height: 1.52;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 24px 80px rgba(17,21,33,.12);
+      padding: clamp(22px, 4vw, 38px);
+      backdrop-filter: blur(18px);
+    }
+    .metric {
+      display: grid;
+      gap: 8px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+    }
+    .metric span { color: var(--muted); line-height: 1.45; }
+    .metric b { font-size: clamp(38px, 7vw, 76px); line-height: .9; }
+    .visual-canvas {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      margin: 0 0 24px;
+      border: 1px solid rgba(17,21,33,.16);
+      border-radius: 8px;
+      background: var(--night);
+    }
+    .route {
+      display: grid;
+      gap: 10px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .route a {
+      display: grid;
+      gap: 4px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--line);
+      text-decoration: none;
+    }
+    .route span { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .band {
+      margin-top: 44px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .band article {
+      min-height: 160px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.55);
+      padding: 18px;
+    }
+    .band strong { display: block; margin-bottom: 10px; }
+    .band p { margin: 0; color: var(--muted); line-height: 1.48; }
+    footer {
+      margin-top: 42px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 800px) {
+      .shell { width: min(calc(100vw - 24px), 1180px); padding-top: 18px; }
+      header { align-items: flex-start; flex-direction: column; padding-bottom: 26px; }
+      nav { justify-content: flex-start; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .band { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell" aria-label="Music Sound Secrets Workflow page">
+    <header>
+      <a class="brand" href="index.html" aria-label="Music Sound Secrets home"><span class="mark">N</span><span>Music Sound Secrets</span></a>
+      <nav aria-label="Site map navigation">
+        <a href="index.html">Home</a>
+<a href="foundations.html">Foundations</a>
+<a href="sound-quality.html">Sound Quality</a>
+<a href="mixing.html">Mixing</a>
+<a href="workflow.html">Workflow</a>
+<a href="resources.html">Resources</a>
+      </nav>
+    </header>
+    <section class="hero">
+      <div>
+        <h1>Finish more songs by making decisions in the right order.</h1>
+        <p class="lead">Use a practical workflow: organize the session, rough-balance fast, solve the biggest problems, automate emotion, and print review versions.</p>
+      </div>
+      <aside class="panel" aria-label="Page strategy">
+        <canvas id="siteVisual" class="visual-canvas" width="960" height="540" role="img" aria-label="Music Sound Secrets visual preview"></canvas>
+        <div class="metric"><strong>Session mode</strong><b>Repeatable</b><span>Templates, naming, versioning, and review notes keep creative energy from leaking away.</span></div>
+        <ul class="route">
+          <li><a href="index.html"><strong>Home</strong><span>Music Sound Secrets</span></a></li>
+<li><a href="foundations.html"><strong>Foundations</strong><span>Music Sound Secrets Foundations</span></a></li>
+<li><a href="sound-quality.html"><strong>Sound Quality</strong><span>Music Sound Secrets Sound Quality</span></a></li>
+<li><a href="mixing.html"><strong>Mixing</strong><span>Music Sound Secrets Mixing</span></a></li>
+<li><a href="workflow.html"><strong>Workflow</strong><span>Music Sound Secrets Workflow</span></a></li>
+<li><a href="resources.html"><strong>Resources</strong><span>Music Sound Secrets Resources</span></a></li>
+        </ul>
+      </aside>
+    </section>
+    <section class="band" aria-label="Page quality notes">
+      <article><strong>Purpose</strong><p>Give music makers a calm, repeatable process for moving from idea to finished mix without getting stuck.</p></article>
+      <article><strong>Quality gate</strong><p>Responsive layout, semantic structure, favicon, titles, and a state hook are present on this page.</p></article>
+      <article><strong>Connected site</strong><p>Every planned page links to every other planned page so the generated website is complete.</p></article>
+    </section>
+    <footer><span>Music Sound Secrets Website built by the Website Builder Agent.</span><span>6 pages generated and audited.</span></footer>
+  </main>
+  <script>
+    function drawNovaWebsiteVisual(){
+      const canvas = document.getElementById("siteVisual");
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      const pageName = "Workflow";
+      const brandName = "Music Sound Secrets";
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, "#101827");
+      gradient.addColorStop(.52, "#123b46");
+      gradient.addColorStop(1, "#0f1724");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = "rgba(255,255,255,.16)";
+      ctx.lineWidth = 2;
+      for (let x = 72; x < width; x += 72) {
+        ctx.beginPath();
+        ctx.moveTo(x, 54);
+        ctx.lineTo(x, height - 54);
+        ctx.stroke();
+      }
+      const colors = ["#6ee7b7", "#60a5fa", "#f472b6", "#fbbf24", "#a78bfa", "#22d3ee"];
+      for (let i = 0; i < 14; i += 1) {
+        const barWidth = 28;
+        const x = 70 + i * 58;
+        const barHeight = 88 + ((i * 47 + pageName.length * 19) % 250);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.globalAlpha = .72;
+        ctx.fillRect(x, height - 72 - barHeight, barWidth, barHeight);
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#f8fafc";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      for (let x = 54; x <= width - 54; x += 10) {
+        const y = height * .48 + Math.sin((x + pageName.length * 32) / 36) * 42 + Math.sin(x / 13) * 15;
+        if (x === 54) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.font = "700 34px system-ui, sans-serif";
+      ctx.fillText(pageName, 56, 68);
+      ctx.font = "500 22px system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.fillText(brandName, 56, 104);
+    }
+    drawNovaWebsiteVisual();
+    window.NovaWebsite = {
+      getState(){
+        return {
+          project: "Music Sound Secrets Website",
+          page: "Workflow",
+          pageCount: 6,
+          pages: ["index.html", "foundations.html", "sound-quality.html", "mixing.html", "workflow.html", "resources.html"],
+          ready: true
+        };
+      }
+    };
+  </script>
+</body>
+</html>

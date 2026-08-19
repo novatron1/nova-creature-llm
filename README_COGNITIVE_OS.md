@@ -227,3 +227,15 @@ Run with:
 python3 -c "exec(open('tests/test_ltm.py').read())"
 ```
 
+# Nova Compatibility Gateway
+
+Nova now exposes a provider-independent compatibility layer around the existing Cognitive OS. Start with:
+
+- [Gateway architecture](docs/NOVA_GATEWAY_ARCHITECTURE.md)
+- [Connection and phone setup](docs/NOVA_GATEWAY_CONNECTION_GUIDE.md)
+- [Provider, tool, model, memory, engine, and MCP extension guide](docs/NOVA_GATEWAY_EXTENSION_GUIDE.md)
+- [Security, cost control, backup, and migration](docs/NOVA_GATEWAY_SECURITY_COST_BACKUP.md)
+- [Generated API compatibility report](reports/NOVA_API_COMPATIBILITY.md)
+- [Secret-free configuration example](config/nova_gateway.example.yaml)
+
+The stable rule is: Nova is the identity, memory, cognitive router, permissions, and tool layer; the LLM underneath Nova is replaceable.

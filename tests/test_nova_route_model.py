@@ -89,6 +89,38 @@ def test_metrics_expose_active_and_all_role_macro_f1_plus_support():
     assert metrics["macro_f1_all_roles"] <= metrics["macro_f1_active"]
 
 
+def test_training_metadata_records_class_balancing_for_imbalanced_roles():
+    imbalanced = (
+        [RouteExample(f"explain this clearly {i}", "speech", "speech_output_transformer") for i in range(40)]
+        + [RouteExample("debug a Python failure", "coding", "left_hemisphere")]
+        + [RouteExample("make a careful plan", "planning", "planner_transformer")]
+    )
+
+    _, metadata = train_route_model(imbalanced, validation_examples=examples(), seed=31, epochs=1)
+
+    role_weights = metadata["role_class_weights"]
+    domain_weights = metadata["domain_class_weights"]
+    assert role_weights["left_hemisphere"] > role_weights["speech_output_transformer"]
+    assert role_weights["planner_transformer"] > role_weights["speech_output_transformer"]
+    assert domain_weights["coding"] > domain_weights["speech"]
+    assert metadata["class_balancing"] == "inverse_sqrt_frequency"
+
+
+def test_training_can_warm_start_from_existing_route_model():
+    initial_model, initial_metadata = train_route_model(examples() * 3, seed=41, epochs=3)
+
+    _, metadata = train_route_model(
+        examples() * 3,
+        validation_examples=examples(),
+        seed=42,
+        epochs=1,
+        initial_model=initial_model,
+    )
+
+    assert metadata["initialization"] == "warm_start"
+    assert metadata["initialized_from_model_hash"] == initial_metadata["model_hash"]
+
+
 def test_save_load_round_trip_and_predict_route_are_valid_and_json_safe(tmp_path):
     output_path = tmp_path / "route_model.pt"
     model, metadata = train_route_model(
