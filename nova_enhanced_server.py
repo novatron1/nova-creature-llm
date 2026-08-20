@@ -5158,7 +5158,6 @@ def _is_deep_conversation_request(text, last_user=None, last_response=None):
         "bang",
         "time",
         "reality",
-        "real",
         "truth",
         "meaning",
         "life",

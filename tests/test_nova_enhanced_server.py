@@ -3396,6 +3396,14 @@ def test_deep_conversation_classifier_does_not_inherit_context_for_new_fact(monk
     assert server._is_deep_conversation_request("How can it be infinite if it started from one point") is True
 
 
+def test_deep_conversation_classifier_leaves_relationship_reality_questions_for_llm():
+    assert server._is_deep_conversation_request(
+        "How can I tell if love is real",
+        last_user="What is love",
+        last_response="Love is a complex set of emotions associated with strong affection.",
+    ) is False
+
+
 def test_brain_route_think_about_it_uses_previous_context_before_general_chat(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
