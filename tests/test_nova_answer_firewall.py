@@ -7,7 +7,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from nova_answer_firewall import bypass_trace, evaluate_answer, recovery_response  # noqa: E402
+from nova_answer_firewall import (  # noqa: E402
+    bypass_trace,
+    contains_generic_fallback,
+    evaluate_answer,
+    recovery_response,
+)
 from nova_conversation_context import (
     bounded_conversation_history,
     conversation_focus,
@@ -40,6 +45,64 @@ def test_bounded_history_uses_latest_complete_exchange_and_drops_current_user():
         "How do I make ice cream?",
         "Mix, churn, and freeze the base.",
     )
+
+
+def test_bounded_history_ignores_firewall_recovery_as_assistant_context():
+    recovery = (
+        "I caught an off-topic draft before sending it. The active Nova route did not "
+        "produce a reliable answer, so I stopped it instead of pretending it was correct."
+    )
+    history = bounded_conversation_history(
+        {
+            "conversation_history": [
+                {"role": "user", "content": "I like growing herbs."},
+                {"role": "assistant", "content": "Herbs are a nice place to start."},
+                {"role": "user", "content": "I have been thinking about starting a garden."},
+                {"role": "assistant", "content": recovery},
+                {"role": "user", "content": "Can you explain that in simpler terms?"},
+            ]
+        },
+        "Can you explain that in simpler terms?",
+    )
+
+    assert history == [
+        {"role": "user", "content": "I like growing herbs."},
+        {"role": "assistant", "content": "Herbs are a nice place to start."},
+        {"role": "user", "content": "I have been thinking about starting a garden."},
+    ]
+    assert previous_exchange(history) == (
+        "I like growing herbs.",
+        "Herbs are a nice place to start.",
+    )
+
+
+def test_context_focus_never_returns_provider_error_as_previous_answer():
+    history = [
+        {"role": "user", "content": "Tell me about compost."},
+        {"role": "assistant", "content": "No module named 'torch'"},
+    ]
+
+    assert conversation_focus(history).available is False
+
+
+def test_recovery_does_not_wrap_another_recovery_marker():
+    decision = evaluate_answer(
+        "Can you explain that in simpler terms?",
+        "I caught an off-topic draft before sending it.",
+    )
+    nested = (
+        "What I mean in the context of our conversation is: "
+        "I caught an off-topic draft before sending it."
+    )
+
+    response = recovery_response(
+        "Can you explain that in simpler terms?",
+        decision,
+        contextual_fallback=nested,
+    )
+
+    assert not contains_generic_fallback(response, include_recovery=True)
+    assert "failed draft out of your conversation context" in response
 
 
 def test_conversation_recall_uses_latest_explicit_client_fact_without_a_model():

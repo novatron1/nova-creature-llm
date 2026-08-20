@@ -37,6 +37,33 @@ def _canonical(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value).strip()
 
 
+_NON_CONTEXT_ASSISTANT_MARKERS = (
+    "i caught an off topic draft",
+    "the active nova route did not produce a reliable answer",
+    "i stopped an unverified current fact answer",
+    "no module named",
+    "could not run",
+    "did not return a final answer yet",
+    "provider error",
+    "connection refused",
+)
+
+
+def is_contextworthy_assistant_text(text: str) -> bool:
+    """Return whether an assistant message is safe to use as conversation context.
+
+    Recovery/provider diagnostics describe routing state, not Nova's answer. They
+    must never become the prior answer for a later follow-up. This predicate is
+    deliberately local and marker-based so context normalization stays free of
+    firewall/provider imports and remains deterministic.
+    """
+
+    canonical = _canonical(text)
+    if not canonical:
+        return False
+    return not any(marker in canonical for marker in _NON_CONTEXT_ASSISTANT_MARKERS)
+
+
 def bounded_conversation_history(
     context: Mapping[str, Any] | None,
     current_text: str = "",
@@ -65,6 +92,8 @@ def bounded_conversation_history(
         clean = content.strip()
         if not clean:
             continue
+        if role == "assistant" and not is_contextworthy_assistant_text(clean):
+            continue
         history.append({"role": role, "content": clean[:maximum_content_length]})
 
     current = str(current_text or "").strip()
@@ -85,6 +114,8 @@ def previous_exchange(history: Sequence[Mapping[str, str]]) -> tuple[str, str]:
         return "", ""
 
     assistant = str(history[assistant_index].get("content") or "").strip()
+    if not is_contextworthy_assistant_text(assistant):
+        return "", ""
     user = ""
     for index in range(assistant_index - 1, -1, -1):
         if str(history[index].get("role") or "").lower() == "user":
@@ -149,7 +180,7 @@ def conversation_focus(history: Sequence[Mapping[str, str]]) -> ConversationFocu
             continue
         if role == "user":
             pending_user = content
-        elif role == "assistant" and pending_user:
+        elif role == "assistant" and pending_user and is_contextworthy_assistant_text(content):
             exchanges.append((pending_user, content))
             pending_user = ""
     if not exchanges:

@@ -11571,3 +11571,75 @@ def test_new_flags_honor_environment_overrides(monkeypatch):
     assert config["response_repair"]["maximum_attempts"] == 0
     assert config["model_routing"]["middle_model"] == "test-middle"
     assert config["robot"]["simulation_enabled"] is False
+
+
+def test_managed_turn_does_not_commit_firewall_recovery_as_valid_context(monkeypatch):
+    original = (server._LAST_USER_TEXT, server._LAST_NOVA_RESPONSE)
+    monkeypatch.setattr(server, "_LAST_USER_TEXT", "Earlier topic")
+    monkeypatch.setattr(server, "_LAST_NOVA_RESPONSE", "Earlier valid answer")
+
+    def fake_impl(text, context):
+        server._LAST_USER_TEXT = text
+        server._LAST_NOVA_RESPONSE = "I caught an off-topic draft before sending it."
+        return (
+            "I caught an off-topic draft before sending it.",
+            {
+                "source": "answer_firewall_recovery",
+                "final_answer_source": "answer_firewall_recovery",
+                "fallback_used": True,
+                "answer_firewall": {"status": "blocked", "accepted": False},
+            },
+        )
+
+    monkeypatch.setattr(server, "_run_nova_chat_turn_impl", fake_impl)
+
+    response, trace = server._run_nova_chat_turn("I have been thinking about a garden", {})
+
+    assert "off-topic draft" in response
+    assert server._LAST_USER_TEXT == "Earlier topic"
+    assert server._LAST_NOVA_RESPONSE == "Earlier valid answer"
+    assert trace["conversation_state_committed"] is False
+    assert trace["conversation_state_commit_reason"] == "recovery_response"
+    assert trace["pending_turn"] is True
+
+
+def test_managed_turn_commits_valid_answer(monkeypatch):
+    monkeypatch.setattr(server, "_LAST_USER_TEXT", "Earlier topic")
+    monkeypatch.setattr(server, "_LAST_NOVA_RESPONSE", "Earlier valid answer")
+
+    def fake_impl(text, context):
+        server._LAST_USER_TEXT = text
+        server._LAST_NOVA_RESPONSE = "A garden can start with herbs in a sunny pot."
+        return (
+            "A garden can start with herbs in a sunny pot.",
+            {
+                "source": "cognitive_os",
+                "final_answer_source": "llm_synthesis",
+                "fallback_used": False,
+                "answer_firewall": {"status": "passed", "accepted": True},
+            },
+        )
+
+    monkeypatch.setattr(server, "_run_nova_chat_turn_impl", fake_impl)
+
+    response, trace = server._run_nova_chat_turn("I want to start a garden", {})
+
+    assert response.startswith("A garden")
+    assert server._LAST_USER_TEXT == "I want to start a garden"
+    assert server._LAST_NOVA_RESPONSE.startswith("A garden")
+    assert trace["conversation_state_committed"] is True
+    assert trace["conversation_state_commit_reason"] == "validated_answer"
+    assert trace["pending_turn"] is False
+
+
+def test_client_history_boundary_does_not_fall_back_to_stale_legacy_context():
+    selected = server._select_previous_exchange(
+        {"conversation_history": [
+            {"role": "user", "content": "I have been thinking about a garden."},
+            {"role": "assistant", "content": "I caught an off-topic draft before sending it."},
+        ]},
+        client_previous=("", ""),
+        legacy_previous=("Old unrelated topic", "Old unrelated answer"),
+    )
+
+    assert selected == ("", "")

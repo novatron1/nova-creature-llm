@@ -384,7 +384,13 @@ def recovery_response(
     """Return an honest visible response after a bad managed answer is blocked."""
 
     if contextual_fallback:
-        return str(contextual_fallback).strip()
+        candidate = str(contextual_fallback).strip()
+        if not contains_generic_fallback(candidate, include_recovery=True):
+            return candidate
+        return (
+            "I could not produce a reliable answer for that turn yet. I kept the "
+            "failed draft out of your conversation context; please ask me to try it again."
+        )
     if "unrelated_personal_memory" in decision.reasons or "memory_route_mismatch" in decision.reasons:
         return (
             "I caught an unrelated memory result before sending it. It did not answer your question, "

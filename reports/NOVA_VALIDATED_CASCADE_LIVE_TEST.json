@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "test_date": "2026-08-19",
+  "privacy": {
+    "content_logged": false,
+    "prompts_included": false,
+    "responses_truncated": true
+  },
+  "service": {
+    "base_url": "http://127.0.0.1:3000",
+    "health_status": 200
+  },
+  "baseline_known": {
+    "recovery_text_reentered_as_context": true,
+    "stale_process_context_could_replace_client_history": true,
+    "fallback_turn_state_was_annotated": false
+  },
+  "after": {
+    "recovery_text_reentered_as_context": false,
+    "stale_process_context_could_replace_client_history": false,
+    "fallback_turn_state_is_annotated": true,
+    "blocked_turns_are_pending": true,
+    "validated_turns_commit_context": true
+  },
+  "live_cases": [
+    {
+      "case_id": "open_ended_first_turn",
+      "source": "answer_firewall_recovery",
+      "final_answer_source": "answer_firewall_recovery",
+      "conversation_state_committed": false,
+      "conversation_state_commit_reason": "recovery_response",
+      "pending_turn": true,
+      "latency_ms": 357
+    },
+    {
+      "case_id": "follow_up_after_blocked_turn",
+      "source": "answer_firewall_recovery",
+      "final_answer_source": "answer_firewall_recovery",
+      "conversation_state_committed": false,
+      "conversation_state_commit_reason": "recovery_response",
+      "pending_turn": true,
+      "latency_ms": 6152,
+      "stale_answer_reused": false
+    },
+    {
+      "case_id": "second_follow_up_after_blocked_turn",
+      "source": "answer_firewall_recovery",
+      "final_answer_source": "answer_firewall_recovery",
+      "conversation_state_committed": false,
+      "conversation_state_commit_reason": "recovery_response",
+      "pending_turn": true,
+      "latency_ms": 46,
+      "stale_answer_reused": false
+    },
+    {
+      "case_id": "transform_follow_up_after_blocked_turn",
+      "source": "answer_firewall_recovery",
+      "final_answer_source": "answer_firewall_recovery",
+      "conversation_state_committed": false,
+      "conversation_state_commit_reason": "recovery_response",
+      "pending_turn": true,
+      "latency_ms": 6255,
+      "stale_answer_reused": false
+    },
+    {
+      "case_id": "current_fact_without_fresh_evidence",
+      "source": "fact_grounding_guard",
+      "final_answer_source": "fact_grounding_guard",
+      "conversation_state_committed": false,
+      "conversation_state_commit_reason": "firewall_blocked",
+      "pending_turn": true,
+      "latency_ms": 45
+    },
+    {
+      "case_id": "tool_request_without_permission",
+      "source": "agentic_core",
+      "final_answer_source": "agent_mode",
+      "conversation_state_committed": true,
+      "conversation_state_commit_reason": "validated_answer",
+      "pending_turn": false,
+      "latency_ms": 235,
+      "stale_answer_reused": false
+    }
+  ],
+  "verification": {
+    "scoped_pytest_passed": 548,
+    "scoped_pytest_known_unrelated_failures": 1,
+    "known_failure": "Kaggle bundle test expects a training artifact intentionally absent from the current archive.",
+    "py_compile": "passed",
+    "git_diff_check": "passed_with_existing_line_ending_warnings"
+  }
+}

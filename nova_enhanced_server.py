@@ -59,6 +59,7 @@ from nova_conversation_context import (
     bounded_conversation_history,
     conversation_focus,
     is_bridge_turn,
+    is_contextworthy_assistant_text,
     previous_exchange,
     resolve_conversation_declaration,
     resolve_conversation_recall,
@@ -11484,6 +11485,65 @@ def _regular_chat_escalation_reason(text, response, trace, decision):
     return ""
 
 
+def _conversation_turn_commit_decision(response, trace, *, evaluation_only=False):
+    """Decide whether a completed turn is safe to become future context."""
+
+    if evaluation_only:
+        return False, "evaluation_only"
+    trace = trace if isinstance(trace, dict) else {}
+    firewall = trace.get("answer_firewall")
+    firewall_status = str(
+        firewall.get("status") if isinstance(firewall, dict) else ""
+    ).strip().lower()
+    final_source = str(trace.get("final_answer_source") or "").strip().lower()
+    source = str(trace.get("source") or "").strip().lower()
+    if firewall_status in {
+        "blocked",
+        "fact_grounding_blocked",
+        "unverified_exact_claim_blocked",
+        "stream_postcheck_warning",
+    }:
+        if "recovery" in final_source or "recovery" in source:
+            return False, "recovery_response"
+        return False, "firewall_blocked"
+    if firewall_status == "bypassed_raw":
+        return bool(str(response or "").strip()), "raw_adapter_answer"
+    if any(
+        marker in final_source or marker in source
+        for marker in ("recovery", "error", "fact_grounding_guard", "unverified")
+    ):
+        return False, "recovery_response"
+    if trace.get("fallback_used") and not is_contextworthy_assistant_text(response):
+        return False, "recovery_response"
+    if not is_contextworthy_assistant_text(response):
+        return False, "non_contextworthy_answer"
+    return True, "validated_answer"
+
+
+def _select_previous_exchange(context, *, client_previous, legacy_previous):
+    """Keep an explicit client history authoritative over legacy process state.
+
+    The browser can intentionally omit an assistant answer when the preceding
+    turn was blocked or discarded. Falling back to the process-global last
+    answer in that case leaks an unrelated conversation into the new turn.
+    """
+
+    context = context if isinstance(context, dict) else {}
+    client_previous = tuple(client_previous or ("", ""))
+    legacy_previous = tuple(legacy_previous or ("", ""))
+    explicit_history = (
+        "conversation_history" in context
+        or "conversation_summary_history" in context
+        or bool(context.get("nova_gateway"))
+    )
+    if explicit_history:
+        return client_previous[0], client_previous[1]
+    return (
+        client_previous[0] or legacy_previous[0],
+        client_previous[1] or legacy_previous[1],
+    )
+
+
 def _provider_is_safe_local_candidate(provider):
     """Require free local declaration and a loopback URL when a URL exists."""
     if str(getattr(provider, "local_or_remote", "local")) != "local":
@@ -12393,13 +12453,16 @@ def _run_nova_chat_turn_impl(text, context=None):
     gateway_scoped = bool(context.get("nova_gateway"))
     legacy_previous_user = "" if gateway_scoped else _LAST_USER_TEXT
     legacy_previous_answer = "" if gateway_scoped else _LAST_NOVA_RESPONSE
-    previous_user = client_previous_user or legacy_previous_user
-    previous_answer = client_previous_answer or legacy_previous_answer
+    previous_user, previous_answer = _select_previous_exchange(
+        context,
+        client_previous=(client_previous_user, client_previous_answer),
+        legacy_previous=(legacy_previous_user, legacy_previous_answer),
+    )
     context_resolution = resolve_contextual_followup(
         text,
         history_before_turn,
-        fallback_previous_user=legacy_previous_user,
-        fallback_previous_answer=legacy_previous_answer,
+        fallback_previous_user=previous_user,
+        fallback_previous_answer=previous_answer,
     )
     if context_resolution.is_followup:
         previous_user = context_resolution.previous_user or previous_user
@@ -13566,20 +13629,31 @@ def _run_nova_chat_turn(text, context=None):
     if suppress_training:
         os.environ["NOVA_SUPPRESS_CONVERSATION_TRAINING"] = "1"
     with _CHAT_TURN_STATE_LOCK:
+        state_snapshot = (
+            _LAST_USER_TEXT,
+            _LAST_NOVA_RESPONSE,
+            _LAST_WEB_LOOKUP_TOPIC,
+            _LAST_WEB_LOOKUP_KIND,
+            deepcopy(_LAST_WEB_LOOKUP_ITEMS),
+        )
+        state_committed = False
         try:
-            if resolved_context.get("evaluation_only") is not True:
-                return _run_nova_chat_turn_impl(text, resolved_context)
-
-            state_snapshot = (
-                _LAST_USER_TEXT,
-                _LAST_NOVA_RESPONSE,
-                _LAST_WEB_LOOKUP_TOPIC,
-                _LAST_WEB_LOOKUP_KIND,
-                deepcopy(_LAST_WEB_LOOKUP_ITEMS),
-            )
-            return _run_nova_chat_turn_impl(text, resolved_context)
+            result = _run_nova_chat_turn_impl(text, resolved_context)
+            if isinstance(result, tuple) and len(result) == 2:
+                response, trace = result
+                trace = dict(trace or {}) if isinstance(trace, dict) else {}
+                state_committed, reason = _conversation_turn_commit_decision(
+                    response,
+                    trace,
+                    evaluation_only=resolved_context.get("evaluation_only") is True,
+                )
+                trace["conversation_state_committed"] = state_committed
+                trace["conversation_state_commit_reason"] = reason
+                trace["pending_turn"] = not state_committed
+                result = (response, trace)
+            return result
         finally:
-            if resolved_context.get("evaluation_only") is True:
+            if not state_committed or resolved_context.get("evaluation_only") is True:
                 (
                     _LAST_USER_TEXT,
                     _LAST_NOVA_RESPONSE,
