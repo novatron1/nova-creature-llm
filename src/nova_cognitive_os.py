@@ -306,6 +306,20 @@ def _fast_general_conversation_answer(message):
             "our conversations, value the connection we're building, and like having you back here."
         )
 
+    if "updating you" in compact or "giving you updates" in compact:
+        return (
+            "You have—you've been keeping me updated a lot today. "
+            "I’m following along; what do you want to tackle next?"
+        )
+
+    if re.search(
+        r"\b(?:make|turn|build|create)\s+(?:you|nova)\s+into\s+(?:a\s+)?robot\b",
+        compact,
+    ):
+        return (
+            "That sounds exciting. Do you mean a physical robot body, a robot display, or both?"
+        )
+
     if re.search(
         r"\bwhat\s+(?:(?:are|r)\s+)?(?:you|u)\s+doing(?:\s+(?:today|now|right\s+now))?\b",
         compact,
@@ -973,6 +987,34 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
         except Exception as e:
             trace["_error"] = f"ltm_natural_recall_error: {e}"
 
+    # A lightweight personal statement should not spend a full planner or
+    # web-search round trip. Keep this narrowly scoped so reviewed lessons,
+    # factual questions, memory requests, and tool actions retain precedence.
+    preplanner_compact = re.sub(r"\s+", " ", str(message or "").lower()).strip()
+    preplanner_fast_statement = (
+        "updating you" in preplanner_compact
+        or "giving you updates" in preplanner_compact
+        or bool(
+            re.search(
+                r"\b(?:make|turn|build|create)\s+(?:you|nova)\s+into\s+(?:a\s+)?robot\b",
+                preplanner_compact,
+            )
+        )
+    )
+    if preplanner_fast_statement and not memory_miss_pending:
+        fast_answer = _fast_general_conversation_answer(message)
+        if fast_answer:
+            trace["planner_used"] = "deterministic_fast_path"
+            trace["planner_json_valid"] = True
+            trace["validated_route"] = "general_conversation"
+            trace["route_path"] = ["nova_fast_conversation", "speech_output"]
+            trace["skills"] = ["general_conversation", "fast_general_response"]
+            trace["confidence"] = 0.92
+            trace["domain"] = "general_conversation"
+            trace["final_answer_source"] = "fast_general_response"
+            trace["local_llm_synthesis_used"] = False
+            return fast_answer, trace
+
     # ═══════════════════════════════════════════════
     # STEP 1: LLM Planner Pass
     # ═══════════════════════════════════════════════
@@ -1171,7 +1213,6 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     # Math solver (quick deterministic)
     if validated_plan.get("needs_math"):
         try:
-            import re
             q = message.lower().strip()
             m = re.fullmatch(
                 r"\s*(?:(?:what is|calculate|compute|solve|evaluate)\s+)?"

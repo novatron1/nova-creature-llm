@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
 import nova_enhanced_server as server  # noqa: E402
+import nova_cognitive_os as cognitive_os  # noqa: E402
 from nova_conversation_intelligence import (  # noqa: E402
     decision_from_context,
     understand_conversation_turn,
@@ -86,6 +87,48 @@ def test_decision_precedence_keeps_high_risk_action_out_of_general_chat():
     assert decision.reasoning_mode == "agent"
     assert decision.initial_model_tier == "small"
     assert decision.repair_policy == "approval_required"
+
+
+def test_robot_future_statement_is_not_mistaken_for_perception_or_navigation():
+    decision = understand_conversation_turn(
+        "I am going to make you into a robot soon."
+    )
+
+    assert decision.intent_family != "vision_robot"
+    assert decision.factual_evidence_required is False
+
+
+def test_lightweight_personal_updates_bypass_slow_planner(monkeypatch):
+    monkeypatch.setattr(cognitive_os, "_get_ltm", lambda: None)
+
+    def planner_should_not_run():
+        raise AssertionError("lightweight personal updates should use the fast path")
+
+    monkeypatch.setattr(cognitive_os, "_get_planner", planner_should_not_run)
+
+    answer, trace = cognitive_os.route("I been updating you a lot today")
+
+    assert answer
+    assert "update" in answer.lower()
+    assert trace["validated_route"] == "general_conversation"
+    assert trace["local_llm_synthesis_used"] is False
+    assert trace["planner_used"] == "deterministic_fast_path"
+
+
+def test_robot_future_statement_uses_fast_conversation_path(monkeypatch):
+    monkeypatch.setattr(cognitive_os, "_get_ltm", lambda: None)
+
+    def planner_should_not_run():
+        raise AssertionError("robot future statements should use the fast conversation path")
+
+    monkeypatch.setattr(cognitive_os, "_get_planner", planner_should_not_run)
+
+    answer, trace = cognitive_os.route("I am going to make you into a robot soon")
+
+    assert "robot" in answer.lower()
+    assert trace["validated_route"] == "general_conversation"
+    assert trace["local_llm_synthesis_used"] is False
+    assert trace["planner_used"] == "deterministic_fast_path"
 
 
 @pytest.mark.parametrize(

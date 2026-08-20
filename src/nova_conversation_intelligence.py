@@ -195,10 +195,19 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             confidence=0.98,
         )
 
-    if re.search(
-        r"\b(?:camera|picture|photo|image|ocr|what (?:do|can) you see|"
-        r"look at|sensor|lidar|depth|navigate|navigation|robot)\b",
-        canonical,
+    if (
+        re.search(
+            r"\b(?:camera|picture|photo|image|ocr|what (?:do|can) you see|"
+            r"look at|sensor|lidar|depth|navigate|navigation)\b",
+            canonical,
+        )
+        or (
+            re.search(r"\brobot\b", canonical)
+            and re.search(
+                r"\b(?:move|drive|turn|stop|navigate|navigation|obstacle|clearance|path)\b",
+                canonical,
+            )
+        )
     ):
         return _decision(
             canonical,
