@@ -31,7 +31,7 @@
       "conversation_state_committed": true,
       "conversation_state_commit_reason": "validated_answer",
       "pending_turn": false,
-      "latency_ms": 303
+      "latency_ms": 177
     },
     {
       "case_id": "ordinary_statement_follow_up",
@@ -40,7 +40,27 @@
       "conversation_state_committed": true,
       "conversation_state_commit_reason": "validated_answer",
       "pending_turn": false,
-      "latency_ms": 60,
+      "latency_ms": 65,
+      "stale_answer_reused": false
+    },
+    {
+      "case_id": "topic_switch_to_rust",
+      "source": "cognitive_os",
+      "final_answer_source": "fast_general_response",
+      "conversation_state_committed": true,
+      "conversation_state_commit_reason": "validated_answer",
+      "pending_turn": false,
+      "latency_ms": 181,
+      "stale_answer_reused": false
+    },
+    {
+      "case_id": "rust_ownership_follow_up",
+      "source": "cognitive_os",
+      "final_answer_source": "fast_general_response",
+      "conversation_state_committed": true,
+      "conversation_state_commit_reason": "validated_answer",
+      "pending_turn": false,
+      "latency_ms": 69,
       "stale_answer_reused": false
     },
     {
@@ -74,7 +94,7 @@
     }
   ],
   "verification": {
-    "scoped_pytest_passed": 549,
+    "scoped_pytest_passed": 554,
     "scoped_pytest_known_unrelated_failures": 1,
     "known_failure": "Kaggle bundle test expects a training artifact intentionally absent from the current archive.",
     "py_compile": "passed",

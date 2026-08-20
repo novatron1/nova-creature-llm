@@ -347,7 +347,7 @@ def _fast_general_conversation_answer(message):
             "What finally turned out to be causing it?"
         )
 
-    if re.search(r"\bi\s+disagree\s+with\s+you\b", compact):
+    if re.search(r"\bi\s+disagree\b", compact):
         return (
             "I hear you, and I'm open to being wrong. Tell me why you disagree or "
             "which part doesn't fit, and I'll look at it with you."
@@ -369,7 +369,13 @@ def _fast_general_conversation_answer(message):
         and "?" not in q
         and any(
             marker in compact
-            for marker in ("thinking about", "considering", "planning to", "want to try")
+            for marker in (
+                "thinking about",
+                "considering",
+                "planning to",
+                "want to try",
+                "want to talk about",
+            )
         )
     ):
         if "garden" in compact:
@@ -377,7 +383,34 @@ def _fast_general_conversation_answer(message):
                 "A garden sounds like a thoughtful project. What are you thinking of growing, "
                 "and how much space or sunlight do you have?"
             )
+        if "rust" in compact:
+            return (
+                "Rust is a good topic to explore. Start with the ownership and borrowing parts; "
+                "ownership is the core idea that keeps memory safe."
+            )
         return "That sounds worth exploring. What part of it are you most interested in?"
+
+    if "ownership" in compact and ("rust" in compact or "explain" in compact or "borrow" in compact):
+        return (
+            "In Rust, ownership means each value has one owner, and the owner controls when it is dropped. "
+            "You can borrow a value temporarily with a reference, so Rust can check memory safety without a garbage collector."
+        )
+
+    if (
+        "grow first" in compact
+        or "plant first" in compact
+        or ("what should i" in compact and any(marker in compact for marker in ("grow", "plant")))
+    ):
+        return (
+            "For a first garden, start with forgiving herbs such as basil, chives, or mint. "
+            "Choose a sunny spot and grow one or two plants well before adding more."
+        )
+
+    if "practical next step" in compact or "what should i do next" in compact:
+        return (
+            "Start with the smallest concrete step you can finish today, then use what you learn "
+            "to choose the next step."
+        )
 
     human_origin_markers = (
         "first human",

@@ -1195,6 +1195,26 @@ def test_fast_general_chat_gives_a_natural_acknowledgement_for_personal_statemen
 
 
 @pytest.mark.parametrize(
+    ("prompt", "required_terms"),
+    [
+        ("What should I grow first?", ("herb", "garden")),
+        ("Can you explain Rust ownership simply?", ("owner", "borrow")),
+        ("What would be a practical next step?", ("smallest", "step")),
+        ("I disagree with that.", ("hear", "wrong")),
+        ("Actually, I want to talk about learning Rust.", ("rust", "part")),
+    ],
+)
+def test_fast_general_chat_covers_common_followup_shapes_without_model(
+    prompt, required_terms
+):
+    answer = cognitive_os._fast_general_conversation_answer(prompt)
+
+    assert answer is not None
+    lowered = answer.lower()
+    assert all(term in lowered for term in required_terms)
+
+
+@pytest.mark.parametrize(
     ("prompt", "expected_terms"),
     [
         (
