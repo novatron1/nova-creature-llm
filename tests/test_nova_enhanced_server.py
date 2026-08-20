@@ -3079,6 +3079,100 @@ def test_brain_route_handles_temperature_question_before_transformer(monkeypatch
     assert "weather_lookup" in trace["skills"]
 
 
+def test_fact_grounding_allows_live_weather_route():
+    assert server._fact_grounding_route_can_supply_fresh_evidence(
+        "What is the latest weather in New York?",
+        {},
+    ) is True
+
+
+def test_fetch_weather_summary_uses_live_open_meteo_data(monkeypatch):
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "current": {
+                    "temperature_2m": 18.4,
+                    "apparent_temperature": 17.9,
+                    "weather_code": 1,
+                },
+                "current_units": {"temperature_2m": "°C"},
+            }).encode("utf-8")
+
+    captured = {}
+
+    def fake_urlopen(request, timeout):
+        captured["url"] = request.full_url
+        captured["timeout"] = timeout
+        return FakeResponse()
+
+    monkeypatch.setattr(server.urllib.request, "urlopen", fake_urlopen)
+
+    summary = server._fetch_weather_summary("New York")
+
+    assert "New York" in summary
+    assert "18.4°C" in summary
+    assert "17.9°C" in summary
+    assert "Open-Meteo" in summary
+    assert "api.open-meteo.com" in captured["url"]
+    assert captured["timeout"] <= 8
+
+
+def test_fetch_weather_summary_never_fabricates_when_provider_is_unavailable(monkeypatch):
+    monkeypatch.setattr(
+        server.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            server.urllib.error.URLError("offline")
+        ),
+    )
+
+    summary = server._fetch_weather_summary("New York")
+
+    assert "unavailable" in summary.lower()
+    assert "72" not in summary
+
+
+def test_brain_route_prefers_live_weather_before_cognitive_os(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True)
+    monkeypatch.setattr(
+        server,
+        "pipeline_process",
+        lambda *args, **kwargs: {
+            "intent": {"primary_intent": "general_inquiry"},
+            "route": ["memory_transformer"],
+            "confidence": 0.8,
+            "normalized_text": args[0],
+        },
+    )
+    monkeypatch.setattr(
+        server,
+        "cognitive_route",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("live weather should not enter generic cognitive synthesis")
+        ),
+    )
+    monkeypatch.setattr(
+        server,
+        "_fetch_weather_summary",
+        lambda location: f"{location}: 18.4°C, feels like 17.9°C, mainly clear (source: Open-Meteo).",
+    )
+
+    response, trace = server.brain_route("What is the latest weather in New York?")
+
+    assert response.startswith("[WEATHER] New York:")
+    assert trace["source"] == "weather_router"
+    assert trace["weather_live"] is True
+    assert trace["weather_source"] == "Open-Meteo"
+
+
 def test_brain_route_rejects_flat_earth_claim_before_general_chat(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)

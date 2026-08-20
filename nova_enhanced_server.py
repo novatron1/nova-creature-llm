@@ -1424,11 +1424,133 @@ def _resolve_sandbox_static_path(request_path):
     return candidate
 
 
+_WEATHER_LOCATION_NAMES = (
+    "cincinnati", "new york", "london", "tokyo", "paris", "berlin", "sydney",
+    "miami", "chicago", "los angeles", "san francisco", "seattle", "dallas",
+    "boston", "phoenix", "denver", "atlanta", "houston", "washington", "portland",
+)
+_WEATHER_LOCATION_COORDINATES = {
+    "cincinnati": (39.1031, -84.5120),
+    "new york": (40.7128, -74.0060),
+    "london": (51.5074, -0.1278),
+    "tokyo": (35.6762, 139.6503),
+    "paris": (48.8566, 2.3522),
+    "berlin": (52.5200, 13.4050),
+    "sydney": (-33.8688, 151.2093),
+    "miami": (25.7617, -80.1918),
+    "chicago": (41.8781, -87.6298),
+    "los angeles": (34.0522, -118.2437),
+    "san francisco": (37.7749, -122.4194),
+    "seattle": (47.6062, -122.3321),
+    "dallas": (32.7767, -96.7970),
+    "boston": (42.3601, -71.0589),
+    "phoenix": (33.4484, -112.0740),
+    "denver": (39.7392, -104.9903),
+    "atlanta": (33.7490, -84.3880),
+    "houston": (29.7604, -95.3698),
+    "washington": (38.9072, -77.0369),
+    "portland": (45.5152, -122.6784),
+}
+_WEATHER_CODE_LABELS = {
+    0: "clear sky",
+    1: "mainly clear",
+    2: "partly cloudy",
+    3: "overcast",
+    45: "foggy",
+    48: "rime fog",
+    51: "light drizzle",
+    53: "drizzle",
+    55: "heavy drizzle",
+    61: "light rain",
+    63: "rain",
+    65: "heavy rain",
+    71: "light snow",
+    73: "snow",
+    75: "heavy snow",
+    80: "rain showers",
+    81: "rain showers",
+    82: "heavy rain showers",
+    95: "thunderstorms",
+    96: "thunderstorms with hail",
+    99: "thunderstorms with hail",
+}
+
+
+def _weather_location_from_text(text):
+    q = " ".join(str(text or "").lower().split())
+    weather_keywords = (
+        "weather", "forecast", "temperature", "temp", "how cold", "how hot",
+        "what's the temp", "what is the temp",
+    )
+    if not any(keyword in q for keyword in weather_keywords):
+        return None
+    for location in _WEATHER_LOCATION_NAMES:
+        if location in q:
+            return location.title()
+    return None
+
+
+def _is_weather_lookup_request(text):
+    return _weather_location_from_text(text) is not None
+
+
+def _format_weather_value(value, unit):
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        raise ValueError("weather value is not numeric")
+    formatted = f"{number:.1f}".rstrip("0").rstrip(".")
+    return f"{formatted}{unit}"
+
+
 def _fetch_weather_summary(location):
-    """Return a plausible weather summary for a location."""
-    if not location or not location.strip():
-        location = "Unknown"
-    return f"{location}: 72\N{DEGREE SIGN}F, feels like 74\N{DEGREE SIGN}F, clear."
+    """Fetch current conditions from Open-Meteo, never fabricate a fallback."""
+    label = " ".join(str(location or "Unknown").split()) or "Unknown"
+    key = label.lower()
+    coordinates = _WEATHER_LOCATION_COORDINATES.get(key)
+    try:
+        if coordinates is None:
+            geocode_url = (
+                "https://geocoding-api.open-meteo.com/v1/search?name="
+                + quote_plus(label)
+                + "&count=1&language=en&format=json"
+            )
+            geocode_request = urllib.request.Request(
+                geocode_url,
+                headers={"Accept": "application/json", "User-Agent": "Nova/1.0"},
+                method="GET",
+            )
+            with urllib.request.urlopen(geocode_request, timeout=6) as response:
+                geocoded = json.loads(response.read().decode("utf-8"))
+            result = (geocoded.get("results") or [None])[0]
+            if not isinstance(result, dict):
+                raise ValueError("location was not found")
+            coordinates = (float(result["latitude"]), float(result["longitude"]))
+            label = str(result.get("name") or label).strip() or label
+
+        latitude, longitude = coordinates
+        forecast_url = (
+            "https://api.open-meteo.com/v1/forecast?latitude="
+            f"{latitude}&longitude={longitude}"
+            "&current=temperature_2m,apparent_temperature,weather_code&timezone=auto"
+        )
+        forecast_request = urllib.request.Request(
+            forecast_url,
+            headers={"Accept": "application/json", "User-Agent": "Nova/1.0"},
+            method="GET",
+        )
+        with urllib.request.urlopen(forecast_request, timeout=6) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        current = payload["current"]
+        units = payload.get("current_units") or {}
+        temperature_unit = str(units.get("temperature_2m") or "°C")
+        temperature = _format_weather_value(current["temperature_2m"], temperature_unit)
+        apparent = _format_weather_value(current["apparent_temperature"], temperature_unit)
+        weather_code = int(current["weather_code"])
+        condition = _WEATHER_CODE_LABELS.get(weather_code, "current conditions reported")
+        return f"{label}: {temperature}, feels like {apparent}, {condition} (source: Open-Meteo)."
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, urllib.error.URLError):
+        return f"{label}: Live weather is unavailable right now; I won't guess."
 
 
 def _fetch_news_headlines(query, limit=3):
@@ -9964,6 +10086,45 @@ def brain_route(text, context=None):
             trace = _set_final_answer_source(trace)
             return response, trace
 
+    # ─── Live Weather Evidence Path ───
+    # Fresh weather must run before the generic Cognitive OS so its live
+    # evidence can reach the grounding validator instead of being replaced by
+    # a model draft.
+    early_weather_location = _weather_location_from_text(q)
+    if early_weather_location:
+        early_weather_summary = _fetch_weather_summary(early_weather_location)
+        trace["source"] = "weather_router"
+        trace["domain"] = "weather"
+        trace["location"] = early_weather_location
+        trace["roles"] = ["planner_transformer"]
+        trace["skills"] = ["weather_lookup"]
+        trace["confidence"] = 0.95
+        trace["route_path"] = ["weather_router"]
+        early_live_weather = "source: open-meteo" in early_weather_summary.lower()
+        trace["weather_source"] = "Open-Meteo" if early_live_weather else None
+        trace["weather_live"] = early_live_weather
+        if early_live_weather:
+            trace["online_checked"] = True
+            trace["grounding_evidence"] = [{
+                "evidence_id": "live_weather_1",
+                "content": early_weather_summary,
+                "source_name": "Open-Meteo",
+                "source_type": "live_weather",
+                "verified_at": datetime.now().astimezone().isoformat(),
+                "live": True,
+                "trust_level": 0.86,
+            }]
+        early_weather_response = f"[WEATHER] {early_weather_summary}"
+        _LAST_USER_TEXT = text
+        _LAST_NOVA_RESPONSE = early_weather_response
+        if _CONV_ENGINE_AVAIL:
+            try:
+                _CONV_ENGINE.add_exchange(text, early_weather_response)
+            except Exception:
+                pass
+        trace = _set_final_answer_source(trace)
+        return early_weather_response, trace
+
     # ─── MEANING PIPELINE: Deep Understanding Before Routing ───
     # sensory_input → clean → normalize → repair → dict_check → expand → associate → intent → memory_bind → route → generate → critic → speech
     # Game Builder Path: build commands should execute before generic LLM conversation.
@@ -10366,18 +10527,9 @@ def brain_route(text, context=None):
             pass
 
     # ─── Weather Path ───
-    weather_locations = ["cincinnati", "new york", "london", "tokyo", "paris", "berlin", "sydney",
-                          "miami", "chicago", "los angeles", "san francisco", "seattle", "dallas",
-                          "boston", "phoenix", "denver", "atlanta", "houston", "washington", "portland"]
-    weather_keywords = ["temperature", "temp", "weather", "forecast", "how cold", "how hot", "what's the temp", "what is the temp"]
-    weather_match = False
-    weather_location = None
-    if any(kw in q for kw in weather_keywords):
-        for loc in weather_locations:
-            if loc in q:
-                weather_location = loc.title()
-                weather_match = True
-                break
+    weather_locations = _WEATHER_LOCATION_NAMES
+    weather_location = _weather_location_from_text(q)
+    weather_match = bool(weather_location)
     if weather_match and weather_location:
         summary = _fetch_weather_summary(weather_location)
         trace["source"] = "weather_router"
@@ -10387,6 +10539,20 @@ def brain_route(text, context=None):
         trace["skills"] = ["weather_lookup"]
         trace["confidence"] = 0.95
         trace["route_path"] = ["weather_router"]
+        live_weather = "source: open-meteo" in summary.lower()
+        trace["weather_source"] = "Open-Meteo" if live_weather else None
+        trace["weather_live"] = live_weather
+        if live_weather:
+            trace["online_checked"] = True
+            trace["grounding_evidence"] = [{
+                "evidence_id": "live_weather_1",
+                "content": summary,
+                "source_name": "Open-Meteo",
+                "source_type": "live_weather",
+                "verified_at": datetime.now().astimezone().isoformat(),
+                "live": True,
+                "trust_level": 0.86,
+            }]
         response = f"[WEATHER] {summary}"
         _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
         trace = _set_final_answer_source(trace)
@@ -11648,6 +11814,7 @@ def _fact_grounding_route_can_supply_fresh_evidence(text, context):
         (
             _is_current_context_query(text),
             _is_current_us_president_query(text),
+            _is_weather_lookup_request(text),
             _is_live_news_request(text),
             _is_research_lookup_request(text),
             _is_scrape_request(text),

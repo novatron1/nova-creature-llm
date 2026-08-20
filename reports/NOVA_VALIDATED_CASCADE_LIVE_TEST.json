@@ -91,13 +91,27 @@
       "pending_turn": false,
       "latency_ms": 235,
       "stale_answer_reused": false
+    },
+    {
+      "case_id": "live_weather_before_cognitive_os",
+      "source": "weather_router",
+      "final_answer_source": "weather_router",
+      "weather_source": "Open-Meteo",
+      "weather_live": true,
+      "fact_grounding_status": "grounded",
+      "fact_grounding_blocking": false,
+      "conversation_state_committed": true,
+      "conversation_state_commit_reason": "validated_answer",
+      "pending_turn": false,
+      "stale_answer_reused": false
     }
   ],
   "verification": {
-    "scoped_pytest_passed": 554,
+    "scoped_pytest_passed": 558,
     "scoped_pytest_known_unrelated_failures": 1,
     "known_failure": "Kaggle bundle test expects a training artifact intentionally absent from the current archive.",
     "py_compile": "passed",
-    "git_diff_check": "passed_with_existing_line_ending_warnings"
+    "git_diff_check": "passed_with_existing_line_ending_warnings",
+    "live_weather_test_port": 3001
   }
 }
