@@ -1218,6 +1218,10 @@ def _is_context_help_followup(text):
             q.startswith(("how can you test", "how do you test", "how can i test"))
             and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
         )
+        or (
+            q.startswith(("how do you show", "how can you show", "how do i show"))
+            and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
+        )
     )
 
 
