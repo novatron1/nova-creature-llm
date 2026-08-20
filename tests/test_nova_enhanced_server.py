@@ -3522,6 +3522,85 @@ def test_brain_route_love_show_followup_stays_on_relationship_context(monkeypatc
     assert trace["conversation_topic"] == "love"
 
 
+@pytest.mark.parametrize(
+    "followup",
+    [
+        "How do I test it",
+        "How can I tell if it is real",
+        "How do you know if that is true",
+        "What signs should I look for",
+        "How can I help with this",
+    ],
+)
+def test_context_followup_matrix_recognizes_subject_reference_forms(followup):
+    assert server._is_context_help_followup(followup)
+
+
+@pytest.mark.parametrize(
+    "standalone_question",
+    [
+        "How do you know Python",
+        "How can I test the API",
+        "What is love",
+    ],
+)
+def test_context_followup_matrix_does_not_capture_standalone_questions(standalone_question):
+    assert not server._is_context_help_followup(standalone_question)
+
+
+def test_brain_route_love_tell_followup_stays_on_relationship_context(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "_LAST_USER_TEXT", "What is love")
+    monkeypatch.setattr(
+        server,
+        "_LAST_NOVA_RESPONSE",
+        "Love is a complex mixture of affection, protectiveness, and warmth.",
+    )
+
+    response, trace = server.brain_route("How can I tell if it is real")
+
+    assert "love" in response.lower()
+    assert any(word in response.lower() for word in ("consistent", "actions", "trust", "commitment"))
+    assert trace["source"] == "context_topic_help_router"
+    assert trace["conversation_topic"] == "love"
+
+
+def test_brain_route_game_test_followup_stays_on_game_context(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "_LAST_USER_TEXT", "I want to build a game")
+    monkeypatch.setattr(server, "_LAST_NOVA_RESPONSE", "We can plan the game and test it.")
+
+    response, trace = server.brain_route("How do I test it")
+
+    assert "game" in response.lower()
+    assert trace["source"] == "context_topic_help_router"
+    assert trace["conversation_topic"] == "game"
+
+
+def test_brain_route_python_test_followup_stays_on_coding_context(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "_LAST_USER_TEXT", "I have a Python bug")
+    monkeypatch.setattr(server, "_LAST_NOVA_RESPONSE", "We can inspect the code and test a fix.")
+
+    response, trace = server.brain_route("How do I test it")
+
+    assert "coding" in response.lower()
+    assert trace["source"] == "context_topic_help_router"
+    assert trace["conversation_topic"] == "coding"
+
+
 def test_brain_route_focus_tonight_is_natural_not_deep_template(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)

@@ -1197,6 +1197,7 @@ def _is_context_help_followup(text):
     q = _canonical_key(text)
     if not q:
         return False
+    reference_words = ("it", "that", "this")
     return (
         q in {
             "how can you help me with it",
@@ -1211,17 +1212,36 @@ def _is_context_help_followup(text):
             "what can u do with that",
         }
         or (
-            q.startswith(("how can you help", "how can u help", "what can you do", "what can u do"))
-            and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
+            q.startswith((
+                "how can you help", "how can u help", "how can i help", "how do i help",
+                "what can you do", "what can u do",
+            ))
+            and any(pronoun in q.split() for pronoun in reference_words)
         )
         or (
-            q.startswith(("how can you test", "how do you test", "how can i test"))
-            and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
+            q.startswith((
+                "how can you test", "how do you test", "how can i test", "how do i test",
+                "how can we test", "how do we test",
+            ))
+            and any(pronoun in q.split() for pronoun in reference_words)
         )
         or (
-            q.startswith(("how do you show", "how can you show", "how do i show"))
-            and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
+            q.startswith(("how do you show", "how can you show", "how do i show", "how can i show"))
+            and any(pronoun in q.split() for pronoun in reference_words)
         )
+        or (
+            q.startswith((
+                "how can i tell", "how do i know", "how can you tell", "how do you know",
+            ))
+            and (
+                any(pronoun in q.split() for pronoun in reference_words)
+                or any(word in q.split() for word in ("real", "true", "genuine"))
+            )
+        )
+        or q.startswith((
+            "what signs should i look for", "what signs should you look for",
+            "what should i look for", "what should i watch for",
+        ))
     )
 
 
@@ -1231,6 +1251,13 @@ def _extract_context_topic_from_last_turn(last_user=None, last_response=None):
     if preference_topic:
         return preference_topic
     previous = _canonical_key(last_user_text + " " + str(last_response or ""))
+    topic_aliases = {
+        "song": "music", "songs": "music", "beat": "music", "beats": "music",
+        "lyrics": "music", "mixing": "music", "producer": "music", "production": "music",
+        "python": "coding", "code": "coding", "bug": "coding", "debugging": "coding",
+        "programming": "coding", "javascript": "coding", "typescript": "coding",
+        "robot": "robotics", "robotics": "robotics",
+    }
     for topic in (
         "love",
         "relationship",
@@ -1249,12 +1276,21 @@ def _extract_context_topic_from_last_turn(last_user=None, last_response=None):
         "politics",
         "game",
         "coding",
+        "python",
+        "code",
+        "bug",
+        "debugging",
+        "programming",
+        "javascript",
+        "typescript",
+        "robot",
+        "robotics",
         "camera",
         "voice",
         "sensors",
     ):
         if topic in previous.split():
-            return "music" if topic in {"song", "songs", "beat", "beats", "lyrics", "mixing", "producer", "production"} else topic
+            return topic_aliases.get(topic, topic)
     return ""
 
 
