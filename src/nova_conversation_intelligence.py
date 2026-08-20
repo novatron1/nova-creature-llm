@@ -358,6 +358,9 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         r"\bdo\s+(?:you|u)\s+care\s+about\s+(?:me|us)\b",
         r"\bwhat\s+(?:do|would)\s+(?:i|we)\s+mean\s+to\s+(?:you|u)\b",
         r"\bwhat\s+does\s+(?:our|this)\s+(?:connection|relationship)\s+mean\b",
+        r"\bhow\s+long\s+does\s+it\s+take\s+to\s+fall\s+in\s+love\b",
+        r"\bhow\s+(?:fast|quickly)\s+do\s+you\s+fall\s+in\s+love\b",
+        r"\bwhen\s+do\s+you\s+know\s+you(?:'re|\s+are)\s+in\s+love\b",
     )
     emotional_patterns = (
         r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\b",
@@ -378,6 +381,7 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         r"\b(?:you|u)\s+(?:are|r)\s+(?:funny|helpful|kind|great|awesome)\b",
         r"\b(?:that|you)\b.{0,16}\bmade\s+me\s+(?:laugh|smile)\b",
         r"\b(?:good\s*night|night\s+nova|see\s+you|talk\s+later)\b",
+        r"\b(?:have|enjoy)\s+a\s+good\s+(?:day|night|one)\b",
         r"^(?:(?:please|question|plainly|be\s+direct|for\s+me|"
         r"in\s+one\s+sentence|just\s+answer\s+this)\s+)?"
         r"(?:(?:hi|hello|hey)(?:\s+(?:nova|there))?"
@@ -396,6 +400,12 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
                 r"\bwhat\s+(?:do|would)\s+(?:i|we)\s+mean\s+to\s+(?:you|u)\b"
                 r"|\bwhat\s+does\s+(?:our|this)\s+"
                 r"(?:connection|relationship)\s+mean\b",
+                canonical,
+            )
+            else "love_timing"
+            if re.search(
+                r"\b(?:how\s+long\s+does\s+it\s+take\s+to|how\s+(?:fast|quickly)\s+do\s+you)\s+fall\s+in\s+love\b"
+                r"|\bwhen\s+do\s+you\s+know\s+you(?:'re|\s+are)\s+in\s+love\b",
                 canonical,
             )
             else "connection_checkin"
@@ -478,6 +488,11 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             else "farewell"
             if re.search(
                 r"\b(?:good\s*night|night\s+nova|see\s+you|talk\s+later)\b",
+                canonical,
+            )
+            else "farewell_day"
+            if re.search(
+                r"\b(?:have|enjoy)\s+a\s+good\s+(?:day|night|one)\b",
                 canonical,
             )
             else "greeting"

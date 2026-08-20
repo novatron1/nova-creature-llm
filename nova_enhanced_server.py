@@ -12827,6 +12827,7 @@ def _run_nova_chat_turn_impl(text, context=None):
 
             pre_model_reviewed_subtypes = {
                 ("relationship", "relationship_meaning"),
+                ("relationship", "love_timing"),
                 ("emotional", "user_distress"),
                 ("emotional", "user_positive"),
                 ("emotional", "encouragement_request"),
@@ -12835,6 +12836,7 @@ def _run_nova_chat_turn_impl(text, context=None):
                 ("social", "compliment"),
                 ("social", "positive_reaction"),
                 ("social", "farewell"),
+                ("social", "farewell_day"),
                 ("social", "greeting"),
             }
             if (

@@ -87,6 +87,14 @@ _REVIEWED_RESPONSES = {
         "different from a conversation with a stranger."
     ),
     (
+        "relationship",
+        "love_timing",
+    ): (
+        "There is no fixed timeline for falling in love. Some people feel a "
+        "spark quickly; for others, love grows over weeks or months. What matters "
+        "is whether affection, trust, and care deepen consistently over time."
+    ),
+    (
         "social",
         "day_checkin",
     ): (
@@ -160,6 +168,10 @@ _REVIEWED_RESPONSES = {
         "social",
         "farewell",
     ): "Good night. Rest wellâ€”I'll be here when you come back.",
+    (
+        "social",
+        "farewell_day",
+    ): "Thank you—you have a good day too. I'll be here when you come back.",
 }
 
 _STRICT_POLICIES = frozenset(

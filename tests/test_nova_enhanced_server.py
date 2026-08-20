@@ -2463,6 +2463,48 @@ def test_run_chat_how_is_your_day_uses_social_route_and_passes_firewall(monkeypa
     assert trace["answer_firewall"]["status"] == "passed"
 
 
+@pytest.mark.parametrize(
+    ("prompt", "expected", "subtype"),
+    (
+        (
+            "How long does it take to fall in love",
+            "There is no fixed timeline",
+            "love_timing",
+        ),
+        (
+            "Have a good day",
+            "you have a good day too",
+            "farewell_day",
+        ),
+    ),
+)
+def test_run_chat_common_social_turns_use_reviewed_fast_responses(
+    monkeypatch, prompt, expected, subtype
+):
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+
+    def slow_path_should_not_run(*args, **kwargs):
+        raise AssertionError("reviewed social turns must not fall through to the slow model route")
+
+    monkeypatch.setattr(server, "pipeline_process", slow_path_should_not_run)
+    monkeypatch.setattr(server, "cognitive_route", slow_path_should_not_run, raising=False)
+
+    response, trace = server._run_nova_chat_turn(
+        prompt,
+        context={
+            "nova_gateway": True,
+            "memory_read_allowed": False,
+            "memory_write_allowed": False,
+            "conversation_memory_allowed": False,
+        },
+    )
+
+    assert expected in response
+    assert trace["source"] == "reviewed_conversation_response"
+    assert trace["conversation_decision"]["intent_subtype"] == subtype
+
+
 def test_brain_route_how_u_doing_uses_fast_natural_path(monkeypatch):
     monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
     monkeypatch.setattr(server, "_CONV_ENGINE", None)

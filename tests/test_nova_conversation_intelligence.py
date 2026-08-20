@@ -289,6 +289,7 @@ def test_raw_adapter_request_does_not_attach_managed_conversation_decision(monke
     (
         ("Do you care about me?", "relationship", "affection_checkin"),
         ("What does our connection mean?", "relationship", "relationship_meaning"),
+        ("How long does it take to fall in love", "relationship", "love_timing"),
         ("I am feeling nervous today", "emotional", "user_distress"),
         ("I had a rough day", "emotional", "user_distress"),
         ("I am proud of myself", "emotional", "user_positive"),
@@ -301,6 +302,7 @@ def test_raw_adapter_request_does_not_attach_managed_conversation_decision(monke
         ("What is on your mind?", "social", "mind_checkin"),
         ("I appreciate you", "social", "gratitude"),
         ("Good night Nova", "social", "farewell"),
+        ("Have a good day", "social", "farewell_day"),
     ),
 )
 def test_common_natural_turns_do_not_fall_into_slow_open_ended_route(
