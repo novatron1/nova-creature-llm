@@ -1182,6 +1182,18 @@ def test_fast_general_chat_does_not_replace_technical_questions_with_capability_
     assert "help with coding" in capability
 
 
+def test_fast_general_chat_gives_a_natural_acknowledgement_for_personal_statements():
+    answer = cognitive_os._fast_general_conversation_answer(
+        "I have been thinking about starting a garden."
+    )
+
+    assert answer is not None
+    lowered = answer.lower()
+    assert "garden" in lowered
+    assert "grow" in lowered or "space" in lowered
+    assert "off-topic" not in lowered
+
+
 @pytest.mark.parametrize(
     ("prompt", "expected_terms"),
     [

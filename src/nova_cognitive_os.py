@@ -361,6 +361,24 @@ def _fast_general_conversation_answer(message):
             "chocolate, or cookies before freezing if you want a flavor mix-in."
         )
 
+    # Keep ordinary personal statements conversational when the larger local
+    # reviewer is unavailable. This is a bounded acknowledgement, not a
+    # substitute for answering a question or making a factual claim.
+    if (
+        len(compact.split()) <= 24
+        and "?" not in q
+        and any(
+            marker in compact
+            for marker in ("thinking about", "considering", "planning to", "want to try")
+        )
+    ):
+        if "garden" in compact:
+            return (
+                "A garden sounds like a thoughtful project. What are you thinking of growing, "
+                "and how much space or sunlight do you have?"
+            )
+        return "That sounds worth exploring. What part of it are you most interested in?"
+
     human_origin_markers = (
         "first human",
         "humans came to be",

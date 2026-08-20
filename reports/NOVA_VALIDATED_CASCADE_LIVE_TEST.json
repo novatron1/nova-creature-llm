@@ -20,46 +20,37 @@
     "stale_process_context_could_replace_client_history": false,
     "fallback_turn_state_is_annotated": true,
     "blocked_turns_are_pending": true,
-    "validated_turns_commit_context": true
+    "validated_turns_commit_context": true,
+    "ordinary_personal_statements_get_a_natural_response": true
   },
   "live_cases": [
     {
-      "case_id": "open_ended_first_turn",
-      "source": "answer_firewall_recovery",
-      "final_answer_source": "answer_firewall_recovery",
-      "conversation_state_committed": false,
-      "conversation_state_commit_reason": "recovery_response",
-      "pending_turn": true,
-      "latency_ms": 357
+      "case_id": "ordinary_personal_statement",
+      "source": "cognitive_os",
+      "final_answer_source": "fast_general_response",
+      "conversation_state_committed": true,
+      "conversation_state_commit_reason": "validated_answer",
+      "pending_turn": false,
+      "latency_ms": 303
     },
     {
-      "case_id": "follow_up_after_blocked_turn",
+      "case_id": "ordinary_statement_follow_up",
+      "source": "conversation_context_router",
+      "final_answer_source": "conversation_context_router",
+      "conversation_state_committed": true,
+      "conversation_state_commit_reason": "validated_answer",
+      "pending_turn": false,
+      "latency_ms": 60,
+      "stale_answer_reused": false
+    },
+    {
+      "case_id": "blocked_turn_after_model_review_exhaustion",
       "source": "answer_firewall_recovery",
       "final_answer_source": "answer_firewall_recovery",
       "conversation_state_committed": false,
       "conversation_state_commit_reason": "recovery_response",
       "pending_turn": true,
       "latency_ms": 6152,
-      "stale_answer_reused": false
-    },
-    {
-      "case_id": "second_follow_up_after_blocked_turn",
-      "source": "answer_firewall_recovery",
-      "final_answer_source": "answer_firewall_recovery",
-      "conversation_state_committed": false,
-      "conversation_state_commit_reason": "recovery_response",
-      "pending_turn": true,
-      "latency_ms": 46,
-      "stale_answer_reused": false
-    },
-    {
-      "case_id": "transform_follow_up_after_blocked_turn",
-      "source": "answer_firewall_recovery",
-      "final_answer_source": "answer_firewall_recovery",
-      "conversation_state_committed": false,
-      "conversation_state_commit_reason": "recovery_response",
-      "pending_turn": true,
-      "latency_ms": 6255,
       "stale_answer_reused": false
     },
     {
@@ -83,7 +74,7 @@
     }
   ],
   "verification": {
-    "scoped_pytest_passed": 548,
+    "scoped_pytest_passed": 549,
     "scoped_pytest_known_unrelated_failures": 1,
     "known_failure": "Kaggle bundle test expects a training artifact intentionally absent from the current archive.",
     "py_compile": "passed",
