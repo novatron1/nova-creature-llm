@@ -646,6 +646,28 @@ def resolve_followup(
             )
         )
     )
+    explicit_expansion = bool(
+        re.search(
+            r"\b(?:can|could|would)\s+you\s+(?:please\s+)?"
+            r"(?:clarify|elaborate|expand|tell\s+me\s+more)\b",
+            current,
+        )
+        or re.search(
+            r"\b(?:can|could|would)\s+you\s+give\s+me\s+more\s+"
+            r"(?:information|details?)\b",
+            current,
+        )
+    )
+    explicit_referential = bool(
+        re.search(r"\b(?:which|what)\s+of\s+(?:those|these)\b", current)
+    )
+    explicit_transform = bool(
+        re.search(
+            r"\b(?:can|could|would)\s+you\s+(?:do|make|write|answer|"
+            r"explain)\s+the\s+same\b",
+            current,
+        )
+    )
     hypothetical_followup = (
         len(current.split()) <= 28
         and current.startswith(("what if ", "but what if ", "and what if ", "so what if "))
@@ -761,6 +783,39 @@ def resolve_followup(
                 previous_answer,
             ),
             fallback_response=f"What part of \"{topic}\" do you want me to go deeper on?",
+            confidence=0.96,
+        )
+    if explicit_expansion:
+        return ContextResolution(
+            "expand",
+            previous_user,
+            previous_answer,
+            generation_prompt=_generation_instruction(
+                "Clarify or expand the previous answer in the user's requested level of detail. "
+                "Use the earlier subject and avoid replacing it with a generic invitation.",
+                text,
+                previous_user,
+                previous_answer,
+            ),
+            fallback_response=f"I can clarify \"{topic}\" directly; which part should I unpack first?",
+            confidence=0.96,
+        )
+    if explicit_transform:
+        return ContextResolution(
+            "transform",
+            previous_user,
+            previous_answer,
+            generation_prompt=_generation_instruction(
+                "Apply the previous answer to the format, language, or implementation requested now. "
+                "Carry over the earlier requirements and do not restart with a generic response.",
+                text,
+                previous_user,
+                previous_answer,
+            ),
+            fallback_response=(
+                f"I can adapt the earlier answer about \"{topic}\" to the requested form; "
+                "I should preserve its requirements rather than start over."
+            ),
             confidence=0.96,
         )
     if current in simplify:
@@ -889,7 +944,7 @@ def resolve_followup(
             ),
             confidence=0.96,
         )
-    if current in referential or referential_question:
+    if explicit_referential or current in referential or referential_question:
         return ContextResolution(
             "referential",
             previous_user,

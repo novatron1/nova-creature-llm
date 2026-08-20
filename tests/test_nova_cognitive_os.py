@@ -15,6 +15,7 @@ import nova_long_term_memory
 import nova_local_llm_connector
 import nova_memory_slot_retrieval
 import nova_meaning_pipeline
+from nova_conversation_intelligence import understand_conversation_turn
 
 
 def test_gateway_conversation_context_does_not_repeat_current_user_request():
@@ -75,6 +76,56 @@ def test_cognitive_os_uses_fast_planner_for_open_ended_route(monkeypatch):
     cognitive_os.route("Tell me how robots learn")
 
     assert force_llm_values == [False]
+
+
+def test_contextual_followup_cannot_be_promoted_to_web_search(monkeypatch):
+    class Planner:
+        def plan(self, message, force_llm=True, conversation_decision=None):
+            return {
+                "route": "web_search",
+                "intent": "search for the answer",
+                "slot_needed": None,
+                "needs_memory": False,
+                "needs_web": True,
+                "needs_llm_synthesis": True,
+                "answer_style": "short_answer",
+                "confidence": 0.8,
+                "_planner_used": "llm",
+            }
+
+    class ValidationResult:
+        ok = True
+
+        def __init__(self, plan):
+            self.plan = plan
+
+    class Validator:
+        def validate(self, plan, raw_user_message=""):
+            return ValidationResult(plan)
+
+    monkeypatch.setattr(cognitive_os, "_get_ltm", lambda: None)
+    monkeypatch.setattr(cognitive_os, "_get_planner", lambda: Planner())
+    monkeypatch.setattr(cognitive_os, "_get_validator", lambda: Validator())
+    monkeypatch.setattr(cognitive_os, "_get_slot_retrieval", lambda: None)
+    monkeypatch.setattr(cognitive_os, "_get_answer_synthesizer", lambda: None)
+    monkeypatch.setattr(cognitive_os, "_get_context_builder", lambda: None)
+    monkeypatch.setattr(cognitive_os, "_get_llm_synth", lambda: None)
+    monkeypatch.setattr(cognitive_os, "_get_web", lambda: None)
+
+    decision = understand_conversation_turn("Can you elaborate?")
+    _, trace = cognitive_os.route(
+        "Can you elaborate?",
+        context={
+            "conversation_decision": decision,
+            "conversation_history": [
+                {"role": "user", "content": "Explain the router."},
+                {"role": "assistant", "content": "It selects the right path."},
+            ],
+        },
+    )
+
+    assert trace["validated_route"] == "general_conversation"
+    assert trace["web_used"] is False
 
 
 def test_cognitive_os_tracks_plan_repair_separately_from_final_fallback(monkeypatch):

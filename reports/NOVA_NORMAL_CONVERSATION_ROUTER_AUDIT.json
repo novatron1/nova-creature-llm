@@ -1,0 +1,52 @@
+{
+  "schema_version": "nova-normal-conversation-router-audit-1.0",
+  "dataset": {
+    "id": "OpenAssistant/oasst1",
+    "source": "https://huggingface.co/datasets/OpenAssistant/oasst1",
+    "license": "Apache-2.0",
+    "viewer_api": "https://datasets-server.huggingface.co/rows",
+    "raw_content_saved": false,
+    "rows_requested": 1000,
+    "eligible_english_prompters": 166
+  },
+  "classifier_audit": {
+    "follow_up_before_fix": 1,
+    "follow_up_after_fix": 9,
+    "explicit_marker_rows": 9,
+    "explicit_marker_follow_up_decisions": 5,
+    "after_fix_decision_counts": {
+      "open_ended": 56,
+      "stable_reasoning": 77,
+      "follow_up": 9,
+      "social": 12,
+      "project_tool": 8,
+      "vision_robot": 2,
+      "memory": 2
+    }
+  },
+  "live_route_check": {
+    "base_url": "http://127.0.0.1:3000",
+    "content_logged": false,
+    "cases": 6,
+    "passed": 6,
+    "case_ids": [
+      "clarify",
+      "elaborate",
+      "same_rust",
+      "which_those",
+      "normal_open",
+      "current_fact"
+    ],
+    "route_families_verified": [
+      "follow_up",
+      "stable_reasoning",
+      "current_fact"
+    ],
+    "follow_up_web_search_override_blocked": true
+  },
+  "tests": {
+    "focused_passed": 147,
+    "integration_passed": 406,
+    "known_unrelated_failure": "Kaggle bundle test expects an intentionally removed generated artifact"
+  }
+}

@@ -51,6 +51,26 @@ def test_bare_why_is_followup_but_complete_why_question_is_standalone_reasoning(
     assert standalone.context_required is False
 
 
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        "Can you clarify the analogy? I am not following the notation or vocabulary used in the example.",
+        "Can you elaborate?",
+        "Can you give me more information about them?",
+        "And which of those would you personally use for the required task?",
+        "Can you do the same, but in Rust?",
+    ),
+)
+def test_explicit_context_dependent_requests_route_as_followups(prompt):
+    decision = understand_conversation_turn(prompt)
+
+    assert decision.intent_family == "follow_up"
+    assert decision.intent_subtype == "contextual_continuation"
+    assert decision.dialogue_act == "continue"
+    assert decision.context_required is True
+    assert decision.memory_recommended is True
+
+
 def test_imperative_say_hello_is_not_mistaken_for_a_user_greeting():
     decision = understand_conversation_turn("Say hello")
 

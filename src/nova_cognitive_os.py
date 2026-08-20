@@ -1002,6 +1002,40 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
         }
         trace["fallback_used"] = True
 
+    # The shared conversation classifier outranks an over-eager planner for
+    # contextual continuations.  A follow-up such as "Can you elaborate?" is
+    # not a fresh research request; sending it to web search discards the
+    # immediately preceding exchange and adds avoidable latency.  Preserve
+    # explicit current/factual requests, but keep ordinary follow-ups in the
+    # conversation route with their bounded history.
+    if conversation_decision is not None:
+        decision_family = (
+            str(conversation_decision.get("intent_family") or "")
+            if isinstance(conversation_decision, dict)
+            else str(getattr(conversation_decision, "intent_family", "") or "")
+        ).lower()
+        current_information_required = bool(
+            conversation_decision.get("current_information_required")
+            if isinstance(conversation_decision, dict)
+            else getattr(conversation_decision, "current_information_required", False)
+        )
+        factual_evidence_required = bool(
+            conversation_decision.get("factual_evidence_required")
+            if isinstance(conversation_decision, dict)
+            else getattr(conversation_decision, "factual_evidence_required", False)
+        )
+        if (
+            decision_family == "follow_up"
+            and not current_information_required
+            and not factual_evidence_required
+        ):
+            validated_plan = dict(validated_plan)
+            validated_plan["route"] = "general_conversation"
+            validated_plan["needs_web"] = False
+            validated_plan["needs_weather"] = False
+            validated_plan["needs_llm_synthesis"] = True
+            trace["conversation_route_override"] = "contextual_followup"
+
     route_name = validated_plan.get("route", "general_conversation")
     slot_needed = validated_plan.get("slot_needed")
     trace["validated_route"] = route_name

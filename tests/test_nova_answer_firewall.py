@@ -1,6 +1,8 @@
 from pathlib import Path
 import sys
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -261,6 +263,30 @@ def test_followup_resolution_turns_more_into_an_explicit_context_instruction():
     assert "Churning limits large ice crystals." in resolution.generation_prompt
     assert "go deeper" in resolution.fallback_response
     assert "large ice crystals" in resolution.immediate_response.lower()
+
+
+@pytest.mark.parametrize(
+    ("prompt", "kind"),
+    (
+        ("Can you clarify the analogy? I am not following the notation or vocabulary used in the example.", "expand"),
+        ("Can you elaborate?", "expand"),
+        ("Can you give me more information about them?", "expand"),
+        ("And which of those would you personally use for the required task?", "referential"),
+        ("Can you do the same, but in Rust?", "transform"),
+    ),
+)
+def test_explicit_dataset_style_followups_keep_the_previous_subject(prompt, kind):
+    resolution = resolve_followup(
+        prompt,
+        "Show me a tiny Python HTTP server.",
+        "Here is a small Python example that serves one response.",
+    )
+
+    assert resolution.kind == kind
+    assert resolution.previous_user == "Show me a tiny Python HTTP server."
+    assert resolution.previous_answer.startswith("Here is a small Python example")
+    assert resolution.generation_prompt
+    assert resolution.fallback_response
 
 
 def test_followup_resolution_handles_reactions_without_repeating_previous_answer():

@@ -486,6 +486,34 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             confidence=0.96,
         )
 
+    # Explicit requests to continue, clarify, or transform the immediately
+    # preceding turn need the conversation context before generic question or
+    # open-ended routing.  Keep this list narrow so standalone requests such
+    # as "Can you write an introduction?" still reach normal task reasoning.
+    contextual_followup_patterns = (
+        r"\b(?:can|could|would)\s+you\s+(?:please\s+)?"
+        r"(?:clarify|elaborate|expand|tell\s+me\s+more)\b",
+        r"\b(?:can|could|would)\s+you\s+give\s+me\s+more\s+"
+        r"(?:information|details?)\b",
+        r"\b(?:can|could|would)\s+you\s+(?:do|make|write|answer|"
+        r"explain)\s+the\s+same\b",
+        r"\b(?:which|what)\s+of\s+(?:those|these)\b",
+        r"\b(?:another|one\s+more)\b.{0,48}\b(?:again|same|example|one)\b",
+    )
+    if any(re.search(pattern, canonical) for pattern in contextual_followup_patterns):
+        return _decision(
+            canonical,
+            "follow_up",
+            "contextual_continuation",
+            "continue",
+            context_required=True,
+            memory_recommended=True,
+            repair_policy="contextual_repair",
+            expected_qualities=("context-aware", "direct", "non-repetitive"),
+            signals=("explicit_followup_marker", "followup_phrase"),
+            confidence=0.95,
+        )
+
     if (
         len(canonical.split()) <= 12
         and (
