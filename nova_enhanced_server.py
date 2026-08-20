@@ -8359,6 +8359,9 @@ def brain_route(text, context=None):
     evaluation_only = bool(
         isinstance(context, dict) and context.get("evaluation_only")
     )
+    normal_chat_llm_first = bool(
+        isinstance(context, dict) and context.get("normal_chat_llm_first")
+    )
     evaluation_mutation_block = _evaluation_mutation_guard_response(text, context)
     if evaluation_mutation_block is not None:
         return evaluation_mutation_block
@@ -8530,7 +8533,7 @@ def brain_route(text, context=None):
         return _local_llm_status_response(trace)
 
     relationship_coaching = _relationship_coaching_kind(text, previous_user, previous_answer)
-    if relationship_coaching:
+    if relationship_coaching and not normal_chat_llm_first:
         response = _relationship_coaching_response(relationship_coaching)
         trace["source"] = "relationship_coaching"
         trace["domain"] = "relationship_advice"
@@ -8581,7 +8584,7 @@ def brain_route(text, context=None):
         return science_followup, trace
 
     recent_reference = _recent_named_reference(text, conversation_history)
-    if recent_reference:
+    if recent_reference and not normal_chat_llm_first:
         reference_kind, reference_value = recent_reference
         response = f"You called the {reference_kind} {reference_value}."
         trace["source"] = "conversation_context_router"
@@ -8597,7 +8600,7 @@ def brain_route(text, context=None):
         trace = _set_final_answer_source(trace)
         return response, trace
 
-    if joke_request_kind:
+    if joke_request_kind and not normal_chat_llm_first:
         response = _next_joke_response(context)
         trace["source"] = "nova_joke"
         trace["domain"] = "humor"
@@ -8741,7 +8744,10 @@ def brain_route(text, context=None):
         trace = _set_final_answer_source(trace)
         return response, trace
 
-    if _is_nova_human_likeness_followup(text, previous_user, previous_answer):
+    if (
+        _is_nova_human_likeness_followup(text, previous_user, previous_answer)
+        and not normal_chat_llm_first
+    ):
         response = _nova_human_likeness_followup_response()
         trace["source"] = "nova_identity_followup"
         trace["domain"] = "self_awareness"
@@ -8789,7 +8795,11 @@ def brain_route(text, context=None):
         trace = _set_final_answer_source(trace)
         return response, trace
 
-    if _is_nova_casual_conversation_question(text) and not trained_adapter_only_requested:
+    if (
+        _is_nova_casual_conversation_question(text)
+        and not trained_adapter_only_requested
+        and not normal_chat_llm_first
+    ):
         response = _nova_casual_conversation_response(text)
         trace["source"] = "nova_casual_conversation"
         trace["domain"] = "casual_conversation"
@@ -9359,7 +9369,7 @@ def brain_route(text, context=None):
         trace = _set_final_answer_source(trace)
         return response, trace
 
-    if _is_context_help_followup(text):
+    if _is_context_help_followup(text) and not normal_chat_llm_first:
         context_topic = _extract_context_topic_from_last_turn(previous_user, previous_answer)
         response = _context_topic_help_response(context_topic)
         if response:
@@ -9380,7 +9390,10 @@ def brain_route(text, context=None):
             trace = _set_final_answer_source(trace)
             return response, trace
 
-    if _is_deep_conversation_request(text, previous_user, previous_answer):
+    if (
+        _is_deep_conversation_request(text, previous_user, previous_answer)
+        and not normal_chat_llm_first
+    ):
         response = _deep_conversation_response(text, previous_user, previous_answer)
         trace["source"] = "deep_conversation_router"
         trace["domain"] = "deep_conversation"
@@ -10411,6 +10424,7 @@ def brain_route(text, context=None):
                             "primary_model_guidance",
                             "primary_model_required_aspects",
                             "adaptive_model_memory",
+                            "normal_chat_llm_first",
                         ):
                             if (context or {}).get(key) is not None:
                                 cognitive_context[key] = (context or {}).get(key)
@@ -12605,6 +12619,27 @@ def _answer_status_from_trace(trace):
     }
 
 
+def _should_use_normal_chat_llm_first(conversation_decision, context, *, raw_adapter_request=False):
+    """Keep ordinary conversation on the configured LLM, not canned routes."""
+    if raw_adapter_request or not isinstance(context, dict):
+        return False
+    if context.get("evaluation_only"):
+        return False
+    if context.get("action_request") or context.get("tool_request"):
+        return False
+    if isinstance(conversation_decision, dict):
+        family = conversation_decision.get("intent_family")
+        current = conversation_decision.get("current_information_required")
+    else:
+        family = getattr(conversation_decision, "intent_family", "")
+        current = getattr(conversation_decision, "current_information_required", False)
+    return (
+        str(family or "").strip().lower()
+        in {"stable_reasoning", "open_ended", "follow_up"}
+        and not bool(current)
+    )
+
+
 def _run_nova_chat_turn_impl(text, context=None):
     """Run one real Nova turn while preserving legacy and gateway privacy behavior."""
     global _LAST_USER_TEXT, _LAST_NOVA_RESPONSE
@@ -12632,6 +12667,11 @@ def _run_nova_chat_turn_impl(text, context=None):
             context["conversation_decision_trace"] = conversation_decision.safe_trace()
         except Exception:
             conversation_decision = None
+    normal_chat_llm_first = _should_use_normal_chat_llm_first(
+        conversation_decision,
+        context,
+        raw_adapter_request=raw_adapter_request,
+    )
     companion_service = None
     companion_turn = None
     if (
@@ -12821,7 +12861,11 @@ def _run_nova_chat_turn_impl(text, context=None):
         else resolve_conversation_recall(text, history_before_turn)
     )
     reviewed_conversation_response = ""
-    if conversation_decision is not None and not raw_adapter_request:
+    if (
+        conversation_decision is not None
+        and not raw_adapter_request
+        and not normal_chat_llm_first
+    ):
         try:
             from nova_response_repair import reviewed_direct_response
 
@@ -13076,6 +13120,9 @@ def _run_nova_chat_turn_impl(text, context=None):
         _LAST_USER_TEXT = text
         _LAST_NOVA_RESPONSE = response
     else:
+        if normal_chat_llm_first:
+            context["normal_chat_llm_first"] = True
+            context["normal_chat_policy"] = "llm_first"
         if optional_model_mode.get("selected"):
             direct_middle_routing = {
                 "selected": False,
@@ -13120,10 +13167,11 @@ def _run_nova_chat_turn_impl(text, context=None):
                     18,
                 )
 
-        companion_fast_answer, companion_fast_trace = _companion_continuity_fast_path(
-            text,
-            companion_turn,
-        ) if companion_turn is not None else (None, {})
+        companion_fast_answer, companion_fast_trace = (
+            _companion_continuity_fast_path(text, companion_turn)
+            if companion_turn is not None and not normal_chat_llm_first
+            else (None, {})
+        )
         if companion_fast_answer:
             response, trace = companion_fast_answer, companion_fast_trace
         else:
@@ -13919,6 +13967,15 @@ def _run_nova_chat_turn_impl(text, context=None):
                     trace["memory_v2_error"] = type(memory_v2_error).__name__
 
     if isinstance(trace, dict):
+        deterministic_route = (
+            trace.get("source") == "dictionary"
+            or str(trace.get("source") or "").startswith("deterministic_")
+            or "system_status" in list(trace.get("roles") or [])
+            or str((trace.get("route_path") or [""])[0])
+            in {"dictionary_router", "nova_core"}
+        )
+        if normal_chat_llm_first and context.get("normal_chat_llm_first") and not deterministic_route:
+            trace["normal_chat_policy"] = "llm_first"
         if conversation_decision is not None:
             trace["conversation_decision"] = conversation_decision.safe_trace()
         if evaluation_only:

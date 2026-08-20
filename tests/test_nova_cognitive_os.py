@@ -78,6 +78,63 @@ def test_cognitive_os_uses_fast_planner_for_open_ended_route(monkeypatch):
     assert force_llm_values == [False]
 
 
+def test_cognitive_os_llm_first_policy_bypasses_fast_general_response(monkeypatch):
+    calls = []
+
+    class Planner:
+        def plan(self, message, force_llm=True, conversation_decision=None):
+            return {
+                "route": "general_conversation",
+                "intent": "stable reasoning",
+                "slot_needed": None,
+                "needs_memory": False,
+                "needs_dictionary": False,
+                "needs_math": False,
+                "needs_weather": False,
+                "needs_web": False,
+                "needs_tool": False,
+                "needs_llm_synthesis": False,
+                "answer_style": "short_answer",
+                "confidence": 0.80,
+                "_planner_used": "deterministic_fast_path",
+            }
+
+    class ValidationResult:
+        ok = True
+        errors = []
+
+        def __init__(self, plan):
+            self.plan = plan
+
+    class Validator:
+        def validate(self, plan, raw_user_message=""):
+            return ValidationResult(plan)
+
+    class FakeSynth:
+        LAST_LOCAL_LLM_MODEL = "qwen2.5:1.5b"
+
+        @staticmethod
+        def generate(context_packet):
+            calls.append(context_packet)
+            return "A real answer formatted for Nova.", True, None
+
+    monkeypatch.setattr(cognitive_os, "_get_planner", lambda: Planner())
+    monkeypatch.setattr(cognitive_os, "_get_validator", lambda: Validator())
+    monkeypatch.setattr(cognitive_os, "_get_answer_synthesizer", lambda: None)
+    monkeypatch.setattr(cognitive_os, "_get_llm_synth", lambda: FakeSynth)
+
+    answer, trace = cognitive_os.route(
+        "Why is it so hard to find?",
+        context={"normal_chat_llm_first": True},
+    )
+
+    assert answer == "A real answer formatted for Nova."
+    assert len(calls) == 1
+    assert calls[0]["normal_chat_llm_first"] is True
+    assert trace["local_llm_synthesis_used"] is True
+    assert "fast_general_response" not in trace["skills"]
+
+
 def test_contextual_followup_cannot_be_promoted_to_web_search(monkeypatch):
     class Planner:
         def plan(self, message, force_llm=True, conversation_decision=None):

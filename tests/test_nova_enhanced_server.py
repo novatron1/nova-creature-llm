@@ -6594,6 +6594,53 @@ def test_normal_chat_reaction_uses_client_history_not_other_client_global(monkey
     assert trace["context_resolution"] == "positive_reaction"
 
 
+def test_run_chat_marks_normal_conversation_llm_first_without_hijacking_context(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(
+        server,
+        "pipeline_process",
+        lambda *args, **kwargs: {
+            "fast_path": False,
+            "intent": {"primary_intent": "general_inquiry"},
+            "route": ["memory_transformer", "speech_output_transformer"],
+            "confidence": 0.8,
+            "normalized_text": args[0],
+            "memory_binding": {},
+        },
+    )
+    captured = {}
+
+    def fake_cognitive(prompt, **kwargs):
+        captured["context"] = kwargs.get("context") or {}
+        return "It can be hard to find because several factors overlap, including timing and the choices available to you.", {
+            "source": "cognitive_os",
+            "local_llm_synthesis_used": True,
+            "local_llm_model": "qwen2.5:1.5b",
+            "route_path": ["nova_context", "qwen_synthesis", "speech_output"],
+            "final_answer_source": "local_llm_synthesis",
+        }
+
+    monkeypatch.setattr(server, "cognitive_route", fake_cognitive, raising=False)
+
+    response, trace = server._run_nova_chat_turn(
+        "Why is it so hard to find?",
+        context={
+            "nova_gateway": True,
+            "memory_read_allowed": False,
+            "memory_write_allowed": False,
+            "conversation_memory_allowed": False,
+        },
+    )
+
+    assert "hard to find" in response
+    assert captured["context"]["normal_chat_llm_first"] is True
+    assert trace["normal_chat_policy"] == "llm_first"
+
+
 def test_run_chat_firewall_blocks_managed_canned_answer(monkeypatch):
     monkeypatch.setattr(
         server,

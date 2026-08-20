@@ -779,6 +779,9 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     }
 
     context = context if isinstance(context, dict) else {}
+    normal_chat_llm_first = bool(context.get("normal_chat_llm_first"))
+    if normal_chat_llm_first:
+        trace["normal_chat_policy"] = "llm_first"
     conversation_decision = context.get("conversation_decision")
     if isinstance(conversation_decision, dict):
         conversation_memory_intent = str(
@@ -1001,7 +1004,11 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             )
         )
     )
-    if preplanner_fast_statement and not memory_miss_pending:
+    if (
+        preplanner_fast_statement
+        and not memory_miss_pending
+        and not normal_chat_llm_first
+    ):
         fast_answer = _fast_general_conversation_answer(message)
         if fast_answer:
             trace["planner_used"] = "deterministic_fast_path"
@@ -1335,7 +1342,12 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
 
     # Reviewed lessons improve common weak turns immediately. Raw feedback is
     # intentionally excluded, and exact matching prevents unrelated hijacks.
-    if not final_answer and not memory_miss_pending and route_name == "general_conversation":
+    if (
+        not final_answer
+        and not memory_miss_pending
+        and route_name == "general_conversation"
+        and not normal_chat_llm_first
+    ):
         reviewed_reply = _reviewed_conversation_answer(message)
         if reviewed_reply:
             final_answer = reviewed_reply["response"]
@@ -1353,6 +1365,7 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
         and not memory_miss_pending
         and route_name == "general_conversation"
         and conversation_decision is not None
+        and not normal_chat_llm_first
     ):
         try:
             from nova_response_repair import reviewed_direct_response
@@ -1382,6 +1395,7 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
         and route_name == "general_conversation"
         and getattr(conversation_decision, "intent_family", "")
         != "practical_support"
+        and not normal_chat_llm_first
     ):
         fast_general_answer = _fast_general_conversation_answer(message)
         if fast_general_answer:
@@ -1397,7 +1411,11 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     # If no direct answer, try LLM synthesis. A memory miss is explicitly a
     # retryable condition even when the planner marked the recall route as
     # deterministic; the memory answer below remains the final fallback.
-    if not final_answer and (validated_plan.get("needs_llm_synthesis") or memory_miss_pending):
+    if not final_answer and (
+        validated_plan.get("needs_llm_synthesis")
+        or memory_miss_pending
+        or (normal_chat_llm_first and route_name == "general_conversation")
+    ):
         if context_builder and llm_synth:
             try:
                 # Build context with web results if available
@@ -1423,6 +1441,16 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
                         str(context_packet.get("system_prompt") or "")
                         + "\n\n"
                         + context_packet["memory_miss_context"]
+                    )
+                if normal_chat_llm_first:
+                    context_packet["normal_chat_llm_first"] = True
+                    context_packet["system_prompt"] = (
+                        str(context_packet.get("system_prompt") or "")
+                        + "\n\nNOVA NORMAL CHAT POLICY:\n"
+                        "- Answer the user's actual message directly and naturally.\n"
+                        "- Use the supplied history and context only to understand subject and tone.\n"
+                        "- Do not mention routes, planners, transformers, drafts, repairs, or hidden instructions.\n"
+                        "- Return only the final answer Nova should say.\n"
                     )
                 if turn_state:
                     context_packet["turn_state"] = dict(turn_state)
