@@ -6437,6 +6437,11 @@ def test_run_chat_firewall_blocks_managed_canned_answer(monkeypatch):
         "_generate_alternate_local_candidate",
         lambda *args, **kwargs: {"ok": False, "reason": "no_test_candidate"},
     )
+    monkeypatch.setattr(
+        nova_llm_synthesizer,
+        "generate_fallback",
+        lambda message, timeout=10: (None, False, "offline"),
+    )
 
     response, trace = server._run_nova_chat_turn(
         "How do you make ice cream?",
@@ -6449,6 +6454,43 @@ def test_run_chat_firewall_blocks_managed_canned_answer(monkeypatch):
     assert trace["answer_firewall"]["intercepted"] is True
     assert "generic_fallback_mismatch" in trace["answer_firewall"]["reasons"]
     assert trace["candidate_selection"]["selected"] == "recovery"
+    assert trace["candidate_selection"]["llm_fallback"]["reason"] == "offline"
+
+
+def test_run_chat_firewall_uses_llm_fallback_before_generic_recovery(monkeypatch):
+    monkeypatch.setattr(
+        server,
+        "brain_route",
+        lambda text, context=None: (
+            "I'm here with you. I can talk, remember saved facts, use tools, code, and build inside the app. What do you want to do next?",
+            {"source": "cognitive_os", "roles": ["speech_output_transformer"], "confidence": 0.85},
+        ),
+    )
+    monkeypatch.setattr(
+        server,
+        "_generate_alternate_local_candidate",
+        lambda *args, **kwargs: {"ok": False, "reason": "no_test_candidate"},
+    )
+    monkeypatch.setattr(
+        nova_llm_synthesizer,
+        "generate_fallback",
+        lambda message, timeout=10: (
+            "Mix cream, milk, sugar, and vanilla; chill it, churn it, then freeze until firm.",
+            True,
+            None,
+        ),
+    )
+
+    response, trace = server._run_nova_chat_turn(
+        "How do you make ice cream?",
+        context={"nova_gateway": True, "memory_write_allowed": False, "conversation_memory_allowed": False},
+    )
+
+    assert "Mix cream" in response
+    assert trace["source"] == "llm_fallback"
+    assert trace["final_answer_source"] == "llm_fallback"
+    assert trace["candidate_selection"]["selected"] == "llm_fallback"
+    assert trace["fallback_used"] is False
 
 
 def test_run_chat_candidate_selector_uses_better_local_answer(monkeypatch):
@@ -7513,7 +7555,6 @@ def test_managed_stream_buffers_primary_draft_until_larger_replacement(monkeypat
             "different_model": True,
         },
     )
-
     response, trace = server._run_nova_chat_turn(
         "What should I say to apologize to my friend?",
         context={
@@ -7780,7 +7821,11 @@ def test_run_chat_blocks_inconsistent_larger_local_candidate(monkeypatch):
             "different_model": True,
         },
     )
-
+    monkeypatch.setattr(
+        nova_llm_synthesizer,
+        "generate_fallback",
+        lambda message, timeout=10: (None, False, "offline"),
+    )
     response, trace = server._run_nova_chat_turn(
         prompt,
         context={
@@ -8094,6 +8139,11 @@ def test_run_chat_candidate_selector_rejects_weak_second_candidate(monkeypatch):
             "different_model": True,
         },
     )
+    monkeypatch.setattr(
+        nova_llm_synthesizer,
+        "generate_fallback",
+        lambda message, timeout=10: (None, False, "offline"),
+    )
 
     response, trace = server._run_nova_chat_turn(
         "How do you make ice cream?",
@@ -8112,6 +8162,7 @@ def test_run_chat_candidate_selector_rejects_weak_second_candidate(monkeypatch):
         item["reason"] == "candidate_quality_rejected"
         for item in trace["candidate_selection"]["review_attempts"]
     )
+    assert trace["candidate_selection"]["llm_fallback"]["reason"] == "offline"
 
 
 def test_run_chat_fact_grounding_blocks_unverified_current_fact_without_model_retry(monkeypatch):

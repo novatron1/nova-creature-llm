@@ -12206,6 +12206,90 @@ def _generate_alternate_local_candidate(
     }
 
 
+def _generate_llm_fallback_candidate(
+    text,
+    previous_user,
+    previous_answer,
+    primary_trace,
+    context,
+):
+    """Ask the configured local LLM once before emitting canned recovery text."""
+
+    retry_allowed, retry_reason = _candidate_retry_allowed(primary_trace, context)
+    if not retry_allowed:
+        return {"ok": False, "reason": "llm_fallback_not_allowed:" + retry_reason}
+    try:
+        import nova_llm_synthesizer as llm_synth
+
+        retry_prompt, relevance_text = _candidate_retry_prompt(
+            text,
+            previous_user,
+            previous_answer,
+            primary_trace=primary_trace,
+            context=context,
+        )
+        started = time.monotonic()
+        answer, ok, error = llm_synth.generate_fallback(
+            retry_prompt,
+            timeout=_candidate_retry_timeout_seconds(),
+        )
+        answer = str(answer or "").strip()
+        latency_ms = round((time.monotonic() - started) * 1000, 3)
+        if not ok or not answer:
+            return {
+                "ok": False,
+                "reason": str(error or "llm_fallback_failed"),
+                "latency_ms": latency_ms,
+            }
+        fallback_trace = {
+            "source": "llm_fallback",
+            "local_llm_synthesis_used": True,
+            "_fact_grounding_blocking": False,
+        }
+        grounding = _evaluate_fact_grounding(text, answer, fallback_trace)
+        consistency = _evaluate_technical_consistency(text, answer)
+        decision = evaluate_answer(
+            text,
+            answer,
+            previous_answer=previous_answer,
+            trace={
+                **fallback_trace,
+                "numeric_verification_required": _candidate_requires_numeric_verification(
+                    text,
+                    previous_user,
+                ),
+                "_fact_grounding_blocking": grounding.blocking,
+            },
+        )
+        decision = _merge_consistency_with_firewall(decision, consistency)
+        if grounding.blocking or not decision.accepted:
+            return {
+                "ok": False,
+                "reason": "llm_fallback_quality_rejected",
+                "latency_ms": latency_ms,
+                "grounding": grounding.as_trace(),
+                "consistency": consistency.as_trace(),
+            }
+        model = str(
+            getattr(llm_synth, "LAST_LOCAL_LLM_MODEL", None)
+            or "configured-local-llm"
+        )
+        return {
+            "ok": True,
+            "reason": "generated",
+            "answer": answer,
+            "provider": "configured-local-llm",
+            "model": model,
+            "relevance_text": relevance_text,
+            "latency_ms": latency_ms,
+            "firewall": decision,
+            "grounding": grounding.as_trace(),
+            "consistency": consistency.as_trace(),
+        }
+    except Exception as error:
+        return {"ok": False, "reason": "llm_fallback_error:" + type(error).__name__}
+
+
 def _validate_alternate_local_candidate(
     text,
     previous_user,
@@ -13542,35 +13626,91 @@ def _run_nova_chat_turn_impl(text, context=None):
                 firewall_trace["intercepted"] = False
             else:
                 fact_blocked = bool(trace.get("_fact_grounding_blocking"))
-                response = (
-                    grounding_recovery_response(text, grounding_decision)
+                llm_fallback = (
+                    {"ok": False, "reason": "fact_grounding_blocked"}
                     if fact_blocked
-                    else recovery_response(
+                    else _generate_llm_fallback_candidate(
                         text,
-                        decision,
-                        contextual_fallback=context_resolution.fallback_response,
+                        previous_user,
+                        previous_answer,
+                        trace,
+                        context,
                     )
                 )
-                trace["source"] = "fact_grounding_guard" if fact_blocked else "answer_firewall_recovery"
-                trace["domain"] = "response_quality"
-                trace["roles"] = list(
-                    dict.fromkeys(list(trace.get("roles") or []) + ["critic_conscience_transformer", "speech_output_transformer"])
-                )
-                trace["skills"] = list(
-                    dict.fromkeys(
-                        list(trace.get("skills") or [])
-                        + (["fact_grounding", "freshness_guard"] if fact_blocked else ["answer_relevance_check", "off_topic_block"])
+                if llm_fallback.get("ok"):
+                    response = llm_fallback["answer"]
+                    trace["source"] = "llm_fallback"
+                    trace["domain"] = "response_quality"
+                    trace["local_llm_synthesis_used"] = True
+                    trace["local_llm_provider"] = llm_fallback.get("provider", "")
+                    trace["local_llm_model"] = llm_fallback.get("model", "")
+                    trace["roles"] = list(
+                        dict.fromkeys(
+                            list(trace.get("roles") or [])
+                            + ["critic_conscience_transformer", "speech_output_transformer"]
+                        )
                     )
-                )
-                trace["route_path"] = list(trace.get("route_path") or []) + [
-                    "fact_grounding" if fact_blocked else "answer_firewall",
-                    "speech_output",
-                ]
-                trace["fallback_used"] = True
-                trace["final_answer_source"] = "fact_grounding_guard" if fact_blocked else "answer_firewall_recovery"
-                trace["confidence"] = max(float(trace.get("confidence") or 0.0), 0.95)
-                if fact_blocked:
-                    firewall_trace["status"] = "fact_grounding_blocked"
+                    trace["skills"] = list(
+                        dict.fromkeys(
+                            list(trace.get("skills") or [])
+                            + ["answer_relevance_check", "llm_fallback"]
+                        )
+                    )
+                    trace["route_path"] = list(trace.get("route_path") or []) + [
+                        "llm_fallback",
+                        "speech_output",
+                    ]
+                    trace["fallback_used"] = False
+                    trace["final_answer_source"] = "llm_fallback"
+                    trace["confidence"] = max(float(trace.get("confidence") or 0.0), 0.86)
+                    candidate_trace["selected"] = "llm_fallback"
+                    candidate_trace["llm_fallback"] = {
+                        "attempted": True,
+                        "ok": True,
+                        "provider": llm_fallback.get("provider", ""),
+                        "model": llm_fallback.get("model", ""),
+                        "latency_ms": llm_fallback.get("latency_ms"),
+                    }
+                    firewall_trace = llm_fallback["firewall"].as_trace()
+                    firewall_trace["status"] = "passed_after_llm_fallback"
+                    firewall_trace["intercepted"] = True
+                    firewall_trace["initial_reasons"] = list(decision.reasons)
+                else:
+                    response = (
+                        grounding_recovery_response(text, grounding_decision)
+                        if fact_blocked
+                        else recovery_response(
+                            text,
+                            decision,
+                            contextual_fallback=context_resolution.fallback_response,
+                        )
+                    )
+                    trace["source"] = "fact_grounding_guard" if fact_blocked else "answer_firewall_recovery"
+                    trace["domain"] = "response_quality"
+                    trace["roles"] = list(
+                        dict.fromkeys(list(trace.get("roles") or []) + ["critic_conscience_transformer", "speech_output_transformer"])
+                    )
+                    trace["skills"] = list(
+                        dict.fromkeys(
+                            list(trace.get("skills") or [])
+                            + (["fact_grounding", "freshness_guard"] if fact_blocked else ["answer_relevance_check", "off_topic_block"])
+                        )
+                    )
+                    trace["route_path"] = list(trace.get("route_path") or []) + [
+                        "fact_grounding" if fact_blocked else "answer_firewall",
+                        "speech_output",
+                    ]
+                    trace["fallback_used"] = True
+                    trace["final_answer_source"] = "fact_grounding_guard" if fact_blocked else "answer_firewall_recovery"
+                    trace["confidence"] = max(float(trace.get("confidence") or 0.0), 0.95)
+                    candidate_trace["llm_fallback"] = {
+                        "attempted": not fact_blocked,
+                        "ok": False,
+                        "reason": llm_fallback.get("reason", "not_attempted"),
+                        "latency_ms": llm_fallback.get("latency_ms"),
+                    }
+                    if fact_blocked:
+                        firewall_trace["status"] = "fact_grounding_blocked"
             _LAST_USER_TEXT = text
             _LAST_NOVA_RESPONSE = response
         trace["answer_firewall"] = firewall_trace
