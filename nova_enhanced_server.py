@@ -1214,6 +1214,10 @@ def _is_context_help_followup(text):
             q.startswith(("how can you help", "how can u help", "what can you do", "what can u do"))
             and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
         )
+        or (
+            q.startswith(("how can you test", "how do you test", "how can i test"))
+            and any(pronoun in q.split() for pronoun in ("it", "that", "this"))
+        )
     )
 
 
@@ -1224,6 +1228,11 @@ def _extract_context_topic_from_last_turn(last_user=None, last_response=None):
         return preference_topic
     previous = _canonical_key(last_user_text + " " + str(last_response or ""))
     for topic in (
+        "love",
+        "relationship",
+        "feelings",
+        "trust",
+        "commitment",
         "music",
         "song",
         "songs",
@@ -1247,6 +1256,12 @@ def _extract_context_topic_from_last_turn(last_user=None, last_response=None):
 
 def _context_topic_help_response(topic):
     topic = str(topic or "").strip().lower()
+    if topic in {"love", "relationship", "feelings", "trust", "commitment"}:
+        return (
+            "With love, there is no single test that proves it. Look for consistent actions, honesty, mutual effort, "
+            "care during difficult moments, and whether both people can trust and choose each other over time. "
+            "A real feeling should show up in behavior, not only words."
+        )
     if topic == "music":
         return (
             "Yeah — with music I can help a lot. I can help you write lyrics, come up with song concepts, "

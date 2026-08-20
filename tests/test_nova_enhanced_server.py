@@ -3480,6 +3480,27 @@ def test_brain_route_music_help_followup_stays_on_topic_not_deep_template(monkey
     assert trace["conversation_topic"] == "music"
 
 
+def test_brain_route_love_test_followup_stays_on_relationship_context(monkeypatch):
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(server, "_LAST_USER_TEXT", "How can I tell if love is real")
+    monkeypatch.setattr(
+        server,
+        "_LAST_NOVA_RESPONSE",
+        "Look for genuine, consistent, supportive actions and mutual commitment.",
+    )
+
+    response, trace = server.brain_route("How can you test it")
+
+    assert "love" in response.lower()
+    assert any(word in response.lower() for word in ("consistent", "actions", "trust", "commitment"))
+    assert trace["source"] == "context_topic_help_router"
+    assert trace["conversation_topic"] == "love"
+
+
 def test_brain_route_focus_tonight_is_natural_not_deep_template(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
