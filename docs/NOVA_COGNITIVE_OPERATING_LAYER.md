@@ -285,6 +285,23 @@ The release check fails on source maps, environment files, private keys,
 credential-like content, bytecode caches, and oversized debugging artifacts.
 Telemetry, prompt logging, and private-memory logging default to off.
 
+### Verified local snapshots
+
+Use [Nova Release Lock](NOVA_RELEASE_LOCK.md) to turn selected dirty-worktree
+changes into an isolated, tested candidate without modifying the live Nova
+worktree:
+
+```powershell
+py -3.11 tools\nova_release_lock.py plan
+py -3.11 tools\nova_release_lock.py build --run-id <run-id>
+py -3.11 tools\nova_release_lock.py status --run-id <run-id>
+py -3.11 tools\nova_release_lock.py promote --run-id <run-id>
+py -3.11 tools\nova_release_lock.py cleanup --run-id <run-id>
+```
+
+Only the explicit `promote` command changes local `master`; Release Lock
+never pushes, deploys, or restarts Nova.
+
 ## Test commands
 
 ```powershell

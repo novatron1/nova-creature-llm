@@ -118,6 +118,7 @@ _MAX_PROXY_RESPONSE_HEADER_BYTES = 16_384
 _MAX_PROXY_CONNECTION_BYTES = 4 * 1024 * 1024
 _MAX_PROXY_TOTAL_BYTES = 16 * 1024 * 1024
 _MAX_PROXY_CONNECTIONS = 16
+_PROXY_BACKLOG_SETTLE_SECONDS = 0.05
 _APPROVED_SMOKE_CHECKER_BYTES = 4_597
 _APPROVED_SMOKE_CHECKER_SHA256 = (
     "9e2af16acd6c0b70c54940e2fb30c678754193789f6b25ddeb3f5d054118ce3e"
@@ -150,6 +151,7 @@ _MAX_PROC_STAT_BYTES = 4_096
 _PLATFORM_OS_NAME = os.name
 _PLATFORM_SYSTEM = sys.platform
 _PROCESS_CLEANUP_SECONDS = 5.0
+_SMOKE_GLOBAL_CLEANUP_RESERVE_SECONDS = 1.0
 _LINUX_SIGNAL_RESERVE_SECONDS = 0.25
 _LINUX_FINAL_CLEANUP_RESERVE_SECONDS = 1.0
 _LINUX_SUPERVISOR_GRACE_SECONDS = 0.25
@@ -797,7 +799,13 @@ class _SafeReportDirectory:
         except OSError:
             pass
 
-    def write_text(self, filename: str, content: str) -> Path:
+    def write_text(
+        self,
+        filename: str,
+        content: str,
+        *,
+        durable: bool = True,
+    ) -> Path:
         destination = self.validate_output(filename)
         hook = self._before_create_hook
         if hook is not None:
@@ -832,7 +840,8 @@ class _SafeReportDirectory:
                 descriptor = -1
                 stream.write(content)
                 stream.flush()
-                os.fsync(stream.fileno())
+                if durable:
+                    os.fsync(stream.fileno())
             self.verify()
             self.validate_output(filename)
             if self._directory_fd is not None:
@@ -3048,6 +3057,10 @@ class _OwnershipProxy:
 
     def _drain_listener_backlog(self) -> None:
         drained_connections = 0
+        settle_deadline = min(
+            self._deadline,
+            time.monotonic() + _PROXY_BACKLOG_SETTLE_SECONDS,
+        )
         try:
             self._listener.setblocking(False)
             while True:
@@ -3058,6 +3071,30 @@ class _OwnershipProxy:
                     if not self._error:
                         self._error = "probe proxy exceeded connection limit"
                     return
+                remaining = settle_deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                try:
+                    readable, _, exceptional = select.select(
+                        [self._listener],
+                        [],
+                        [self._listener],
+                        remaining,
+                    )
+                except (OSError, ValueError):
+                    if not self._error:
+                        self._error = (
+                            "probe proxy accept backlog could not be verified"
+                        )
+                    return
+                if exceptional:
+                    if not self._error:
+                        self._error = (
+                            "probe proxy accept backlog could not be verified"
+                        )
+                    return
+                if not readable:
+                    break
                 try:
                     client, _ = self._listener.accept()
                 except BlockingIOError:
@@ -3118,7 +3155,14 @@ def run_clean_start_smoke(
     started = time.monotonic()
     if timeout_seconds <= 0:
         raise ValueError("timeout_seconds must be positive")
-    deadline = started + timeout_seconds
+    global_deadline = started + timeout_seconds
+    cleanup_reserve = min(
+        _SMOKE_GLOBAL_CLEANUP_RESERVE_SECONDS,
+        timeout_seconds * 0.9,
+    )
+    # Stop launch/probe work early enough to terminate the isolated process,
+    # drain output, and persist the report inside the caller's global budget.
+    deadline = global_deadline - cleanup_reserve
     _ensure_supported_platform()
     if _deadline_expired(deadline):
         raise TimeoutError("clean-start smoke deadline expired during preflight")
@@ -3334,10 +3378,12 @@ def run_clean_start_smoke(
     stdout_file = safe_reports.write_text(
         stdout_filename,
         _persisted_log_content(recorded_server_stdout, 65_536),
+        durable=False,
     )
     stderr_file = safe_reports.write_text(
         stderr_filename,
         _persisted_log_content(recorded_server_stderr, 65_536),
+        durable=False,
     )
     payload = asdict(result)
     payload.update(
