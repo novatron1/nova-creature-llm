@@ -282,7 +282,12 @@ def test_reliability_http_status_backup_and_restore_guard(monkeypatch, tmp_path)
         assert finished["status"] == "succeeded"
         assert reliability.list_backups(limit=1)[0]["verified"] is True
         _, refreshed = _request_json(base_url, "/api/reliability/status")
-        assert refreshed["diagnostics"]["overall"] == "healthy"
+        diagnostics = refreshed["diagnostics"]
+        assert diagnostics["ok"] is True
+        assert diagnostics["counts"]["critical"] == 0
+        assert next(
+            check for check in diagnostics["checks"] if check["id"] == "backups"
+        )["status"] == "pass"
         assert "files" not in refreshed["latest_backup"]
 
         with pytest.raises(urllib.error.HTTPError) as denied:
