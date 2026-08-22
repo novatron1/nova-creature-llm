@@ -8918,7 +8918,8 @@ def test_background_model_warmup_reports_ready_without_blocking_server(monkeypat
 
     thread = server._start_model_warmup()
     assert thread is not None
-    thread.join(timeout=2)
+    thread.join(timeout=5)
+    assert thread.is_alive() is False
     status = server._public_model_warmup_status()
 
     assert status["state"] == "ready"
