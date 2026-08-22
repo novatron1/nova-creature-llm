@@ -4538,6 +4538,8 @@ def test_brain_route_defines_death_without_eat_substring(monkeypatch):
     monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
     monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
     monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setitem(server.DICT_INDEX, "death", "the end of life")
+    monkeypatch.setitem(server.DICT_INDEX, "eat", "chewing and swallowing food")
 
     response, trace = server.brain_route("define death")
 
