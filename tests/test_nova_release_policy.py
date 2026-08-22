@@ -89,6 +89,42 @@ def test_production_policy_excludes_known_local_development_artifacts() -> None:
     assert unknown_executable.rule == "**/*.exe"
 
 
+def test_required_reviewed_training_seed_overrides_broad_data_exclusion(
+    tmp_path: Path,
+) -> None:
+    policy = SnapshotPolicy.load(Path("config/nova_release_snapshot_policy.json"))
+
+    reviewed = policy.classify(
+        "data/reviewed_conversation_training.json",
+        size_bytes=128,
+    )
+    private_memory = policy.classify("data/nova_memory.json", size_bytes=128)
+
+    assert reviewed.classification is SnapshotClass.INCLUDE
+    assert reviewed.rule == "required_files"
+    assert private_memory.classification is SnapshotClass.EXCLUDE
+
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "reviewed_conversation_training.json").write_text(
+        '{"schema_version":"1.0","entries":[]}',
+        encoding="utf-8",
+    )
+    (data / "nova_memory.json").write_text('{"private":true}', encoding="utf-8")
+
+    report = scan_workspace(
+        tmp_path,
+        policy,
+        tracked_paths=set(),
+        deleted_paths=set(),
+    )
+
+    assert [decision.path for decision in report.decisions] == [
+        "data/reviewed_conversation_training.json"
+    ]
+    assert report.included[0].rule == "required_files"
+
+
 def test_unsafe_paths_fail_closed_and_separators_are_normalized(tmp_path: Path) -> None:
     policy_path = tmp_path / "policy.json"
     policy_path.write_text(

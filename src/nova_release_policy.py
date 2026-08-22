@@ -138,10 +138,20 @@ class SnapshotPolicy:
     ambiguous: tuple[str, ...]
     allowed_binary_suffixes: frozenset[str]
     max_static_asset_bytes: int
+    required_files: tuple[str, ...] = ()
 
     @classmethod
     def load(cls, path: Path) -> SnapshotPolicy:
         payload = json.loads(path.read_text(encoding="utf-8"))
+        required_files = tuple(
+            _normalize_path(item) for item in payload.get("required_files", [])
+        )
+        if any(
+            not _is_workspace_relative(item)
+            or any(marker in item for marker in ("*", "?", "[", "]"))
+            for item in required_files
+        ):
+            raise ValueError("required_files must contain exact workspace-relative paths")
         return cls(
             schema_version=str(payload["schema_version"]),
             include=tuple(payload["include"]),
@@ -151,6 +161,7 @@ class SnapshotPolicy:
                 str(suffix).lower() for suffix in payload["allowed_binary_suffixes"]
             ),
             max_static_asset_bytes=int(payload["max_static_asset_bytes"]),
+            required_files=required_files,
         )
 
     @staticmethod
@@ -174,6 +185,36 @@ class SnapshotPolicy:
                 normalized,
                 SnapshotClass.AMBIGUOUS,
                 "path_outside_workspace",
+                size_bytes=size_bytes,
+            )
+
+        if normalized in self.required_files:
+            if is_link:
+                return SnapshotDecision(
+                    normalized,
+                    SnapshotClass.AMBIGUOUS,
+                    "filesystem_link_requires_boundary_check",
+                    size_bytes=size_bytes,
+                )
+            suffix = PurePosixPath(normalized).suffix.lower()
+            if suffix and suffix not in _TEXT_SUFFIXES and suffix not in self.allowed_binary_suffixes:
+                return SnapshotDecision(
+                    normalized,
+                    SnapshotClass.AMBIGUOUS,
+                    "binary_suffix_not_allowed",
+                    size_bytes=size_bytes,
+                )
+            if suffix in self.allowed_binary_suffixes and size_bytes > self.max_static_asset_bytes:
+                return SnapshotDecision(
+                    normalized,
+                    SnapshotClass.AMBIGUOUS,
+                    "static_asset_too_large",
+                    size_bytes=size_bytes,
+                )
+            return SnapshotDecision(
+                normalized,
+                SnapshotClass.INCLUDE,
+                "required_files",
                 size_bytes=size_bytes,
             )
 
@@ -302,6 +343,52 @@ def scan_workspace(
             decision,
             tracked=deleted_path in tracked,
             change="deleted",
+        )
+
+    resolved_root = repo_root.resolve()
+    for required_path in policy.required_files:
+        if required_path in decisions:
+            continue
+        file_path = repo_root / Path(required_path)
+        if not file_path.exists():
+            continue
+        try:
+            stat_result = file_path.lstat()
+            resolved_path = file_path.resolve(strict=True)
+        except OSError:
+            decisions[required_path] = SnapshotDecision(
+                required_path,
+                SnapshotClass.AMBIGUOUS,
+                "required_file_unreadable",
+                tracked=required_path in tracked,
+            )
+            continue
+        if not resolved_path.is_relative_to(resolved_root):
+            decisions[required_path] = SnapshotDecision(
+                required_path,
+                SnapshotClass.AMBIGUOUS,
+                "path_outside_workspace",
+                tracked=required_path in tracked,
+                size_bytes=stat_result.st_size,
+            )
+            continue
+        if not stat.S_ISREG(stat_result.st_mode):
+            decisions[required_path] = SnapshotDecision(
+                required_path,
+                SnapshotClass.AMBIGUOUS,
+                "required_file_not_regular",
+                tracked=required_path in tracked,
+                size_bytes=stat_result.st_size,
+            )
+            continue
+        decision = policy.classify(
+            required_path,
+            size_bytes=stat_result.st_size,
+            is_link=_is_link_or_reparse(stat_result),
+        )
+        decisions[required_path] = replace(
+            decision,
+            tracked=required_path in tracked,
         )
 
     return SnapshotReport(

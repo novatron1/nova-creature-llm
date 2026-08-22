@@ -1,5 +1,8 @@
 {
   "schema_version": "1.0",
+  "required_files": [
+    "data/reviewed_conversation_training.json"
+  ],
   "include": [
     "src/**",
     "tests/**",
