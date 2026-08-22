@@ -127,45 +127,20 @@ def test_default_regular_local_llm_is_small_qwen_with_dolphin_reserved_for_direc
 
 def test_optional_strong_model_configuration_is_explicit_and_does_not_replace_default():
     config = llm.LocalLLMConfig()
-    env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")
     json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
 
     assert config.optional_strong_model == "qwen3:8b"
     assert config.optional_strong_timeout == 240
     assert config.optional_strong_keep_alive == "5m"
-    assert "NOVA_OPTIONAL_STRONG_MODEL=qwen3:8b" in env_config
     assert json_config["NOVA_OPTIONAL_STRONG_MODEL"] == "qwen3:8b"
     assert json_config["NOVA_OPTIONAL_STRONG_TIMEOUT"] == 240
     assert json_config["NOVA_OPTIONAL_STRONG_KEEP_ALIVE"] == "5m"
     assert config.deep_model != config.optional_strong_model
 
 
-def test_checked_in_local_llm_configs_select_small_qwen_for_regular_chat():
-    env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")
+def test_portable_local_llm_config_selects_small_qwen_for_regular_chat():
     json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
 
-    assert "NOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b" in env_config
-    assert "NOVA_FAST_LOCAL_LLM_MODEL=qwen2.5:1.5b" in env_config
-    assert "NOVA_DEEP_LOCAL_LLM_MODEL=qwen2.5:1.5b" in env_config
-    assert "NOVA_DIRECT_DEEPSEEK_MODEL=dolphin3" in env_config
-    assert "NOVA_DIRECT_DEEPSEEK_TIMEOUT=180" in env_config
-    assert "NOVA_LOCAL_LLM_CONTEXT=8192" in env_config
-    assert "NOVA_NATURAL_CHAT=true" in env_config
-    assert "NOVA_ULTRA_THINK=true" in env_config
-    assert "NOVA_AGENT_MODE=true" in env_config
-    assert "NOVA_AGENT_MAX_STEPS=6" in env_config
-    assert "NOVA_AGENT_REQUIRE_APPROVAL=true" in env_config
-    assert "NOVA_AGENT_ALLOW_SHELL=false" in env_config
-    assert "NOVA_AGENT_ALLOW_FILE_WRITE=false" in env_config
-    assert "NOVA_AGENT_ALLOW_WEB=false" in env_config
-    assert "NOVA_AGENT_TRACE=true" in env_config
-    assert "NOVA_LORA_ADAPTER_ENABLED=true" in env_config
-    assert "NOVA_LORA_BASE_MODEL=Qwen/Qwen2.5-1.5B-Instruct" in env_config
-    assert "NOVA_LORA_RUNTIME_ENABLED=true" in env_config
-    assert "NOVA_LORA_DEVICE=auto" in env_config
-    assert "NOVA_LORA_MAX_NEW_TOKENS=256" in env_config
-    assert "NOVA_LORA_AUTO_MODE=ollama_qwen_first" in env_config
-    assert "NOVA_REGULAR_CHAT_ESCALATION_ENABLED=true" in env_config
     assert json_config["NOVA_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
     assert json_config["NOVA_FAST_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
     assert json_config["NOVA_DEEP_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
@@ -194,47 +169,29 @@ def test_checked_in_local_llm_configs_select_small_qwen_for_regular_chat():
         json_config["NOVA_ESCALATION_REASONING_MODELS"].split(",", 1)[0]
         == "qwen2.5-coder:7b"
     )
-    assert (
-        next(
-            line.split("=", 1)[1]
-            for line in env_config.splitlines()
-            if line.startswith("NOVA_ESCALATION_REASONING_MODELS=")
-        ).split(",", 1)[0]
-        == "qwen2.5-coder:7b"
-    )
 
 
 def test_lora_adapter_config_properties_can_be_read_from_file(tmp_path, monkeypatch):
-    config_file = ROOT / ".nova_llm_config"
-    original = config_file.read_text(encoding="utf-8")
-    try:
-        config_file.write_text(
-            original
-            + "\nNOVA_LORA_ADAPTER_ENABLED=true\n"
-            + "NOVA_LORA_ADAPTER_PATH=models/lora_adapters/nova-test\n"
-            + "NOVA_LORA_BASE_MODEL=Qwen/Qwen2.5-1.5B-Instruct\n",
-            encoding="utf-8",
-        )
-        config = llm.LocalLLMConfig()
-        assert config.lora_adapter_enabled is True
-        assert config.lora_adapter_path == "models/lora_adapters/nova-test"
-        assert config.lora_base_model == "Qwen/Qwen2.5-1.5B-Instruct"
-    finally:
-        config_file.write_text(original, encoding="utf-8")
+    config_file = tmp_path / ".nova_llm_config"
+    config_file.write_text(
+        "NOVA_LORA_ADAPTER_ENABLED=true\n"
+        "NOVA_LORA_ADAPTER_PATH=models/lora_adapters/nova-test\n"
+        "NOVA_LORA_BASE_MODEL=Qwen/Qwen2.5-1.5B-Instruct\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(llm, "ROOT", tmp_path)
+
+    config = llm.LocalLLMConfig()
+
+    assert config.lora_adapter_enabled is True
+    assert config.lora_adapter_path == "models/lora_adapters/nova-test"
+    assert config.lora_base_model == "Qwen/Qwen2.5-1.5B-Instruct"
 
 
 def test_local_llm_timeout_and_context_allow_cpu_qwen_to_finish():
-    env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")
     json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
 
     assert 30 <= llm.LocalLLMConfig.DEFAULT_CONFIG["NOVA_LOCAL_LLM_TIMEOUT"] <= 120
-    env_timeout = next(
-        int(line.split("=", 1)[1])
-        for line in env_config.splitlines()
-        if line.startswith("NOVA_LOCAL_LLM_TIMEOUT=")
-    )
-    assert 90 <= env_timeout <= 120
-    assert "NOVA_LOCAL_LLM_CONTEXT=8192" in env_config
     assert 30 <= json_config["NOVA_LOCAL_LLM_TIMEOUT"] <= 120
     assert json_config["NOVA_LOCAL_LLM_CONTEXT"] == 8192
 
