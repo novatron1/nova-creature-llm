@@ -1,7 +1,8 @@
 {
   "schema_version": "1.0",
   "required_files": [
-    "data/reviewed_conversation_training.json"
+    "data/reviewed_conversation_training.json",
+    "nova_llm_config.json"
   ],
   "include": [
     "src/**",

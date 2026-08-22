@@ -99,10 +99,15 @@ def test_required_reviewed_training_seed_overrides_broad_data_exclusion(
         size_bytes=128,
     )
     private_memory = policy.classify("data/nova_memory.json", size_bytes=128)
+    safe_model_defaults = policy.classify("nova_llm_config.json", size_bytes=128)
+    machine_local_config = policy.classify(".nova_llm_config", size_bytes=128)
 
     assert reviewed.classification is SnapshotClass.INCLUDE
     assert reviewed.rule == "required_files"
+    assert safe_model_defaults.classification is SnapshotClass.INCLUDE
+    assert safe_model_defaults.rule == "required_files"
     assert private_memory.classification is SnapshotClass.EXCLUDE
+    assert machine_local_config.classification is SnapshotClass.EXCLUDE
 
     data = tmp_path / "data"
     data.mkdir()
