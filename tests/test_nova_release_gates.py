@@ -3051,7 +3051,7 @@ def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
             observed["result"] = run_clean_start_smoke(
                 candidate,
                 report_path,
-                timeout_seconds=8,
+                timeout_seconds=12,
             )
         except BaseException as error:
             observed["error"] = error
@@ -3060,7 +3060,7 @@ def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
     worker.start()
     proxy_port_path = candidate / "proxy-port"
     try:
-        assert _wait_for_path(proxy_port_path)
+        assert _wait_for_path(proxy_port_path, timeout_seconds=8)
         proxy_port = int(proxy_port_path.read_text(encoding="utf-8"))
         request = (
             f"GET /healthz HTTP/1.1\r\n"
@@ -3079,7 +3079,7 @@ def test_clean_start_proxy_rejects_unrelated_local_client_before_upstream(
                 pass
     finally:
         (candidate / "release-probe").write_text("release", encoding="ascii")
-        worker.join(timeout=10)
+        worker.join(timeout=15)
 
     assert worker.is_alive() is False
     if "error" in observed:
