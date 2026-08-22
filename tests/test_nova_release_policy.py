@@ -59,6 +59,10 @@ def test_production_policy_excludes_known_local_development_artifacts() -> None:
         ".tmp_kaggle_outputs/run/model.py",
         size_bytes=12,
     )
+    standalone_build = policy.classify(
+        "dist/nova-standalone-test/Nova_Start.bat",
+        size_bytes=12,
+    )
     live_test_video = policy.classify("video_live_test_nova.mp4", size_bytes=12)
     gpu_hub_installer = policy.classify(
         "INSTALL_NOVA_GPU_HUB_WINDOWS.ps1",
@@ -73,6 +77,8 @@ def test_production_policy_excludes_known_local_development_artifacts() -> None:
     assert kaggle_fix.rule == ".tmp_kaggle_*/**"
     assert kaggle_output.classification is SnapshotClass.EXCLUDE
     assert kaggle_output.rule == ".tmp_kaggle_*/**"
+    assert standalone_build.classification is SnapshotClass.EXCLUDE
+    assert standalone_build.rule == "dist/**"
     assert live_test_video.classification is SnapshotClass.EXCLUDE
     assert live_test_video.rule == "video_live_test_nova.mp4"
     assert gpu_hub_installer.classification is SnapshotClass.INCLUDE

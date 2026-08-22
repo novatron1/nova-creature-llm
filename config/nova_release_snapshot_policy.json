@@ -60,6 +60,7 @@
     "**/logs/**",
     "reports/**",
     "**/reports/**",
+    "dist/**",
     "exports/**",
     "**/exports/**",
     "backups/**",
