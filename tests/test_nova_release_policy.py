@@ -54,11 +54,29 @@ def test_production_policy_excludes_known_local_development_artifacts() -> None:
         ".superpowers/brainstorm/session/content/design.html",
         size_bytes=12,
     )
+    kaggle_fix = policy.classify(".tmp_kaggle_fix/kernel-metadata.json", size_bytes=12)
+    kaggle_output = policy.classify(
+        ".tmp_kaggle_outputs/run/model.py",
+        size_bytes=12,
+    )
+    live_test_video = policy.classify("video_live_test_nova.mp4", size_bytes=12)
+    gpu_hub_installer = policy.classify(
+        "INSTALL_NOVA_GPU_HUB_WINDOWS.ps1",
+        size_bytes=12,
+    )
     tunnel = policy.classify("tools/cloudflared.exe", size_bytes=12)
     unknown_executable = policy.classify("tools/unknown.exe", size_bytes=12)
 
     assert scratch.classification is SnapshotClass.EXCLUDE
     assert scratch.rule == ".superpowers/**"
+    assert kaggle_fix.classification is SnapshotClass.EXCLUDE
+    assert kaggle_fix.rule == ".tmp_kaggle_*/**"
+    assert kaggle_output.classification is SnapshotClass.EXCLUDE
+    assert kaggle_output.rule == ".tmp_kaggle_*/**"
+    assert live_test_video.classification is SnapshotClass.EXCLUDE
+    assert live_test_video.rule == "video_live_test_nova.mp4"
+    assert gpu_hub_installer.classification is SnapshotClass.INCLUDE
+    assert gpu_hub_installer.rule == "*.ps1"
     assert tunnel.classification is SnapshotClass.EXCLUDE
     assert tunnel.rule == "tools/cloudflared.exe"
     assert unknown_executable.classification is SnapshotClass.AMBIGUOUS
