@@ -19,8 +19,15 @@ def _source(
     snippet: str,
     *,
     score: float = 0.8,
-    checked_at: str = "2026-07-17T12:00:00Z",
+    checked_at: str | None = None,
 ):
+    if checked_at is None:
+        checked_at = (
+            datetime.now(timezone.utc)
+            .replace(microsecond=0)
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
     return {
         "url": url,
         "title": url,
@@ -289,11 +296,13 @@ def test_named_current_fact_requires_independent_matching_publishers():
                 "https://cincinnati-oh.gov/mayor",
                 "The current mayor of Cincinnati is Aftab Pureval.",
                 score=0.95,
+                checked_at="2026-07-17T11:00:00Z",
             ),
             _source(
                 "https://localnews.example.com/city-hall",
                 "Aftab Pureval is the current mayor.",
                 score=0.8,
+                checked_at="2026-07-17T11:30:00Z",
             ),
         ],
         now=now,
