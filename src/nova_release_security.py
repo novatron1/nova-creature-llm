@@ -44,9 +44,17 @@ TEXT_SUFFIXES = {
     ".ps1",
     ".bat",
 }
+_CREDENTIAL_ASSIGNMENT_PATTERN = re.compile(
+    r"\b(?:api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*"
+    r"(?P<quote>['\"])(?P<value>[^'\"]{8,})['\"]",
+    re.I,
+)
+_DOCUMENTATION_PLACEHOLDER_PATTERN = re.compile(
+    r"^(?:YOUR|REPLACE_WITH)_[A-Z0-9_]*(?:KEY|TOKEN|SECRET)$"
+)
 SECRET_PATTERNS = (
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
-    re.compile(r"\b(?:api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*['\"][^'\"]{8,}['\"]", re.I),
+    _CREDENTIAL_ASSIGNMENT_PATTERN,
     re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
 )
 
@@ -89,6 +97,20 @@ def _record_path_escape(path: Path, base: Path, findings: list[str]) -> None:
         return
     if not resolved.is_relative_to(base):
         findings.append(relative)
+
+
+def _contains_release_secret(content: str) -> bool:
+    for pattern in SECRET_PATTERNS:
+        if pattern is not _CREDENTIAL_ASSIGNMENT_PATTERN:
+            if pattern.search(content):
+                return True
+            continue
+        for match in pattern.finditer(content):
+            if not _DOCUMENTATION_PLACEHOLDER_PATTERN.fullmatch(
+                match.group("value")
+            ):
+                return True
+    return False
 
 
 def inspect_release(
@@ -154,7 +176,7 @@ def inspect_release(
                     content = path.read_text(encoding="utf-8", errors="ignore")
                 except OSError:
                     continue
-                if any(pattern.search(content) for pattern in SECRET_PATTERNS):
+                if _contains_release_secret(content):
                     secrets.append(relative.as_posix())
         pending_directories.extend(reversed(child_directories))
     return ReleaseSecurityResult(

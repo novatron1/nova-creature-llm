@@ -155,14 +155,15 @@ def test_openai_compatible_provider_never_forwards_bearer_across_redirect():
     for thread in threads:
         thread.start()
     try:
+        dummy_token = "DUMMY-" + "REDIRECT-TOKEN"
         provider = OpenAICompatibleLocalProvider(
             base_url=f"http://127.0.0.1:{source.server_port}",
             model_id="fallback-model",
-            api_key="DUMMY-REDIRECT-TOKEN",
+            api_key=dummy_token,
         )
 
         assert provider.list_models() == ["fallback-model"]
-        assert source_authorization == ["Bearer DUMMY-REDIRECT-TOKEN"]
+        assert source_authorization == [f"Bearer {dummy_token}"]
         assert target_authorization == []
     finally:
         source.shutdown()

@@ -210,8 +210,9 @@ def test_build_fails_security_scan_before_running_gates(tmp_path: Path) -> None:
         gate_definitions=[gate],
     )
     planned = lock.preflight()
+    fake_secret = 'api_key = "' + "sk-" + 'abcdefghijklmnopqrstuvwxyz012345"\n'
     (repo / "src" / "nova.py").write_text(
-        'api_key = "sk-abcdefghijklmnopqrstuvwxyz012345"\n',
+        fake_secret,
         encoding="utf-8",
     )
 

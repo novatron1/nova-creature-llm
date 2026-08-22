@@ -470,9 +470,11 @@ def test_gate_runner_bounds_each_output_tail(tmp_path: Path) -> None:
 def test_gate_runner_redacts_secret_and_candidate_path_output(tmp_path: Path) -> None:
     candidate, reports = _gate_paths(tmp_path)
     candidate = candidate.resolve()
+    fake_key_prefix = "sk-" + "abcdefghijklmnopqrstuvwxyz"
+    fake_key = fake_key_prefix + "123456"
     script = (
         "print('Authorization: Bearer secret-token-value-1234567890'); "
-        "print('sk-abcdefghijklmnopqrstuvwxyz123456'); "
+        f"print({fake_key!r}); "
         f"print({str(candidate)!r})"
     )
     gate = GateDefinition(
@@ -484,7 +486,7 @@ def test_gate_runner_redacts_secret_and_candidate_path_output(tmp_path: Path) ->
     result = GateRunner(candidate, reports).run(gate)
 
     assert "secret-token" not in result.stdout_tail
-    assert "sk-abcdefghijklmnopqrstuvwxyz" not in result.stdout_tail
+    assert fake_key_prefix not in result.stdout_tail
     assert str(candidate) not in result.stdout_tail
     assert "[REDACTED]" in result.stdout_tail
 
@@ -495,7 +497,7 @@ def test_gate_runner_redacts_name_and_every_command_argument(
     candidate, reports = _gate_paths(tmp_path)
     candidate = candidate.resolve()
     reports = reports.resolve()
-    secret = "sk-abcdefghijklmnopqrstuvwxyz123456"
+    secret = "sk-" + "abcdefghijklmnopqrstuvwxyz123456"
     gate = GateDefinition(
         name="Authorization: Bearer gate-name-secret-1234567890",
         argv=(

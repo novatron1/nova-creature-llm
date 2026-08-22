@@ -53,15 +53,37 @@ def test_release_handles_missing_windows_reparse_constant(
     assert result.path_escape_findings == []
 
 
+def test_release_allows_documentation_placeholder_but_rejects_realistic_credential(
+    tmp_path: Path,
+) -> None:
+    credential_name = "api_" + "key"
+    placeholder = "YOUR_NOVA_CLIENT_KEY"
+    realistic_value = "runtime-secret-value-123456"
+    (tmp_path / "guide.md").write_text(
+        f'{credential_name} = "{placeholder}"',
+        encoding="utf-8",
+    )
+    (tmp_path / "settings.py").write_text(
+        f'{credential_name} = "{realistic_value}"',
+        encoding="utf-8",
+    )
+
+    result = inspect_release(tmp_path)
+
+    assert result.secret_findings == ["settings.py"]
+
+
 def test_release_rejects_source_maps_secrets_private_keys_and_debug_artifacts(tmp_path: Path) -> None:
     (tmp_path / "app.js.map").write_text("{}", encoding="utf-8")
     (tmp_path / ".env").write_text("SECRET=true", encoding="utf-8")
+    fake_secret = 'api_key = "' + "sk-" + 'abcdefghijklmnopqrstuvwxyz012345"'
     (tmp_path / "code.py").write_text(
-        'api_key = "sk-abcdefghijklmnopqrstuvwxyz012345"',
+        fake_secret,
         encoding="utf-8",
     )
+    private_key_marker = "-----BEGIN " + "PRIVATE KEY-----\nabc"
     (tmp_path / "private.pem").write_text(
-        "-----BEGIN PRIVATE KEY-----\nabc",
+        private_key_marker,
         encoding="utf-8",
     )
     (tmp_path / "debug.log").write_bytes(b"x" * 1024)

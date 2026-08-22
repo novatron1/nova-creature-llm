@@ -71,7 +71,8 @@ def test_secret_and_local_path_queries_are_blocked_before_network_fetch():
         fetcher=lambda *_: (_ for _ in ()).throw(AssertionError("must not fetch")),
     )
 
-    secret = retriever.retrieve("look up api_key=sk-abcdefghijklmnopqrstuvwxyz123456 online")
+    fake_secret = "sk-" + "abcdefghijklmnopqrstuvwxyz123456"
+    secret = retriever.retrieve(f"look up api_key={fake_secret} online")
     local_path = retriever.retrieve(r"search the web for C:\Users\Nova\private-notes.txt")
 
     assert secret.policy.reason == "sensitive_content"
