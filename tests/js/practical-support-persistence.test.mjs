@@ -92,6 +92,7 @@ function createHarness() {
       ];
       let trainedAdapterOnlyMode = false;
       function sensorSnapshotForNova(){ return null; }
+      function syncConversationHistoryEntry(){}
       function updateConversationContextUi(){}
       ${extractFunction("storedConversationMessages")}
       ${extractFunction("validConversationSummary")}
