@@ -2146,7 +2146,16 @@ def test_brain_route_adapter_only_recalls_user_name_before_raw_adapter(monkeypat
     assert trace["memory_event"] == "name_recall:Mr Novatron"
 
 
-def test_brain_route_reports_configured_local_llm():
+def test_brain_route_reports_configured_local_llm(monkeypatch):
+    monkeypatch.setenv("NOVA_LOCAL_LLM_MODEL", "qwen2.5:1.5b")
+    monkeypatch.setenv("NOVA_FAST_LOCAL_LLM_MODEL", "qwen2.5:1.5b")
+    monkeypatch.setenv("NOVA_DEEP_LOCAL_LLM_MODEL", "qwen2.5:1.5b")
+    monkeypatch.setenv("NOVA_LORA_ADAPTER_ENABLED", "true")
+    monkeypatch.setenv("NOVA_LORA_ADAPTER_PATH", "models/lora_adapters/nova-test")
+    monkeypatch.setenv("NOVA_LORA_BASE_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+    monkeypatch.setenv("NOVA_LORA_RUNTIME_ENABLED", "true")
+    monkeypatch.setenv("NOVA_LORA_AUTO_MODE", "ollama_qwen_first")
+
     response, trace = server.brain_route("What LLM is in this app?")
 
     assert "qwen2.5:1.5b" in response
