@@ -73,7 +73,7 @@ def test_empty_transformer_text_cannot_be_reported_as_success(monkeypatch):
     assert metadata["generation"]["error"] == "empty transformer output"
 
 
-def test_transformer_only_prompts_preserve_checkpoint_evidence_when_generation_is_rejected(monkeypatch):
+def test_transformer_only_prompts_preserve_checkpoint_evidence_when_answer_is_not_accepted(monkeypatch):
     monkeypatch.setattr(router, "_log_route", lambda *args: None)
     prompts = [
         "Debug this Python loop.",
@@ -92,7 +92,11 @@ def test_transformer_only_prompts_preserve_checkpoint_evidence_when_generation_i
         if trace["source"] == "transformer_error":
             assert re.fullmatch(r"[0-9a-fA-F]{64}", trace["route_model_hash"])
             assert re.fullmatch(r"[0-9a-fA-F]{64}", trace["checkpoint_hash"])
-            assert trace["generation"]["ok"] is False
+            if trace["generation"]["ok"]:
+                assert trace["transformer_output_accepted"] is False
+                assert trace["quality_fail_reasons"]
+            else:
+                assert trace["generation"].get("error")
             
         assert "fallback" not in trace.get("skills", [])
 

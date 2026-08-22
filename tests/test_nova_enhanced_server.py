@@ -8899,6 +8899,11 @@ def test_background_model_warmup_reports_ready_without_blocking_server(monkeypat
     monkeypatch.setenv("NOVA_MODEL_WARMUP_DELAY_SECONDS", "0")
     monkeypatch.setenv("NOVA_REVIEWER_WARMUP", "false")
     monkeypatch.setattr(
+        server.MODEL_QUALITY,
+        "is_quarantined",
+        lambda _provider, _model: False,
+    )
+    monkeypatch.setattr(
         nova_local_llm_connector.LocalLLMConnector,
         "warm_up",
         lambda self: {
