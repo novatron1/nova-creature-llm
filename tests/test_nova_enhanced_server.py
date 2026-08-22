@@ -8896,6 +8896,7 @@ def test_raw_adapter_prompt_receives_summary_as_context_without_answer_intercept
 def test_background_model_warmup_reports_ready_without_blocking_server(monkeypatch):
     import nova_local_llm_connector
 
+    monkeypatch.setenv("NOVA_MODEL_WARMUP", "true")
     monkeypatch.setenv("NOVA_MODEL_WARMUP_DELAY_SECONDS", "0")
     monkeypatch.setenv("NOVA_REVIEWER_WARMUP", "false")
     monkeypatch.setattr(
