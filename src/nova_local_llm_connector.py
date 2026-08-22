@@ -272,7 +272,19 @@ class LocalLLMConfig:
                         self.config[key] = env_val
     
     def _load_from_file(self):
-        """Load config from .nova_llm_config file if present."""
+        """Load portable defaults, then optional machine-local overrides."""
+        portable_path = ROOT / "nova_llm_config.json"
+        if portable_path.exists():
+            try:
+                with open(portable_path, encoding="utf-8") as f:
+                    portable_config = json.load(f)
+                if isinstance(portable_config, dict):
+                    for key, value in portable_config.items():
+                        if key in self.DEFAULT_CONFIG:
+                            self.config[key] = value
+            except (OSError, ValueError, TypeError):
+                pass
+
         config_paths = [
             ROOT / ".nova_llm_config",
             ROOT / ".env",

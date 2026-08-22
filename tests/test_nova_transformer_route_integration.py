@@ -32,6 +32,47 @@ class DeterministicModel:
         return logits, None
 
 
+def test_empty_transformer_text_cannot_be_reported_as_success(monkeypatch):
+    class EmptyGeneration:
+        def to_trace(self):
+            return {
+                "source": "transformer",
+                "text": "",
+                "role": "speech_output_transformer",
+                "checkpoint_path": "checkpoint.pt",
+                "checkpoint_hash": "a" * 64,
+                "error": None,
+                "ok": True,
+            }
+
+    class Prediction:
+        domain = "speech"
+        primary_role = "speech_output_transformer"
+        support_roles = ()
+        confidence = 0.9
+        source = "test_route"
+        model_hash = "b" * 64
+
+    class EmptyBrain:
+        def route_with_evidence(self, _text):
+            return Prediction(), None
+
+        def generate(self, _role, _text, max_new_tokens=80):
+            return EmptyGeneration()
+
+    monkeypatch.setattr(router, "_ensure_brain", lambda: EmptyBrain())
+
+    response, _route, _confidence, errors, ran, metadata = (
+        router.generate_transformer_response("Say hello.")
+    )
+
+    assert response is None
+    assert ran is True
+    assert errors == {"speech_output_transformer": "empty transformer output"}
+    assert metadata["generation"]["ok"] is False
+    assert metadata["generation"]["error"] == "empty transformer output"
+
+
 def test_transformer_only_prompts_preserve_checkpoint_evidence_when_generation_is_rejected(monkeypatch):
     monkeypatch.setattr(router, "_log_route", lambda *args: None)
     prompts = [

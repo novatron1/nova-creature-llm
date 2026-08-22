@@ -234,9 +234,17 @@ def generate_transformer_response(text, domain=None):
                     "checkpoint_path": gen_trace.get("checkpoint_path", ""),
                     "generation": gen_trace,
                 }
-                if gen_trace.get("ok"):
-                    return gen_trace.get("text", ""), route_roles, route_confidence, {}, True, meta
-                return None, route_roles, 0.0, {primary_role: gen_trace.get("error") or "generation failed"}, True, meta
+                generated_text = str(gen_trace.get("text") or "").strip()
+                generation_error = gen_trace.get("error")
+                if gen_trace.get("ok") and generated_text and not generation_error:
+                    return generated_text, route_roles, route_confidence, {}, True, meta
+
+                generation_error = generation_error or (
+                    "empty transformer output" if not generated_text else "generation failed"
+                )
+                gen_trace["ok"] = False
+                gen_trace["error"] = generation_error
+                return None, route_roles, 0.0, {primary_role: generation_error}, True, meta
         except Exception as e:
             if domain is None:
                 domain = classify_domain(text)

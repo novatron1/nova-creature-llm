@@ -188,6 +188,30 @@ def test_lora_adapter_config_properties_can_be_read_from_file(tmp_path, monkeypa
     assert config.lora_base_model == "Qwen/Qwen2.5-1.5B-Instruct"
 
 
+def test_portable_json_config_is_loaded_before_machine_local_overrides(tmp_path, monkeypatch):
+    (tmp_path / "nova_llm_config.json").write_text(
+        json.dumps(
+            {
+                "NOVA_USE_LOCAL_LLM": True,
+                "NOVA_LOCAL_LLM_MODEL": "portable-small-model",
+                "NOVA_LOCAL_LLM_CONTEXT": 8192,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / ".nova_llm_config").write_text(
+        "NOVA_LOCAL_LLM_MODEL=machine-specific-model\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(llm, "ROOT", tmp_path)
+
+    config = llm.LocalLLMConfig()
+
+    assert config.use_local_llm is True
+    assert config.model == "machine-specific-model"
+    assert config.context_window == 8192
+
+
 def test_local_llm_timeout_and_context_allow_cpu_qwen_to_finish():
     json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
 
