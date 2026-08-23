@@ -1865,18 +1865,19 @@ def _finish_capture(
     for thread in thread_list:
         thread.join(timeout=max(0, deadline - time.monotonic()))
     complete = not any(thread.is_alive() for thread in thread_list)
+    # On Windows, consulting or closing a buffered pipe while another thread
+    # is blocked inside its read can itself wait on the stream lock forever.
+    # Containment has already terminated the process tree at this point.  If
+    # EOF still did not arrive within the bounded drain window, fail the gate
+    # closed and let process exit reclaim the remaining local descriptors.
+    if not complete:
+        return False
     for stream in (process.stdout, process.stderr):
         if stream is not None and not stream.closed:
             try:
-                if complete:
-                    stream.close()
-                else:
-                    os.close(stream.fileno())
+                stream.close()
             except OSError:
                 complete = False
-    if not complete:
-        for thread in thread_list:
-            thread.join(timeout=0.25)
     return complete
 
 

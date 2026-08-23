@@ -2209,6 +2209,24 @@ def test_gate_runner_requires_pipe_drains_to_finish_after_tree_cleanup(
         _force_kill_test_process(child_pid)
 
 
+def test_finish_capture_fails_closed_without_touching_live_reader_streams() -> None:
+    class LiveReader:
+        def join(self, timeout=None):
+            return None
+
+        def is_alive(self):
+            return True
+
+    class BlockingStream:
+        @property
+        def closed(self):
+            raise AssertionError("live reader stream must not be touched")
+
+    process = SimpleNamespace(stdout=BlockingStream(), stderr=BlockingStream())
+
+    assert nova_release_gates._finish_capture(process, [LiveReader()]) is False
+
+
 def test_gate_runner_rejects_report_directory_inside_candidate(
     tmp_path: Path,
 ) -> None:
