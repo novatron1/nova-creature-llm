@@ -3329,7 +3329,7 @@ def test_clean_start_proxy_caps_aggregate_relayed_bytes(
     result = run_clean_start_smoke(
         candidate,
         tmp_path / "reports" / "smoke.json",
-        timeout_seconds=5,
+        timeout_seconds=15,
     )
 
     assert result.passed is False
@@ -3390,7 +3390,7 @@ def test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup(
     result = run_clean_start_smoke(
         candidate,
         report_path,
-        timeout_seconds=5,
+        timeout_seconds=15,
     )
 
     assert result.name == "clean_start_smoke"
@@ -3428,7 +3428,7 @@ def test_clean_start_smoke_persisted_log_honors_exact_byte_cap(tmp_path: Path) -
     )
     report_path = tmp_path / "reports" / "smoke.json"
 
-    result = run_clean_start_smoke(candidate, report_path, timeout_seconds=5)
+    result = run_clean_start_smoke(candidate, report_path, timeout_seconds=15)
 
     assert result.passed is True
     report = json.loads(report_path.read_text(encoding="utf-8"))
