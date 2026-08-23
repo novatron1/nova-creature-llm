@@ -365,7 +365,15 @@ class NovaReleaseLock:
             excluded_root = None
             for index in range(1, len(parts) + 1):
                 prefix = "/".join(parts[:index])
-                if policy.classify(prefix).classification is SnapshotClass.EXCLUDE:
+                contains_baseline_file = any(
+                    baseline_path == prefix
+                    or baseline_path.startswith(prefix + "/")
+                    for baseline_path in baseline_files
+                )
+                if (
+                    policy.classify(prefix).classification is SnapshotClass.EXCLUDE
+                    and not contains_baseline_file
+                ):
                     excluded_root = prefix
                     break
             if excluded_root is None:

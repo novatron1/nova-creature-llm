@@ -281,6 +281,40 @@ def test_build_removes_gate_generated_excluded_artifact(tmp_path: Path) -> None:
     assert not any(item["path"].startswith("sandbox/") for item in manifest["files"])
 
 
+def test_build_preserves_included_files_inside_generated_excluded_directory(
+    tmp_path: Path,
+) -> None:
+    repo = make_repo(tmp_path / "repo")
+    data_dir = repo / "data"
+    data_dir.mkdir()
+    dictionary = data_dir / "builtin_word_dictionary.json"
+    dictionary.write_text('{"hello": "Hi there."}\n', encoding="utf-8")
+    gate = GateDefinition(
+        name="generated_data_gate",
+        argv=(
+            sys.executable,
+            "-c",
+            "from pathlib import Path; "
+            "Path('data/runtime.db').write_bytes(b'temporary')",
+        ),
+        timeout_seconds=5,
+    )
+    lock = NovaReleaseLock(
+        repo_root=repo,
+        temp_root=tmp_path / "release-temp",
+        gate_definitions=[gate],
+    )
+
+    result = lock.build(lock.preflight())
+
+    assert result.status is ReleaseStatus.VERIFIED
+    candidate_data = result.paths.candidate_worktree / "data"
+    assert (candidate_data / "builtin_word_dictionary.json").read_text(
+        encoding="utf-8"
+    ) == '{"hello": "Hi there."}\n'
+    assert not (candidate_data / "runtime.db").exists()
+
+
 def test_build_exception_persists_failed_state(tmp_path: Path) -> None:
     repo = make_repo(tmp_path / "repo")
     lock = NovaReleaseLock(
