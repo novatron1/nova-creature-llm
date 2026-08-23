@@ -4551,6 +4551,20 @@ def test_brain_route_defines_death_without_eat_substring(monkeypatch):
     assert trace.get("word") == "death" or trace.get("term") == "death"
 
 
+def test_release_verification_dictionary_lookup_does_not_write_hits(monkeypatch, tmp_path):
+    hits_path = tmp_path / "dictionary_hits.jsonl"
+    monkeypatch.setattr(server, "DICT_INDEX", {"hello": "Hi there."})
+    monkeypatch.setattr(server, "DICT_HITS_PATH", str(hits_path))
+    monkeypatch.setenv("NOVA_SUPPRESS_RUNTIME_LOGS", "true")
+
+    assert server._dict_lookup("hello") == "Hi there."
+    assert hits_path.exists() is False
+
+    monkeypatch.delenv("NOVA_SUPPRESS_RUNTIME_LOGS", raising=False)
+    assert server._dict_lookup("hello") == "Hi there."
+    assert hits_path.is_file()
+
+
 def test_brain_route_definition_is_natural_without_route_label(monkeypatch):
     monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
     monkeypatch.setattr(server, "_CONV_ENGINE", None)

@@ -942,6 +942,10 @@ def _log_route(text, domain, route, confidence, source):
         "source": source,
     }
     ROUTING_LOG.append(entry)
+    if str(os.environ.get("NOVA_SUPPRESS_RUNTIME_LOGS", "")).strip().lower() in {
+        "1", "true", "yes", "on"
+    }:
+        return
     try:
         ROUTING_LOG_PATH.parent.mkdir(exist_ok=True)
         with open(ROUTING_LOG_PATH, 'a') as f:

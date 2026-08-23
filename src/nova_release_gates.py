@@ -393,8 +393,10 @@ def _sanitized_environment(
     environment.update(
         {
             "PYTHONPATH": str(candidate_root / "src"),
+            "PYTHONDONTWRITEBYTECODE": "1",
             "NOVA_MODEL_WARMUP": "false",
             "NOVA_REVIEWER_WARMUP": "false",
+            "NOVA_SUPPRESS_RUNTIME_LOGS": "true",
             "NOVA_ENABLE_REMOTE_ACCESS": "false",
             "NOVA_ALLOW_REMOTE_MODELS": "false",
             "NOVA_COMPANION_ENABLED": "true",

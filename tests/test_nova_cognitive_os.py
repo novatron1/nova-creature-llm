@@ -18,6 +18,27 @@ import nova_meaning_pipeline
 from nova_conversation_intelligence import understand_conversation_turn
 
 
+def test_release_verification_does_not_write_cognitive_training_log(monkeypatch, tmp_path):
+    monkeypatch.setattr(cognitive_os, "ROOT", str(tmp_path))
+    monkeypatch.setenv("NOVA_SUPPRESS_RUNTIME_LOGS", "true")
+
+    cognitive_os._log_training(
+        "hello",
+        "Hi there.",
+        {"route": "general_conversation"},
+    )
+
+    assert (tmp_path / "nova_training_logs" / "cognitive_os_logs.jsonl").exists() is False
+
+    monkeypatch.delenv("NOVA_SUPPRESS_RUNTIME_LOGS", raising=False)
+    cognitive_os._log_training(
+        "hello again",
+        "Welcome back.",
+        {"route": "general_conversation"},
+    )
+    assert (tmp_path / "nova_training_logs" / "cognitive_os_logs.jsonl").is_file()
+
+
 def test_gateway_conversation_context_does_not_repeat_current_user_request():
     current = "Compare local and remote memory, then recommend an architecture."
     rendered = cognitive_os._gateway_conversation_context(

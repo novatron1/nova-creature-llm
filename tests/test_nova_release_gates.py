@@ -691,6 +691,8 @@ def test_gate_runner_uses_only_sanitized_environment(tmp_path: Path) -> None:
         f"'secret_present': {variable!r} in os.environ, "
         "'authorization_present': 'AUTHORIZATION' in os.environ, "
         "'model_warmup': os.environ.get('NOVA_MODEL_WARMUP'), "
+        "'runtime_logs': os.environ.get('NOVA_SUPPRESS_RUNTIME_LOGS'), "
+        "'bytecode': os.environ.get('PYTHONDONTWRITEBYTECODE'), "
         "'remote_access': os.environ.get('NOVA_ENABLE_REMOTE_ACCESS')}))"
     )
     gate = GateDefinition(
@@ -710,6 +712,8 @@ def test_gate_runner_uses_only_sanitized_environment(tmp_path: Path) -> None:
         "secret_present": False,
         "authorization_present": False,
         "model_warmup": "false",
+        "runtime_logs": "true",
+        "bytecode": "1",
         "remote_access": "false",
     }
 

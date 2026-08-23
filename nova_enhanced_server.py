@@ -641,12 +641,16 @@ def _load_dict():
 def _dict_lookup(text):
     key = _canonical_key(text)
     if key in DICT_INDEX:
-        try:
-            hit = json.dumps({"time": datetime.now().isoformat(), "question": text, "answer": DICT_INDEX[key][:60]})
-            os.makedirs(os.path.dirname(DICT_HITS_PATH), exist_ok=True)
-            with open(DICT_HITS_PATH, 'a') as f:
-                f.write(hit + "\n")
-        except: pass
+        suppress_runtime_logs = str(
+            os.environ.get("NOVA_SUPPRESS_RUNTIME_LOGS", "")
+        ).strip().lower() in {"1", "true", "yes", "on"}
+        if not suppress_runtime_logs:
+            try:
+                hit = json.dumps({"time": datetime.now().isoformat(), "question": text, "answer": DICT_INDEX[key][:60]})
+                os.makedirs(os.path.dirname(DICT_HITS_PATH), exist_ok=True)
+                with open(DICT_HITS_PATH, 'a') as f:
+                    f.write(hit + "\n")
+            except: pass
         return DICT_INDEX[key]
     return None
 

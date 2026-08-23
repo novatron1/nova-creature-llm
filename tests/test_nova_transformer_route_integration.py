@@ -73,6 +73,22 @@ def test_empty_transformer_text_cannot_be_reported_as_success(monkeypatch):
     assert metadata["generation"]["error"] == "empty transformer output"
 
 
+def test_release_verification_keeps_route_telemetry_in_memory_only(monkeypatch, tmp_path):
+    route_log = tmp_path / "routing_log.jsonl"
+    monkeypatch.setattr(router, "ROUTING_LOG_PATH", route_log)
+    monkeypatch.setattr(router, "ROUTING_LOG", [])
+    monkeypatch.setenv("NOVA_SUPPRESS_RUNTIME_LOGS", "true")
+
+    router._log_route("hello", "general", ["speech_output_transformer"], 0.9, "test")
+
+    assert router.ROUTING_LOG[-1]["text"] == "hello"
+    assert route_log.exists() is False
+
+    monkeypatch.delenv("NOVA_SUPPRESS_RUNTIME_LOGS", raising=False)
+    router._log_route("live", "general", ["speech_output_transformer"], 0.9, "test")
+    assert route_log.is_file()
+
+
 def test_transformer_only_prompts_preserve_checkpoint_evidence_when_answer_is_not_accepted(monkeypatch):
     monkeypatch.setattr(router, "_log_route", lambda *args: None)
     prompts = [

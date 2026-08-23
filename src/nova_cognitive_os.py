@@ -637,6 +637,10 @@ def _get_web():
 
 def _log_training(user_message, final_answer, plan, extras=None):
     """Log the interaction to training logs."""
+    if str(os.environ.get("NOVA_SUPPRESS_RUNTIME_LOGS", "")).strip().lower() in {
+        "1", "true", "yes", "on"
+    }:
+        return
     try:
         log_dir = os.path.join(ROOT, "nova_training_logs")
         os.makedirs(log_dir, exist_ok=True)
