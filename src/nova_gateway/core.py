@@ -18,7 +18,9 @@ from nova_protocol import NovaRequest, NovaResponse, NovaStreamEvent, PROTOCOL_V
 
 from .config import GatewayConfig
 from .comfyui import ComfyUIEngine
+from .conversations import ConversationArchive
 from .dream_lab import DREAM_LAB_SCHEMA_VERSION, NovaDreamLab
+from .animatediff_cpu import NovaAnimateDiffCpuEngine
 from .engines import NovaEngineRegistry
 from .errors import (
     ModelUnavailableError,
@@ -42,6 +44,7 @@ from .tools import NovaRegisteredTool, NovaToolRegistry, registry_from_existing_
 from .video_lite import NovaVideoLiteEngine
 from .version import NOVA_VERSION
 from .world_model import NovaWorldModel, WORLD_MODEL_SCHEMA_VERSION
+from nova_runtime.adapters import wrap_existing_tool_registry
 
 
 logger = logging.getLogger("nova.gateway")
@@ -106,6 +109,7 @@ class NovaGatewayCore:
         engines: NovaEngineRegistry | None = None,
         comfyui: ComfyUIEngine | None = None,
         video_lite: NovaVideoLiteEngine | None = None,
+        animatediff_cpu: NovaAnimateDiffCpuEngine | None = None,
         register_ollama: bool = True,
     ) -> None:
         self.config = config or GatewayConfig.from_env()
@@ -123,6 +127,7 @@ class NovaGatewayCore:
             except Exception:
                 self.tools = registry_from_existing_tools()
         self.memory = memory or ExistingNovaMemoryStore(mode=self.config.memory_mode)
+        self.conversations = ConversationArchive(self.config.conversation_store_path)
         self.world_model = world_model or NovaWorldModel(
             persistence=self.config.world_model_persistence,
             checkpoint_path=(
@@ -141,6 +146,7 @@ class NovaGatewayCore:
             video_workflow_path=self.config.comfyui_video_workflow_path,
             job_store_path=self.config.comfyui_job_store_path,
             timeout_seconds=self.config.comfyui_timeout_seconds,
+            launch_python_path=self.config.animatediff_cpu_python_path,
         )
         try:
             self.engines.get(self.comfyui.engine_id)
@@ -158,6 +164,21 @@ class NovaGatewayCore:
             self.engines.get(self.video_lite.engine_id)
         except ProviderUnavailableError:
             self.engines.register_optional(self.video_lite)
+        self.animatediff_cpu = animatediff_cpu or NovaAnimateDiffCpuEngine(
+            enabled=self.config.animatediff_cpu_enabled,
+            python_path=self.config.animatediff_cpu_python_path,
+            worker_script=self.config.animatediff_cpu_worker_path,
+            model_path=self.config.animatediff_cpu_model_path,
+            motion_adapter_path=self.config.animatediff_cpu_motion_adapter_path,
+            output_dir=self.config.animatediff_cpu_output_dir,
+            job_store_path=self.config.animatediff_cpu_job_store_path,
+            encode_timeout_seconds=self.config.animatediff_cpu_timeout_seconds,
+        )
+        if self.config.animatediff_cpu_enabled or animatediff_cpu is not None:
+            try:
+                self.engines.get(self.animatediff_cpu.engine_id)
+            except ProviderUnavailableError:
+                self.engines.register_optional(self.animatediff_cpu)
         if self.config.comfyui_enabled:
             self._register_comfyui_tools()
         self._active_requests: dict[str, tuple[str, str]] = {}
@@ -465,6 +486,30 @@ class NovaGatewayCore:
             response.metadata["latency_ms"] = round((time.monotonic() - started) * 1000, 3)
             response.metadata["nova_version"] = NOVA_VERSION
             response.metadata["api_version"] = NOVA_API_VERSION
+            trace = response.metadata.get("trace")
+            trace = trace if isinstance(trace, dict) else {}
+            response.metadata["route_summary"] = {
+                "provider": str(
+                    trace.get("local_llm_provider")
+                    or trace.get("remote_model_provider")
+                    or response.provider
+                    or decision.selected_provider
+                )[:120],
+                "model": str(
+                    trace.get("local_llm_model")
+                    or trace.get("model")
+                    or decision.selected_model
+                    or decision.requested_alias
+                )[:120],
+                "local": bool(decision.remains_local),
+                "backend": str(
+                    trace.get("gpu_backend")
+                    or trace.get("compute_backend")
+                    or ("local" if decision.remains_local else "remote")
+                )[:80],
+                "latency_ms": response.metadata["latency_ms"],
+                "fallback": bool(trace.get("fallback_used") or response.metadata.get("fallback")),
+            }
             response.metadata["dream_lab"] = dict(request.metadata.get("dream_lab") or {})
             if evaluation_only:
                 response.metadata["evaluation_only"] = True
@@ -795,19 +840,97 @@ class NovaGatewayCore:
         options["owner_id"] = client_id
         return self.comfyui.generate_image(prompt, **options)
 
+    def launch_comfyui(self) -> dict[str, Any]:
+        if not self.config.comfyui_enabled:
+            raise UnsupportedFeatureError("ComfyUI support is disabled by NOVA_COMFYUI_ENABLED.")
+        return self.comfyui.launch_local_server()
+
+    def list_conversations(
+        self,
+        *,
+        client_id: str,
+        query: str = "",
+        include_archived: bool = False,
+        limit: int = 100,
+    ) -> dict[str, Any]:
+        rows = self.conversations.list(
+            client_id,
+            query=query,
+            include_archived=include_archived,
+            limit=limit,
+        )
+        return {
+            "object": "list",
+            "data": rows,
+            "privacy": {
+                "other_clients_returned": False,
+                "private_reasoning_returned": False,
+                "secrets_returned": False,
+            },
+        }
+
+    def save_conversation(
+        self,
+        *,
+        client_id: str,
+        conversation_id: str,
+        title: str | None,
+        messages: list[dict[str, Any]] | None,
+    ) -> dict[str, Any]:
+        return self.conversations.save(
+            client_id,
+            conversation_id,
+            title=title,
+            messages=messages,
+        )
+
+    def get_conversation(self, *, client_id: str, conversation_id: str) -> dict[str, Any] | None:
+        return self.conversations.get(client_id, conversation_id)
+
+    def archive_conversation(self, *, client_id: str, conversation_id: str) -> bool:
+        return self.conversations.archive(client_id, conversation_id)
+
+    def restore_conversation(self, *, client_id: str, conversation_id: str) -> bool:
+        return self.conversations.restore(client_id, conversation_id)
+
+    def delete_conversation(self, *, client_id: str, conversation_id: str) -> bool:
+        return self.conversations.delete(client_id, conversation_id)
+
     def generate_video(self, payload: dict[str, Any], *, client_id: str) -> dict[str, Any]:
         options = dict(payload)
         prompt = str(options.pop("prompt", "") or "")
+        requested_engine = str(options.pop("engine_id", "") or "").strip()
         options["owner_id"] = client_id
-        return self._select_video_engine().text_to_video(prompt, **options)
+        return self._select_video_engine(requested_engine or None).text_to_video(prompt, **options)
 
-    def _select_video_engine(self):
+    def _select_video_engine(self, requested_engine: str | None = None):
+        if requested_engine:
+            candidates = {
+                self.comfyui.engine_id: self.comfyui,
+                self.video_lite.engine_id: self.video_lite,
+                self.animatediff_cpu.engine_id: self.animatediff_cpu,
+            }
+            engine = candidates.get(str(requested_engine).strip())
+            if engine is None:
+                raise UnsupportedFeatureError(
+                    f"Requested video engine {requested_engine!r} is not registered."
+                )
+            health = engine.health_check()
+            if not health.get("ok"):
+                raise UnsupportedFeatureError(
+                    f"Requested video engine {requested_engine!r} is unavailable: "
+                    f"{health.get('status') or 'health check failed'}."
+                )
+            return engine
         comfy_health = self.comfyui.health_check()
         if (
             comfy_health.get("ok")
             and comfy_health.get("video_workflow_configured")
         ):
             return self.comfyui
+        animatediff_health = self.animatediff_cpu.health_check()
+        if animatediff_health.get("ok"):
+            return self.animatediff_cpu
         video_lite_health = self.video_lite.health_check()
         if video_lite_health.get("ok"):
             return self.video_lite
@@ -817,6 +940,8 @@ class NovaGatewayCore:
         )
 
     def _media_engine_for_job(self, job_id: str):
+        if str(job_id).startswith("nad_"):
+            return self.animatediff_cpu
         if str(job_id).startswith("nvl_"):
             return self.video_lite
         return self.comfyui
@@ -837,12 +962,15 @@ class NovaGatewayCore:
             owner_id=client_id,
             limit=safe_limit,
         )
-        if not video_jobs["data"]:
+        animatediff_jobs = self.animatediff_cpu.list_jobs(
+            owner_id=client_id,
+            limit=safe_limit,
+        )
+        media_jobs = [*comfy_jobs["data"], *video_jobs["data"], *animatediff_jobs["data"]]
+        if not media_jobs:
             return comfy_jobs
-        if not comfy_jobs["data"]:
-            return video_jobs
         combined = sorted(
-            [*comfy_jobs["data"], *video_jobs["data"]],
+            media_jobs,
             key=lambda item: str(item.get("created_at") or ""),
             reverse=True,
         )[:safe_limit]
@@ -862,6 +990,13 @@ class NovaGatewayCore:
             job_id,
             owner_id=client_id,
         )
+
+    def resume_media_job(self, job_id: str, *, client_id: str) -> dict[str, Any]:
+        engine = self._media_engine_for_job(job_id)
+        resume = getattr(engine, "resume_job", None)
+        if not callable(resume):
+            raise UnsupportedFeatureError("This media engine does not support resume.")
+        return resume(job_id, owner_id=client_id)
 
     def open_media_job_output(
         self,
@@ -992,6 +1127,11 @@ class NovaGatewayCore:
             "engines": engine_health,
             "cost": self.cost_status(),
         }
+
+    def runtime_tool_descriptors(self) -> dict[str, Any]:
+        """Return the current tools projected through the canonical runtime interface."""
+
+        return wrap_existing_tool_registry(self.tools)
 
     def cost_status(self) -> dict[str, Any]:
         self._roll_cost_month()

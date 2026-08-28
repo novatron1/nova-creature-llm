@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from .errors import UnsupportedFeatureError
+from nova_runtime.adapters import build_mcp_tool_spec
+from nova_runtime.interfaces import ToolDescriptor
 
 
 MCP_COMPATIBILITY = {
@@ -30,3 +32,6 @@ class NovaMcpExtensionBoundary:
     def status(self) -> dict[str, Any]:
         return dict(MCP_COMPATIBILITY)
 
+
+def project_tool_descriptor_to_mcp(descriptor: ToolDescriptor) -> dict[str, Any]:
+    return build_mcp_tool_spec(descriptor)
