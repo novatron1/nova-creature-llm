@@ -1,14 +1,45 @@
 """v405 — Research Priority Ranker"""
 from __future__ import annotations
-from datetime import datetime
+from pathlib import Path
 
-def rank_research_priority():
+from nova_runtime.research_scheduler import ResearchScheduler
+
+
+STORE_PATH = Path("data") / "research_tasks.jsonl"
+
+
+def _priority_ranker(objective: str) -> dict[str, float | str]:
+    words = [token for token in objective.lower().split() if token]
+    score = 0.35
+    if any(token in objective.lower() for token in ("urgent", "priority", "blocked")):
+        score += 0.25
+    if len(words) >= 8:
+        score += 0.15
+    if any(token in objective.lower() for token in ("research", "verify", "resume", "checkpoint")):
+        score += 0.15
     return {
-        "version":"v405_research_priority_ranker",
-        "created_at":__import__("datetime").datetime.now().isoformat(),
-        "sim_only":True,
-        "real_hardware_enabled":False,
-        "note":"Research Priority Ranker module — simulation only. No real hardware."
+        "priority_score": round(min(1.0, score), 3),
+        "objective": objective,
+    }
+
+
+def rank_research_priority(objective: str = "research objective") -> dict:
+    scheduler = ResearchScheduler(STORE_PATH, priority_ranker=_priority_ranker)
+    task = scheduler.create_task(
+        objective=objective,
+        tool_budget=1,
+        time_budget_seconds=30,
+        cost_budget=0.0,
+    )
+    return {
+        "version": "v405_research_priority_ranker",
+        "created_at": task.created_at,
+        "sim_only": False,
+        "real_hardware_enabled": False,
+        "priority_score": task.priority_score,
+        "objective": task.objective,
+        "durable_task_record": task.to_dict(),
+        "note": "Research Priority Ranker now scores durable research tasks.",
     }
 
 def main():
