@@ -19,6 +19,7 @@ import json, os, sys, time, traceback, re
 from datetime import datetime
 
 from nova_conversation_summary import ConversationSummary, render_conversation_summary
+from nova_gateway.memory import wrap_provenance_memory_backend
 
 
 
@@ -594,7 +595,18 @@ def _get_validator():
 def _get_ltm():
     global _LTM
     if _LTM is None:
-        _LTM = _lazy_import("nova_long_term_memory")
+        backend = _lazy_import("nova_long_term_memory")
+        if backend is None:
+            _LTM = None
+        else:
+            try:
+                _LTM = wrap_provenance_memory_backend(
+                    backend,
+                    owner_id="local-user",
+                    ledger_path=os.path.join(ROOT, "data", "nova_memory_provenance.jsonl"),
+                )
+            except Exception:
+                _LTM = backend
     return _LTM
 
 
@@ -784,6 +796,8 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
 
     context = context if isinstance(context, dict) else {}
     normal_chat_llm_first = bool(context.get("normal_chat_llm_first"))
+    original_user_text = str(context.get("original_user_text") or "").strip()
+    routing_message = original_user_text or message
     if normal_chat_llm_first:
         trace["normal_chat_policy"] = "llm_first"
     conversation_decision = context.get("conversation_decision")
@@ -834,7 +848,7 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     gateway_conversation_context = _gateway_conversation_context(
         context.get("gateway_messages"),
         conversation_summary,
-        current_message=message,
+        current_message=routing_message,
     )
     if gateway_conversation_context:
         trace["gateway_message_roles"] = [
@@ -852,7 +866,14 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
         from nova_natural_chat import build_conversation_state, natural_chat_enabled
 
         if natural_chat_enabled() and conversation_memory_allowed:
-            conversation_state = build_conversation_state(message)
+            # Contextual follow-ups may be rewritten into an explicit prompt
+            # for the synthesizer.  Keep the turn analyzer grounded in what
+            # the user actually typed so pronouns do not become a new tool or
+            # vision intent merely because the internal prompt mentions them.
+            state_input = str(
+                context.get("original_user_text") or message
+            )
+            conversation_state = build_conversation_state(state_input)
             trace["conversation_state"] = conversation_state.to_trace()
             trace["dialogue_act"] = conversation_state.dialogue_act
             trace["conversation_topic"] = conversation_state.topic
@@ -891,7 +912,10 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     # Handle save memory directly
     if ltm_command == "save" and ltm and ltm_payload and memory_write_allowed:
         try:
-            record = ltm.add_memory(ltm_payload, source_command="long_term")
+            record = ltm.add_memory(
+                ltm_payload,
+                source_command="long_term",
+            )
             if record:
                 trace["long_term_memory_used"] = True
                 trace["long_term_memory_saved"] = True
@@ -944,11 +968,10 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             record, old_val, new_val = ltm.edit_memory(old_part, new_text)
             if record:
                 trace["long_term_memory_used"] = True
-                trace["memory_id"] = record.get("memory_id", "")
-                trace["extracted_slot"] = record.get("extracted_slot", "")
-                trace["extracted_value"] = record.get("extracted_value", "")
-                trace["memory_event"] = f"memory_edited:{record.get('extracted_slot')}:{old_val}->{new_val}"
-                answer = f"Updated your {record.get('extracted_slot', 'memory').replace('_', ' ')} from '{old_val}' to '{new_val}'."
+                trace["memory_id"] = record.get("memory_id", "") if isinstance(record, dict) else getattr(record, "memory_id", "")
+                trace["memory_source"] = "long_term"
+                trace["memory_event"] = f"memory_edited:{record.get('extracted_slot', old_part) if isinstance(record, dict) else old_part}"
+                answer = f"Updated your memory from '{old_val}' to '{new_val}'."
                 trace["skills"] = ["long_term_memory", "edit"]
                 trace["confidence"] = 0.95
                 return answer, trace
@@ -1050,12 +1073,12 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
                 use_fast_planner = True
             if conversation_decision is None:
                 plan = planner.plan(
-                    message,
+                    routing_message,
                     force_llm=not use_fast_planner,
                 )
             else:
                 plan = planner.plan(
-                    message,
+                    routing_message,
                     force_llm=not use_fast_planner,
                     conversation_decision=conversation_decision,
                 )
@@ -1072,7 +1095,7 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     # ═══════════════════════════════════════════════
     try:
         if validator and plan:
-            vresult = validator.validate(plan, raw_user_message=message)
+            vresult = validator.validate(plan, raw_user_message=routing_message)
             trace["planner_json_valid"] = vresult.ok
             if vresult.ok:
                 validated_plan = vresult.plan
@@ -1080,7 +1103,7 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             else:
                 # Fallback plan from validator
                 if _HYBRID_AVAIL:
-                    validated_plan = validator.make_fallback_plan(message)
+                    validated_plan = validator.make_fallback_plan(routing_message)
                     trace["plan_repair_used"] = True
                     trace["planner_validation_errors"] = getattr(vresult, "errors", [])
                 else:
@@ -1155,7 +1178,10 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
         slot = validated_plan.get("slot_needed", "custom")
         # If the original message has the info, save it as LTM
         if ltm and memory_write_allowed:
-            record = ltm.add_memory(message, source_command="memory_write")
+            record = ltm.add_memory(
+                message,
+                source_command="memory_write",
+            )
             if record:
                 trace["long_term_memory_used"] = True
                 trace["long_term_memory_saved"] = True

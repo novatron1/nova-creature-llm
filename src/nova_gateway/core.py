@@ -47,6 +47,7 @@ from .version import NOVA_VERSION
 from .world_model import NovaWorldModel, WORLD_MODEL_SCHEMA_VERSION
 from nova_runtime.contracts import build_run_contract
 from nova_runtime.adapters import wrap_existing_tool_registry
+from nova_gateway.memory import wrap_provenance_memory_backend
 
 
 logger = logging.getLogger("nova.gateway")
@@ -129,6 +130,11 @@ class NovaGatewayCore:
             except Exception:
                 self.tools = registry_from_existing_tools()
         self.memory = memory or ExistingNovaMemoryStore(mode=self.config.memory_mode)
+        self.provenance_memory = wrap_provenance_memory_backend(
+            self.memory,
+            owner_id="gateway",
+            ledger_path=self.config.conversation_store_path.with_name("nova_memory_provenance.jsonl"),
+        )
         self.conversations = ConversationArchive(self.config.conversation_store_path)
         self.world_model = world_model or NovaWorldModel(
             persistence=self.config.world_model_persistence,
