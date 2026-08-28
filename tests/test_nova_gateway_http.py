@@ -26,6 +26,71 @@ from nova_gateway.http import NovaGatewayHttpController  # noqa: E402
 from nova_gateway.providers import MockProvider  # noqa: E402
 
 
+def test_media_range_parser_supports_full_and_suffix_ranges() -> None:
+    parser = NovaGatewayHttpController._parse_range_header
+    assert parser("bytes=10-19", 100) == (10, 19)
+    assert parser("bytes=-10", 100) == (90, 99)
+    assert parser("bytes=90-", 100) == (90, 99)
+    assert parser("bytes=100-110", 100) is None
+    assert parser("bytes=1-2,4-5", 100) is None
+
+
+def test_conversation_archive_http_round_trip_and_owner_isolation(tmp_path, monkeypatch) -> None:
+    config = GatewayConfig(
+        rate_limit_enabled=False,
+        conversation_store_path=tmp_path / "conversations.json",
+    )
+    _core, controller = isolated_controller(config=config)
+    monkeypatch.setattr(server, "NOVA_GATEWAY_HTTP", controller)
+    httpd, base_url = start_server()
+    try:
+        status, _headers, saved = request_json(
+            base_url,
+            "POST",
+            "/nova/v1/conversations",
+            {
+                "conversation_id": "conv-http",
+                "title": "Phone chat",
+                "messages": [
+                    {"role": "user", "content": "Remember this chat"},
+                    {"role": "assistant", "content": "Saved."},
+                    {"role": "system", "content": "not persisted"},
+                ],
+            },
+        )
+        assert status == 201
+        assert saved["data"]["message_count"] == 2
+
+        status, _headers, listed = request_json(
+            base_url,
+            "GET",
+            "/nova/v1/conversations?query=remember",
+        )
+        assert status == 200
+        assert [row["conversation_id"] for row in listed["data"]] == ["conv-http"]
+        assert listed["privacy"]["other_clients_returned"] is False
+
+        status, _headers, action = request_json(
+            base_url,
+            "POST",
+            "/nova/v1/conversations/conv-http/archive",
+            {},
+        )
+        assert status == 200 and action["ok"] is True
+        status, _headers, hidden = request_json(base_url, "GET", "/nova/v1/conversations")
+        assert status == 200 and hidden["data"] == []
+        status, _headers, restored = request_json(
+            base_url,
+            "POST",
+            "/nova/v1/conversations/conv-http/restore",
+            {},
+        )
+        assert status == 200 and restored["ok"] is True
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
 class ThreadedTestServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
@@ -135,6 +200,21 @@ def test_models_endpoint_lists_only_resolvable_nova_aliases(monkeypatch) -> None
         ids = {item["id"] for item in payload["data"]}
         assert {"nova", "nova-default", "nova-fast", "nova-deep", "nova-local", "nova-coder"} <= ids
         assert all(item["object"] == "model" and item["owned_by"] == "nova" for item in payload["data"])
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+def test_runtime_contract_endpoint_exposes_frozen_runtime_snapshot(monkeypatch) -> None:
+    _core, controller = isolated_controller()
+    monkeypatch.setattr(server, "NOVA_GATEWAY_HTTP", controller)
+    httpd, base_url = start_server()
+    try:
+        status, _headers, payload = request_json(base_url, "GET", "/nova/v1/runtime/contract")
+        assert status == 200
+        assert payload["object"] == "nova.runtime_contract"
+        assert "contract_hash" in payload["data"]
+        assert payload["tools"]
     finally:
         httpd.shutdown()
         httpd.server_close()
@@ -452,6 +532,67 @@ def test_comfyui_generation_is_not_granted_by_local_chat_scope(monkeypatch) -> N
         )
         assert status == 403
         assert payload["error"]["code"] == "insufficient_scope"
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+def test_local_media_scopes_can_be_explicitly_enabled_for_desktop(monkeypatch) -> None:
+    """Desktop localhost can opt into Dream Studio media without widening remote auth."""
+    config = GatewayConfig(
+        rate_limit_enabled=False,
+        comfyui_enabled=True,
+        allow_local_media=True,
+    )
+    _core, controller = isolated_controller(config=config)
+    monkeypatch.setattr(server, "NOVA_GATEWAY_HTTP", controller)
+    httpd, base_url = start_server()
+    try:
+        status, _headers, access = request_json(
+            base_url,
+            "GET",
+            "/nova/v1/media/access",
+        )
+        assert status == 200
+        assert access["local_client"] is True
+        assert access["authenticated"] is False
+        assert access["image_generate"] is True
+        assert access["video_generate"] is True
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+def test_comfyui_launch_route_starts_local_engine(monkeypatch) -> None:
+    config = GatewayConfig(
+        rate_limit_enabled=False,
+        comfyui_enabled=True,
+    )
+    _core, controller = isolated_controller(config=config)
+    monkeypatch.setattr(server, "NOVA_GATEWAY_HTTP", controller)
+    launched = {}
+
+    def fake_launch():
+        launched["called"] = True
+        return {
+            "ok": True,
+            "started": True,
+            "status": "launching",
+            "process_id": 4321,
+        }
+
+    monkeypatch.setattr(controller.core.comfyui, "launch_local_server", fake_launch)
+    httpd, base_url = start_server()
+    try:
+        status, _headers, payload = request_json(
+            base_url,
+            "POST",
+            "/nova/v1/engines/comfyui-local/launch",
+        )
+        assert status == 202
+        assert launched["called"] is True
+        assert payload["started"] is True
+        assert payload["process_id"] == 4321
     finally:
         httpd.shutdown()
         httpd.server_close()

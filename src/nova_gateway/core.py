@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from pathlib import Path
 from threading import RLock
 import time
 from typing import Any, Iterator
@@ -44,6 +45,7 @@ from .tools import NovaRegisteredTool, NovaToolRegistry, registry_from_existing_
 from .video_lite import NovaVideoLiteEngine
 from .version import NOVA_VERSION
 from .world_model import NovaWorldModel, WORLD_MODEL_SCHEMA_VERSION
+from nova_runtime.contracts import build_run_contract
 from nova_runtime.adapters import wrap_existing_tool_registry
 
 
@@ -1132,6 +1134,43 @@ class NovaGatewayCore:
         """Return the current tools projected through the canonical runtime interface."""
 
         return wrap_existing_tool_registry(self.tools)
+
+    def runtime_contract(self) -> dict[str, Any]:
+        """Build a frozen runtime contract snapshot for the current gateway state."""
+
+        workspace_root = str(Path.cwd().resolve())
+        tool_descriptors = self.runtime_tool_descriptors()
+        allowed_tools = sorted(tool_descriptors)
+        allowed_resources = sorted(
+            {
+                dependency
+                for descriptor in tool_descriptors.values()
+                for dependency in getattr(descriptor, "resource_dependencies", ())
+            }
+        )
+        contract = build_run_contract(
+            run_id=f"gateway-{self.config.port}",
+            goal="Operate Nova Creature through the current gateway runtime.",
+            owner_id="gateway",
+            project_id="nova-creature",
+            workspace_root=workspace_root,
+            allowed_roots=[workspace_root],
+            allowed_tools=allowed_tools,
+            allowed_resources=allowed_resources or ["filesystem://workspace"],
+            time_budget_seconds=self.config.request_timeout_seconds,
+            tool_budget=max(1, len(allowed_tools)),
+            cost_budget=float(self.config.per_request_limit),
+            memory_budget=8,
+            metadata={
+                "gateway_port": self.config.port,
+                "config_version": self.config.config_version,
+            },
+        )
+        return {
+            "object": "nova.runtime_contract",
+            "data": contract.to_dict(),
+            "tools": {name: descriptor.to_public_dict() for name, descriptor in tool_descriptors.items()},
+        }
 
     def cost_status(self) -> dict[str, Any]:
         self._roll_cost_month()

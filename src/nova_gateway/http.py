@@ -31,15 +31,18 @@ OPENAI_GET_PATHS = {"/v1/models", "/health"}
 NOVA_GET_PATHS = {
     "/nova/v1/capabilities", "/nova/v1/providers", "/nova/v1/models", "/nova/v1/tools",
     "/nova/v1/health", "/nova/v1/world-model", "/nova/v1/dream-lab", "/nova/v1/engines",
-    "/nova/v1/media/access", "/nova/v1/jobs",
+    "/nova/v1/runtime/contract",
+    "/nova/v1/media/access", "/nova/v1/jobs", "/nova/v1/conversations",
 }
 POST_PATHS = {
     "/v1/chat/completions",
     "/v1/responses",
     "/v1/embeddings",
     "/nova/v1/chat",
+    "/nova/v1/conversations",
     "/nova/v1/images/generations",
     "/nova/v1/videos/generations",
+    "/nova/v1/engines/comfyui-local/launch",
 }
 PAIRED_DEVICE_OPTIONAL_SCOPES = frozenset({"image.generate", "video.generate"})
 DESKTOP_BOOLEAN_CONTEXT_KEYS = frozenset(
@@ -73,11 +76,43 @@ class NovaGatewayHttpController:
         self.authenticator = authenticator
         self.config = config
 
+    @staticmethod
+    def _parse_range_header(value: str | None, length: int) -> tuple[int, int] | None:
+        """Parse one RFC 7233 byte range; multiple ranges are intentionally refused."""
+        if not value or int(length) <= 0:
+            return None
+        raw = str(value).strip()
+        if not raw.lower().startswith("bytes="):
+            return None
+        spec = raw[6:].strip()
+        if not spec or "," in spec:
+            return None
+        start_text, separator, end_text = spec.partition("-")
+        if not separator:
+            return None
+        try:
+            size = int(length)
+            if not start_text:
+                suffix = int(end_text)
+                if suffix <= 0:
+                    return None
+                return (max(0, size - suffix), size - 1)
+            start = int(start_text)
+            if start < 0 or start >= size:
+                return None
+            end = size - 1 if not end_text else min(int(end_text), size - 1)
+            if end < start:
+                return None
+            return (start, end)
+        except (TypeError, ValueError):
+            return None
+
     def recognizes(self, path: str) -> bool:
         return (
             path in OPENAI_GET_PATHS | NOVA_GET_PATHS | POST_PATHS
             or path.startswith("/nova/v1/cancel/")
             or path.startswith("/nova/v1/jobs/")
+            or path.startswith("/nova/v1/conversations/")
         )
 
     def _client_ip(self, handler: Any) -> str:
@@ -241,6 +276,10 @@ class NovaGatewayHttpController:
                 self._authorize(handler, "tools.list")
                 handler._send_json({"object": "list", "data": self.core.engines.list()})
                 return True
+            if path == "/nova/v1/runtime/contract":
+                self._authorize(handler, "tools.list")
+                handler._send_json(self.core.runtime_contract())
+                return True
             if path == "/nova/v1/media/access":
                 auth = self._authorize(handler, "tools.list")
                 handler._send_json(
@@ -253,6 +292,36 @@ class NovaGatewayHttpController:
                         "authenticated": auth.authenticated,
                     }
                 )
+                return True
+            if path == "/nova/v1/conversations" or path.startswith("/nova/v1/conversations/"):
+                auth = self._authorize(handler, "chat.generate")
+                suffix = path[len("/nova/v1/conversations") :].strip("/")
+                conversation_id = suffix[:160] if suffix and "/" not in suffix else None
+                if suffix and conversation_id is None:
+                    raise InvalidRequestError("A valid conversation ID is required.", param="conversation_id")
+                if conversation_id:
+                    record = self.core.get_conversation(
+                        client_id=auth.client_id,
+                        conversation_id=conversation_id,
+                    )
+                    if record is None:
+                        handler._send_json({"error": {"message": "Conversation not found.", "type": "not_found"}}, status=404)
+                    else:
+                        handler._send_json({"object": "nova.conversation", "data": record})
+                    return True
+                query = parse_qs(str(getattr(parsed, "query", "") or ""))
+                raw_limit = (query.get("limit") or ["100"])[0]
+                try:
+                    limit = int(raw_limit)
+                except (TypeError, ValueError):
+                    limit = 100
+                include_archived = str((query.get("include_archived") or [""])[0]).lower() in {"1", "true", "yes"}
+                handler._send_json(self.core.list_conversations(
+                    client_id=auth.client_id,
+                    query=(query.get("query") or [""])[0],
+                    include_archived=include_archived,
+                    limit=limit,
+                ))
                 return True
             if path == "/nova/v1/jobs":
                 auth = self._authorize(handler, "tools.list")
@@ -286,19 +355,42 @@ class NovaGatewayHttpController:
                 )
                 upstream = opened["response"]
                 try:
-                    handler.send_response(200)
+                    total_length = int(opened.get("content_length") or 0)
+                    range_header = handler.headers.get("Range")
+                    selected_range = self._parse_range_header(range_header, total_length)
+                    if range_header and selected_range is None:
+                        handler.send_response(416)
+                        handler.send_header("Content-Range", f"bytes */{total_length}")
+                        handler.send_header("Content-Length", "0")
+                        handler._send_cors_headers()
+                        handler.end_headers()
+                        return True
+                    status = 206 if selected_range else 200
+                    start, end = selected_range if selected_range else (0, max(0, total_length - 1))
+                    content_length = (end - start + 1) if total_length else 0
+                    handler.send_response(status)
                     handler.send_header("Content-Type", opened["content_type"])
-                    if opened["content_length"]:
-                        handler.send_header("Content-Length", str(opened["content_length"]))
+                    if total_length:
+                        handler.send_header("Content-Length", str(content_length))
+                    if selected_range:
+                        handler.send_header("Content-Range", f"bytes {start}-{end}/{total_length}")
+                    handler.send_header("Accept-Ranges", "bytes")
+                    if opened.get("sha256"):
+                        handler.send_header("X-Nova-Output-SHA256", str(opened["sha256"]))
+                        handler.send_header("ETag", '"' + str(opened["sha256"]) + '"')
                     handler.send_header("Content-Disposition", "inline")
                     handler._send_cors_headers()
                     handler.end_headers()
+                    if selected_range and hasattr(upstream, "seek"):
+                        upstream.seek(start)
                     streamed = 0
-                    while True:
-                        chunk = upstream.read(64 * 1024)
+                    remaining = content_length
+                    while remaining > 0 or not total_length:
+                        chunk = upstream.read(min(64 * 1024, remaining) if remaining > 0 else 64 * 1024)
                         if not chunk:
                             break
                         streamed += len(chunk)
+                        remaining -= len(chunk)
                         if streamed > int(opened["max_bytes"]):
                             break
                         if not handler._write_bytes(chunk):
@@ -323,10 +415,13 @@ class NovaGatewayHttpController:
     def handle_post(self, handler: Any, parsed: Any) -> bool:
         path = parsed.path
         media_cancel_path = path.startswith("/nova/v1/jobs/") and path.endswith("/cancel")
+        media_resume_path = path.startswith("/nova/v1/jobs/") and path.endswith("/resume")
         if not self.config.enabled or (
             path not in POST_PATHS
             and not path.startswith("/nova/v1/cancel/")
             and not media_cancel_path
+            and not media_resume_path
+            and not path.startswith("/nova/v1/conversations/")
         ):
             return False
         try:
@@ -345,6 +440,16 @@ class NovaGatewayHttpController:
                     }
                 )
                 return True
+            if media_resume_path:
+                auth = self._authorize(handler, None)
+                job_id = path[len("/nova/v1/jobs/") : -len("/resume")].strip("/")
+                if not job_id or "/" in job_id:
+                    raise InvalidRequestError("A valid media job ID is required.", param="job_id")
+                handler._send_json(
+                    self.core.resume_media_job(job_id[:200], client_id=auth.client_id),
+                    status=202,
+                )
+                return True
             if path.startswith("/nova/v1/cancel/"):
                 auth = self._authorize(handler, "chat.generate")
                 request_id = path.rsplit("/", 1)[-1].strip()
@@ -356,6 +461,45 @@ class NovaGatewayHttpController:
                 })
                 return True
 
+            if path == "/nova/v1/conversations" or path.startswith("/nova/v1/conversations/"):
+                auth = self._authorize(handler, "chat.generate")
+                suffix = path[len("/nova/v1/conversations") :].strip("/")
+                action = "save"
+                conversation_id = ""
+                if suffix:
+                    parts = suffix.split("/")
+                    if len(parts) != 2 or parts[1] not in {"archive", "restore", "delete"}:
+                        raise InvalidRequestError("Conversation action must be archive, restore, or delete.")
+                    conversation_id, action = parts[0][:160], parts[1]
+                body = self._read_json(handler)
+                if action == "save":
+                    conversation_id = str(body.get("conversation_id") or "").strip()[:160]
+                    if not conversation_id:
+                        raise InvalidRequestError("conversation_id is required.", param="conversation_id")
+                    title = body.get("title")
+                    if title is not None and not isinstance(title, str):
+                        raise InvalidRequestError("title must be a string.", param="title")
+                    messages = body.get("messages", [])
+                    if not isinstance(messages, list):
+                        raise InvalidRequestError("messages must be an array.", param="messages")
+                    record = self.core.save_conversation(
+                        client_id=auth.client_id,
+                        conversation_id=conversation_id,
+                        title=title,
+                        messages=messages,
+                    )
+                    handler._send_json({"object": "nova.conversation", "data": record}, status=201)
+                    return True
+                if "/" in conversation_id:
+                    raise InvalidRequestError("A valid conversation ID is required.", param="conversation_id")
+                changed = {
+                    "archive": self.core.archive_conversation,
+                    "restore": self.core.restore_conversation,
+                    "delete": self.core.delete_conversation,
+                }[action](client_id=auth.client_id, conversation_id=conversation_id)
+                handler._send_json({"ok": changed, "conversation_id": conversation_id, "action": action})
+                return True
+
             if path == "/nova/v1/images/generations":
                 auth = self._authorize(handler, "image.generate")
                 body = self._media_payload(self._read_json(handler), video=False)
@@ -365,6 +509,11 @@ class NovaGatewayHttpController:
                 auth = self._authorize(handler, "video.generate")
                 body = self._media_payload(self._read_json(handler), video=True)
                 handler._send_json(self.core.generate_video(body, client_id=auth.client_id), status=202)
+                return True
+            if path == "/nova/v1/engines/comfyui-local/launch":
+                self._authorize(handler, "tools.list")
+                result = self.core.launch_comfyui()
+                handler._send_json(result, status=202 if result.get("started") or result.get("launching") else 200)
                 return True
 
             auth = self._authorize(handler, "chat.generate")
@@ -412,7 +561,7 @@ class NovaGatewayHttpController:
             "steps",
         }
         if video:
-            allowed.update({"frames", "fps", "motion"})
+            allowed.update({"frames", "fps", "motion", "engine_id"})
         unknown = set(body) - allowed
         if unknown:
             name = sorted(unknown)[0]

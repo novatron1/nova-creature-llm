@@ -10,6 +10,8 @@ import time
 from typing import Any, Callable, Iterable
 
 from nova_tool_registry import NovaToolRegistry, get_default_tool_registry
+from nova_runtime.ledger import EvidenceLedger
+from nova_runtime.permissions import ActionSignature, PermissionGateway
 
 
 AGENT_LOOP_VERSION = "1.0"
@@ -105,11 +107,15 @@ class NovaAgentLoop:
         max_tool_steps: int = 4,
         max_retries_per_step: int = 1,
         total_timeout_seconds: int = 120,
+        permission_gateway: PermissionGateway | None = None,
+        evidence_ledger: EvidenceLedger | None = None,
     ) -> None:
         self.registry = registry or get_default_tool_registry()
         self.max_tool_steps = max(1, min(int(max_tool_steps), 20))
         self.max_retries_per_step = max(0, min(int(max_retries_per_step), 2))
         self.total_timeout_seconds = max(1, int(total_timeout_seconds))
+        self.permission_gateway = permission_gateway
+        self.evidence_ledger = evidence_ledger
 
     @staticmethod
     def _needs_confirmation(tool: Any) -> bool:
@@ -198,6 +204,16 @@ class NovaAgentLoop:
         seen: set[str] = set()
         tool_steps = 0
         status = "completed"
+        if self.evidence_ledger is not None:
+            self.evidence_ledger.append(
+                event_type="planned",
+                payload={
+                    "goal_hash": hashlib.sha256(str(goal).encode("utf-8")).hexdigest(),
+                    "action_count": len(normalized),
+                    "tool_budget": self.max_tool_steps,
+                },
+                metadata={"state": "PLAN"},
+            )
 
         for action in normalized:
             if tool_steps >= self.max_tool_steps:
@@ -243,6 +259,53 @@ class NovaAgentLoop:
                 continue
             seen.add(signature)
 
+            if self.evidence_ledger is not None:
+                self.evidence_ledger.append(
+                    event_type="selected",
+                    payload={
+                        "action_id": action.action_id,
+                        "tool_name": action.tool_name,
+                        "signature": signature,
+                    },
+                    metadata={"state": "SELECT_ACTION"},
+                )
+
+            if self.permission_gateway is not None:
+                action_signature = ActionSignature.from_tool_call(
+                    tool_id=action.tool_name,
+                    arguments=parsed,
+                    resource_uri=str(
+                        parsed.get("path")
+                        or parsed.get("file_path")
+                        or parsed.get("destination")
+                        or parsed.get("target")
+                        or parsed.get("source")
+                        or ""
+                    ),
+                    contract_hash=self.permission_gateway.contract.contract_hash,
+                )
+                decision = self.permission_gateway.authorize_tool(
+                    tool_id=action.tool_name,
+                    arguments=parsed,
+                    action_signature=action_signature,
+                )
+                if self.evidence_ledger is not None:
+                    self.evidence_ledger.append(
+                        event_type="authorized" if decision.can_continue else "blocked",
+                        payload={
+                            "action_id": action.action_id,
+                            "tool_name": action.tool_name,
+                            "decision": decision.to_dict(),
+                        },
+                        metadata={"state": "VALIDATE"},
+                    )
+                if not decision.can_continue:
+                    action.status = "failed"
+                    action.error = decision.rule_id
+                    status = "failed"
+                    states.extend(["VALIDATE", "RESPOND"])
+                    break
+
             needs_confirmation = self._needs_confirmation(tool)
             action.authorized = not needs_confirmation or action.action_id in approved
             if not action.authorized:
@@ -255,6 +318,15 @@ class NovaAgentLoop:
             action.attempted = True
             tool_steps += 1
             try:
+                if self.evidence_ledger is not None:
+                    self.evidence_ledger.append(
+                        event_type="executing",
+                        payload={
+                            "action_id": action.action_id,
+                            "tool_name": action.tool_name,
+                        },
+                        metadata={"state": "EXECUTE"},
+                    )
                 action.result = self.registry.execute_typed(
                     action.tool_name,
                     parsed,
@@ -269,17 +341,47 @@ class NovaAgentLoop:
                 # deterministic verification boundary for a tool result.
                 action.verified = True
                 action.status = "verified_result"
+                if self.evidence_ledger is not None:
+                    self.evidence_ledger.append(
+                        event_type="verified",
+                        payload={
+                            "action_id": action.action_id,
+                            "tool_name": action.tool_name,
+                            "result_type": type(action.result).__name__,
+                        },
+                        metadata={"state": "VERIFY"},
+                    )
                 states.extend(["UPDATE_PLAN", "VERIFY"])
             except Exception as error:
                 action.status = "failed"
                 action.error = type(error).__name__
                 status = "failed"
+                if self.evidence_ledger is not None:
+                    self.evidence_ledger.append(
+                        event_type="failed",
+                        payload={
+                            "action_id": action.action_id,
+                            "tool_name": action.tool_name,
+                            "error": type(error).__name__,
+                        },
+                        metadata={"state": "VERIFY"},
+                    )
                 states.extend(["OBSERVE", "UPDATE_PLAN", "VERIFY"])
 
         states.append("RESPOND")
         cancelled = status == "cancelled"
         timed_out = status == "timed_out"
         awaiting = status == "awaiting_authorization"
+        if self.evidence_ledger is not None:
+            self.evidence_ledger.append(
+                event_type="responded",
+                payload={
+                    "goal_hash": hashlib.sha256(str(goal).encode("utf-8")).hexdigest(),
+                    "status": status,
+                    "verified_actions": sum(1 for item in normalized if item.verified),
+                },
+                metadata={"state": "RESPOND"},
+            )
         return AgentLoopResult(
             goal=str(goal),
             status=status,
