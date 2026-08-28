@@ -48,7 +48,15 @@ class OrchestratedRunResult:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "run": getattr(self.run, "state", self.run),
+            "run": {
+                "state": getattr(getattr(self.run, "state", None), "value", getattr(self.run, "state", self.run)),
+                "history": list(getattr(self.run, "history", [])),
+                "contract": (
+                    self.run.contract.to_dict()
+                    if hasattr(getattr(self.run, "contract", None), "to_dict")
+                    else {}
+                ),
+            },
             "report": self.report.to_dict(),
             "workspace_root": self.workspace_root,
             "report_path": self.report_path,

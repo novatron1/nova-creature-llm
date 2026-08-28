@@ -70,3 +70,28 @@ def test_end_to_end_proof_job_produces_verified_report(tmp_path: Path) -> None:
     assert result.report.final_verification["passed"] is True
     assert result.run.state.value == "completed"
     assert Path(result.report_path).exists()
+
+
+def test_proof_job_result_to_dict_is_json_serializable(tmp_path: Path) -> None:
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    (project_root / "app.py").write_text(
+        'def answer():\n    return "hello"\n',
+        encoding="utf-8",
+    )
+    (project_root / "test_app.py").write_text(
+        "from app import answer\n\n\n"
+        "def test_answer():\n"
+        '    assert answer() == "hello, nova"\n',
+        encoding="utf-8",
+    )
+
+    result = run_proof_job(
+        project_root=project_root,
+        output_dir=tmp_path / "workspace",
+        page_factory=_fake_page_factory,
+    )
+    payload = result.to_dict()
+
+    assert payload["run"]["state"] == "completed"
+    assert payload["run"]["history"]
