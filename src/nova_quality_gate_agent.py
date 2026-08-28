@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
 
+from nova_runtime.verification_playwright import verify_playwright_page
+
 
 DEFAULT_PROJECTS_URL = "/sandbox/app_builder_projects"
 REPORT_FILE = "quality_gate_report.json"
@@ -81,6 +83,8 @@ def run_quality_gate(
     *,
     fix: bool = False,
     visual: bool = True,
+    playwright_url: str | None = None,
+    playwright_assertions: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     project_dir = _project_dir(projects_root, project_id)
     if not (project_dir / "index.html").exists():
@@ -91,6 +95,13 @@ def run_quality_gate(
         fixes = []
     report = _inspect_project(project_dir, visual=visual)
     report["fixes_applied"] = fixes
+    if playwright_url:
+        verification = verify_playwright_page(
+            playwright_url,
+            playwright_assertions or [],
+            output_dir=project_dir / SCREENSHOT_DIR,
+        )
+        report["playwright_verification"] = verification.to_dict()
     report["generated_at"] = datetime.now().isoformat(timespec="seconds")
     report["report_file"] = REPORT_FILE
     (project_dir / REPORT_FILE).write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -119,7 +130,29 @@ def format_quality_gate_report(report: dict[str, Any]) -> str:
             lines.append(f"  - {visual.get('page', 'page')} {visual.get('viewport', '')}: {visual['screenshot_url']}")
     if report.get("report_file"):
         lines.append("Report: " + report["report_file"])
+    if report.get("playwright_verification"):
+        verification = report["playwright_verification"]
+        lines.append(
+            "Playwright: "
+            + ("passed" if verification.get("passed") else "failed")
+            + f" ({verification.get('screenshot_hash', '')[:12] or 'no screenshot'})"
+        )
     return "\n".join(lines)
+
+
+def request_playwright_verification(
+    url: str,
+    assertions: list[dict[str, Any]] | None = None,
+    *,
+    timeout_seconds: int = 30,
+    output_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    return verify_playwright_page(
+        url,
+        assertions or [],
+        timeout_seconds=timeout_seconds,
+        output_dir=output_dir,
+    ).to_dict()
 
 
 def _inspect_project(project_dir: Path, *, visual: bool = True) -> dict[str, Any]:

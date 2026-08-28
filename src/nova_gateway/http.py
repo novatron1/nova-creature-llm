@@ -24,6 +24,7 @@ from .config import GatewayConfig
 from .core import NovaGatewayCore
 from .errors import InvalidRequestError, NovaGatewayError, PermissionDeniedError, RateLimitError
 from nova_proxy_identity import trusted_tailscale_client_key
+from nova_runtime.verification_playwright import verify_playwright_page
 from .video_lite import VIDEO_LITE_MOTIONS
 
 
@@ -43,6 +44,7 @@ POST_PATHS = {
     "/nova/v1/images/generations",
     "/nova/v1/videos/generations",
     "/nova/v1/engines/comfyui-local/launch",
+    "/nova/v1/runtime/verification/playwright",
 }
 PAIRED_DEVICE_OPTIONAL_SCOPES = frozenset({"image.generate", "video.generate"})
 DESKTOP_BOOLEAN_CONTEXT_KEYS = frozenset(
@@ -514,6 +516,25 @@ class NovaGatewayHttpController:
                 self._authorize(handler, "tools.list")
                 result = self.core.launch_comfyui()
                 handler._send_json(result, status=202 if result.get("started") or result.get("launching") else 200)
+                return True
+            if path == "/nova/v1/runtime/verification/playwright":
+                self._authorize(handler, "tools.list")
+                body = self._read_json(handler)
+                url = str(body.get("url") or "").strip()
+                if not url:
+                    raise InvalidRequestError("url is required.", param="url")
+                assertions = body.get("assertions") or []
+                if not isinstance(assertions, list):
+                    raise InvalidRequestError("assertions must be an array.", param="assertions")
+                timeout_seconds = int(body.get("timeout_seconds") or 30)
+                output_dir = body.get("output_dir")
+                result = verify_playwright_page(
+                    url,
+                    [dict(item) for item in assertions if isinstance(item, dict)],
+                    timeout_seconds=timeout_seconds,
+                    output_dir=output_dir,
+                )
+                handler._send_json(result.to_dict(), status=200 if result.passed else 422)
                 return True
 
             auth = self._authorize(handler, "chat.generate")
