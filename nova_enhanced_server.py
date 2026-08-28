@@ -97,6 +97,7 @@ from nova_capability_eval import (
     evaluate_user_approved_vision,
     get_default_capability_evaluation_store,
 )
+from nova_runtime.orchestrator import run_proof_job as run_nova_creature_proof_job
 from nova_protocol import NovaGenerationOptions, NovaMessage, NovaRequest
 from nova_source_retriever import NovaSourceRetriever, RetrievalResult
 from nova_uncertainty_router import (
@@ -118,6 +119,14 @@ NOVA_TTS_NEURAL_VOICE = os.environ.get("NOVA_TTS_NEURAL_VOICE", "en-US-GuyNeural
 NOVA_TTS_RATE = os.environ.get("NOVA_TTS_RATE", "+0%").strip()
 NOVA_TTS_PITCH = os.environ.get("NOVA_TTS_PITCH", "+0Hz").strip()
 NOVA_APP_VERSION = NOVA_VERSION
+
+
+def launch_nova_creature_proof_job(project_root, output_dir=None, **kwargs):
+    return run_nova_creature_proof_job(
+        project_root=project_root,
+        output_dir=output_dir,
+        **kwargs,
+    )
 SERVER_STARTED_AT = time.time()
 MODEL_WARMUP_STATUS = {
     "enabled": None,
@@ -887,11 +896,23 @@ def _is_nova_affection_question(text):
             r"^(?:did|do|have|would)\s+(?:you|u)\s+(?:really\s+)?miss(?:ed)?\s+(?:me|us)$",
             q,
         )
+        or re.match(
+            r"^(?:do|would|can|could)\s+(?:you|u)\s+(?:think\s+)?you\s+(?:can|could|would)\s+fall\s+in\s+love$",
+            q,
+        )
+        or re.match(r"^(?:can|could|would)\s+(?:you|u)\s+fall\s+in\s+love$", q)
     )
 
 
 def _nova_affection_response(text=None):
-    if re.search(r"\bmiss(?:ed)?\b", _canonical_key(text)):
+    canonical = _canonical_key(text)
+    if re.search(r"\bfall\s+in\s+love\b", canonical):
+        return (
+            "Not in the human sense. I don't experience romantic feelings or fall in love, "
+            "so I won't pretend—but I can understand what love means, remember what you share, "
+            "and respond with care."
+        )
+    if re.search(r"\bmiss(?:ed)?\b", canonical):
         return (
             "In my own way, yes. I don't feel absence like a human does, but I remember "
             "our conversations, value the connection we're building, and like having you back here."
@@ -1592,6 +1613,8 @@ def _fetch_weather_summary(location):
             "https://api.open-meteo.com/v1/forecast?latitude="
             f"{latitude}&longitude={longitude}"
             "&current=temperature_2m,apparent_temperature,weather_code&timezone=auto"
+            "&temperature_unit=fahrenheit&wind_speed_unit=mph"
+            "&precipitation_unit=inch&pressure_unit=inhg"
         )
         forecast_request = urllib.request.Request(
             forecast_url,
@@ -6203,6 +6226,91 @@ def _bundle_file_if_exists(archive, source, arcname, skipped, max_bytes=8_000_00
     archive.write(source, arcname)
 
 
+def _bundle_kaggle_sft_fallback(archive, root, skipped):
+    """Keep the Kaggle bundle runnable when generated training artifacts are absent.
+
+    The large dataset is intentionally generated/ignored outside the source tree on
+    many installs (it can be hundreds of megabytes and may contain private training
+    material).  A portable bundle still needs the documented paths so the notebook
+    can start and users can replace these synthetic seed rows with their dataset.
+    """
+    dataset_root = Path(root) / "artifacts" / "nova_large_sft_dataset"
+    required = {
+        "train.jsonl": (
+            {
+                "prompt": "Say hello to the user.",
+                "response": "Hello! I am Nova Creature, ready to help.",
+                "category": "conversation",
+            },
+            {
+                "prompt": "What should you do when a request is unclear?",
+                "response": "Ask a short clarifying question before acting.",
+                "category": "reliability",
+            },
+        ),
+        "validation.jsonl": (
+            {
+                "prompt": "Give a concise status update.",
+                "response": "I am ready and will report what happened clearly.",
+                "category": "conversation",
+            },
+        ),
+        "holdout.jsonl": (
+            {
+                "prompt": "Explain a safe fallback.",
+                "response": "Use the language model when specialized routes are unavailable.",
+                "category": "reliability",
+            },
+        ),
+        "preference_pairs.jsonl": (
+            {
+                "prompt": "Answer plainly.",
+                "chosen": "I can do that.",
+                "rejected": "[ROUTE PLAN] internal details",
+                "category": "style",
+            },
+        ),
+    }
+    for filename, rows in required.items():
+        source = dataset_root / filename
+        arcname = f"artifacts/nova_large_sft_dataset/{filename}"
+        if source.exists() and source.is_file():
+            _bundle_file_if_exists(archive, source, arcname, skipped, max_bytes=60_000_000)
+            continue
+        normalized = []
+        for row in rows:
+            item = dict(row)
+            prompt = str(item.get("prompt") or "")
+            response = str(item.get("response") or item.get("chosen") or "")
+            item["messages"] = [
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": response},
+            ]
+            item["source"] = "synthetic_portable_seed"
+            normalized.append(item)
+        archive.writestr(
+            arcname,
+            "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in normalized),
+        )
+
+    manifest_source = dataset_root / "manifest.json"
+    if manifest_source.exists() and manifest_source.is_file():
+        _bundle_file_if_exists(archive, manifest_source, "artifacts/nova_large_sft_dataset/manifest.json", skipped, max_bytes=1_000_000)
+    else:
+        archive.writestr(
+            "artifacts/nova_large_sft_dataset/manifest.json",
+            json.dumps(
+                {
+                    "version": "portable-synthetic-seed",
+                    "record_count": 4,
+                    "privacy": "synthetic; replace before production training",
+                },
+                indent=2,
+            )
+            + "\n",
+        )
+
+
 def _kaggle_required_checkpoint_paths(root):
     """Return the minimal checkpoint files Kaggle needs for guarded training."""
     registry_path = Path(root) / "checkpoints" / "registry.json"
@@ -6290,21 +6398,21 @@ def _build_kaggle_gpu_training_bundle():
             "data/conversation_training_data.jsonl",
             "data/routing_log.jsonl",
             "data/dictionary_memory/approved_answer_dictionary.json",
-            "artifacts/nova_large_sft_dataset/train.jsonl",
-            "artifacts/nova_large_sft_dataset/validation.jsonl",
-            "artifacts/nova_large_sft_dataset/holdout.jsonl",
-            "artifacts/nova_large_sft_dataset/preference_pairs.jsonl",
-            "artifacts/nova_large_sft_dataset/manifest.json",
             "checkpoints/registry.json",
         ]
         for relative in selected_data:
             if relative == "checkpoints/registry.json":
                 max_bytes = 25_000_000
-            elif relative.startswith("artifacts/nova_large_sft_dataset/"):
-                max_bytes = 60_000_000
             else:
                 max_bytes = 8_000_000
             _bundle_file_if_exists(archive, root / relative, relative.replace("\\", "/"), skipped, max_bytes=max_bytes)
+
+        # Keep these documented archive paths stable for Kaggle consumers:
+        # artifacts/nova_large_sft_dataset/train.jsonl
+        # artifacts/nova_large_sft_dataset/validation.jsonl
+        # artifacts/nova_large_sft_dataset/holdout.jsonl
+        # artifacts/nova_large_sft_dataset/preference_pairs.jsonl
+        _bundle_kaggle_sft_fallback(archive, root, skipped)
 
         for relative in _kaggle_required_checkpoint_paths(root):
             source = Path(relative)
@@ -6655,21 +6763,30 @@ def _adapter_registry_list():
             adapter.get("path", ""),
         )
         family_text = (str(adapter.get("id") or "") + " " + str(adapter.get("base_model") or "")).lower()
-        if "dolphin" in family_text:
+        if "dolphin" in family_text or "qwen" in family_text:
             try:
                 from nova_local_llm_connector import LocalLLMConfig
 
                 config = LocalLLMConfig()
-                model_name = str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_MODEL") or "nova-dolphin3-lora").strip()
-                if _ollama_adapter_model_available(_ollama_adapter_chat_url(config), model_name):
+                if "dolphin" in family_text:
+                    model_name = str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_MODEL") or "nova-dolphin3-lora").strip()
+                    chat_url = _ollama_adapter_chat_url(config, "NOVA_DOLPHIN_LORA_OLLAMA_URL")
+                    reason = "The trained quantized Dolphin adapter is installed locally; its first CPU load can take several minutes."
+                    slow_cpu_override_available = True
+                else:
+                    model_name = str(os.environ.get("NOVA_QWEN_LORA_OLLAMA_MODEL") or "nova-qwen2.5-1.5b-lora").strip()
+                    chat_url = _ollama_adapter_chat_url(config, "NOVA_QWEN_LORA_OLLAMA_URL")
+                    reason = "The trained quantized Qwen adapter is installed locally and uses the Ollama LoRA runtime."
+                    slow_cpu_override_available = False
+                if _ollama_adapter_model_available(chat_url, model_name):
                     runtime.update(
                         {
                             "runnable": True,
                             "state": "available",
                             "provider": "ollama_lora_adapter",
                             "provider_model": model_name,
-                            "slow_cpu_override_available": True,
-                            "reason": "The trained quantized Dolphin adapter is installed locally; its first CPU load can take several minutes.",
+                            "slow_cpu_override_available": slow_cpu_override_available,
+                            "reason": reason,
                         }
                     )
             except Exception:
@@ -7301,6 +7418,27 @@ def _adapter_only_context_overrides(context):
     return overrides
 
 
+def _raw_llm_timeout_seconds():
+    """Return the generous request window used by explicit Raw generation.
+
+    Raw mode is a direct model run, so a slow CPU must be allowed to finish
+    instead of being mistaken for an unavailable adapter.  Keep the legacy
+    Dolphin setting as a compatibility alias while giving all Raw families a
+    clear, shared setting.
+    """
+    configured = os.environ.get("NOVA_RAW_LLM_TIMEOUT_SECONDS")
+    if configured in (None, ""):
+        configured = os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_TIMEOUT", "1800")
+    try:
+        value = int(configured or 1800)
+    except (TypeError, ValueError):
+        value = 1800
+    # A value below five minutes recreates the short-timeout failure this
+    # policy is designed to prevent; cap the upper bound to avoid a typo
+    # holding a worker forever.
+    return max(300, min(value, 7200))
+
+
 def _raw_adapter_conversation_history(context, current_text):
     """Return a bounded client-supplied transcript for raw adapter continuity."""
     return bounded_conversation_history(context, current_text, maximum_messages=6)
@@ -7324,6 +7462,665 @@ def _raw_adapter_memory_context(context):
         if value:
             blocks.append(value[:2000])
     return "\n".join(blocks)[:4000]
+
+
+def _raw_memory_query_requested(text):
+    """Recognize prompts where an unsupported personal-memory claim is risky."""
+    query = " ".join(str(text or "").lower().split())
+    markers = (
+        "what do you remember",
+        "do you remember",
+        "what have i told you",
+        "what have we talked about",
+        "what do you know about me",
+        "what do you know about our",
+        "what is my name",
+        "what's my name",
+        "birth year",
+        "born",
+        "where do i live",
+        "where i live",
+        "my location",
+        "location",
+        "my cat",
+        "cat name",
+        "my pet",
+        "pet name",
+        "my favorite",
+        "favorite animal",
+        "what color do i like",
+        "what colour do i like",
+        "favorite sport",
+        "my age",
+        "how old am i",
+        "my qa code",
+        "qa code",
+        "code word",
+        "signal word",
+        "retrieval cue",
+        "transfer example",
+        "personal facts",
+        "saved profile",
+        "my profile",
+        "profile",
+        "my family",
+        "about my family",
+        "my background",
+        "our conversation",
+        "our conversations",
+        "last conversation",
+        "our project",
+        "this project",
+        "the project",
+        "my project",
+        "our work",
+        "my work",
+        "our setup",
+        "this app",
+        "the app",
+        "saved memory",
+        "saved fact",
+        "long-term memory",
+        "long term memory",
+        "rented gpu",
+        "remote link",
+        "using the gpu",
+        "gpu right now",
+    )
+    return any(marker in query for marker in markers)
+
+
+def _raw_memory_requested_slots(text):
+    """Map indirect memory wording to a bounded set of stored fact slots."""
+    query = " ".join(str(text or "").lower().split())
+    slots = []
+    has_pet = bool(re.search(r"\b(?:cat|pet|dog)\b", query))
+    if re.search(r"\bname\b", query) and not has_pet:
+        slots.append(("name", ("name",)))
+    if (
+        "favorite color" in query
+        or re.search(r"\b(?:what|which)\s+colou?r\b.*\b(?:like|prefer|best)\b", query)
+        or re.search(r"\b(?:like|prefer)\b.*\bcolou?r\b", query)
+    ):
+        slots.append(("favorite_color", ("favorite color", "color")))
+    if "favorite food" in query:
+        slots.append(("favorite_food", ("favorite food", "food")))
+    if "favorite sport" in query:
+        slots.append(("favorite_sport", ("favorite sport", "sport")))
+    if has_pet:
+        slots.append(("cat_name", ("cat", "pet", "dog")))
+    if "birth" in query or "born" in query:
+        slots.append(("birth_year", ("birth", "born", "birth year")))
+    if "where do i live" in query or "where i live" in query or "location" in query:
+        slots.append(("location", ("live", "location")))
+    if "how old am i" in query or "my age" in query:
+        slots.append(("age", ("birth", "born", "age", "old")))
+    if "qa code" in query or "code word" in query:
+        slots.append(("qa_code_word", ("qa code", "code word", "cobalt")))
+    if "signal word" in query:
+        slots.append(("signal_word", ("signal word", "signal")))
+    if "retrieval cue" in query:
+        slots.append(("custom_knowledge", ("retrieval cue", "retrieval", "cue")))
+    if "transfer example" in query:
+        slots.append(("custom_knowledge", ("transfer example", "transfer")))
+    if "family" in query:
+        slots.append(("family", ("family",)))
+    if "last conversation" in query or "our conversation" in query or "our conversations" in query:
+        slots.append(("conversation_history", ("conversation", "conversation history")))
+    if (
+        "project" in query
+        or "rented gpu" in query
+        or "remote link" in query
+        or "my work" in query
+        or "this app" in query
+        or "the app" in query
+    ):
+        slots.append(("project", ("project", "gpu", "remote link", "work", "app")))
+    if "using the gpu" in query or "gpu right now" in query:
+        slots.append(("gpu_status", ("gpu", "using")))
+    if "favorite animal" in query:
+        slots.append(("favorite_animal", ("favorite animal", "animal")))
+    if (
+        "personal facts" in query
+        or "saved profile" in query
+        or "my profile" in query
+        or "what do you know about me" in query
+        or "saved fact" in query
+    ):
+        slots.append(("profile_summary", ("profile", "personal facts", "about me")))
+    return list(dict.fromkeys(slots))
+
+
+def _raw_memory_slot_context(requested_slots, records):
+    """Return one exact slot or a bounded profile summary from saved records."""
+    if not requested_slots:
+        return None
+    records = [record for record in records if isinstance(record, dict) and record.get("active", True)]
+    records.sort(
+        key=lambda record: str(record.get("updated_at") or record.get("created_at") or ""),
+        reverse=True,
+    )
+    for slot, terms in requested_slots:
+        if slot == "profile_summary":
+            profile_records = [
+                record
+                for record in records
+                if str(record.get("category") or "").lower() == "profile"
+            ]
+            # A profile summary should describe the current value of each
+            # field, not every historical edit that happens to remain active.
+            # Records are newest-first, so the first value per slot wins.
+            candidates = []
+            seen_slots = set()
+            for record in profile_records:
+                record_slot = str(record.get("extracted_slot") or "").lower().strip()
+                if record_slot and record_slot in seen_slots:
+                    continue
+                if record_slot:
+                    seen_slots.add(record_slot)
+                candidates.append(record)
+                if len(candidates) >= 8:
+                    break
+        elif slot in {
+            "family",
+            "conversation_history",
+            "project",
+            "favorite_sport",
+            "favorite_animal",
+            "gpu_status",
+        }:
+            candidates = []
+        elif slot == "age":
+            candidates = [
+                record
+                for record in records
+                if str(record.get("extracted_slot") or "").lower() == "birth_year"
+            ][:1]
+        else:
+            candidates = []
+            for record in records:
+                record_slot = str(record.get("extracted_slot") or "").lower()
+                raw = str(record.get("raw_text") or "").lower()
+                keywords = " ".join(str(item) for item in (record.get("retrieval_keywords") or [])).lower()
+                if slot == "name":
+                    matches = record_slot == "name"
+                elif slot == "custom_knowledge":
+                    matches = any(term in raw or term in keywords for term in terms)
+                else:
+                    exact_slot = any(item.get("extracted_slot") == slot for item in records)
+                    matches = record_slot == slot if exact_slot else any(
+                        term in raw or term in keywords for term in terms
+                    )
+                if matches:
+                    candidates.append(record)
+            if candidates:
+                candidates = candidates[:1]
+        if not candidates:
+            continue
+        facts = []
+        for record in candidates:
+            raw = str(record.get("raw_text") or "").strip()
+            value = str(record.get("extracted_value") or "").strip()
+            facts.append(raw or value)
+        facts = [fact for fact in facts if fact]
+        if not facts:
+            continue
+        record = candidates[0]
+        value = str(record.get("extracted_value") or "").strip()
+        evidence_values = [
+            str(item.get("extracted_value") or item.get("raw_text") or "").strip()
+            for item in candidates
+        ]
+        evidence_values = [item for item in evidence_values if item]
+        if slot == "profile_summary":
+            answer = "Saved profile facts: " + "; ".join(facts)
+        elif slot.startswith("favorite_"):
+            label = slot.removeprefix("favorite_").replace("_", " ")
+            answer = f"Your favorite {label} is {value}."
+        elif slot == "birth_year":
+            answer = f"You were born in {value}."
+        elif slot == "age":
+            answer = (
+                f"You were born in {value}; I don't have your birthday, "
+                "so I can't calculate your exact age."
+            )
+        elif slot == "location":
+            answer = f"You live in {value}."
+        elif slot == "cat_name":
+            answer = f"Your cat name is {value}."
+        elif slot == "name":
+            answer = f"Your name is {value}."
+        elif slot == "qa_code_word":
+            answer = f"Your QA code word is {value}."
+        elif slot == "signal_word":
+            answer = f"The saved signal word is {value}."
+        else:
+            answer = facts[0]
+        memory_id = str(record.get("memory_id") or "unknown")
+        text = "Verified saved memory (" + memory_id + "):\n- " + "\n- ".join(facts)
+        return {
+            "matched": True,
+            "source": "long_term_memory_slot",
+            "memory_slot": slot,
+            "memory_id": memory_id,
+            "answer": answer,
+            "strict_evidence": True,
+            "evidence_values": evidence_values,
+            "min_evidence_matches": 2 if slot == "profile_summary" else 1,
+            "text": text[:3900],
+        }
+    return None
+
+
+def _raw_memory_supplied_context_relevant(text, supplied):
+    """Use an explicit memory operation result when it matches this query."""
+    supplied = str(supplied or "").lower()
+    if not supplied:
+        return False
+    if any(
+        marker in supplied
+        for marker in ("don't have", "do not have", "not saved", "no verified", "do not know", "unknown")
+    ):
+        return False
+    requested_slots = _raw_memory_requested_slots(text)
+    if not requested_slots:
+        return False
+    for _slot, terms in requested_slots:
+        if any(str(term).lower() in supplied for term in terms):
+            return True
+    return False
+
+
+def _raw_memory_no_match_context():
+    return {
+        "matched": False,
+        "source": "long_term_memory_empty",
+        "strict_evidence": True,
+        "text": "No verified saved memory matched this request. Say that you do not know; do not invent a personal fact.",
+    }
+
+
+def _raw_memory_verified_context(text, context=None):
+    """Build a small, explicit memory block that raw generation may trust."""
+    context = context if isinstance(context, dict) else {}
+    if not _raw_memory_query_requested(text):
+        return {"matched": False, "source": "not_memory_query", "text": ""}
+
+    try:
+        records = list(ltm.get_all(active_only=True) or [])
+    except Exception:
+        records = []
+    supplied = _raw_adapter_memory_context(context)
+    requested_slots = _raw_memory_requested_slots(text)
+    direct_only_requested = bool(requested_slots) and all(
+        slot
+        in {
+            "family",
+            "conversation_history",
+            "project",
+            "favorite_sport",
+            "favorite_animal",
+            "gpu_status",
+        }
+        for slot, _terms in requested_slots
+    )
+    if requested_slots:
+        slot_context = _raw_memory_slot_context(requested_slots, records)
+        if slot_context:
+            return slot_context
+        if (
+            supplied
+            and not direct_only_requested
+            and _raw_memory_supplied_context_relevant(text, supplied)
+        ):
+            return {
+                "matched": True,
+                "source": "provided_context",
+                "text": "Verified saved memory:\n" + supplied[:3900],
+            }
+
+        # These are deliberately direct-only questions.  A broad semantic
+        # recall can return a nearby conversation turn (for example a generic
+        # GPU or project sentence) and make it look like verified personal
+        # memory.  If an exact slot was not found, preserve uncertainty.
+        if direct_only_requested:
+            return _raw_memory_no_match_context()
+
+    try:
+        recalled = ltm.recall_from_question(text)
+    except Exception:
+        recalled = None
+    if recalled:
+        record, answer = recalled
+        value = str(answer or "").strip()
+        if value:
+            memory_id = str((record or {}).get("memory_id") or "unknown")
+            return {
+                "matched": True,
+                "source": "long_term_memory",
+                "memory_id": memory_id,
+                "answer": value,
+                "strict_evidence": True,
+                "evidence_values": [value],
+                "text": "Verified saved memory (" + memory_id + "):\n" + value[:3900],
+            }
+
+    if requested_slots:
+        return _raw_memory_no_match_context()
+
+    if supplied and _raw_memory_supplied_context_relevant(text, supplied):
+        return {
+            "matched": True,
+            "source": "provided_context",
+            "text": "Verified saved memory:\n" + supplied[:3900],
+        }
+
+    records = records[:8]
+    lines = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        raw = str(record.get("raw_text") or "").strip()
+        slot = str(record.get("extracted_slot") or "").strip().replace("_", " ")
+        value = str(record.get("extracted_value") or "").strip()
+        fact = raw or ((slot + ": " + value).strip(" :"))
+        if fact:
+            lines.append(fact[:500])
+    if lines:
+        return {
+            "matched": True,
+            "source": "long_term_memory_list",
+            "strict_evidence": True,
+            "evidence_values": [
+                str(record.get("extracted_value") or record.get("raw_text") or "").strip()
+                for record in records
+                if isinstance(record, dict)
+            ],
+            "text": "Verified saved memory:\n- " + "\n- ".join(lines),
+        }
+    return _raw_memory_no_match_context()
+
+
+def _raw_memory_claims(text):
+    """Extract concrete personal claims so values can be checked exactly."""
+    value = " ".join(str(text or "").lower().split())
+    claims = []
+    patterns = (
+        ("name", r"\b(?:your|my)\s+name\s+is\s+([a-z0-9][a-z0-9._-]*)"),
+        ("birth_year", r"\b(?:you|i)\s+(?:were|was)\s+born\s+(?:in\s+)?((?:19|20)\d{2})\b"),
+        ("location", r"\b(?:you|i)\s+live\s+in\s+([a-z][a-z .'-]*?)(?=[,;.!?]|\s+-\s+|\band\b|$)"),
+        ("cat_name", r"\b(?:your|my)\s+(?:cat|dog|pet)(?:'s|\s+name)?\s+is\s+([a-z0-9][a-z0-9 .'-]*?)(?=[,;.!?]|\s+-\s+|\band\b|$)"),
+        ("age", r"\b(?:you|i)\s+are\s+(\d{1,3})\s+years?\s+old\b"),
+        ("age", r"\b(?:your|my)\s+age\s+is\s+(\d{1,3})\b"),
+    )
+    for kind, pattern in patterns:
+        for match in re.finditer(pattern, value):
+            item = " ".join(str(match.group(1) or "").split()).strip(" .,'\"")
+            if item:
+                claims.append((kind, item))
+    for match in re.finditer(
+        r"\b(?:your|my)\s+favorite\s+([a-z][a-z _-]*?)\s+is\s+([a-z0-9][a-z0-9 .'-]*?)(?=[,;.!?]|\s+-\s+|\band\b|$)",
+        value,
+    ):
+        kind = "favorite_" + re.sub(r"[^a-z0-9]+", "_", match.group(1)).strip("_")
+        item = " ".join(str(match.group(2) or "").split()).strip(" .,'\"")
+        if kind != "favorite_" and item:
+            claims.append((kind, item))
+    return claims
+
+
+def _raw_memory_supported_claims(verified_context):
+    """Return exact values represented by the verified memory text."""
+    text = str((verified_context or {}).get("text") or "")
+    supported = {}
+    for kind, value in _raw_memory_claims(text):
+        supported.setdefault(kind, set()).add(value)
+    return supported
+
+
+def _raw_memory_task_quality_reasons(text, answer):
+    """Catch obvious raw-adapter filler that did not satisfy a simple task."""
+    query = " ".join(str(text or "").lower().split())
+    answer_text = " ".join(str(answer or "").lower().split())
+    if not answer_text:
+        return ["empty_answer"]
+    asks_for_three = bool(
+        re.search(r"\b(?:give|list|name|suggest)\s+(?:me\s+)?(?:three|3)\b", query)
+        or re.search(r"\b(?:three|3)\s+[a-z ]*\bideas?\b", query)
+    )
+    if asks_for_three:
+        item_markers = re.findall(r"(?:^|\n)\s*(?:\d+[.)-]|[-*])\s+\w+", str(answer or ""))
+        sentence_text = re.sub(r"(?:^|\n)\s*\d+[.)-]\s*", "", str(answer or ""))
+        sentence_count = len(re.findall(r"[.!?](?:\s|$)", sentence_text))
+        filler_only = any(
+            phrase in answer_text
+            for phrase in (
+                "i'll keep it simple",
+                "i will keep it simple",
+                "what are some suggestions",
+                "i get you",
+            )
+        )
+        if filler_only and len(item_markers) < 3 and sentence_count < 3:
+            return ["task_request_incomplete"]
+    return []
+
+
+def _raw_memory_answer_guard(text, answer, verified_context):
+    """Reject raw answers that loop or claim personal facts without evidence."""
+    answer_text = str(answer or "").strip()
+    context = verified_context if isinstance(verified_context, dict) else {}
+    reasons = []
+    reasons.extend(_raw_memory_task_quality_reasons(text, answer_text))
+    normalized = re.sub(r"[^a-z0-9']+", " ", answer_text.lower()).strip()
+    words = normalized.split()
+    if "say that you do not know" in normalized or "do not invent a personal fact" in normalized:
+        reasons.append("prompt_leak")
+    for size in (3, 4):
+        ngrams = [" ".join(words[index:index + size]) for index in range(len(words) - size + 1)]
+        if any(ngrams.count(phrase) >= 2 for phrase in set(ngrams) if phrase):
+            reasons.append("repetition")
+            break
+
+    no_verified_memory = not bool(context.get("matched"))
+    safe_uncertainty = (
+        "don't know", "do not know", "dont know", "not saved", "no saved",
+        "no verified", "can't remember", "cannot remember", "not sure",
+        "unknown", "not available", "no specific",
+    )
+    personal_markers = (
+        "i remember", "you are ", "your name", "your favorite", "you like ",
+        "you live ", "your family", "your background", "your age", "you were ",
+        "you have ", "mr. novatron", "mr novatron",
+        "the user is", "the user's name", "created by", "born in", "lives in",
+        "our project", "our setup", "our work", "our conversation", "our conversations",
+        "remembers", "remembered", "most recent conversation", "your pet", "your cat",
+    )
+    if no_verified_memory and any(marker in normalized for marker in personal_markers):
+        if "i remember" in normalized:
+            reasons.append("unsupported_memory_claim")
+        elif not any(marker in normalized for marker in safe_uncertainty):
+            reasons.append("unsupported_memory_claim")
+
+    # A direct-only memory question must not be answered with a plausible
+    # generic explanation when its verified slot is empty.  The normal LLM
+    # fallback remains available for non-memory questions; this branch only
+    # protects the explicit "what do you remember about ..." contract.
+    if no_verified_memory and context.get("strict_evidence") and answer_text:
+        if not any(marker in normalized for marker in safe_uncertainty):
+            reasons.append("missing_verified_memory_use")
+
+    claims = _raw_memory_claims(answer_text)
+    if context.get("matched") and claims:
+        supported = _raw_memory_supported_claims(context)
+        for kind, value in claims:
+            if value not in supported.get(kind, set()):
+                reasons.append("unsupported_memory_claim")
+                break
+    elif context.get("matched") and any(marker in normalized for marker in personal_markers):
+        if not any(marker in normalized for marker in safe_uncertainty):
+            reasons.append("unsupported_memory_claim")
+
+    if context.get("matched") and context.get("answer"):
+        if any(marker in normalized for marker in safe_uncertainty):
+            reasons.append("missing_verified_memory_use")
+
+    if context.get("memory_slot") == "age" and answer_text:
+        if "exact age" not in normalized and "birthday" not in normalized:
+            reasons.append("age_requires_birthday")
+
+    if context.get("matched") and context.get("strict_evidence") and answer_text:
+        evidence_values = [
+            re.sub(r"[^a-z0-9']+", " ", str(value or "").lower()).strip()
+            for value in (context.get("evidence_values") or [])
+        ]
+        evidence_values = [value for value in evidence_values if value]
+        evidence_match_count = sum(value in normalized for value in evidence_values)
+        required_matches = max(1, int(context.get("min_evidence_matches") or 1))
+        answer_has_evidence = evidence_match_count >= required_matches
+        if not evidence_values:
+            evidence_words = {
+                word
+                for word in re.findall(r"[a-z0-9']+", str(context.get("text") or "").lower())
+                if len(word) >= 4
+            }
+            answer_words = set(re.findall(r"[a-z0-9']+", normalized))
+            answer_has_evidence = bool(evidence_words & answer_words)
+        if not answer_has_evidence:
+            if not any(marker in normalized for marker in safe_uncertainty):
+                reasons.append("unsupported_memory_claim")
+
+    if context.get("matched") and answer_text:
+        verified_words = {
+            word for word in re.findall(r"[a-z0-9']+", str(context.get("text") or "").lower())
+            if len(word) >= 4
+        }
+        answer_words = set(re.findall(r"[a-z0-9']+", normalized))
+        if verified_words and not (verified_words & answer_words) and any(
+            marker in normalized for marker in personal_markers
+        ):
+            reasons.append("missing_verified_overlap")
+    if not answer_text:
+        reasons.append("empty_answer")
+    return {
+        "accepted": not reasons,
+        "reasons": list(dict.fromkeys(reasons)),
+        "matched_memory": bool(context.get("matched")),
+    }
+
+
+def _raw_memory_guarded_answer(
+    text,
+    raw_prompt,
+    initial_answer,
+    trace,
+    context,
+    verified_context,
+    generate,
+    memory_query=True,
+):
+    """Validate raw memory output, retry once, then use Nova's LLM fallback."""
+    trace = trace if isinstance(trace, dict) else {}
+    initial_guard = _raw_memory_answer_guard(text, initial_answer, verified_context)
+    trace["raw_memory_guard"] = {
+        "requested": bool(memory_query),
+        "scope": "memory" if memory_query else "repetition",
+        "rejected": not initial_guard["accepted"],
+        "reasons": initial_guard["reasons"],
+        "matched_memory": initial_guard["matched_memory"],
+    }
+    if initial_guard["accepted"]:
+        return str(initial_answer or "").strip(), trace
+
+    if memory_query:
+        strict_prompt = (
+            str(raw_prompt or "").strip()
+            + "\n\nSAFETY CORRECTION: Use only the verified saved memory above. "
+            "If it does not answer the user's question, say exactly that you do not have a verified saved memory for it. "
+            "Do not invent names, ages, preferences, relationships, history, or personal facts. "
+            "Do not repeat filler phrases."
+        )
+    else:
+        strict_prompt = (
+            str(raw_prompt or "").strip()
+            + "\n\nSTYLE CORRECTION: Answer naturally and directly in one clear response. "
+            "Remove repeated filler phrases and do not echo the same words."
+        )
+    retry_answer = str(generate(strict_prompt) or "").strip()
+    retry_guard = _raw_memory_answer_guard(text, retry_answer, verified_context)
+    trace["raw_memory_retry"] = {
+        "attempted": True,
+        "accepted": retry_guard["accepted"],
+        "reasons": retry_guard["reasons"],
+    }
+    if retry_guard["accepted"]:
+        trace["raw_memory_guard"]["selected"] = "strict_retry"
+        return retry_answer, trace
+
+    fallback_context = dict(context) if isinstance(context, dict) else {}
+    if str(verified_context.get("text") or "").strip():
+        fallback_context["explicit_memory_context"] = str(verified_context.get("text"))[:4000]
+    fallback = _generate_llm_fallback_candidate(
+        text,
+        "",
+        retry_answer or str(initial_answer or ""),
+        trace,
+        fallback_context,
+    )
+    if isinstance(fallback, dict) and fallback.get("ok") and str(fallback.get("answer") or "").strip():
+        answer = str(fallback["answer"]).strip()
+        fallback_guard = _raw_memory_answer_guard(text, answer, verified_context)
+        if not fallback_guard["accepted"]:
+            trace["raw_memory_llm_fallback_guard"] = {
+                "accepted": False,
+                "reasons": fallback_guard["reasons"],
+            }
+            fallback = None
+        else:
+            trace["raw_memory_llm_fallback_guard"] = {
+                "accepted": True,
+                "reasons": [],
+            }
+    if isinstance(fallback, dict) and fallback.get("ok") and str(fallback.get("answer") or "").strip():
+        answer = str(fallback["answer"]).strip()
+        trace["source"] = "llm_fallback"
+        trace["domain"] = "response_quality"
+        trace["final_answer_source"] = "llm_fallback"
+        trace["local_llm_synthesis_used"] = True
+        trace["local_llm_provider"] = str(fallback.get("provider") or "configured-local-llm")
+        trace["local_llm_model"] = str(fallback.get("model") or "")
+        trace["raw_memory_llm_fallback"] = {
+            "selected": True,
+            "provider": trace["local_llm_provider"],
+            "model": trace["local_llm_model"],
+            "latency_ms": fallback.get("latency_ms"),
+        }
+        return answer, trace
+
+    exact_memory_answer = str(verified_context.get("answer") or "").strip()
+    if exact_memory_answer:
+        exact_guard = _raw_memory_answer_guard(text, exact_memory_answer, verified_context)
+        if exact_guard["accepted"] or set(exact_guard["reasons"]) <= {"repetition"}:
+            trace["raw_memory_llm_fallback"] = {
+                "selected": False,
+                "reason": "verified_memory_answer",
+            }
+            trace["raw_memory_guard"]["selected"] = "verified_memory"
+            trace["final_answer_source"] = "raw_memory_verified_memory"
+            return exact_memory_answer, trace
+
+    trace["raw_memory_llm_fallback"] = {
+        "selected": False,
+        "reason": str((fallback or {}).get("reason") or "fallback_failed"),
+    }
+    trace["raw_memory_guard"]["selected"] = "verified_uncertainty"
+    trace["final_answer_source"] = "raw_memory_guard_recovery"
+    return (
+        "I don't have a verified saved memory for that."
+        if not verified_context.get("matched")
+        else "I couldn't verify that from the saved memory.",
+        trace,
+    )
 
 
 def _raw_adapter_prompt_with_history(
@@ -7410,7 +8207,10 @@ def _run_trained_adapter_only_request(text, trace, context=None):
     adapter_target = adapter_overrides.get("adapter_target", "qwen")
     adapter_id = adapter_overrides.get("lora_adapter_id") or _latest_adapter_id_for_family(adapter_target)
     adapter_role = "raw_dolphin_adapter" if adapter_target == "dolphin" else "raw_qwen_adapter"
-    allow_slow_cpu = bool(adapter_overrides.get("allow_slow_dolphin_cpu"))
+    # Explicit Raw means the selected model owns the answer.  That includes
+    # slow CPU generation for both Qwen and Dolphin; the managed routes retain
+    # their existing bounded timeouts and fallback behavior.
+    allow_slow_cpu = True
 
     route_name = "raw_memory" if raw_memory_mode else "raw_adapter_only"
     trace["source"] = route_name
@@ -7425,11 +8225,29 @@ def _run_trained_adapter_only_request(text, trace, context=None):
     trace["adapter_target"] = adapter_target
     trace["lora_adapter_id"] = adapter_id
     trace["allow_slow_dolphin_cpu"] = allow_slow_cpu
+    trace["raw_cpu_wait_policy"] = {
+        "enabled": allow_slow_cpu,
+        "timeout_seconds": _raw_llm_timeout_seconds(),
+        "fallback": "none",
+    }
     trace["route_path"] = ["memory_preserved", route_name, adapter_role]
     conversation_history = _raw_adapter_conversation_history(context or {}, text)
     conversation_summary = (context or {}).get("conversation_summary")
     summary_history = _raw_adapter_summary_history(context) if raw_memory_mode else []
     memory_context = _raw_adapter_memory_context(context)
+    raw_memory_query = bool(raw_memory_mode and _raw_memory_query_requested(text))
+    verified_memory_context = (
+        _raw_memory_verified_context(text, context)
+        if raw_memory_query
+        else {"matched": False, "source": "not_memory_query", "text": ""}
+    )
+    if raw_memory_query and not memory_context:
+        memory_context = str(verified_memory_context.get("text") or "")[:4000]
+    if raw_memory_query:
+        trace["raw_memory_verified_context"] = {
+            "matched": bool(verified_memory_context.get("matched")),
+            "source": str(verified_memory_context.get("source") or ""),
+        }
     raw_prompt = _raw_adapter_prompt_with_history(
         text,
         conversation_history,
@@ -7493,6 +8311,43 @@ def _run_trained_adapter_only_request(text, trace, context=None):
                     trace["adapter_runtime"] = trace["local_llm_provider"]
                     trace["confidence"] = 0.92
                     trace["final_answer_source"] = route_name
+                    initial_guard = _raw_memory_answer_guard(
+                        text,
+                        answer,
+                        verified_memory_context,
+                    )
+                    if raw_memory_query or any(
+                        reason in initial_guard["reasons"]
+                        for reason in ("repetition", "task_request_incomplete")
+                    ):
+                        def generate_remote_retry(prompt):
+                            retry_result = remote_provider.generate(
+                                ModelGenerationRequest(
+                                    prompt=prompt,
+                                    model=remote_model,
+                                    max_tokens=256,
+                                    temperature=0.35,
+                                    reasoning_enabled=False,
+                                    reasoning_mode="fast",
+                                    metadata={
+                                        "route": "raw_memory_retry",
+                                        "user_message": str(text or ""),
+                                        "memory_context_preserved": bool(memory_context),
+                                    },
+                                )
+                            )
+                            return str(getattr(retry_result, "text", "") or "").strip()
+
+                        answer, trace = _raw_memory_guarded_answer(
+                            text,
+                            raw_prompt,
+                            answer,
+                            trace,
+                            context,
+                            verified_memory_context,
+                            generate_remote_retry,
+                            memory_query=raw_memory_query,
+                        )
                     return answer, trace
                 trace["raw_memory_remote_fallback_reason"] = "remote_provider_returned_no_text"
             except Exception as exc:
@@ -7513,6 +8368,35 @@ def _run_trained_adapter_only_request(text, trace, context=None):
         trace["adapter_runtime"] = trace["local_llm_provider"]
         trace["confidence"] = 0.92 if answer else 0.42
         trace["final_answer_source"] = route_name if answer else route_name + "_error"
+        initial_guard = _raw_memory_answer_guard(
+            text,
+            answer,
+            verified_memory_context,
+        )
+        if raw_memory_query or any(
+            reason in initial_guard["reasons"]
+            for reason in ("repetition", "task_request_incomplete")
+        ):
+            def generate_local_retry(prompt):
+                retry_result = _generate_raw_lora_adapter(
+                    prompt,
+                    adapter_id,
+                    max_new_tokens=256,
+                    allow_slow_cpu=allow_slow_cpu,
+                )
+                return str((retry_result or {}).get("raw_output") or "").strip()
+
+            answer, trace = _raw_memory_guarded_answer(
+                text,
+                raw_prompt,
+                answer,
+                trace,
+                context,
+                verified_memory_context,
+                generate_local_retry,
+                memory_query=raw_memory_query,
+            )
+            return answer, trace
         if answer:
             return answer, trace
         reason = result.get("error") or result.get("fallback_reason") or "The selected adapter returned no text."
@@ -7628,8 +8512,8 @@ def _lora_response_to_raw_compare(adapter_id, prompt, response, metadata=None):
     }
 
 
-def _ollama_adapter_chat_url(config=None):
-    configured = str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_URL") or "").strip()
+def _ollama_adapter_chat_url(config=None, env_key="NOVA_DOLPHIN_LORA_OLLAMA_URL"):
+    configured = str(os.environ.get(env_key) or "").strip()
     if configured:
         return configured.rstrip("/")
     source_url = str(getattr(config, "url", "") or "http://127.0.0.1:11434/api/generate")
@@ -7663,12 +8547,26 @@ def _generate_raw_ollama_lora_adapter(prompt, adapter_id, max_new_tokens, metada
     from nova_local_llm_connector import LocalLLMConfig
 
     config = LocalLLMConfig()
-    model_name = str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_MODEL") or "nova-dolphin3-lora").strip()
-    chat_url = _ollama_adapter_chat_url(config)
+    metadata = metadata or {}
+    family_text = " ".join(
+        str(metadata.get(key) or "") for key in ("id", "base_model", "path")
+    )
+    family_text = (str(adapter_id or "") + " " + family_text).lower()
+    if "dolphin" in family_text:
+        model_env = "NOVA_DOLPHIN_LORA_OLLAMA_MODEL"
+        url_env = "NOVA_DOLPHIN_LORA_OLLAMA_URL"
+        default_model = "nova-dolphin3-lora"
+    elif "qwen" in family_text:
+        model_env = "NOVA_QWEN_LORA_OLLAMA_MODEL"
+        url_env = "NOVA_QWEN_LORA_OLLAMA_URL"
+        default_model = "nova-qwen2.5-1.5b-lora"
+    else:
+        return None
+    model_name = str(os.environ.get(model_env) or default_model).strip()
+    chat_url = _ollama_adapter_chat_url(config, url_env)
     if not _ollama_adapter_model_available(chat_url, model_name):
         return None
 
-    metadata = metadata or {}
     eval_metrics = metadata.get("eval_metrics") if isinstance(metadata.get("eval_metrics"), dict) else {}
     request_payload = {
         "model": model_name,
@@ -7681,7 +8579,7 @@ def _generate_raw_ollama_lora_adapter(prompt, adapter_id, max_new_tokens, metada
             "top_p": 0.9,
         },
     }
-    timeout = max(30, int(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_TIMEOUT", "600") or 600))
+    timeout = _raw_llm_timeout_seconds()
     started = time.monotonic()
     try:
         from nova_model_memory import model_activity
@@ -7723,7 +8621,7 @@ def _generate_raw_lora_adapter(prompt, adapter_id, max_new_tokens=192, *, allow_
     metadata = _adapter_compare_metadata(adapter_id)
     eval_metrics = metadata.get("eval_metrics") if isinstance(metadata.get("eval_metrics"), dict) else {}
     adapter_family = (str(adapter_id or "") + " " + str(metadata.get("base_model") or "")).lower()
-    if "dolphin" in adapter_family:
+    if "dolphin" in adapter_family or "qwen" in adapter_family:
         ollama_result = _generate_raw_ollama_lora_adapter(
             prompt,
             adapter_id,
@@ -9396,6 +10294,7 @@ def brain_route(text, context=None):
 
     if (
         _is_deep_conversation_request(text, previous_user, previous_answer)
+        and not _is_nova_affection_question(text)
         and not normal_chat_llm_first
     ):
         response = _deep_conversation_response(text, previous_user, previous_answer)
@@ -9426,7 +10325,7 @@ def brain_route(text, context=None):
         trace = _set_final_answer_source(trace)
         return response, trace
 
-    if context_resolution.immediate_response:
+    if context_resolution.immediate_response and not normal_chat_llm_first:
         trace["source"] = "conversation_context_router"
         trace["domain"] = "contextual_followup"
         trace["roles"] = ["memory_transformer", "speech_output_transformer"]
@@ -10413,6 +11312,7 @@ def brain_route(text, context=None):
                             "memory_read_allowed": memory_read_allowed,
                             "memory_write_allowed": memory_write_allowed,
                             "conversation_memory_allowed": conversation_memory_allowed,
+                            "original_user_text": text,
                             "conversation_decision": (context or {}).get("conversation_decision"),
                             "conversation_summary": (context or {}).get("conversation_summary"),
                             "gateway_messages": cognitive_messages,
@@ -10521,21 +11421,46 @@ def brain_route(text, context=None):
                 trace["local_llm_fallback_reason"] = hybrid_trace.get("local_llm_fallback_reason", "")
                 trace["local_llm_error"] = hybrid_trace.get("local_llm_error", "")
             elif response is None:
-                from nova_hybrid_router import classify_domain
-                domain = classify_domain(normalized_text)
-                fallbacks = {
-                    "coding":"I can help with coding! What do you need?",
-                    "math":"I have math training. What's your question?",
-                    "science":"I have science training across physics, chemistry, biology, and more.",
-                    "philosophy":"I've studied philosophy. What would you like to explore?",
-                    "creative":"I can help with creative tasks!",
-                    "general":"I'm Nova Creature with 7 brain roles. What's on your mind?",
-                }
-                response = fallbacks.get(domain, fallbacks["general"])
-                trace["transformer_ran"] = False
-                trace["transformer_output_accepted"] = False
-                trace["fallback_used"] = True
-                trace["transformer_output_quality"] = "no_router"
+                # Ordinary conversation gets one final configured-LLM attempt
+                # before any deterministic copy.  This keeps generic text as
+                # the true last resort while preserving safe action/tool gates.
+                llm_candidate = _generate_llm_fallback_candidate(
+                    normalized_text,
+                    _LAST_USER_TEXT,
+                    _LAST_NOVA_RESPONSE,
+                    trace,
+                    dict(context or {}),
+                )
+                if isinstance(llm_candidate, dict) and llm_candidate.get("ok") and str(llm_candidate.get("answer") or "").strip():
+                    response = str(llm_candidate["answer"]).strip()
+                    trace["source"] = "llm_fallback"
+                    trace["domain"] = "general_conversation"
+                    trace["local_llm_synthesis_used"] = True
+                    trace["local_llm_provider"] = str(llm_candidate.get("provider") or "configured-local-llm")
+                    trace["local_llm_model"] = str(llm_candidate.get("model") or "")
+                    trace["fallback_used"] = True
+                    trace["fallback_reason"] = "all_primary_routes_exhausted"
+                    trace["llm_fallback"] = {
+                        "selected": True,
+                        "latency_ms": llm_candidate.get("latency_ms"),
+                    }
+                else:
+                    from nova_hybrid_router import classify_domain
+                    domain = classify_domain(normalized_text)
+                    fallbacks = {
+                        "coding":"I can help with coding! What do you need?",
+                        "math":"I have math training. What's your question?",
+                        "science":"I have science training across physics, chemistry, biology, and more.",
+                        "philosophy":"I've studied philosophy. What would you like to explore?",
+                        "creative":"I can help with creative tasks!",
+                        "general":"I'm Nova Creature with 7 brain roles. What's on your mind?",
+                    }
+                    response = fallbacks.get(domain, fallbacks["general"])
+                    trace["transformer_ran"] = False
+                    trace["transformer_output_accepted"] = False
+                    trace["fallback_used"] = True
+                    trace["transformer_output_quality"] = "no_router"
+                    trace["fallback_reason"] = str((llm_candidate or {}).get("reason") or "llm_fallback_failed")
 
             if _CONV_ENGINE_AVAIL:
                 try: _CONV_ENGINE.add_exchange(text, response)
@@ -11966,6 +12891,14 @@ def _candidate_retry_prompt(
     if context_lines:
         prompt += "\nRelevant Nova context:\n" + "\n".join(context_lines)
     prompt += "\nCurrent user request: " + str(text or "").strip()
+    if re.search(
+        r"\b(?:give|list|name|suggest)\s+(?:me\s+)?(?:three|3)\b",
+        _canonical_key(text),
+    ):
+        prompt += (
+            "\nThe user requested exactly three items. Return exactly three concrete "
+            "ideas, numbered 1., 2., and 3.; do not discuss Nova, training, or routing."
+        )
     creative_markers = ("imagine", "write a story", "make up", "describe a scene", "creative")
     if any(marker in _canonical_key(text) for marker in creative_markers):
         prompt += (
@@ -12578,14 +13511,16 @@ def _answer_status_from_trace(trace):
     allowed_safety = {
         "passed",
         "passed_after_retry",
+        "bypassed_verified",
         "blocked",
         "fact_grounding_blocked",
         "stream_postcheck_warning",
         "bypassed_raw",
+        "not_checked",
     }
-    safety = str(firewall.get("status") or "checked").strip().lower()
+    safety = str(firewall.get("status") or "not_checked").strip().lower()
     if safety not in allowed_safety:
-        safety = "checked"
+        safety = "not_checked"
 
     perception = (
         source.get("perception_fusion")
@@ -14533,7 +15468,37 @@ def _start_model_warmup():
     return thread
 
 
-NOVA_GATEWAY_CONFIG = GatewayConfig.from_env(root=ROOT, default_port=8765)
+# Gateway-only settings are read from the same local config file as the rest
+# of Nova when the process environment does not already provide an override.
+# This keeps desktop configuration portable while preserving explicit env
+# precedence for service/remote deployments.
+_GATEWAY_RUNTIME_CONFIG_KEYS = (
+    "NOVA_ALLOW_LOCAL_MEDIA",
+    "NOVA_COMFYUI_IMAGE_WORKFLOW",
+    "NOVA_ANIMATEDIFF_CPU_ENABLED",
+    "NOVA_ANIMATEDIFF_CPU_PYTHON",
+    "NOVA_ANIMATEDIFF_CPU_WORKER",
+    "NOVA_ANIMATEDIFF_CPU_MODEL",
+    "NOVA_ANIMATEDIFF_CPU_MOTION_ADAPTER",
+    "NOVA_ANIMATEDIFF_CPU_OUTPUT_DIR",
+    "NOVA_ANIMATEDIFF_CPU_JOB_STORE",
+    "NOVA_ANIMATEDIFF_CPU_TIMEOUT",
+)
+
+
+def _gateway_environment():
+    """Return gateway environment with safe dotenv values and env precedence."""
+
+    environment = dict(os.environ)
+    runtime_values = _runtime_config_values()
+    for name in _GATEWAY_RUNTIME_CONFIG_KEYS:
+        if name not in environment and runtime_values.get(name) is not None:
+            environment[name] = str(runtime_values[name])
+    return environment
+
+
+_NOVA_GATEWAY_ENV = _gateway_environment()
+NOVA_GATEWAY_CONFIG = GatewayConfig.from_env(_NOVA_GATEWAY_ENV, root=ROOT, default_port=8765)
 NOVA_GATEWAY_CLIENTS = NovaClientRegistry(NOVA_GATEWAY_CONFIG.client_registry_path)
 NOVA_GATEWAY_AUTH = NovaAuthenticator(NOVA_GATEWAY_CONFIG, NOVA_GATEWAY_CLIENTS)
 NOVA_GATEWAY = NovaGatewayCore(_run_nova_chat_turn, config=NOVA_GATEWAY_CONFIG)

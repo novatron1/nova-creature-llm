@@ -33,6 +33,7 @@ NOVA_GET_PATHS = {
     "/nova/v1/capabilities", "/nova/v1/providers", "/nova/v1/models", "/nova/v1/tools",
     "/nova/v1/health", "/nova/v1/world-model", "/nova/v1/dream-lab", "/nova/v1/engines",
     "/nova/v1/runtime/contract",
+    "/nova/v1/agent-runs",
     "/nova/v1/media/access", "/nova/v1/jobs", "/nova/v1/conversations",
 }
 POST_PATHS = {
@@ -45,6 +46,7 @@ POST_PATHS = {
     "/nova/v1/videos/generations",
     "/nova/v1/engines/comfyui-local/launch",
     "/nova/v1/runtime/verification/playwright",
+    "/nova/v1/agent-runs",
 }
 PAIRED_DEVICE_OPTIONAL_SCOPES = frozenset({"image.generate", "video.generate"})
 DESKTOP_BOOLEAN_CONTEXT_KEYS = frozenset(
@@ -113,6 +115,7 @@ class NovaGatewayHttpController:
         return (
             path in OPENAI_GET_PATHS | NOVA_GET_PATHS | POST_PATHS
             or path.startswith("/nova/v1/cancel/")
+            or path.startswith("/nova/v1/agent-runs/")
             or path.startswith("/nova/v1/jobs/")
             or path.startswith("/nova/v1/conversations/")
         )
@@ -215,8 +218,9 @@ class NovaGatewayHttpController:
     def handle_get(self, handler: Any, parsed: Any) -> bool:
         path = parsed.path
         media_job_path = path.startswith("/nova/v1/jobs/") and not path.endswith("/cancel")
+        agent_run_path = path.startswith("/nova/v1/agent-runs/")
         if not self.config.enabled or (
-            path not in OPENAI_GET_PATHS | NOVA_GET_PATHS and not media_job_path
+            path not in OPENAI_GET_PATHS | NOVA_GET_PATHS and not media_job_path and not agent_run_path
         ):
             return False
         try:
@@ -281,6 +285,21 @@ class NovaGatewayHttpController:
             if path == "/nova/v1/runtime/contract":
                 self._authorize(handler, "tools.list")
                 handler._send_json(self.core.runtime_contract())
+                return True
+            if path == "/nova/v1/agent-runs":
+                self._authorize(handler, "tools.list")
+                handler._send_json(self.core.list_agent_runs())
+                return True
+            if path.startswith("/nova/v1/agent-runs/"):
+                self._authorize(handler, "tools.list")
+                run_id = path[len("/nova/v1/agent-runs/") :].strip("/")
+                if not run_id or "/" in run_id:
+                    raise InvalidRequestError("A valid agent run ID is required.", param="run_id")
+                record = self.core.get_agent_run(run_id[:160])
+                if record is None:
+                    handler._send_json({"error": {"message": "Agent run not found.", "type": "not_found"}}, status=404)
+                else:
+                    handler._send_json({"object": "nova.agent_run", "data": record})
                 return True
             if path == "/nova/v1/media/access":
                 auth = self._authorize(handler, "tools.list")
@@ -421,6 +440,7 @@ class NovaGatewayHttpController:
         if not self.config.enabled or (
             path not in POST_PATHS
             and not path.startswith("/nova/v1/cancel/")
+            and not path.startswith("/nova/v1/agent-runs/")
             and not media_cancel_path
             and not media_resume_path
             and not path.startswith("/nova/v1/conversations/")
@@ -535,6 +555,15 @@ class NovaGatewayHttpController:
                     output_dir=output_dir,
                 )
                 handler._send_json(result.to_dict(), status=200 if result.passed else 422)
+                return True
+            if path.startswith("/nova/v1/agent-runs/") and path.endswith("/rollback"):
+                self._authorize(handler, "tools.execute")
+                run_id = path[len("/nova/v1/agent-runs/") : -len("/rollback")].strip("/")
+                if not run_id or "/" in run_id:
+                    raise InvalidRequestError("A valid agent run ID is required.", param="run_id")
+                body = self._read_json(handler)
+                result = self.core.rollback_agent_run(run_id[:160], reason=str(body.get("reason") or "operator_requested"))
+                handler._send_json(result, status=200 if result.get("ok") else 404)
                 return True
 
             auth = self._authorize(handler, "chat.generate")

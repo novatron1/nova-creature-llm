@@ -191,6 +191,8 @@ class NovaGatewayCore:
             self._register_comfyui_tools()
         self._active_requests: dict[str, tuple[str, str]] = {}
         self._active_lock = RLock()
+        self._agent_runs: dict[str, dict[str, Any]] = {}
+        self._agent_run_lock = RLock()
         self._cost_lock = RLock()
         self._cost_month = time.strftime("%Y-%m", time.gmtime())
         self._estimated_cloud_spend = 0.0
@@ -1177,6 +1179,61 @@ class NovaGatewayCore:
             "data": contract.to_dict(),
             "tools": {name: descriptor.to_public_dict() for name, descriptor in tool_descriptors.items()},
         }
+
+    def register_agent_run(
+        self,
+        *,
+        run: Any,
+        report: Any,
+        report_path: str | Path,
+        workspace_root: str | Path,
+        proof_artifacts: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        payload = {
+            "run_id": str(getattr(getattr(run, "contract", None), "run_id", "") or ""),
+            "state": str(getattr(getattr(run, "state", None), "value", getattr(run, "state", "planned"))),
+            "contract": (
+                run.contract.to_dict()
+                if hasattr(getattr(run, "contract", None), "to_dict")
+                else {}
+            ),
+            "history": list(getattr(run, "history", [])),
+            "report": report.to_dict() if hasattr(report, "to_dict") else dict(report or {}),
+            "report_path": str(report_path),
+            "workspace_root": str(workspace_root),
+            "proof_artifacts": dict(proof_artifacts or {}),
+            "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+        with self._agent_run_lock:
+            self._agent_runs[payload["run_id"]] = payload
+        return payload
+
+    def list_agent_runs(self) -> dict[str, Any]:
+        with self._agent_run_lock:
+            data = [dict(item) for item in self._agent_runs.values()]
+        data.sort(key=lambda item: str(item.get("updated_at") or ""), reverse=True)
+        return {"object": "list", "data": data}
+
+    def get_agent_run(self, run_id: str) -> dict[str, Any] | None:
+        with self._agent_run_lock:
+            run = self._agent_runs.get(str(run_id))
+            return dict(run) if run is not None else None
+
+    def rollback_agent_run(self, run_id: str, *, reason: str = "operator_requested") -> dict[str, Any]:
+        with self._agent_run_lock:
+            run = self._agent_runs.get(str(run_id))
+            if run is None:
+                return {"ok": False, "found": False, "run_id": str(run_id)}
+            run = dict(run)
+            run["state"] = "rolled_back"
+            run["rollback"] = {
+                "available": True,
+                "reason": reason,
+                "rolled_back_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            }
+            run["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            self._agent_runs[str(run_id)] = run
+        return {"ok": True, "found": True, "run_id": str(run_id), "state": "rolled_back"}
 
     def cost_status(self) -> dict[str, Any]:
         self._roll_cost_month()

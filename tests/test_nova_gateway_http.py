@@ -24,6 +24,9 @@ from nova_gateway.comfyui import ComfyUIEngine  # noqa: E402
 from nova_gateway.core import NovaGatewayCore  # noqa: E402
 from nova_gateway.http import NovaGatewayHttpController  # noqa: E402
 from nova_gateway.providers import MockProvider  # noqa: E402
+from nova_runtime.agent_report import StructuredAgentReport  # noqa: E402
+from nova_runtime.agent_run import AgentRun, AgentRunState  # noqa: E402
+from nova_runtime.contracts import build_run_contract  # noqa: E402
 
 
 def test_media_range_parser_supports_full_and_suffix_ranges() -> None:
@@ -215,6 +218,90 @@ def test_runtime_contract_endpoint_exposes_frozen_runtime_snapshot(monkeypatch) 
         assert payload["object"] == "nova.runtime_contract"
         assert "contract_hash" in payload["data"]
         assert payload["tools"]
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+def test_agent_run_http_round_trip_and_rollback(tmp_path, monkeypatch) -> None:
+    key = "agent-run-http-key"
+    _core, controller = isolated_controller(key=key, scopes={"tools.list", "tools.execute"})
+    contract = build_run_contract(
+        run_id="run-http-1",
+        goal="proof job",
+        owner_id="nova",
+        project_id="demo",
+        workspace_root=str(tmp_path),
+        allowed_roots=[str(tmp_path)],
+        allowed_tools=["filesystem.read"],
+        allowed_resources=["filesystem://workspace"],
+        time_budget_seconds=60,
+        tool_budget=3,
+        cost_budget=0.0,
+        memory_budget=4,
+    )
+    run = AgentRun.create(contract)
+    run.transition(AgentRunState.AUTHORIZED, reason="authorized")
+    run.transition(AgentRunState.EXECUTING, reason="executing")
+    run.transition(AgentRunState.VERIFYING, reason="verifying")
+    run.transition(AgentRunState.COMPLETED, reason="completed")
+    report = StructuredAgentReport(
+        goal="proof job",
+        plan=["read", "edit", "test", "verify"],
+        tools_used=["filesystem.read"],
+        files_changed=["app.py"],
+        tests_executed=["pytest -q"],
+        browser_evidence={"passed": True},
+        failures_and_retries=[],
+        final_verification={"passed": True},
+        unresolved_blockers=[],
+        rollback_information={"available": True},
+    )
+    controller.core.register_agent_run(
+        run=run,
+        report=report,
+        report_path=tmp_path / "report.json",
+        workspace_root=tmp_path / "workspace",
+        proof_artifacts={"verification": {"passed": True}},
+    )
+    monkeypatch.setattr(server, "NOVA_GATEWAY_HTTP", controller)
+    httpd, base_url = start_server()
+    try:
+        status, _headers, listing = request_json(
+            base_url,
+            "GET",
+            "/nova/v1/agent-runs",
+            headers={"Authorization": f"Bearer {key}"},
+        )
+        assert status == 200
+        assert listing["data"][0]["run_id"] == "run-http-1"
+
+        status, _headers, fetched = request_json(
+            base_url,
+            "GET",
+            "/nova/v1/agent-runs/run-http-1",
+            headers={"Authorization": f"Bearer {key}"},
+        )
+        assert status == 200
+        assert fetched["data"]["report"]["goal"] == "proof job"
+
+        status, _headers, rolled_back = request_json(
+            base_url,
+            "POST",
+            "/nova/v1/agent-runs/run-http-1/rollback",
+            {"reason": "test rollback"},
+            headers={"Authorization": f"Bearer {key}"},
+        )
+        assert status == 200 and rolled_back["state"] == "rolled_back"
+
+        status, _headers, fetched_after = request_json(
+            base_url,
+            "GET",
+            "/nova/v1/agent-runs/run-http-1",
+            headers={"Authorization": f"Bearer {key}"},
+        )
+        assert status == 200
+        assert fetched_after["data"]["state"] == "rolled_back"
     finally:
         httpd.shutdown()
         httpd.server_close()
