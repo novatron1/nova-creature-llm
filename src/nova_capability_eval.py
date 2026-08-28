@@ -1597,3 +1597,15 @@ def evaluate_user_approved_vision(
         "raw_adapter_modes_excluded": True,
         "evaluation_only": True,
     }
+
+
+def load_behavior_eval_bank(path: str | Path) -> Any:
+    from nova_runtime.eval_bank import load_behavior_eval_bank as _load_behavior_eval_bank
+
+    return _load_behavior_eval_bank(path)
+
+
+def score_behavior_eval_bank(bank: Any, judge: Any) -> Any:
+    from nova_runtime.eval_bank import score_behavior_eval_bank as _score_behavior_eval_bank
+
+    return _score_behavior_eval_bank(bank, judge)

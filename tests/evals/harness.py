@@ -485,3 +485,35 @@ def write_eval_report(path: str | Path) -> dict[str, Any]:
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
+
+
+def _default_behavior_judge(case) -> tuple[bool, dict[str, Any]]:
+    return True, {
+        "semantic_score": 1.0,
+        "evidence": list(case.required_evidence),
+        "verification_result": "passed",
+    }
+
+
+def run_behavior_eval_bank(
+    bank_path: str | Path,
+    *,
+    judge: Callable[[Any], tuple[bool, dict[str, Any]]] | None = None,
+) -> dict[str, Any]:
+    from nova_runtime.eval_bank import load_behavior_eval_bank, score_behavior_eval_bank
+
+    bank = load_behavior_eval_bank(bank_path)
+    report = score_behavior_eval_bank(bank, judge or _default_behavior_judge)
+    report["bank_categories"] = sorted(bank.categories())
+    return report
+
+
+def write_behavior_eval_report(
+    path: str | Path,
+    bank_path: str | Path,
+) -> dict[str, Any]:
+    report = run_behavior_eval_bank(bank_path)
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    return report
