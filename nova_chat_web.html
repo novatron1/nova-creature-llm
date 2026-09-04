@@ -2257,9 +2257,11 @@ function loadNovaVoices(){
 function getBestNovaVoice(voices){
   const list = Array.isArray(voices) ? voices : [];
   if(!list.length) return null;
-  let best = list[0];
+  const englishVoices = list.filter(voice => String(voice.lang || '').toLowerCase().startsWith('en'));
+  const candidates = englishVoices.length ? englishVoices : list;
+  let best = candidates[0];
   let bestScore = -999;
-  for(const voice of list){
+  for(const voice of candidates){
     const name = String(voice.name || '').toLowerCase();
     const lang = String(voice.lang || '').toLowerCase();
     let score = 0;
