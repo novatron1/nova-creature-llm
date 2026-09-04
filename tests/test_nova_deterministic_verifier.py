@@ -43,6 +43,23 @@ def test_bounded_arithmetic_honors_only_result_instruction():
 
 
 @pytest.mark.parametrize(
+    ("prompt", "expected"),
+    [
+        ("Round 123.4567 to 2 decimal places.", "123.46"),
+        ("Round 2.675 to 2 decimal places.", "2.68"),
+        ("What is 17.5% of 240 rounded to 2 decimals?", "42"),
+    ],
+)
+def test_rounding_requests_are_solved_without_the_llm(prompt, expected):
+    result = solve_deterministic_request(prompt)
+
+    assert result is not None
+    assert result.domain == "math"
+    assert result.expected_value == expected
+    assert result.rule_id == "decimal_rounding"
+
+
+@pytest.mark.parametrize(
     ("prompt", "expected", "rule_id"),
     [
         (

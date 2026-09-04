@@ -733,6 +733,56 @@ def _percentage_solution(text: str) -> DeterministicSolution | None:
     )
 
 
+def _rounding_solution(text: str) -> DeterministicSolution | None:
+    """Solve explicit decimal-rounding requests with auditable Decimal math."""
+
+    raw = " ".join(str(text or "").strip().split())
+    if not raw or len(raw) > 180:
+        return None
+    direct = re.fullmatch(
+        r"round\s+(?P<value>-?\d+(?:\.\d+)?)\s+to\s+"
+        r"(?P<places>\d{1,2})\s+decimal\s+places?\.?",
+        raw,
+        re.I,
+    )
+    percent = re.fullmatch(
+        r"(?:what is|calculate|compute)\s+(?P<percent>\d+(?:\.\d+)?)\s*%\s+of\s+"
+        r"\$?(?P<amount>\d+(?:\.\d+)?)\s+rounded\s+to\s+"
+        r"(?P<places>\d{1,2})\s+decimals?\??",
+        raw,
+        re.I,
+    )
+    if direct is None and percent is None:
+        return None
+    places = int((direct or percent).group("places"))
+    if places > 12:
+        return None
+    try:
+        if direct is not None:
+            value = Decimal(direct.group("value"))
+            expression = direct.group("value")
+        else:
+            rate = Decimal(percent.group("percent"))
+            amount = Decimal(percent.group("amount"))
+            if rate > Decimal("10000") or amount > Decimal("1e12"):
+                return None
+            value = rate * amount / 100
+            expression = f"{percent.group('percent')}% of {percent.group('amount')}"
+        quantum = Decimal(1).scaleb(-places)
+        result = value.quantize(quantum, rounding=ROUND_HALF_UP)
+    except (InvalidOperation, ValueError):
+        return None
+    formatted = _format_decimal(result)
+    return DeterministicSolution(
+        domain="math",
+        response=f"[VERIFIED MATH] {expression} rounded to {places} decimal "
+        f"places = {formatted}.",
+        expected_value=formatted,
+        operation_count=1,
+        rule_id="decimal_rounding",
+    )
+
+
 def _conversion_solution(text: str) -> DeterministicSolution | None:
     raw = " ".join(str(text or "").strip().split())
     if not raw or len(raw) > 180:
@@ -1853,6 +1903,7 @@ def solve_deterministic_request(text: str) -> DeterministicSolution | None:
         or _dice_probability_solution(text)
         or _kinetic_energy_solution(text)
         or _polynomial_derivative_solution(text)
+        or _rounding_solution(text)
         or _percentage_solution(text)
         or _conversion_solution(text)
         or _comparison_solution(text)
