@@ -27,8 +27,7 @@ $PYTHON --version
 echo "[CHECK] Verifying required packages..."
 
 # Check PyTorch (needed for assisted learning / transformer fine-tuning)
-$PYTHON -c "import torch" 2>/dev/null
-if [ $? -ne 0 ]; then
+if ! $PYTHON -c "import torch" 2>/dev/null; then
     echo ""
     echo "⚠️  PyTorch is not installed."
     echo "   Assisted learning ('deep learn') requires PyTorch for transformer fine-tuning."
@@ -38,9 +37,17 @@ if [ $? -ne 0 ]; then
 fi
 
 # Check numpy
-$PYTHON -c "import numpy" 2>/dev/null
-if [ $? -ne 0 ]; then
+if ! $PYTHON -c "import numpy" 2>/dev/null; then
     echo "   NumPy not found (optional, improves PyTorch speed)"
+fi
+
+# Add the small offline helpers for phone QR pairing, scene inspection, and
+# encrypted portable backups. Nova still starts if they cannot be added.
+if ! $PYTHON -c "import qrcode, qrcode.image.svg, cryptography, PIL" 2>/dev/null; then
+    if [ -f requirements-runtime.txt ]; then
+        echo "[INSTALL] Adding phone QR and encrypted backup support..."
+        $PYTHON -m pip install -r requirements-runtime.txt || true
+    fi
 fi
 
 echo ""
@@ -60,4 +67,4 @@ case "$(uname -s)" in
         ;;
 esac
 
-$PYTHON nova_web_server.py 3000
+$PYTHON nova_enhanced_server.py 3000

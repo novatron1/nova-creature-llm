@@ -48,15 +48,19 @@ class ExplodingRouteModel:
         raise RuntimeError("route boom")
 
 
-def _register_left_checkpoint(tmp_path):
-    path = tmp_path / "checkpoints" / "brain_slots" / "left_hemisphere" / "left_hemisphere_baseline.pt"
+def _register_checkpoint(tmp_path, role):
+    path = tmp_path / "checkpoints" / "brain_slots" / role / f"{role}_baseline.pt"
     digest = save_checkpoint(
         path,
         NovaCausalLM(ModelConfig(block_size=64, d_model=32, n_heads=4, n_layers=1, dropout=0.0)),
-        {"role": "left_hemisphere"},
+        {"role": role},
     )
-    CheckpointRegistry(tmp_path).register_baseline("left_hemisphere", path, digest)
+    CheckpointRegistry(tmp_path).register_baseline(role, path, digest)
     return path, digest
+
+
+def _register_left_checkpoint(tmp_path):
+    return _register_checkpoint(tmp_path, "left_hemisphere")
 
 
 def test_runtime_returns_generation_evidence(tmp_path):
@@ -107,6 +111,69 @@ def test_runtime_salvages_clean_prefix_before_unreadable_tail(tmp_path, monkeypa
     assert result.text == "safe answer."
     assert result.checkpoint_hash == digest
     assert result.finish_reason == "eos"
+
+
+def test_runtime_guards_low_quality_role_answer_with_prompt_aware_fallback(tmp_path, monkeypatch):
+    _, digest = _register_left_checkpoint(tmp_path)
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(
+        runtime,
+        "_load_model",
+        lambda role, sha256, path: DeterministicModel("Che con s miste lon and indereaches"),
+    )
+
+    result = runtime.generate(
+        "left_hemisphere",
+        "Find the bug in a function that returns the wrong total.",
+        max_new_tokens=36,
+    )
+
+    assert result.ok is True
+    assert "bug" in result.text.lower()
+    assert result.finish_reason == "guarded_fallback"
+    assert result.checkpoint_hash == digest
+
+
+def test_runtime_guards_off_topic_role_answer_with_prompt_aware_fallback(tmp_path, monkeypatch):
+    _, digest = _register_checkpoint(tmp_path, "memory_transformer")
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(
+        runtime,
+        "_load_model",
+        lambda role, sha256, path: DeterministicModel("St answer comes from saved memory when that ing the."),
+    )
+
+    result = runtime.generate(
+        "memory_transformer",
+        "Recall Nova's known identity in one short answer.",
+        max_new_tokens=48,
+    )
+
+    assert result.ok is True
+    assert "nova" in result.text.lower()
+    assert result.finish_reason == "guarded_fallback"
+    assert result.checkpoint_hash == digest
+
+
+def test_runtime_guards_fragmented_saved_memory_answer_with_prompt_aware_fallback(tmp_path, monkeypatch):
+    _, digest = _register_checkpoint(tmp_path, "memory_transformer")
+    runtime = NovaTransformerRuntime(tmp_path, route_model=FixedRouteModel())
+    monkeypatch.setattr(
+        runtime,
+        "_load_model",
+        lambda role, sha256, path: DeterministicModel("Re whats wh Novotry whon gue sing a new story.", block_size=128),
+    )
+
+    result = runtime.generate(
+        "memory_transformer",
+        "Answer from saved facts instead of guessing a new origin story.",
+        max_new_tokens=48,
+    )
+
+    assert result.ok is True
+    assert "saved" in result.text.lower()
+    assert result.finish_reason == "guarded_fallback"
+    assert result.checkpoint_hash == digest
 
 
 def test_runtime_failure_after_resolve_preserves_checkpoint_evidence(tmp_path, monkeypatch):

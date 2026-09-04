@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "source_id": "anatomy-ai-field-guide-2026-07-21",
+  "title": "The Anatomy of AI: A Developer’s Field Guide to the Internals",
+  "author": "Syed Ahmer Shah",
+  "publication_date": "2026-07-21",
+  "record_type": "reviewed_summary_with_corrections",
+  "original_article_fully_verified": false,
+  "claims": [
+    {
+      "label": "verified_technical",
+      "text": "Decoder language models generate autoregressively, rather than producing an entire answer in one original forward pass.",
+      "assessment": "Use as the corrected engineering description."
+    },
+    {
+      "label": "conceptual_simplification",
+      "text": "The article’s six-layer neural-network anatomy is a teaching diagram, not a literal description of production transformer layer counts.",
+      "assessment": "Useful for orientation only; do not treat it as an implementation specification."
+    },
+    {
+      "label": "verified_technical",
+      "text": "Chain-of-thought is an inference and prompting technique that can improve some tasks; it is not a complete fact-verification system.",
+      "assessment": "Verification still requires evidence and deterministic checks."
+    },
+    {
+      "label": "author_interpretation",
+      "text": "Statements about whether models possess understanding are philosophical or interpretive claims rather than settled engineering facts.",
+      "assessment": "Present competing interpretations and preserve uncertainty."
+    },
+    {
+      "label": "conceptual_simplification",
+      "text": "Embeddings and latent-space geometry are useful explanatory models, while individual concepts are distributed across many activations and layers.",
+      "assessment": "Avoid implying a concept occupies one literal coordinate or neuron."
+    },
+    {
+      "label": "requires_external_verification",
+      "text": "Video-generation cost rises strongly with spatial resolution, duration, frame representation, and temporal attention, but should not be called mathematically exponential without evidence.",
+      "assessment": "Verify the scaling claim for the specific architecture."
+    },
+    {
+      "label": "time_sensitive",
+      "text": "Privacy policies, model names, benchmark standings, and security incidents require current retrieval before Nova states them as current facts.",
+      "assessment": "Do not answer from this static record as if it were live."
+    },
+    {
+      "label": "requires_external_verification",
+      "text": "A reported Claude Code source leak may be discussed only as a security and architecture case study.",
+      "assessment": "Do not ingest, reproduce, execute, or depend on leaked proprietary source code."
+    }
+  ],
+  "proprietary_leaked_source_included": false
+}

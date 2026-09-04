@@ -69,12 +69,12 @@ The main integration point. Wraps all modules into one function: `route(message,
 
 ```bash
 # Install Ollama
-ollama pull qwen2.5:1.5b
+ollama pull deepseek-r1:7b
 
 # Enable local LLM
 export NOVA_USE_LOCAL_LLM=true
 export NOVA_LOCAL_LLM_PROVIDER=ollama
-export NOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b
+export NOVA_LOCAL_LLM_MODEL=deepseek-r1:7b
 ```
 
 ## Trace Fields
@@ -227,3 +227,15 @@ Run with:
 python3 -c "exec(open('tests/test_ltm.py').read())"
 ```
 
+# Nova Compatibility Gateway
+
+Nova now exposes a provider-independent compatibility layer around the existing Cognitive OS. Start with:
+
+- [Gateway architecture](docs/NOVA_GATEWAY_ARCHITECTURE.md)
+- [Connection and phone setup](docs/NOVA_GATEWAY_CONNECTION_GUIDE.md)
+- [Provider, tool, model, memory, engine, and MCP extension guide](docs/NOVA_GATEWAY_EXTENSION_GUIDE.md)
+- [Security, cost control, backup, and migration](docs/NOVA_GATEWAY_SECURITY_COST_BACKUP.md)
+- [Generated API compatibility report](reports/NOVA_API_COMPATIBILITY.md)
+- [Secret-free configuration example](config/nova_gateway.example.yaml)
+
+The stable rule is: Nova is the identity, memory, cognitive router, permissions, and tool layer; the LLM underneath Nova is replaceable.

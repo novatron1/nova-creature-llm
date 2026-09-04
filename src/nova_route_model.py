@@ -67,6 +67,7 @@ def train_route_model(
     block_size: int = DEFAULT_BLOCK_SIZE,
     batch_size: int = DEFAULT_BATCH_SIZE,
     learning_rate: float = DEFAULT_LEARNING_RATE,
+    initial_model: NovaRouteClassifier | None = None,
     allow_train_fallback_for_output: bool = False,
 ) -> tuple[NovaRouteClassifier, dict]:
     rows = _coerce_examples(examples, "examples")
@@ -98,11 +99,20 @@ def train_route_model(
         len(class_maps["id_to_role"]),
     )
     _attach_route_metadata(model, tokenizer, block_size, class_maps)
+    initial_model_hash = _load_initial_route_state(model, initial_model, block_size, class_maps)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     best_state = copy.deepcopy(model.state_dict())
     best_metrics = evaluate_route_model(model, validation_rows)
     best_loss = float("inf")
+    domain_class_weights = _class_frequency_weights(
+        [_encode_label(row.domain, class_maps["domain_to_id"]) for row in rows],
+        len(class_maps["id_to_domain"]),
+    )
+    role_class_weights = _class_frequency_weights(
+        [_encode_label(row.primary_role, class_maps["role_to_id"]) for row in rows],
+        len(class_maps["id_to_role"]),
+    )
 
     for epoch in range(epochs):
         model.train()
@@ -115,7 +125,11 @@ def train_route_model(
 
             optimizer.zero_grad(set_to_none=True)
             domain_logits, role_logits = model(token_ids, mask)
-            loss = F.cross_entropy(domain_logits, domain_targets) + F.cross_entropy(role_logits, role_targets)
+            loss = F.cross_entropy(domain_logits, domain_targets, weight=domain_class_weights) + F.cross_entropy(
+                role_logits,
+                role_targets,
+                weight=role_class_weights,
+            )
             if not torch.isfinite(loss):
                 raise ValueError("non-finite training loss while fitting route model")
             loss.backward()
@@ -152,7 +166,12 @@ def train_route_model(
         "train_count": len(rows),
         "validation_count": len(validation_rows),
         "validation_source": validation_source,
+        "initialization": "warm_start" if initial_model_hash is not None else "random_seed",
+        "initialized_from_model_hash": initial_model_hash,
         "class_maps": class_maps,
+        "class_balancing": "inverse_sqrt_frequency",
+        "domain_class_weights": _named_weights(domain_class_weights, class_maps["id_to_domain"]),
+        "role_class_weights": _named_weights(role_class_weights, class_maps["id_to_role"]),
         "best_metrics": best_metrics,
         "model_hash": model_hash,
     }
@@ -369,6 +388,31 @@ def _attach_route_metadata(
     model.route_class_maps = class_maps
 
 
+def _load_initial_route_state(
+    model: NovaRouteClassifier,
+    initial_model: NovaRouteClassifier | None,
+    block_size: int,
+    class_maps: dict,
+) -> str | None:
+    if initial_model is None:
+        return None
+    if not isinstance(initial_model, NovaRouteClassifier):
+        raise TypeError("initial_model must be a NovaRouteClassifier")
+    initial_class_maps = getattr(initial_model, "route_class_maps", class_maps)
+    if initial_class_maps != class_maps:
+        raise ValueError("initial_model class_maps do not match this route trainer")
+    initial_block_size = int(getattr(initial_model, "route_block_size", block_size))
+    if initial_block_size != block_size:
+        raise ValueError("initial_model block_size does not match this route trainer")
+    try:
+        model.load_state_dict(initial_model.state_dict())
+    except RuntimeError as exc:
+        raise ValueError("initial_model state does not match this route trainer") from exc
+    metadata = getattr(initial_model, "route_metadata", {})
+    initial_hash = metadata.get("model_hash") if isinstance(metadata, dict) else None
+    return str(initial_hash) if isinstance(initial_hash, str) and initial_hash else _hash_state_dict(initial_model.state_dict())
+
+
 def _coerce_examples(examples: Sequence[RouteExample] | None, field_name: str) -> list[RouteExample]:
     if examples is None:
         raise ValueError(f"{field_name} must not be None")
@@ -383,6 +427,32 @@ def _coerce_examples(examples: Sequence[RouteExample] | None, field_name: str) -
         if row.primary_role not in ROLE_NAMES:
             raise ValueError(f"invalid primary_role at {field_name}[{index}]: {row.primary_role!r}")
     return rows
+
+
+def _encode_label(value: str, label_to_id: dict[str, int]) -> int:
+    return label_to_id[value]
+
+
+def _class_frequency_weights(label_ids: Sequence[int], class_count: int) -> torch.Tensor:
+    counts = [0 for _ in range(class_count)]
+    for label_id in label_ids:
+        counts[label_id] += 1
+    active_counts = [count for count in counts if count > 0]
+    if not active_counts:
+        return torch.ones(class_count, dtype=torch.float32)
+    max_count = max(active_counts)
+    weights = [
+        math.sqrt(max_count / count) if count > 0 else 1.0
+        for count in counts
+    ]
+    return torch.tensor(weights, dtype=torch.float32)
+
+
+def _named_weights(weights: torch.Tensor, id_to_label: Sequence[str]) -> dict[str, float]:
+    return {
+        label: float(weights[index].item())
+        for index, label in enumerate(id_to_label)
+    }
 
 
 def _tensorize(

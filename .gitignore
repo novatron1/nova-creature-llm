@@ -36,6 +36,15 @@ data/transformer_training_runs/
 
 # Pytest cache
 .pytest_cache/
+
+# Nova Foundation runtime state (device tokens, job history, audit trail)
+data/nova_foundation.db
+data/nova_foundation.db-wal
+data/nova_foundation.db-shm
+data/nova_foundation.db.restore_pending
+backups/reliability/
+exports/reliability/
+
 # Large build artifacts (exceed GitHub 100MB limit)
 *.zip
 *.tar.gz
@@ -47,3 +56,55 @@ nova_creature_llm_lab_complete.zip
 # Large model checkpoints (exclude by default, force-add specific trained ones)
 *.pt
 *.pth
+
+# Machine-specific ComfyUI workflow bindings
+config/*.local.json
+
+# Machine-local generated Video Lite media and private job state
+data/nova_video_lite/
+data/nova_video_lite_jobs.json
+data/nova_model_quality.json
+data/nova_capability_evaluations.json
+
+# Nova Cognitive OS durable runtime databases (schema/source files stay tracked)
+data/nova_memory.db
+data/nova_memory.db-wal
+data/nova_memory.db-shm
+data/nova_knowledge.db
+data/nova_knowledge.db-wal
+data/nova_knowledge.db-shm
+
+# Nova GPU Hub machine-local selection and connection state
+data/nova_gpu_hub_state.json
+
+# Local Codex attachments, planning state, worktree copies, and runtime logs
+.codex-remote-attachments/
+.superpowers/
+logs/
+*.log
+*.err.log
+*.out.log
+nova_remote_known_hosts*
+*_transfer_token*.txt
+
+# Generated model/artifact trees are kept out of the source repository.
+# Publish source, tests, documentation, and reproducible manifests instead.
+artifacts/
+models/
+backups/
+sandbox/gpu_training_exports/
+
+# Large/binary local app payloads and generated screenshots
+quality_gate_screenshots/
+*.exe
+
+# Private or machine-local memory/training traces
+data/nova_memory.json
+data/routing_log.jsonl
+data/conversation_training_data.jsonl
+data/conversation_training_data.jsonl.bak
+nova_training_logs/
+
+# Test-run output files that are not source documentation
+reports/*.err.txt
+reports/*.out.txt

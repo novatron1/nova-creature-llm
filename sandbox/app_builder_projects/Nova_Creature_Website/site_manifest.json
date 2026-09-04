@@ -1,0 +1,46 @@
+{
+  "project_name": "Nova Creature Website",
+  "page_count": 5,
+  "pages": [
+    {
+      "file": "index.html",
+      "nav": "Home",
+      "title": "Nova Creature",
+      "heading": "A living studio for building serious web products.",
+      "intro": "Nova Creature turns prompts into planned, tested, multi-page websites with memory, critique, and a quality gate built in.",
+      "focus": "Start with the big promise, the system signal, and a direct route into the rest of the site."
+    },
+    {
+      "file": "about.html",
+      "nav": "About",
+      "title": "About Nova Creature",
+      "heading": "Seven brain roles working as one product studio.",
+      "intro": "The system blends planning, memory, design, coding, critique, simulation, and final speech so every build has a route and a review loop.",
+      "focus": "Explain the operating model with confidence and plain language."
+    },
+    {
+      "file": "agents.html",
+      "nav": "Agents",
+      "title": "Nova Agents",
+      "heading": "Specialized agents for building, testing, and improving.",
+      "intro": "The Website Builder Agent plans page count, writes every route, checks quality, and reports the next enhancements before handoff.",
+      "focus": "Show the agent library as an active production system, not a placeholder."
+    },
+    {
+      "file": "projects.html",
+      "nav": "Projects",
+      "title": "Nova Projects",
+      "heading": "Sandbox projects that can be opened and tested.",
+      "intro": "Generated sites, games, and tools are saved as real project folders with direct preview links and traceable audits.",
+      "focus": "Give visitors proof that Nova ships concrete files, not just chat text."
+    },
+    {
+      "file": "research.html",
+      "nav": "Research",
+      "title": "Nova Research",
+      "heading": "Modern quality standards baked into the build.",
+      "intro": "The baseline includes Core Web Vitals, WCAG 2.2, responsive layout, and Baseline compatibility so each page starts from current expectations.",
+      "focus": "Make the quality standard visible and credible."
+    }
+  ]
+}

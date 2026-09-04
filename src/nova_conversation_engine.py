@@ -55,10 +55,13 @@ class ConversationEngine:
         if len(self.context) > self.max_context:
             self.context = self.context[-self.max_context:]
         
-        # Save for transformer training
-        entry = {"timestamp": datetime.now().isoformat(), "user": user_text, "nova": nova_response}
-        with open(self.conversation_file, 'a') as f:
-            f.write(json.dumps(entry) + '\n')
+        # Live acceptance probes may exercise the real route without creating
+        # training examples. They still retain in-process context for the
+        # current conversation, but never mutate the training dataset.
+        if str(os.environ.get("NOVA_SUPPRESS_CONVERSATION_TRAINING", "")).lower() not in {"1", "true", "yes", "on"}:
+            entry = {"timestamp": datetime.now().isoformat(), "user": user_text, "nova": nova_response}
+            with open(self.conversation_file, 'a') as f:
+                f.write(json.dumps(entry) + '\n')
         
         # Track topic
         self.last_topic = self._extract_topic(user_text)

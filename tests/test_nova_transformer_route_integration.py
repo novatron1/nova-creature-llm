@@ -32,7 +32,64 @@ class DeterministicModel:
         return logits, None
 
 
-def test_transformer_only_prompts_preserve_checkpoint_evidence_when_generation_is_rejected(monkeypatch):
+def test_empty_transformer_text_cannot_be_reported_as_success(monkeypatch):
+    class EmptyGeneration:
+        def to_trace(self):
+            return {
+                "source": "transformer",
+                "text": "",
+                "role": "speech_output_transformer",
+                "checkpoint_path": "checkpoint.pt",
+                "checkpoint_hash": "a" * 64,
+                "error": None,
+                "ok": True,
+            }
+
+    class Prediction:
+        domain = "speech"
+        primary_role = "speech_output_transformer"
+        support_roles = ()
+        confidence = 0.9
+        source = "test_route"
+        model_hash = "b" * 64
+
+    class EmptyBrain:
+        def route_with_evidence(self, _text):
+            return Prediction(), None
+
+        def generate(self, _role, _text, max_new_tokens=80):
+            return EmptyGeneration()
+
+    monkeypatch.setattr(router, "_ensure_brain", lambda: EmptyBrain())
+
+    response, _route, _confidence, errors, ran, metadata = (
+        router.generate_transformer_response("Say hello.")
+    )
+
+    assert response is None
+    assert ran is True
+    assert errors == {"speech_output_transformer": "empty transformer output"}
+    assert metadata["generation"]["ok"] is False
+    assert metadata["generation"]["error"] == "empty transformer output"
+
+
+def test_release_verification_keeps_route_telemetry_in_memory_only(monkeypatch, tmp_path):
+    route_log = tmp_path / "routing_log.jsonl"
+    monkeypatch.setattr(router, "ROUTING_LOG_PATH", route_log)
+    monkeypatch.setattr(router, "ROUTING_LOG", [])
+    monkeypatch.setenv("NOVA_SUPPRESS_RUNTIME_LOGS", "true")
+
+    router._log_route("hello", "general", ["speech_output_transformer"], 0.9, "test")
+
+    assert router.ROUTING_LOG[-1]["text"] == "hello"
+    assert route_log.exists() is False
+
+    monkeypatch.delenv("NOVA_SUPPRESS_RUNTIME_LOGS", raising=False)
+    router._log_route("live", "general", ["speech_output_transformer"], 0.9, "test")
+    assert route_log.is_file()
+
+
+def test_transformer_only_prompts_preserve_checkpoint_evidence_when_answer_is_not_accepted(monkeypatch):
     monkeypatch.setattr(router, "_log_route", lambda *args: None)
     prompts = [
         "Debug this Python loop.",
@@ -51,7 +108,11 @@ def test_transformer_only_prompts_preserve_checkpoint_evidence_when_generation_i
         if trace["source"] == "transformer_error":
             assert re.fullmatch(r"[0-9a-fA-F]{64}", trace["route_model_hash"])
             assert re.fullmatch(r"[0-9a-fA-F]{64}", trace["checkpoint_hash"])
-            assert trace["generation"]["ok"] is False
+            if trace["generation"]["ok"]:
+                assert trace["transformer_output_accepted"] is False
+                assert trace["quality_fail_reasons"]
+            else:
+                assert trace["generation"].get("error")
             
         assert "fallback" not in trace.get("skills", [])
 

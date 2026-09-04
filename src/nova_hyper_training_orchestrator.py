@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import random
 import subprocess
 import sys
 import uuid
@@ -21,6 +22,7 @@ from nova_hyper_training_evaluator import (
 )
 from nova_role_trainer import train_role_candidate
 from nova_route_model import (
+    load_route_model,
     predict_route,
     route_examples_from_rows,
     train_route_model,
@@ -31,7 +33,11 @@ from nova_training_types import ROLE_NAMES, PromotionDecision
 from nova_transformer_runtime import NovaTransformerRuntime
 
 DEFAULT_SEED = 20260622
+ROUTE_WARM_START_LEARNING_RATE = 0.001
 PROMOTION_BANK_PATH = Path("benchmark_lab/test_banks/transformer_route_promotion_bank.json")
+TARGETED_CURRICULUM_SOURCE = "targeted_transformer_answer_curriculum"
+MAX_ROLE_TRAIN_ROWS = 1200
+MAX_ROLE_VALIDATION_ROWS = 600
 
 
 def decide_role_promotions(
@@ -142,7 +148,7 @@ def run_hyper_training(
         context["route_candidate"] = _report_safe(route_candidate)
 
         role_candidates: dict[str, dict[str, Any]] = {}
-        candidate_hashes: dict[str, str] = {}
+        trained_candidate_hashes: dict[str, str] = {}
         for index, role in enumerate(ROLE_NAMES):
             candidate = _train_role_candidate_for_orchestrator(
                 root,
@@ -153,8 +159,8 @@ def run_hyper_training(
                 role_epochs,
             )
             role_candidates[role] = candidate
-            candidate_hashes[role] = str(candidate["candidate_sha256"])
-            context["candidate_hashes"] = dict(candidate_hashes)
+            trained_candidate_hashes[role] = str(candidate["candidate_sha256"])
+            context["trained_candidate_hashes"] = dict(trained_candidate_hashes)
         context["role_candidates"] = _report_safe(role_candidates)
 
         reload_check = _fresh_process_reload_check(root, route_candidate, role_candidates)
@@ -168,10 +174,31 @@ def run_hyper_training(
             reload_check,
         )
         context["candidate_metrics"] = candidate_metrics
+        role_decision_objects = decide_role_promotions(baseline_metrics, candidate_metrics)
         context["role_decisions"] = {
             role: _decision_dict(role_decision)
-            for role, role_decision in decide_role_promotions(baseline_metrics, candidate_metrics).items()
+            for role, role_decision in role_decision_objects.items()
         }
+        promotable_candidate_hashes = {
+            role: trained_candidate_hashes[role]
+            for role, role_decision in role_decision_objects.items()
+            if role_decision.verdict == "PROMOTED" and role in trained_candidate_hashes
+        }
+        context["candidate_hashes"] = dict(promotable_candidate_hashes)
+        selected_role_candidates = {
+            role: candidate
+            for role, candidate in role_candidates.items()
+            if role in promotable_candidate_hashes
+        }
+        if len(selected_role_candidates) != len(role_candidates):
+            candidate_metrics = _evaluate_candidate(
+                root,
+                dataset_manifest,
+                route_candidate,
+                selected_role_candidates,
+                reload_check,
+            )
+            context["candidate_metrics"] = candidate_metrics
 
         negative_controls = _run_negative_controls(root, dataset_manifest, baseline_metrics)
         context["negative_controls"] = negative_controls
@@ -195,14 +222,14 @@ def run_hyper_training(
                 root,
                 run_id,
                 registry,
-                candidate_hashes,
+                promotable_candidate_hashes,
                 decision,
                 context,
                 route_candidate,
                 candidate_metrics,
             )
 
-        apply_decision(registry, candidate_hashes, decision)
+        apply_decision(registry, trained_candidate_hashes, decision)
 
         return _final_result(root, run_id, decision.verdict, context)
     except Exception as exc:
@@ -211,7 +238,7 @@ def run_hyper_training(
             "message": str(exc),
         }
         reasons = [f"{type(exc).__name__}: {exc}"]
-        candidate_hashes = context.get("candidate_hashes")
+        candidate_hashes = context.get("trained_candidate_hashes") or context.get("candidate_hashes")
         if (
             registry is not None
             and isinstance(candidate_hashes, Mapping)
@@ -333,12 +360,18 @@ def _train_route_candidate(
         / "route_candidates"
         / f"route_model_{fingerprint}_{seed}.pt"
     )
+    initial_model = _load_promoted_route_model(project_root)
+    train_kwargs: dict[str, Any] = {}
+    if initial_model is not None:
+        train_kwargs["learning_rate"] = ROUTE_WARM_START_LEARNING_RATE
     model, metadata = train_route_model(
         train_examples,
         validation_examples=validation_examples,
         seed=seed,
         epochs=epochs,
         output_path=output_path,
+        initial_model=initial_model,
+        **train_kwargs,
     )
     return {
         "checkpoint_path": str(output_path),
@@ -346,6 +379,14 @@ def _train_route_candidate(
         "metadata": metadata,
         "_route_model": _RouteCandidateAdapter(model),
     }
+
+
+def _load_promoted_route_model(project_root: Path) -> Any | None:
+    path = project_root / "checkpoints" / "route_model" / "promoted.pt"
+    if not path.exists():
+        return None
+    model, _metadata = load_route_model(path)
+    return model
 
 
 def _train_role_candidate_for_orchestrator(
@@ -357,8 +398,18 @@ def _train_role_candidate_for_orchestrator(
     epochs: int,
 ) -> dict[str, Any]:
     baseline = registry.resolve_live(role)
-    train_rows = _role_rows(_split_rows(project_root, dataset_manifest, "train"), role)
-    validation_rows = _role_rows(_split_rows(project_root, dataset_manifest, "validation"), role)
+    train_rows = _bounded_role_rows(
+        _split_rows(project_root, dataset_manifest, "train"),
+        role,
+        split_name="train",
+        seed=seed,
+    )
+    validation_rows = _bounded_role_rows(
+        _split_rows(project_root, dataset_manifest, "validation"),
+        role,
+        split_name="validation",
+        seed=seed,
+    )
     fingerprint = str(dataset_manifest.get("content_fingerprint", "dataset"))[:16]
     output_path = _role_candidate_output_path(project_root, role, fingerprint, seed)
     protected_paths = [registry.resolve_live(protected_role).path for protected_role in ROLE_NAMES]
@@ -694,6 +745,41 @@ def _role_rows(rows: list[dict[str, Any]], role: str) -> list[dict[str, Any]]:
     return role_rows
 
 
+def _bounded_role_rows(
+    rows: list[dict[str, Any]],
+    role: str,
+    *,
+    split_name: str,
+    seed: int,
+) -> list[dict[str, Any]]:
+    role_rows = _role_rows(rows, role)
+    limit = MAX_ROLE_TRAIN_ROWS if split_name == "train" else MAX_ROLE_VALIDATION_ROWS
+    if limit <= 0 or len(role_rows) <= limit:
+        return role_rows
+
+    protected_indices = [
+        index for index, row in enumerate(role_rows)
+        if row.get("source") == TARGETED_CURRICULUM_SOURCE or row.get("protected") is True
+    ]
+    if len(protected_indices) >= limit:
+        return [role_rows[index] for index in protected_indices]
+
+    protected_index_set = set(protected_indices)
+    filler_indices = [
+        index for index in range(len(role_rows))
+        if index not in protected_index_set
+    ]
+    rng = random.Random(f"{seed}:{split_name}:{role}:role-row-balance")
+    rng.shuffle(filler_indices)
+
+    selected_indices = [
+        *protected_indices,
+        *filler_indices[: limit - len(protected_indices)],
+    ]
+    selected_indices.sort()
+    return [role_rows[index] for index in selected_indices]
+
+
 def _metrics(
     routing: Mapping[str, Any],
     answers: Mapping[str, Any],
@@ -889,6 +975,8 @@ class _CandidateRegistryView:
     def resolve_live(self, role: str) -> ResolvedCheckpoint:
         candidate = self.role_candidates.get(role)
         if not isinstance(candidate, Mapping):
+            return self.registry.resolve_live(role)
+        if candidate.get("improves_over_baseline") is not True:
             return self.registry.resolve_live(role)
         path = Path(str(candidate["checkpoint_path"]))
         digest = str(candidate["candidate_sha256"])

@@ -164,6 +164,27 @@ def test_registry_serializes_project_relative_paths_with_forward_slashes(tmp_pat
     assert stored_path == "checkpoints/brain_slots/left_hemisphere/baseline.pt"
 
 
+def test_registry_write_retries_transient_windows_replace_denial(tmp_path, monkeypatch):
+    original_replace = Path.replace
+    attempts = []
+
+    def flaky_replace(self, target):
+        if self.name.startswith("registry.json.") and not attempts:
+            attempts.append(str(self))
+            raise PermissionError("transient registry lock")
+        return original_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", flaky_replace)
+    registry = CheckpointRegistry(tmp_path)
+    baseline = tmp_path / "checkpoints" / "brain_slots" / "left_hemisphere" / "baseline.pt"
+    baseline_hash = write_checkpoint(baseline, b"baseline")
+
+    registry.register_baseline("left_hemisphere", baseline, baseline_hash)
+
+    assert len(attempts) == 1
+    assert CheckpointRegistry(tmp_path).resolve_live("left_hemisphere").sha256 == baseline_hash
+
+
 def test_resolver_returns_registry_controlled_checkpoint_fields(tmp_path, monkeypatch):
     registry = CheckpointRegistry(tmp_path)
     baseline = tmp_path / "checkpoints" / "brain_slots" / "left_hemisphere" / "baseline.pt"

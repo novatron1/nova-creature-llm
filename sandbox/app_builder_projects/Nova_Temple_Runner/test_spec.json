@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "loads index.html",
+    "renders with Three.js WebGLRenderer",
+    "exposes window.NovaTempleRunner.getState()",
+    "autopilot changes lanes without keyboard input",
+    "score and distance increase over time",
+    "level increases as distance goals are reached",
+    "coins increase score when collected",
+    "obstacles reset the runner when hit",
+    "ageTicks increases over time"
+  ]
+}

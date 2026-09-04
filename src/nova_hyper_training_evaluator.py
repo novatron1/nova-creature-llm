@@ -13,6 +13,7 @@ from nova_training_types import DOMAIN_NAMES, ROLE_NAMES, PromotionDecision, Rou
 
 PROMOTION_GAIN_FLOOR = 2.0
 PROMOTION_ELITE_JOINT = 95.0
+ROUTE_GAIN_FLOOR = 2.0
 PROTECTED_DOMAIN_FLOOR_DELTA = -1.0
 REPETITION_RATE_CEILING = 0.02
 
@@ -185,22 +186,33 @@ def decide_promotion(
         baseline_joint,
         previous_winner_joint if previous_winner_joint is not None else float("-inf"),
     )
+    baseline_route = _nested_float(baseline, ("routing", "macro_f1"), 0.0)
+    candidate_route = _nested_float(candidate, ("routing", "macro_f1"), 0.0)
+    route_gain = candidate_route - baseline_route
+    baseline_answer = _nested_float(baseline, ("answers", "composite"), 0.0)
+    candidate_answer = _nested_float(candidate, ("answers", "composite"), 0.0)
+    answer_regressed = candidate_answer < baseline_answer
 
     reasons: list[str] = []
-    if not (candidate_joint - reference_joint >= PROMOTION_GAIN_FLOOR or candidate_joint >= PROMOTION_ELITE_JOINT):
+    has_meaningful_gain = (
+        candidate_joint - reference_joint >= PROMOTION_GAIN_FLOOR
+        or candidate_joint >= PROMOTION_ELITE_JOINT
+        or (
+            route_gain >= ROUTE_GAIN_FLOOR
+            and not answer_regressed
+            and (previous_winner_joint is None or previous_winner_joint <= baseline_joint)
+        )
+    )
+    if not has_meaningful_gain:
         reasons.append(
             f"joint score gain {candidate_joint - reference_joint:.2f} is below {PROMOTION_GAIN_FLOOR:.1f}"
         )
 
-    baseline_route = _nested_float(baseline, ("routing", "macro_f1"), 0.0)
-    candidate_route = _nested_float(candidate, ("routing", "macro_f1"), 0.0)
     if candidate_route <= baseline_route:
         reasons.append(f"route macro F1 did not improve ({candidate_route:.2f} <= {baseline_route:.2f})")
 
-    baseline_answer = _nested_float(baseline, ("answers", "composite"), 0.0)
-    candidate_answer = _nested_float(candidate, ("answers", "composite"), 0.0)
-    if candidate_answer <= baseline_answer:
-        reasons.append(f"answer composite did not improve ({candidate_answer:.2f} <= {baseline_answer:.2f})")
+    if answer_regressed:
+        reasons.append(f"answer composite regressed ({candidate_answer:.2f} < {baseline_answer:.2f})")
 
     protected_delta = _nested_float(candidate, ("routing", "protected_domain_floor_delta"), float("-inf"))
     if protected_delta < PROTECTED_DOMAIN_FLOOR_DELTA:

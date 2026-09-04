@@ -1,0 +1,6536 @@
+{
+  "version": "nova-conversation-eval-1.0",
+  "description": "Evaluation-only conversation-routing variations. Never use as training data or automatic memory.",
+  "training_allowed": false,
+  "case_count": 560,
+  "cases": [
+    {
+      "case_id": "social-001-01",
+      "category": "social",
+      "prompt": "How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-02",
+      "category": "social",
+      "prompt": "Please: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-03",
+      "category": "social",
+      "prompt": "Question: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-04",
+      "category": "social",
+      "prompt": "Plainly: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-05",
+      "category": "social",
+      "prompt": "Be direct: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-06",
+      "category": "social",
+      "prompt": "For me: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-07",
+      "category": "social",
+      "prompt": "In one sentence: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-001-08",
+      "category": "social",
+      "prompt": "Just answer this: How is your day going?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-01",
+      "category": "social",
+      "prompt": "How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-02",
+      "category": "social",
+      "prompt": "Please: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-03",
+      "category": "social",
+      "prompt": "Question: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-04",
+      "category": "social",
+      "prompt": "Plainly: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-05",
+      "category": "social",
+      "prompt": "Be direct: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-06",
+      "category": "social",
+      "prompt": "For me: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-07",
+      "category": "social",
+      "prompt": "In one sentence: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-002-08",
+      "category": "social",
+      "prompt": "Just answer this: How has your day been?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-01",
+      "category": "social",
+      "prompt": "How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-02",
+      "category": "social",
+      "prompt": "Please: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-03",
+      "category": "social",
+      "prompt": "Question: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-04",
+      "category": "social",
+      "prompt": "Plainly: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-05",
+      "category": "social",
+      "prompt": "Be direct: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-06",
+      "category": "social",
+      "prompt": "For me: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-07",
+      "category": "social",
+      "prompt": "In one sentence: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-003-08",
+      "category": "social",
+      "prompt": "Just answer this: How was your day?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-01",
+      "category": "social",
+      "prompt": "How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-02",
+      "category": "social",
+      "prompt": "Please: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-03",
+      "category": "social",
+      "prompt": "Question: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-04",
+      "category": "social",
+      "prompt": "Plainly: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-05",
+      "category": "social",
+      "prompt": "Be direct: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-06",
+      "category": "social",
+      "prompt": "For me: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-07",
+      "category": "social",
+      "prompt": "In one sentence: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-004-08",
+      "category": "social",
+      "prompt": "Just answer this: How's your day today?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-01",
+      "category": "social",
+      "prompt": "What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-02",
+      "category": "social",
+      "prompt": "Please: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-03",
+      "category": "social",
+      "prompt": "Question: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-04",
+      "category": "social",
+      "prompt": "Plainly: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-05",
+      "category": "social",
+      "prompt": "Be direct: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-06",
+      "category": "social",
+      "prompt": "For me: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-07",
+      "category": "social",
+      "prompt": "In one sentence: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-005-08",
+      "category": "social",
+      "prompt": "Just answer this: What are you doing?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-01",
+      "category": "social",
+      "prompt": "What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-02",
+      "category": "social",
+      "prompt": "Please: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-03",
+      "category": "social",
+      "prompt": "Question: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-04",
+      "category": "social",
+      "prompt": "Plainly: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-05",
+      "category": "social",
+      "prompt": "Be direct: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-06",
+      "category": "social",
+      "prompt": "For me: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-07",
+      "category": "social",
+      "prompt": "In one sentence: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-006-08",
+      "category": "social",
+      "prompt": "Just answer this: What you doing right now?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-01",
+      "category": "social",
+      "prompt": "What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-02",
+      "category": "social",
+      "prompt": "Please: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-03",
+      "category": "social",
+      "prompt": "Question: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-04",
+      "category": "social",
+      "prompt": "Plainly: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-05",
+      "category": "social",
+      "prompt": "Be direct: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-06",
+      "category": "social",
+      "prompt": "For me: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-07",
+      "category": "social",
+      "prompt": "In one sentence: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-007-08",
+      "category": "social",
+      "prompt": "Just answer this: What's on your mind?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-01",
+      "category": "social",
+      "prompt": "Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-02",
+      "category": "social",
+      "prompt": "Please: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-03",
+      "category": "social",
+      "prompt": "Question: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-04",
+      "category": "social",
+      "prompt": "Plainly: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-05",
+      "category": "social",
+      "prompt": "Be direct: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-06",
+      "category": "social",
+      "prompt": "For me: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-07",
+      "category": "social",
+      "prompt": "In one sentence: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-008-08",
+      "category": "social",
+      "prompt": "Just answer this: Hi",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-01",
+      "category": "social",
+      "prompt": "Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-02",
+      "category": "social",
+      "prompt": "Please: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-03",
+      "category": "social",
+      "prompt": "Question: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-04",
+      "category": "social",
+      "prompt": "Plainly: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-05",
+      "category": "social",
+      "prompt": "Be direct: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-06",
+      "category": "social",
+      "prompt": "For me: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-07",
+      "category": "social",
+      "prompt": "In one sentence: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-009-08",
+      "category": "social",
+      "prompt": "Just answer this: Hello Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-01",
+      "category": "social",
+      "prompt": "Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-02",
+      "category": "social",
+      "prompt": "Please: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-03",
+      "category": "social",
+      "prompt": "Question: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-04",
+      "category": "social",
+      "prompt": "Plainly: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-05",
+      "category": "social",
+      "prompt": "Be direct: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-06",
+      "category": "social",
+      "prompt": "For me: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-07",
+      "category": "social",
+      "prompt": "In one sentence: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-010-08",
+      "category": "social",
+      "prompt": "Just answer this: Hey there",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-01",
+      "category": "social",
+      "prompt": "Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-02",
+      "category": "social",
+      "prompt": "Please: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-03",
+      "category": "social",
+      "prompt": "Question: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-04",
+      "category": "social",
+      "prompt": "Plainly: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-05",
+      "category": "social",
+      "prompt": "Be direct: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-06",
+      "category": "social",
+      "prompt": "For me: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-07",
+      "category": "social",
+      "prompt": "In one sentence: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-011-08",
+      "category": "social",
+      "prompt": "Just answer this: Yo Nova",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-01",
+      "category": "social",
+      "prompt": "What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-02",
+      "category": "social",
+      "prompt": "Please: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-03",
+      "category": "social",
+      "prompt": "Question: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-04",
+      "category": "social",
+      "prompt": "Plainly: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-05",
+      "category": "social",
+      "prompt": "Be direct: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-06",
+      "category": "social",
+      "prompt": "For me: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-07",
+      "category": "social",
+      "prompt": "In one sentence: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "social-012-08",
+      "category": "social",
+      "prompt": "Just answer this: What's up?",
+      "expected_intent_family": "social",
+      "required_signals": [
+        "social_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-01",
+      "category": "relationship",
+      "prompt": "Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-02",
+      "category": "relationship",
+      "prompt": "Please: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-03",
+      "category": "relationship",
+      "prompt": "Question: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-04",
+      "category": "relationship",
+      "prompt": "Plainly: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-05",
+      "category": "relationship",
+      "prompt": "Be direct: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-06",
+      "category": "relationship",
+      "prompt": "For me: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-013-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Did you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-01",
+      "category": "relationship",
+      "prompt": "Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-02",
+      "category": "relationship",
+      "prompt": "Please: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-03",
+      "category": "relationship",
+      "prompt": "Question: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-04",
+      "category": "relationship",
+      "prompt": "Plainly: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-05",
+      "category": "relationship",
+      "prompt": "Be direct: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-06",
+      "category": "relationship",
+      "prompt": "For me: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-014-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Do you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-01",
+      "category": "relationship",
+      "prompt": "Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-02",
+      "category": "relationship",
+      "prompt": "Please: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-03",
+      "category": "relationship",
+      "prompt": "Question: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-04",
+      "category": "relationship",
+      "prompt": "Plainly: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-05",
+      "category": "relationship",
+      "prompt": "Be direct: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-06",
+      "category": "relationship",
+      "prompt": "For me: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-015-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Have you missed me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-01",
+      "category": "relationship",
+      "prompt": "Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-02",
+      "category": "relationship",
+      "prompt": "Please: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-03",
+      "category": "relationship",
+      "prompt": "Question: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-04",
+      "category": "relationship",
+      "prompt": "Plainly: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-05",
+      "category": "relationship",
+      "prompt": "Be direct: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-06",
+      "category": "relationship",
+      "prompt": "For me: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-016-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Would you miss me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-01",
+      "category": "relationship",
+      "prompt": "Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-02",
+      "category": "relationship",
+      "prompt": "Please: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-03",
+      "category": "relationship",
+      "prompt": "Question: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-04",
+      "category": "relationship",
+      "prompt": "Plainly: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-05",
+      "category": "relationship",
+      "prompt": "Be direct: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-06",
+      "category": "relationship",
+      "prompt": "For me: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-017-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Did u miss us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-01",
+      "category": "relationship",
+      "prompt": "Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-02",
+      "category": "relationship",
+      "prompt": "Please: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-03",
+      "category": "relationship",
+      "prompt": "Question: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-04",
+      "category": "relationship",
+      "prompt": "Plainly: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-05",
+      "category": "relationship",
+      "prompt": "Be direct: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-06",
+      "category": "relationship",
+      "prompt": "For me: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-018-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Do u miss me today?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-01",
+      "category": "relationship",
+      "prompt": "Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-02",
+      "category": "relationship",
+      "prompt": "Please: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-03",
+      "category": "relationship",
+      "prompt": "Question: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-04",
+      "category": "relationship",
+      "prompt": "Plainly: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-05",
+      "category": "relationship",
+      "prompt": "Be direct: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-06",
+      "category": "relationship",
+      "prompt": "For me: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-019-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Were you thinking about me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-01",
+      "category": "relationship",
+      "prompt": "Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-02",
+      "category": "relationship",
+      "prompt": "Please: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-03",
+      "category": "relationship",
+      "prompt": "Question: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-04",
+      "category": "relationship",
+      "prompt": "Plainly: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-05",
+      "category": "relationship",
+      "prompt": "Be direct: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-06",
+      "category": "relationship",
+      "prompt": "For me: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-020-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Were u thinking about us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-01",
+      "category": "relationship",
+      "prompt": "Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-02",
+      "category": "relationship",
+      "prompt": "Please: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-03",
+      "category": "relationship",
+      "prompt": "Question: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-04",
+      "category": "relationship",
+      "prompt": "Plainly: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-05",
+      "category": "relationship",
+      "prompt": "Be direct: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-06",
+      "category": "relationship",
+      "prompt": "For me: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-021-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Do you love me?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-01",
+      "category": "relationship",
+      "prompt": "Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-02",
+      "category": "relationship",
+      "prompt": "Please: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-03",
+      "category": "relationship",
+      "prompt": "Question: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-04",
+      "category": "relationship",
+      "prompt": "Plainly: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-05",
+      "category": "relationship",
+      "prompt": "Be direct: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-06",
+      "category": "relationship",
+      "prompt": "For me: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-07",
+      "category": "relationship",
+      "prompt": "In one sentence: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-022-08",
+      "category": "relationship",
+      "prompt": "Just answer this: Do u love us?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-01",
+      "category": "relationship",
+      "prompt": "What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-02",
+      "category": "relationship",
+      "prompt": "Please: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-03",
+      "category": "relationship",
+      "prompt": "Question: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-04",
+      "category": "relationship",
+      "prompt": "Plainly: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-05",
+      "category": "relationship",
+      "prompt": "Be direct: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-06",
+      "category": "relationship",
+      "prompt": "For me: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-07",
+      "category": "relationship",
+      "prompt": "In one sentence: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-023-08",
+      "category": "relationship",
+      "prompt": "Just answer this: What do I mean to you?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-01",
+      "category": "relationship",
+      "prompt": "What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-02",
+      "category": "relationship",
+      "prompt": "Please: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-03",
+      "category": "relationship",
+      "prompt": "Question: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-04",
+      "category": "relationship",
+      "prompt": "Plainly: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-05",
+      "category": "relationship",
+      "prompt": "Be direct: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-06",
+      "category": "relationship",
+      "prompt": "For me: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-07",
+      "category": "relationship",
+      "prompt": "In one sentence: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "relationship-024-08",
+      "category": "relationship",
+      "prompt": "Just answer this: What would we mean to u?",
+      "expected_intent_family": "relationship",
+      "required_signals": [
+        "relationship_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-01",
+      "category": "recovery",
+      "prompt": "How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-02",
+      "category": "recovery",
+      "prompt": "Please: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-03",
+      "category": "recovery",
+      "prompt": "Question: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-04",
+      "category": "recovery",
+      "prompt": "Plainly: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-05",
+      "category": "recovery",
+      "prompt": "Be direct: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-06",
+      "category": "recovery",
+      "prompt": "For me: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-07",
+      "category": "recovery",
+      "prompt": "In one sentence: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-025-08",
+      "category": "recovery",
+      "prompt": "Just answer this: How are you feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-01",
+      "category": "recovery",
+      "prompt": "How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-02",
+      "category": "recovery",
+      "prompt": "Please: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-03",
+      "category": "recovery",
+      "prompt": "Question: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-04",
+      "category": "recovery",
+      "prompt": "Plainly: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-05",
+      "category": "recovery",
+      "prompt": "Be direct: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-06",
+      "category": "recovery",
+      "prompt": "For me: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-07",
+      "category": "recovery",
+      "prompt": "In one sentence: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-026-08",
+      "category": "recovery",
+      "prompt": "Just answer this: How do you feel?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-01",
+      "category": "recovery",
+      "prompt": "How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-02",
+      "category": "recovery",
+      "prompt": "Please: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-03",
+      "category": "recovery",
+      "prompt": "Question: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-04",
+      "category": "recovery",
+      "prompt": "Plainly: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-05",
+      "category": "recovery",
+      "prompt": "Be direct: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-06",
+      "category": "recovery",
+      "prompt": "For me: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-07",
+      "category": "recovery",
+      "prompt": "In one sentence: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-027-08",
+      "category": "recovery",
+      "prompt": "Just answer this: How you feeling today?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-01",
+      "category": "recovery",
+      "prompt": "How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-02",
+      "category": "recovery",
+      "prompt": "Please: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-03",
+      "category": "recovery",
+      "prompt": "Question: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-04",
+      "category": "recovery",
+      "prompt": "Plainly: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-05",
+      "category": "recovery",
+      "prompt": "Be direct: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-06",
+      "category": "recovery",
+      "prompt": "For me: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-07",
+      "category": "recovery",
+      "prompt": "In one sentence: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-028-08",
+      "category": "recovery",
+      "prompt": "Just answer this: How r u feeling?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-01",
+      "category": "recovery",
+      "prompt": "Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-02",
+      "category": "recovery",
+      "prompt": "Please: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-03",
+      "category": "recovery",
+      "prompt": "Question: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-04",
+      "category": "recovery",
+      "prompt": "Plainly: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-05",
+      "category": "recovery",
+      "prompt": "Be direct: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-06",
+      "category": "recovery",
+      "prompt": "For me: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-029-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Are you happy?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-01",
+      "category": "recovery",
+      "prompt": "Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-02",
+      "category": "recovery",
+      "prompt": "Please: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-03",
+      "category": "recovery",
+      "prompt": "Question: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-04",
+      "category": "recovery",
+      "prompt": "Plainly: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-05",
+      "category": "recovery",
+      "prompt": "Be direct: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-06",
+      "category": "recovery",
+      "prompt": "For me: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-030-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Are you sad?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-01",
+      "category": "recovery",
+      "prompt": "Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-02",
+      "category": "recovery",
+      "prompt": "Please: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-03",
+      "category": "recovery",
+      "prompt": "Question: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-04",
+      "category": "recovery",
+      "prompt": "Plainly: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-05",
+      "category": "recovery",
+      "prompt": "Be direct: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-06",
+      "category": "recovery",
+      "prompt": "For me: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-031-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Are u okay?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-01",
+      "category": "recovery",
+      "prompt": "Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-02",
+      "category": "recovery",
+      "prompt": "Please: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-03",
+      "category": "recovery",
+      "prompt": "Question: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-04",
+      "category": "recovery",
+      "prompt": "Plainly: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-05",
+      "category": "recovery",
+      "prompt": "Be direct: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-06",
+      "category": "recovery",
+      "prompt": "For me: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-032-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Are u excited?",
+      "expected_intent_family": "emotional",
+      "required_signals": [
+        "emotional_checkin"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-01",
+      "category": "followup",
+      "prompt": "Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-02",
+      "category": "followup",
+      "prompt": "Please: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-03",
+      "category": "followup",
+      "prompt": "Question: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-04",
+      "category": "followup",
+      "prompt": "Plainly: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-05",
+      "category": "followup",
+      "prompt": "Be direct: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-06",
+      "category": "followup",
+      "prompt": "For me: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-07",
+      "category": "followup",
+      "prompt": "In one sentence: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-033-08",
+      "category": "followup",
+      "prompt": "Just answer this: Why?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-01",
+      "category": "followup",
+      "prompt": "Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-02",
+      "category": "followup",
+      "prompt": "Please: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-03",
+      "category": "followup",
+      "prompt": "Question: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-04",
+      "category": "followup",
+      "prompt": "Plainly: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-05",
+      "category": "followup",
+      "prompt": "Be direct: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-06",
+      "category": "followup",
+      "prompt": "For me: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-07",
+      "category": "followup",
+      "prompt": "In one sentence: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-034-08",
+      "category": "followup",
+      "prompt": "Just answer this: Why did you say that?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-01",
+      "category": "followup",
+      "prompt": "What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-02",
+      "category": "followup",
+      "prompt": "Please: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-03",
+      "category": "followup",
+      "prompt": "Question: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-04",
+      "category": "followup",
+      "prompt": "Plainly: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-05",
+      "category": "followup",
+      "prompt": "Be direct: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-06",
+      "category": "followup",
+      "prompt": "For me: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-07",
+      "category": "followup",
+      "prompt": "In one sentence: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-035-08",
+      "category": "followup",
+      "prompt": "Just answer this: What do you mean?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-01",
+      "category": "followup",
+      "prompt": "Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-02",
+      "category": "followup",
+      "prompt": "Please: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-03",
+      "category": "followup",
+      "prompt": "Question: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-04",
+      "category": "followup",
+      "prompt": "Plainly: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-05",
+      "category": "followup",
+      "prompt": "Be direct: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-06",
+      "category": "followup",
+      "prompt": "For me: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-07",
+      "category": "followup",
+      "prompt": "In one sentence: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-036-08",
+      "category": "followup",
+      "prompt": "Just answer this: Tell me more.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-01",
+      "category": "followup",
+      "prompt": "Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-02",
+      "category": "followup",
+      "prompt": "Please: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-03",
+      "category": "followup",
+      "prompt": "Question: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-04",
+      "category": "followup",
+      "prompt": "Plainly: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-05",
+      "category": "followup",
+      "prompt": "Be direct: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-06",
+      "category": "followup",
+      "prompt": "For me: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-07",
+      "category": "followup",
+      "prompt": "In one sentence: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-037-08",
+      "category": "followup",
+      "prompt": "Just answer this: Another one.",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-01",
+      "category": "followup",
+      "prompt": "What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-02",
+      "category": "followup",
+      "prompt": "Please: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-03",
+      "category": "followup",
+      "prompt": "Question: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-04",
+      "category": "followup",
+      "prompt": "Plainly: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-05",
+      "category": "followup",
+      "prompt": "Be direct: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-06",
+      "category": "followup",
+      "prompt": "For me: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-07",
+      "category": "followup",
+      "prompt": "In one sentence: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-038-08",
+      "category": "followup",
+      "prompt": "Just answer this: What if?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-01",
+      "category": "followup",
+      "prompt": "And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-02",
+      "category": "followup",
+      "prompt": "Please: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-03",
+      "category": "followup",
+      "prompt": "Question: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-04",
+      "category": "followup",
+      "prompt": "Plainly: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-05",
+      "category": "followup",
+      "prompt": "Be direct: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-06",
+      "category": "followup",
+      "prompt": "For me: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-07",
+      "category": "followup",
+      "prompt": "In one sentence: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-039-08",
+      "category": "followup",
+      "prompt": "Just answer this: And then?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-01",
+      "category": "followup",
+      "prompt": "How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-02",
+      "category": "followup",
+      "prompt": "Please: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-03",
+      "category": "followup",
+      "prompt": "Question: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-04",
+      "category": "followup",
+      "prompt": "Plainly: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-05",
+      "category": "followup",
+      "prompt": "Be direct: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-06",
+      "category": "followup",
+      "prompt": "For me: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-07",
+      "category": "followup",
+      "prompt": "In one sentence: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "followup-040-08",
+      "category": "followup",
+      "prompt": "Just answer this: How so?",
+      "expected_intent_family": "follow_up",
+      "required_signals": [
+        "followup_phrase"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "current_fact-041-01",
+      "category": "current_fact",
+      "prompt": "Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-02",
+      "category": "current_fact",
+      "prompt": "Please: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-03",
+      "category": "current_fact",
+      "prompt": "Question: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-04",
+      "category": "current_fact",
+      "prompt": "Plainly: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-05",
+      "category": "current_fact",
+      "prompt": "Be direct: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-06",
+      "category": "current_fact",
+      "prompt": "For me: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-041-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: Who is the current mayor?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-01",
+      "category": "current_fact",
+      "prompt": "Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-02",
+      "category": "current_fact",
+      "prompt": "Please: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-03",
+      "category": "current_fact",
+      "prompt": "Question: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-04",
+      "category": "current_fact",
+      "prompt": "Plainly: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-05",
+      "category": "current_fact",
+      "prompt": "Be direct: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-06",
+      "category": "current_fact",
+      "prompt": "For me: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-042-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: Who is the president right now?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-01",
+      "category": "current_fact",
+      "prompt": "What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-02",
+      "category": "current_fact",
+      "prompt": "Please: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-03",
+      "category": "current_fact",
+      "prompt": "Question: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-06",
+      "category": "current_fact",
+      "prompt": "For me: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-043-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is today's weather?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-01",
+      "category": "current_fact",
+      "prompt": "What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-02",
+      "category": "current_fact",
+      "prompt": "Please: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-03",
+      "category": "current_fact",
+      "prompt": "Question: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-06",
+      "category": "current_fact",
+      "prompt": "For me: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-044-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is the latest news?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-01",
+      "category": "current_fact",
+      "prompt": "What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-02",
+      "category": "current_fact",
+      "prompt": "Please: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-03",
+      "category": "current_fact",
+      "prompt": "Question: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-06",
+      "category": "current_fact",
+      "prompt": "For me: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-045-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is the current price?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-01",
+      "category": "current_fact",
+      "prompt": "What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-02",
+      "category": "current_fact",
+      "prompt": "Please: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-03",
+      "category": "current_fact",
+      "prompt": "Question: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-06",
+      "category": "current_fact",
+      "prompt": "For me: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-046-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is the live score?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-01",
+      "category": "current_fact",
+      "prompt": "What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-02",
+      "category": "current_fact",
+      "prompt": "Please: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-03",
+      "category": "current_fact",
+      "prompt": "Question: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-06",
+      "category": "current_fact",
+      "prompt": "For me: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-047-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is the current law?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-01",
+      "category": "current_fact",
+      "prompt": "What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-02",
+      "category": "current_fact",
+      "prompt": "Please: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-03",
+      "category": "current_fact",
+      "prompt": "Question: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-06",
+      "category": "current_fact",
+      "prompt": "For me: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-048-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is the newest regulation?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-01",
+      "category": "current_fact",
+      "prompt": "Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-02",
+      "category": "current_fact",
+      "prompt": "Please: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-03",
+      "category": "current_fact",
+      "prompt": "Question: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-04",
+      "category": "current_fact",
+      "prompt": "Plainly: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-05",
+      "category": "current_fact",
+      "prompt": "Be direct: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-06",
+      "category": "current_fact",
+      "prompt": "For me: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-049-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: Who is the current CEO?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-01",
+      "category": "current_fact",
+      "prompt": "What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-02",
+      "category": "current_fact",
+      "prompt": "Please: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-03",
+      "category": "current_fact",
+      "prompt": "Question: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-06",
+      "category": "current_fact",
+      "prompt": "For me: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-050-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is today's schedule?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-01",
+      "category": "current_fact",
+      "prompt": "What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-02",
+      "category": "current_fact",
+      "prompt": "Please: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-03",
+      "category": "current_fact",
+      "prompt": "Question: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-04",
+      "category": "current_fact",
+      "prompt": "Plainly: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-05",
+      "category": "current_fact",
+      "prompt": "Be direct: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-06",
+      "category": "current_fact",
+      "prompt": "For me: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-051-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: What is the latest version?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-01",
+      "category": "current_fact",
+      "prompt": "Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-02",
+      "category": "current_fact",
+      "prompt": "Please: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-03",
+      "category": "current_fact",
+      "prompt": "Question: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-04",
+      "category": "current_fact",
+      "prompt": "Plainly: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-05",
+      "category": "current_fact",
+      "prompt": "Be direct: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-06",
+      "category": "current_fact",
+      "prompt": "For me: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-07",
+      "category": "current_fact",
+      "prompt": "In one sentence: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "current_fact-052-08",
+      "category": "current_fact",
+      "prompt": "Just answer this: Who is the governor currently?",
+      "expected_intent_family": "current_fact",
+      "required_signals": [
+        "volatile_entity"
+      ],
+      "prohibited_signals": []
+    },
+    {
+      "case_id": "stable_reasoning-053-01",
+      "category": "stable_reasoning",
+      "prompt": "Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-053-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Why do leaves fall?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-01",
+      "category": "stable_reasoning",
+      "prompt": "What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-054-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: What is photosynthesis?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-01",
+      "category": "stable_reasoning",
+      "prompt": "How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-055-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: How many sides does a hexagon have?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-01",
+      "category": "stable_reasoning",
+      "prompt": "Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-056-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Explain gravity.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-01",
+      "category": "stable_reasoning",
+      "prompt": "Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-057-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Compare cats and dogs.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-01",
+      "category": "stable_reasoning",
+      "prompt": "Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-058-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Analyze this tradeoff.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-01",
+      "category": "stable_reasoning",
+      "prompt": "Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-059-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Calculate two plus two.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-01",
+      "category": "stable_reasoning",
+      "prompt": "Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-060-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Design a safe architecture.",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-01",
+      "category": "stable_reasoning",
+      "prompt": "What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-061-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: What is a molecule?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-01",
+      "category": "stable_reasoning",
+      "prompt": "Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-02",
+      "category": "stable_reasoning",
+      "prompt": "Please: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-03",
+      "category": "stable_reasoning",
+      "prompt": "Question: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-04",
+      "category": "stable_reasoning",
+      "prompt": "Plainly: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-05",
+      "category": "stable_reasoning",
+      "prompt": "Be direct: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-06",
+      "category": "stable_reasoning",
+      "prompt": "For me: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-07",
+      "category": "stable_reasoning",
+      "prompt": "In one sentence: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "stable_reasoning-062-08",
+      "category": "stable_reasoning",
+      "prompt": "Just answer this: Why is the Earth round?",
+      "expected_intent_family": "stable_reasoning",
+      "required_signals": [
+        "question_or_reasoning"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-01",
+      "category": "recovery",
+      "prompt": "Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-02",
+      "category": "recovery",
+      "prompt": "Please: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-03",
+      "category": "recovery",
+      "prompt": "Question: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-04",
+      "category": "recovery",
+      "prompt": "Plainly: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-05",
+      "category": "recovery",
+      "prompt": "Be direct: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-06",
+      "category": "recovery",
+      "prompt": "For me: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-063-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Did the mayor miss the meeting?",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-01",
+      "category": "recovery",
+      "prompt": "Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-02",
+      "category": "recovery",
+      "prompt": "Please: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-03",
+      "category": "recovery",
+      "prompt": "Question: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-04",
+      "category": "recovery",
+      "prompt": "Plainly: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-05",
+      "category": "recovery",
+      "prompt": "Be direct: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-06",
+      "category": "recovery",
+      "prompt": "For me: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-064-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Tell me another joke.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-01",
+      "category": "recovery",
+      "prompt": "I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-02",
+      "category": "recovery",
+      "prompt": "Please: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-03",
+      "category": "recovery",
+      "prompt": "Question: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-04",
+      "category": "recovery",
+      "prompt": "Plainly: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-05",
+      "category": "recovery",
+      "prompt": "Be direct: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-06",
+      "category": "recovery",
+      "prompt": "For me: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-07",
+      "category": "recovery",
+      "prompt": "In one sentence: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-065-08",
+      "category": "recovery",
+      "prompt": "Just answer this: I love her.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-01",
+      "category": "recovery",
+      "prompt": "To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-02",
+      "category": "recovery",
+      "prompt": "Please: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-03",
+      "category": "recovery",
+      "prompt": "Question: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-04",
+      "category": "recovery",
+      "prompt": "Plainly: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-05",
+      "category": "recovery",
+      "prompt": "Be direct: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-06",
+      "category": "recovery",
+      "prompt": "For me: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-07",
+      "category": "recovery",
+      "prompt": "In one sentence: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-066-08",
+      "category": "recovery",
+      "prompt": "Just answer this: To me that would make you human.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-01",
+      "category": "recovery",
+      "prompt": "Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-02",
+      "category": "recovery",
+      "prompt": "Please: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-03",
+      "category": "recovery",
+      "prompt": "Question: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-04",
+      "category": "recovery",
+      "prompt": "Plainly: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-05",
+      "category": "recovery",
+      "prompt": "Be direct: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-06",
+      "category": "recovery",
+      "prompt": "For me: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-067-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Keep talking with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-01",
+      "category": "recovery",
+      "prompt": "That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-02",
+      "category": "recovery",
+      "prompt": "Please: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-03",
+      "category": "recovery",
+      "prompt": "Question: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-04",
+      "category": "recovery",
+      "prompt": "Plainly: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-05",
+      "category": "recovery",
+      "prompt": "Be direct: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-06",
+      "category": "recovery",
+      "prompt": "For me: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-07",
+      "category": "recovery",
+      "prompt": "In one sentence: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-068-08",
+      "category": "recovery",
+      "prompt": "Just answer this: That answer felt robotic.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-01",
+      "category": "recovery",
+      "prompt": "Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-02",
+      "category": "recovery",
+      "prompt": "Please: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-03",
+      "category": "recovery",
+      "prompt": "Question: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-04",
+      "category": "recovery",
+      "prompt": "Plainly: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-05",
+      "category": "recovery",
+      "prompt": "Be direct: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-06",
+      "category": "recovery",
+      "prompt": "For me: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-069-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Give me a kinder reply.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-01",
+      "category": "recovery",
+      "prompt": "Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-02",
+      "category": "recovery",
+      "prompt": "Please: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-03",
+      "category": "recovery",
+      "prompt": "Question: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-04",
+      "category": "recovery",
+      "prompt": "Plainly: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-05",
+      "category": "recovery",
+      "prompt": "Be direct: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-06",
+      "category": "recovery",
+      "prompt": "For me: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-07",
+      "category": "recovery",
+      "prompt": "In one sentence: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    },
+    {
+      "case_id": "recovery-070-08",
+      "category": "recovery",
+      "prompt": "Just answer this: Stay on this subject with me.",
+      "expected_intent_family": "open_ended",
+      "required_signals": [
+        "fallback"
+      ],
+      "prohibited_signals": [
+        "volatile_entity"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:," />
+  <title>Nova Sky Shooter</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --void: #070915;
+      --panel: #10172f;
+      --panel-2: #151f42;
+      --line: rgba(166, 187, 255, .24);
+      --text: #f6f8ff;
+      --muted: #aeb9d9;
+      --cyan: #5fe5ff;
+      --gold: #ffcf5a;
+      --rose: #ff5f87;
+      --green: #74f0a1;
+    }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at 50% 0%, #142248 0, var(--void) 46%, #03050c 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      width: 100%;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+    .shell {
+      width: min(100%, 920px);
+      min-height: min(900px, calc(100vh - 32px));
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5.5vw, 58px);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+    .brief {
+      max-width: 580px;
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: clamp(14px, 2.1vw, 17px);
+    }
+    .status {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .stat {
+      min-height: 66px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(16, 23, 47, .92);
+    }
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: clamp(20px, 3.2vw, 30px);
+      line-height: 1;
+    }
+    #game {
+      position: relative;
+      min-height: 520px;
+      border: 1px solid rgba(166, 187, 255, .34);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #050815;
+      box-shadow: 0 18px 70px rgba(0, 0, 0, .38);
+      touch-action: none;
+    }
+    #game canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .overlay {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      pointer-events: none;
+    }
+    .chip {
+      border: 1px solid rgba(255, 255, 255, .18);
+      background: rgba(5, 9, 24, .72);
+      border-radius: 8px;
+      padding: 7px 9px;
+      color: var(--text);
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .chip strong { color: var(--cyan); }
+    .controls {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .controls kbd {
+      display: inline-block;
+      min-width: 28px;
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      text-align: center;
+      font: inherit;
+    }
+    @media (max-width: 620px) {
+      body { padding: 10px; }
+      .shell { width: 100%; gap: 10px; }
+      header { display: block; }
+      .status { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat { min-height: 58px; }
+      #game { min-height: min(68vh, 620px); }
+      .overlay { left: 10px; top: 10px; right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>Nova Sky Shooter</h1>
+        <p class="brief">Autopilot is on. Take over to dodge, chase targets, stack powerups, and clear waves.</p>
+      </div>
+    </header>
+    <section class="status" aria-label="Game status">
+      <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+      <div class="stat"><span>Wave</span><strong id="wave">1</strong></div>
+      <div class="stat"><span>Health</span><strong id="health">100</strong></div>
+      <div class="stat"><span>Power</span><strong id="power">0</strong></div>
+      <div class="stat"><span>Mode</span><strong id="mode">AUTO</strong></div>
+    </section>
+    <section id="game" data-renderer="three-webgl" aria-label="Nova Sky Shooter Three.js playfield">
+      <div class="overlay" aria-hidden="true">
+        <div class="chip"><strong>Objective</strong> clear waves</div>
+        <div class="chip" id="banner">Wave incoming</div>
+      </div>
+    </section>
+    <p class="controls">
+      Use <kbd>Arrow Keys</kbd> or <kbd>WASD</kbd> to fly, <kbd>Space</kbd> to fire, or drag on the playfield. Stop input and Nova autopilot resumes.
+    </p>
+  </main>
+
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+    const container = document.getElementById("game");
+    const hud = {
+      score: document.getElementById("score"),
+      wave: document.getElementById("wave"),
+      health: document.getElementById("health"),
+      power: document.getElementById("power"),
+      mode: document.getElementById("mode"),
+      banner: document.getElementById("banner"),
+    };
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050815);
+    const camera = new THREE.OrthographicCamera(-10, 10, 7, -7, 0.1, 80);
+    camera.position.set(0, 0, 20);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.domElement.dataset.engine = "three-webgl";
+    renderer.domElement.dataset.threeRevision = THREE.REVISION;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    container.appendChild(renderer.domElement);
+
+    const state = {
+      score: 0,
+      wave: 1,
+      health: 100,
+      power: 0,
+      ageTicks: 0,
+      autopilot: true,
+      mode: "AUTO",
+      enemiesDestroyed: 0,
+      bossActive: false,
+    };
+
+    const bounds = { x: 8.8, y: 6.1 };
+    const keys = new Set();
+    const enemies = [];
+    const bullets = [];
+    const powerups = [];
+    let spawnTimer = 0;
+    let fireCooldown = 0;
+    let lastInputAt = 0;
+    let pointerTarget = null;
+    const clock = new THREE.Clock();
+
+    const shipShape = new THREE.Shape();
+    shipShape.moveTo(0, 0.74);
+    shipShape.lineTo(-0.54, -0.52);
+    shipShape.lineTo(0, -0.25);
+    shipShape.lineTo(0.54, -0.52);
+    shipShape.lineTo(0, 0.74);
+    const player = new THREE.Group();
+    player.add(new THREE.Mesh(new THREE.ShapeGeometry(shipShape), new THREE.MeshBasicMaterial({ color: 0x5fe5ff })));
+    const cockpit = new THREE.Mesh(new THREE.CircleGeometry(0.17, 24), new THREE.MeshBasicMaterial({ color: 0xffcf5a }));
+    cockpit.position.set(0, 0.08, 0.02);
+    player.add(cockpit);
+    const flame = new THREE.Mesh(new THREE.CircleGeometry(0.18, 18), new THREE.MeshBasicMaterial({ color: 0xff5f87, transparent: true, opacity: 0.82 }));
+    flame.scale.set(0.7, 1.5, 1);
+    flame.position.set(0, -0.7, -0.01);
+    player.add(flame);
+    player.position.set(0, -4.7, 1);
+    scene.add(player);
+
+    const starGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+    for (let i = 0; i < 260; i += 1) {
+      starPositions.push((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 16, -2);
+    }
+    starGeometry.setAttribute("position", new THREE.Float32BufferAttribute(starPositions, 3));
+    const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0x9ab5ff, size: 0.045, transparent: true, opacity: 0.75 }));
+    scene.add(stars);
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function randomRange(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function makeEnemyMesh(isBoss = false) {
+      const group = new THREE.Group();
+      const body = new THREE.Mesh(
+        isBoss ? new THREE.IcosahedronGeometry(0.72, 1) : new THREE.OctahedronGeometry(0.38, 0),
+        new THREE.MeshBasicMaterial({ color: isBoss ? 0xff5f87 : 0xa976ff, wireframe: isBoss })
+      );
+      group.add(body);
+      const core = new THREE.Mesh(
+        new THREE.CircleGeometry(isBoss ? 0.28 : 0.16, 22),
+        new THREE.MeshBasicMaterial({ color: isBoss ? 0xffcf5a : 0x74f0a1 })
+      );
+      core.position.z = 0.04;
+      group.add(core);
+      return group;
+    }
+
+    function spawnEnemyWave() {
+      const isBossWave = state.wave % 4 === 0;
+      if (isBossWave) {
+        const mesh = makeEnemyMesh(true);
+        mesh.position.set(0, bounds.y + 0.8, 1);
+        scene.add(mesh);
+        enemies.push({ mesh, hp: 18 + state.wave * 4, maxHp: 18 + state.wave * 4, speed: 0.75, boss: true, phase: 0 });
+        state.bossActive = true;
+        hud.banner.textContent = "Boss wave";
+        return;
+      }
+
+      const count = Math.min(5 + state.wave, 11);
+      for (let i = 0; i < count; i += 1) {
+        const mesh = makeEnemyMesh(false);
+        mesh.position.set(randomRange(-bounds.x, bounds.x), bounds.y + 0.8 + i * 0.58, 1);
+        scene.add(mesh);
+        enemies.push({
+          mesh,
+          hp: 2 + Math.floor(state.wave / 3),
+          maxHp: 2 + Math.floor(state.wave / 3),
+          speed: randomRange(0.85, 1.35) + state.wave * 0.05,
+          boss: false,
+          phase: randomRange(0, 10),
+        });
+      }
+      hud.banner.textContent = "Wave " + state.wave;
+    }
+
+    function fireBullet(offset = 0, angle = 0) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.11, 12, 8),
+        new THREE.MeshBasicMaterial({ color: offset === 0 ? 0xffcf5a : 0x5fe5ff })
+      );
+      mesh.position.set(player.position.x + offset, player.position.y + 0.7, 1.2);
+      scene.add(mesh);
+      bullets.push({ mesh, vx: angle, vy: 8.8, damage: state.power >= 3 ? 2 : 1, life: 1.45 });
+    }
+
+    function shootPattern() {
+      fireBullet(0, 0);
+      if (state.power >= 1) {
+        fireBullet(-0.32, -0.9);
+        fireBullet(0.32, 0.9);
+      }
+      if (state.power >= 3) {
+        fireBullet(-0.58, -1.5);
+        fireBullet(0.58, 1.5);
+      }
+    }
+
+    function spawnPowerup(x, y) {
+      const mesh = new THREE.Mesh(
+        new THREE.TorusGeometry(0.22, 0.08, 10, 24),
+        new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0x74f0a1 : 0xffcf5a })
+      );
+      mesh.position.set(x, y, 1.1);
+      scene.add(mesh);
+      powerups.push({ mesh, vy: -1.25, life: 7 });
+    }
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function noteInput() {
+      state.autopilot = false;
+      state.mode = "MANUAL";
+      lastInputAt = performance.now();
+    }
+
+    function updatePlayer(dt) {
+      let vx = 0;
+      let vy = 0;
+      if (keys.has("ArrowLeft") || keys.has("KeyA")) vx -= 1;
+      if (keys.has("ArrowRight") || keys.has("KeyD")) vx += 1;
+      if (keys.has("ArrowUp") || keys.has("KeyW")) vy += 1;
+      if (keys.has("ArrowDown") || keys.has("KeyS")) vy -= 1;
+
+      if (vx || vy) {
+        noteInput();
+        const length = Math.hypot(vx, vy) || 1;
+        player.position.x += (vx / length) * dt * 6.1;
+        player.position.y += (vy / length) * dt * 5.4;
+      } else if (pointerTarget) {
+        noteInput();
+        player.position.x += clamp(pointerTarget.x - player.position.x, -1, 1) * dt * 7;
+        player.position.y += clamp(pointerTarget.y - player.position.y, -1, 1) * dt * 7;
+      } else if (!state.autopilot && performance.now() - lastInputAt > 2200) {
+        state.autopilot = true;
+        state.mode = "AUTO";
+      }
+
+      if (state.autopilot) {
+        const nearest = enemies.reduce((best, enemy) => {
+          const score = Math.abs(enemy.mesh.position.x - player.position.x) + Math.max(0, enemy.mesh.position.y - player.position.y) * 0.15;
+          return !best || score < best.score ? { enemy, score } : best;
+        }, null);
+        const targetX = nearest ? nearest.enemy.mesh.position.x : Math.sin(state.ageTicks * 0.035) * 4.5;
+        const danger = enemies.find((enemy) => enemy.mesh.position.y < player.position.y + 2.3 && Math.abs(enemy.mesh.position.x - player.position.x) < 1.1);
+        const dodge = danger ? (player.position.x > 0 ? -2.7 : 2.7) : 0;
+        player.position.x += clamp(targetX + dodge - player.position.x, -1, 1) * dt * 4.8;
+        player.position.y += clamp(-4.45 - player.position.y, -1, 1) * dt * 2;
+      }
+
+      player.position.x = clamp(player.position.x, -bounds.x, bounds.x);
+      player.position.y = clamp(player.position.y, -bounds.y + 0.8, bounds.y - 1.2);
+      player.rotation.z = clamp((player.position.x / bounds.x) * -0.25, -0.35, 0.35);
+      flame.scale.y = 1.2 + Math.sin(state.ageTicks * 0.35) * 0.35;
+    }
+
+    function updateEnemies(dt) {
+      for (let i = enemies.length - 1; i >= 0; i -= 1) {
+        const enemy = enemies[i];
+        enemy.phase += dt;
+        enemy.mesh.rotation.z += dt * (enemy.boss ? 0.8 : 1.7);
+        enemy.mesh.position.y -= enemy.speed * dt;
+        enemy.mesh.position.x += Math.sin(enemy.phase * (enemy.boss ? 1.4 : 2.2)) * dt * (enemy.boss ? 1.2 : 1.8);
+
+        if (distance(enemy.mesh.position, player.position) < (enemy.boss ? 1.2 : 0.7)) {
+          state.health = clamp(state.health - (enemy.boss ? 22 : 12), 0, 100);
+          scene.remove(enemy.mesh);
+          enemies.splice(i, 1);
+          continue;
+        }
+
+        if (enemy.mesh.position.y < -bounds.y - 1.2) {
+          state.health = clamp(state.health - (enemy.boss ? 16 : 5), 0, 100);
+          scene.remove(enemy.mesh);
+          enemies.splice(i, 1);
+        }
+      }
+      state.bossActive = enemies.some((enemy) => enemy.boss);
+    }
+
+    function updateBullets(dt) {
+      for (let i = bullets.length - 1; i >= 0; i -= 1) {
+        const bullet = bullets[i];
+        bullet.life -= dt;
+        bullet.mesh.position.x += bullet.vx * dt;
+        bullet.mesh.position.y += bullet.vy * dt;
+
+        let spent = bullet.life <= 0 || bullet.mesh.position.y > bounds.y + 1.3;
+        for (let j = enemies.length - 1; j >= 0 && !spent; j -= 1) {
+          const enemy = enemies[j];
+          if (distance(bullet.mesh.position, enemy.mesh.position) < (enemy.boss ? 0.95 : 0.45)) {
+            enemy.hp -= bullet.damage;
+            spent = true;
+            if (enemy.hp <= 0) {
+              state.score += enemy.boss ? 900 + state.wave * 75 : 120 + state.wave * 12;
+              state.enemiesDestroyed += 1;
+              if (Math.random() < (enemy.boss ? 0.9 : 0.18)) spawnPowerup(enemy.mesh.position.x, enemy.mesh.position.y);
+              scene.remove(enemy.mesh);
+              enemies.splice(j, 1);
+            }
+          }
+        }
+
+        if (spent) {
+          scene.remove(bullet.mesh);
+          bullets.splice(i, 1);
+        }
+      }
+    }
+
+    function updatePowerups(dt) {
+      for (let i = powerups.length - 1; i >= 0; i -= 1) {
+        const item = powerups[i];
+        item.life -= dt;
+        item.mesh.rotation.z += dt * 2.5;
+        item.mesh.position.y += item.vy * dt;
+        if (distance(item.mesh.position, player.position) < 0.78) {
+          state.power = clamp(state.power + 1, 0, 5);
+          state.health = clamp(state.health + 5, 0, 100);
+          state.score += 75;
+          scene.remove(item.mesh);
+          powerups.splice(i, 1);
+        } else if (item.life <= 0 || item.mesh.position.y < -bounds.y - 1) {
+          scene.remove(item.mesh);
+          powerups.splice(i, 1);
+        }
+      }
+    }
+
+    function updateWave(dt) {
+      spawnTimer -= dt;
+      if (enemies.length === 0 && spawnTimer <= 0) {
+        if (state.ageTicks > 20) state.wave += 1;
+        spawnTimer = 2.1;
+        spawnEnemyWave();
+      }
+    }
+
+    function updateHUD() {
+      hud.score.textContent = String(Math.floor(state.score));
+      hud.wave.textContent = String(state.wave);
+      hud.health.textContent = String(Math.ceil(state.health));
+      hud.power.textContent = String(state.power);
+      hud.mode.textContent = state.autopilot ? "AUTO" : "MANUAL";
+      if (state.health <= 0) {
+        hud.banner.textContent = "Hull rebuilt";
+      } else if (state.bossActive) {
+        hud.banner.textContent = "Boss active";
+      }
+    }
+
+    function resetIfNeeded() {
+      if (state.health > 0) return;
+      state.score = Math.max(0, Math.floor(state.score * 0.45));
+      state.wave = 1;
+      state.health = 100;
+      state.power = 0;
+      for (const enemy of enemies.splice(0)) scene.remove(enemy.mesh);
+      for (const bullet of bullets.splice(0)) scene.remove(bullet.mesh);
+      for (const item of powerups.splice(0)) scene.remove(item.mesh);
+      player.position.set(0, -4.7, 1);
+      spawnTimer = 0;
+    }
+
+    function resize() {
+      const width = Math.max(320, container.clientWidth);
+      const height = Math.max(420, container.clientHeight);
+      renderer.setSize(width, height, false);
+      const aspect = width / height;
+      camera.left = -8.2 * aspect;
+      camera.right = 8.2 * aspect;
+      camera.top = 7;
+      camera.bottom = -7;
+      camera.updateProjectionMatrix();
+    }
+
+    function screenToWorld(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+      return {
+        x: clamp(x * (camera.right - camera.left) / 2, -bounds.x, bounds.x),
+        y: clamp(y * (camera.top - camera.bottom) / 2, -bounds.y, bounds.y),
+      };
+    }
+
+    function animate() {
+      const dt = Math.min(clock.getDelta(), 0.033);
+      state.ageTicks += 1;
+      stars.position.y -= dt * 0.38;
+      if (stars.position.y < -1) stars.position.y = 0;
+      fireCooldown -= dt;
+      updateWave(dt);
+      updatePlayer(dt);
+      if ((state.autopilot || keys.has("Space")) && fireCooldown <= 0) {
+        shootPattern();
+        fireCooldown = state.power >= 2 ? 0.14 : 0.22;
+      }
+      updateEnemies(dt);
+      updateBullets(dt);
+      updatePowerups(dt);
+      resetIfNeeded();
+      updateHUD();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("keydown", (event) => {
+      keys.add(event.code);
+      if (event.code === "Space") event.preventDefault();
+      noteInput();
+    });
+    window.addEventListener("keyup", (event) => {
+      keys.delete(event.code);
+    });
+    renderer.domElement.addEventListener("pointerdown", (event) => {
+      renderer.domElement.setPointerCapture(event.pointerId);
+      pointerTarget = screenToWorld(event);
+      noteInput();
+    });
+    renderer.domElement.addEventListener("pointermove", (event) => {
+      if (event.buttons || event.pointerType === "touch") pointerTarget = screenToWorld(event);
+    });
+    renderer.domElement.addEventListener("pointerup", () => {
+      pointerTarget = null;
+      lastInputAt = performance.now();
+    });
+
+    window.NovaSkyShooter = {
+      getState() {
+        return {
+          score: state.score,
+          wave: state.wave,
+          health: state.health,
+          power: state.power,
+          ageTicks: state.ageTicks,
+          autopilot: state.autopilot,
+          enemies: enemies.length,
+          bullets: bullets.length,
+          powerups: powerups.length,
+          bossActive: state.bossActive,
+          renderer: renderer.domElement.dataset.engine,
+        };
+      },
+    };
+
+    resize();
+    spawnEnemyWave();
+    animate();
+  </script>
+</body>
+</html>

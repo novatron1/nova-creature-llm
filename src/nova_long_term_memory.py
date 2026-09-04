@@ -110,7 +110,8 @@ SLOT_PATTERNS = [
     (r"my research field is (.+)", "research_field"),
     (r"my field of study is (.+)", "research_field"),
     (r"my major is (.+)", "research_field"),
-    (r"my (\w+) is (.+)", "custom"),  # generic fallback: "my X is Y"
+    (r"(?:my |the )?signal word is (.+)", "signal_word"),
+    (r"my ([a-z0-9][a-z0-9 _-]{1,60}?) is (.+)", "custom"),  # generic fallback: "my X is Y"
 ]
 
 EXACT_ANSWER_MAP = {
@@ -139,6 +140,8 @@ SAVE_COMMAND_PREFIXES = [
     "save this to long-term memory:", "save this to long term memory:",
     "always remember:", "always remember:",
     "permanently remember:", "permanently remember:",
+    "remember this:", "remember this ",
+    "save this:", "save this ",
 ]
 
 FORGET_COMMAND_PREFIXES = [
@@ -187,7 +190,7 @@ def extract_slot_value(text):
                 return pet_type + "_name", pet_value, pet_type
             
             elif slot_template == "custom":
-                prop = m.group(1).strip().lower()
+                prop = _normalize_slot_name(m.group(1).strip())
                 val = m.group(2).strip().rstrip('.!,;:?')
                 # Skip common non-profile patterns
                 if prop in ("name", "favorite", "dog", "cat"):
@@ -237,7 +240,7 @@ def extract_slot_value_from_raw(raw_text):
                 return pet_type + "_name", pet_value, pet_type
             
             elif slot_template == "custom":
-                prop = om.group(1).strip().lower()
+                prop = _normalize_slot_name(om.group(1).strip())
                 val = om.group(2).strip().rstrip('.!,;:?')
                 if prop in ("name", "favorite", "dog", "cat"):
                     return None, None, None
@@ -270,10 +273,17 @@ def add_memory(raw_text, slot=None, value=None, importance="normal",
             value = extracted_value
             pet_type = ptype or pet_type
     
+    preserve_value_punctuation = False
+    if not value and source_command in ("long_term", "memory_write", "explicit_teaching"):
+        slot = slot or "custom_knowledge"
+        value = raw_text.strip()
+        category = "knowledge"
+        preserve_value_punctuation = True
+
     if not value:
         return None
-    
-    value_clean = value.rstrip('.!,;:?').strip()
+
+    value_clean = value.strip() if preserve_value_punctuation else value.rstrip('.!,;:?').strip()
     
     # Generate keywords
     keywords = set()
@@ -366,6 +376,85 @@ def find_by_query(query, active_only=True):
     return results
 
 
+def _normalize_slot_name(value):
+    """Convert a remembered label like 'QA code word' into a stable slot id."""
+    normalized = re.sub(r"[^a-z0-9]+", "_", str(value or "").lower()).strip("_")
+    normalized = re.sub(r"_+", "_", normalized)
+    return normalized
+
+
+def _extract_recall_phrase(question):
+    """Infer the remembered field a natural question is asking for."""
+    q = re.sub(r"[\?!.]+$", "", str(question or "").lower().strip())
+    if not q:
+        return ""
+
+    patterns = (
+        r"^what\s+(.+?)\s+did\s+i\s+(?:give|tell)\s+you(?:\s+for\s+(?:the\s+)?(.+))?$",
+        r"^what\s+(?:was\s+)?(?:the\s+)?(.+?)\s+i\s+(?:gave|told)\s+you(?:\s+for\s+(?:the\s+)?(.+))?$",
+        r"^(?:what(?:'s|\s+is)?|who(?:'s|\s+is)?|where(?:'s|\s+is)?|when(?:'s|\s+is)?)\s+my\s+(.+)$",
+        r"^(?:what|who|where|when)\s+my\s+(.+)$",
+        r"^(?:tell\s+me|show\s+me|recall|remember)\s+my\s+(.+)$",
+        r"^do\s+you\s+remember\s+my\s+(.+)$",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, q)
+        if match:
+            phrase = match.group(1).strip()
+            phrase = re.sub(r"\b(saved|again|please|for me)\b", " ", phrase).strip()
+            return re.sub(r"\s+", " ", phrase)
+    return ""
+
+
+def _synthesize_raw_profile_fact(raw_text):
+    """Turn a stored 'my X is Y' fact into a direct second-person answer."""
+    raw = str(raw_text or "").strip()
+    match = re.search(r"^my\s+(.+?)\s+is\s+(.+)$", raw, re.IGNORECASE)
+    if not match:
+        return None
+    prop = re.sub(r"\s+", " ", match.group(1).strip())
+    value = match.group(2).strip().rstrip(".!,;:?")
+    if not prop or not value:
+        return None
+    return f"Your {prop} is {value}."
+
+
+def recall_from_question(question):
+    """Recall a long-term memory from a natural question with a multi-word slot."""
+    phrase = _extract_recall_phrase(question)
+    if not phrase:
+        return None
+
+    slot = _normalize_slot_name(phrase)
+    candidates = find_by_slot(slot)
+    if not candidates:
+        candidates = find_by_query(phrase)
+    if not candidates and slot:
+        candidates = find_by_query(slot.replace("_", " "))
+    if not candidates:
+        return None
+
+    candidates = sorted(candidates, key=lambda r: r.get("updated_at", r.get("created_at", "")), reverse=True)
+    record = candidates[0]
+    answer = _synthesize_raw_profile_fact(record.get("raw_text", "")) or synthesize_memory_answer(
+        record.get("extracted_slot", ""),
+        record.get("extracted_value", ""),
+        question,
+        record.get("pet_type") or None,
+    )
+    if not answer:
+        answer = record.get("extracted_value", "")
+    return record, answer
+
+
+def missing_recall_answer(question):
+    """Return a safe answer for a saved-fact question when no active memory exists."""
+    phrase = _extract_recall_phrase(question)
+    if not phrase:
+        return None
+    return f"I don't have your {phrase} saved yet."
+
+
 def recall_by_slot(slot, active_only=True):
     """
     Recall memory by exact slot.
@@ -384,6 +473,43 @@ def get_all(active_only=True):
     if active_only:
         return [r for r in records if r.get("active", True)]
     return records
+
+
+def list_memories(query="", active="all", limit=200):
+    """Panel-friendly memory listing with search, active filter, and pinned-first sorting."""
+    records = _load()
+    q = str(query or "").lower().strip()
+    active_filter = str(active or "all").lower()
+    out = []
+    for record in records:
+        is_active = bool(record.get("active", True))
+        if active_filter in ("true", "active", "1") and not is_active:
+            continue
+        if active_filter in ("false", "inactive", "deleted", "0") and is_active:
+            continue
+        haystack = " ".join(
+            [
+                str(record.get("memory_id", "")),
+                str(record.get("raw_text", "")),
+                str(record.get("extracted_slot", "")),
+                str(record.get("extracted_value", "")),
+                " ".join(map(str, record.get("retrieval_keywords", []))),
+                str(record.get("notes", "")),
+            ]
+        ).lower()
+        if q and q not in haystack:
+            continue
+        out.append(record)
+    out.sort(
+        key=lambda item: (
+            0 if item.get("pinned") else 1,
+            str(item.get("updated_at") or item.get("created_at") or ""),
+        ),
+        reverse=False,
+    )
+    out = sorted(out, key=lambda item: str(item.get("updated_at") or item.get("created_at") or ""), reverse=True)
+    out = sorted(out, key=lambda item: not bool(item.get("pinned")))
+    return [copy.deepcopy(r) for r in out[: max(1, int(limit or 200))]]
 
 
 def count_active():
@@ -521,6 +647,79 @@ def update_memory(memory_id, updates):
     return None
 
 
+def _keywords_for(slot, value, raw_text="", existing=None):
+    kw = set(existing or [])
+    if slot:
+        kw.add(str(slot))
+        kw.add(str(slot).replace("_", " "))
+    if value:
+        kw.add(str(value).lower())
+        for w in str(value).lower().split():
+            if len(w) > 2:
+                kw.add(w)
+    for w in str(raw_text or "").lower().split():
+        if len(w) > 2:
+            kw.add(w.strip(".,!?;:"))
+    return sorted(k for k in kw if k)
+
+
+def update_memory_by_id(memory_id, *, raw_text=None, slot=None, value=None, notes=None,
+                        importance=None, active=None, pinned=None, trainable=None):
+    """Safely update editable memory fields by ID and refresh retrieval keywords."""
+    records = _load()
+    for r in records:
+        if r.get("memory_id") != memory_id:
+            continue
+        if raw_text is not None:
+            r["raw_text"] = str(raw_text).strip()
+            extracted_slot, extracted_value, ptype = extract_slot_value_from_raw(r["raw_text"])
+            if extracted_slot and extracted_value and slot is None and value is None:
+                r["extracted_slot"] = extracted_slot
+                r["extracted_value"] = extracted_value
+                r["pet_type"] = ptype or ""
+        if slot is not None:
+            r["extracted_slot"] = _normalize_slot_name(slot)
+        if value is not None:
+            r["extracted_value"] = str(value).strip()
+        if notes is not None:
+            r["notes"] = str(notes).strip()
+        if importance is not None:
+            r["importance"] = str(importance or "normal").strip() or "normal"
+        if active is not None:
+            r["active"] = bool(active)
+        if pinned is not None:
+            r["pinned"] = bool(pinned)
+        if trainable is not None:
+            r["trainable"] = bool(trainable)
+            if trainable:
+                r["training_status"] = "queued"
+        r["retrieval_keywords"] = _keywords_for(
+            r.get("extracted_slot", ""),
+            r.get("extracted_value", ""),
+            r.get("raw_text", ""),
+            r.get("retrieval_keywords", []),
+        )
+        r["updated_at"] = _now()
+        _save(records)
+        return copy.deepcopy(r)
+    return None
+
+
+def set_memory_active(memory_id, active=True):
+    """Soft-delete or restore a memory by ID."""
+    return update_memory_by_id(memory_id, active=bool(active))
+
+
+def set_memory_pinned(memory_id, pinned=True):
+    """Pin or unpin a memory by ID."""
+    return update_memory_by_id(memory_id, pinned=bool(pinned))
+
+
+def mark_memory_trainable(memory_id, trainable=True):
+    """Mark a memory as approved for future training export."""
+    return update_memory_by_id(memory_id, trainable=bool(trainable))
+
+
 # ─── Query Detection ───────────────────────────────────────────────────────
 
 def detect_command(text):
@@ -611,6 +810,9 @@ def synthesize_memory_answer(slot, value, user_question=None, pet_type=None):
     """
     if not slot or not value:
         return None
+
+    if slot == "custom_knowledge":
+        return _synthesize_raw_profile_fact(value) or value
     
     # Pet name with type
     if pet_type and slot == pet_type + "_name":

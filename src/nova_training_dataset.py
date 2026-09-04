@@ -12,6 +12,7 @@ from nova_torch_transformer import ModelConfig
 from nova_training_types import DOMAIN_NAMES, ROLE_NAMES
 
 DEFAULT_SEED = 20260622
+TARGETED_CURRICULUM_SOURCE = "targeted_transformer_answer_curriculum"
 
 SOURCE_PATHS = (
     "exports/v053_training_sets/critic_conscience_transformer_training_set.json",
@@ -21,6 +22,7 @@ SOURCE_PATHS = (
     "exports/v053_training_sets/planner_transformer_training_set.json",
     "exports/v053_training_sets/right_hemisphere_training_set.json",
     "exports/v053_training_sets/speech_output_transformer_training_set.json",
+    "data/targeted_transformer_answer_curriculum.jsonl",
     "data/conversation_training_data.jsonl",
     "data/routing_log.jsonl",
 )
@@ -138,6 +140,9 @@ def grouped_split(rows: list[dict[str, Any]], seed: int = DEFAULT_SEED) -> dict[
     splits: dict[str, list[dict[str, Any]]] = {"train": [], "validation": [], "promotion": []}
     prompt_counts = Counter(_normalize_for_group(str(row.get("prompt") or "")) for row in rows)
     for row in rows:
+        if row.get("source") == TARGETED_CURRICULUM_SOURCE:
+            splits["train"].append(row)
+            continue
         group = _split_group(row, prompt_counts)
         bucket = int(hashlib.sha256(f"{seed}:{group}".encode("utf-8")).hexdigest(), 16) % 100
         if bucket <= 69:

@@ -1,15 +1,29 @@
 """v498 — Research Audit Log"""
 from __future__ import annotations
-from datetime import datetime
+from pathlib import Path
 
-def log_research_audit():
+from nova_runtime.ledger import EvidenceLedger
+from nova_runtime.research_scheduler import ResearchScheduler
+
+
+STORE_PATH = Path("data") / "research_tasks.jsonl"
+
+
+def log_research_audit() -> dict:
+    ledger = EvidenceLedger(STORE_PATH)
+    scheduler = ResearchScheduler(STORE_PATH)
+    snapshot = scheduler.snapshot()
     return {
-        "version":"v498_research_audit_log",
-        "created_at":__import__("datetime").datetime.now().isoformat(),
-        "sim_only":True,
-        "real_hardware_enabled":False,
-        "real_robot_movement_allowed":False,
-        "note":"Research Audit Log — simulation only. No real operations performed."
+        "version": "v498_research_audit_log",
+        "created_at": scheduler._now(),
+        "sim_only": False,
+        "real_hardware_enabled": False,
+        "real_robot_movement_allowed": False,
+        "durable_task_records": len(snapshot),
+        "ledger_entries": len(ledger.entries()),
+        "open_tasks": len(scheduler.recover_pending_tasks()),
+        "task_ids": sorted(snapshot.keys()),
+        "note": "Research Audit Log now reads durable scheduler and evidence ledger state.",
     }
 
 def main():

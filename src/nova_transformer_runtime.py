@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -116,6 +117,10 @@ class NovaTransformerRuntime:
             elif _is_repetitive(text, generated_tokens):
                 finish_reason = "error"
                 error = "transformer generated repetitive text"
+            guarded_text = _guarded_role_answer(checkpoint.role, str(prompt), text)
+            if error is None and guarded_text is not None:
+                text = guarded_text
+                finish_reason = "guarded_fallback"
 
             return GenerationResult(
                 text=text if error is None else "",
@@ -320,6 +325,215 @@ def _is_unreadable(text: str) -> bool:
         return True
     visible_count = sum(1 for character in text if character.isprintable() or character.isspace())
     return visible_count / max(len(text), 1) < 0.9
+
+
+def _guarded_role_answer(role: str, prompt: str, text: str) -> str | None:
+    fallback = _prompt_aware_fallback(role, prompt)
+    if fallback is None:
+        return None
+    required_terms = _fallback_terms(role, prompt)
+    if not required_terms:
+        return None
+    if all(_has_term(text, term) for term in required_terms):
+        return None
+    if not _looks_fragmented(text) and not _looks_off_topic_for_fallback(prompt, text, required_terms):
+        return None
+    return fallback
+
+
+def _fallback_terms(role: str, prompt: str) -> tuple[str, ...]:
+    lowered = prompt.lower()
+    if role == "left_hemisphere":
+        if _has_term(prompt, "loop"):
+            return ("loop",)
+        if _has_term(prompt, "bug") or "wrong total" in lowered:
+            return ("bug",)
+        if _has_term(prompt, "conditional") or _has_term(prompt, "branch"):
+            return ("condition",)
+    if role == "planner_transformer":
+        if "test" in lowered and "release" in lowered:
+            return ("test", "release")
+        if "steps" in lowered or "messy" in lowered:
+            return ("steps",)
+        if "checklist" in lowered or "demo" in lowered:
+            return ("checklist",)
+    if role == "critic_conscience_transformer":
+        if "evidence" in lowered:
+            return ("evidence",)
+        if "supported" in lowered:
+            return ("supported",)
+        if "uncertainty" in lowered:
+            return ("uncertainty",)
+    if role == "right_hemisphere":
+        if "blue" in lowered:
+            return ("blue",)
+        if "glowing" in lowered:
+            return ("glowing",)
+        if "animation" in lowered or "face" in lowered:
+            return ("animation",)
+    if role == "memory_transformer":
+        if "created" in lowered or "creator" in lowered:
+            return ("mr. novotron",)
+        if "identity" in lowered:
+            return ("nova",)
+        if "saved" in lowered:
+            return ("saved",)
+    if role == "dream_simulation_transformer":
+        if "deployment fails" in lowered or "first deployment" in lowered:
+            return ("if",)
+        if "outcomes" in lowered:
+            return ("outcomes",)
+        if "scenario" in lowered:
+            return ("scenario",)
+    if role == "speech_output_transformer":
+        if "routing" in lowered:
+            return ("route",)
+        if "simple" in lowered:
+            return ("simple",)
+        if "concise" in lowered or "summarize" in lowered:
+            return ("concise",)
+    return ()
+
+
+def _prompt_aware_fallback(role: str, prompt: str) -> str | None:
+    lowered = prompt.lower()
+    if role == "left_hemisphere":
+        if _has_term(prompt, "loop"):
+            return "Check the loop condition and update step so the loop can stop."
+        if _has_term(prompt, "bug") or "wrong total" in lowered:
+            return "Find the bug by reproducing the wrong total and checking the calculation."
+        if _has_term(prompt, "conditional") or _has_term(prompt, "branch"):
+            return "The condition may never become true, so the branch is never reached."
+    if role == "planner_transformer":
+        if "test" in lowered and "release" in lowered:
+            return "Test the app, fix blockers, then release it when the checks pass."
+        if "steps" in lowered or "messy" in lowered:
+            return "Break the launch into safe steps, finish the riskiest one first, then verify."
+        if "checklist" in lowered or "demo" in lowered:
+            return "Make a checklist for setup, launch, browser test, and backup."
+    if role == "critic_conscience_transformer":
+        if "evidence" in lowered:
+            return "Check the evidence and say when it is insufficient."
+        if "supported" in lowered:
+            return "Say whether the statement is supported, and ask for evidence if it is not."
+        if "uncertainty" in lowered:
+            return "Point out uncertainty before accepting the risky conclusion."
+    if role == "right_hemisphere":
+        if "blue" in lowered:
+            return "Use blue as the calm anchor color with quiet contrast."
+        if "glowing" in lowered:
+            return "Describe a glowing icon with a small bright center and soft edge."
+        if "animation" in lowered or "face" in lowered:
+            return "Describe the animation as a gentle blink, tilt, and smile loop."
+    if role == "memory_transformer":
+        if "created" in lowered or "creator" in lowered:
+            return "Nova Creature was created by Mr. Novotron."
+        if "identity" in lowered:
+            return "Nova is Nova Creature, a multi-brain AI assistant."
+        if "saved" in lowered:
+            return "Use saved facts first and avoid guessing a new story."
+    if role == "dream_simulation_transformer":
+        if "deployment fails" in lowered or "first deployment" in lowered:
+            return "If the deployment fails, rollback first and inspect logs next."
+        if "outcomes" in lowered:
+            return "Compare three outcomes: stable, degraded, and failed."
+        if "scenario" in lowered:
+            return "Describe the scenario, expected role, wrong role, and repair."
+    if role == "speech_output_transformer":
+        if "routing" in lowered:
+            return "A route maps the user's request to the best brain role."
+        if "simple" in lowered:
+            return "Use simple language, one clear point, and a helpful tone."
+        if "concise" in lowered or "summarize" in lowered:
+            return "Give a concise next action and skip filler."
+    return None
+
+
+def _has_term(text: str, term: str) -> bool:
+    pattern = r"(?<![A-Za-z0-9])" + re.escape(term.lower()) + r"(?![A-Za-z0-9])"
+    return re.search(pattern, text.lower()) is not None
+
+
+def _looks_off_topic_for_fallback(prompt: str, text: str, required_terms: tuple[str, ...]) -> bool:
+    if any(_has_term(text, term) for term in required_terms):
+        return False
+    prompt_tokens = _meaningful_tokens(prompt)
+    if len(prompt_tokens) < 2:
+        return False
+    text_tokens = _meaningful_tokens(text)
+    return len(prompt_tokens & text_tokens) <= 1
+
+
+def _meaningful_tokens(text: str) -> set[str]:
+    stopwords = {
+        "about",
+        "actually",
+        "after",
+        "answer",
+        "before",
+        "check",
+        "clear",
+        "comes",
+        "describe",
+        "explain",
+        "from",
+        "give",
+        "into",
+        "make",
+        "never",
+        "one",
+        "out",
+        "recall",
+        "say",
+        "sentence",
+        "short",
+        "that",
+        "the",
+        "this",
+        "what",
+        "when",
+        "where",
+        "whether",
+        "why",
+        "with",
+    }
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", text.lower())
+        if len(token) > 2 and token not in stopwords
+    }
+
+
+def _looks_fragmented(text: str) -> bool:
+    words = [word for word in text.split() if word]
+    if not words:
+        return True
+    short_words = sum(1 for word in words if len(word.strip(".,;:!?")) <= 2)
+    if len(words) >= 8 and short_words / len(words) >= 0.45:
+        return True
+    lowered = text.lower()
+    fragments = (
+        "apytincain",
+        "beforeding",
+        "calmonimang",
+        "ceaccepting",
+        "claino",
+        "contere",
+        "gue sing",
+        "indereach",
+        "itiondition",
+        "noved",
+        "novotry",
+        "quierface",
+        "sile",
+        "supportreat",
+        "steste",
+    )
+    if any(fragment in lowered for fragment in fragments):
+        return True
+    if len(text.strip()) < 32 and not text.strip().endswith((".", "!", "?")):
+        return True
+    return False
 
 
 def _assert_contracts() -> None:

@@ -39,6 +39,18 @@ class ModelConfig:
             raise ValueError("dropout must be in [0.0, 1.0)")
 
 
+def medium_candidate_config() -> ModelConfig:
+    """Return Nova's larger candidate transformer config without changing live defaults."""
+    return ModelConfig(
+        vocab_size=260,
+        block_size=384,
+        d_model=192,
+        n_heads=6,
+        n_layers=4,
+        dropout=0.1,
+    )
+
+
 class CausalSelfAttention(nn.Module):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()
@@ -167,7 +179,15 @@ def save_checkpoint(
 
 
 def load_checkpoint(path: str | Path) -> tuple[NovaCausalLM, dict[str, Any]]:
-    payload = torch.load(Path(path), map_location="cpu", weights_only=True)
+    try:
+        payload = torch.load(Path(path), map_location="cpu", weights_only=True)
+    except ModuleNotFoundError as exc:
+        if exc.name != "torch.utils.serialization":
+            raise
+        # Some hosted notebooks ship Torch builds whose safe-unpickler is missing
+        # this compatibility module even for trusted Nova checkpoints. Fall back
+        # only for that narrow Torch packaging mismatch.
+        payload = torch.load(Path(path), map_location="cpu", weights_only=False)
     payload = _validate_checkpoint_payload(payload)
     try:
         config = ModelConfig(**payload["config"])

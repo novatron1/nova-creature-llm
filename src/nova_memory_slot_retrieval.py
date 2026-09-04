@@ -14,6 +14,38 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
 
+def _record_search_text(record):
+    parts = [
+        record.get("extracted_slot", ""),
+        record.get("extracted_value", ""),
+        record.get("raw_text", ""),
+        " ".join(record.get("retrieval_keywords", []) or []),
+    ]
+    return " ".join(p for p in parts if p).lower()
+
+
+def _has_whole_word(text, word):
+    return bool(re.search(r'(?<![a-z0-9])' + re.escape(word) + r'(?![a-z0-9])', text))
+
+
+def _score_record_for_terms(record, terms):
+    text = _record_search_text(record)
+    score = 0
+    for term in terms:
+        if _has_whole_word(text, term):
+            score += 3
+        elif term in text:
+            score += 1
+
+    # Reward exact adjacent concepts such as "transfer example".
+    for first, second in zip(terms, terms[1:]):
+        phrase = f"{first} {second}"
+        if phrase in text:
+            score += 5
+
+    return score
+
+
 def retrieve(plan, legacy_memory=None, raw_user_message=None):
     """
     Retrieve memory based on validated plan.
@@ -87,22 +119,17 @@ def retrieve(plan, legacy_memory=None, raw_user_message=None):
             # If there are specific nouns, require at least one to match a slot or value
             if specific_nouns:
                 all_records = get_all(active_only=True)
-                noun_found = False
-                matched_record = None
-                for sn in specific_nouns:
-                    for r in all_records:
-                        slot_name = r.get("extracted_slot", "")
-                        r_value = r.get("extracted_value", "")
-                        r_raw = r.get("raw_text", "").lower()
-                        # Check if this specific noun is in the slot or value or raw text
-                        if re.search(r'(?<![a-z])' + re.escape(sn) + r'(?![a-z])', slot_name) or re.search(r'(?<![a-z])' + re.escape(sn) + r'(?![a-z])', r_value.lower()) or re.search(r'(?<![a-z])' + re.escape(sn) + r'(?![a-z])', r_raw):
-                            noun_found = True
-                            matched_record = r
-                            break
-                    if noun_found:
-                        break
-                
-                if noun_found and matched_record:
+                scored_records = []
+                for r in all_records:
+                    score = _score_record_for_terms(r, specific_nouns)
+                    if score > 0:
+                        timestamp = r.get("updated_at") or r.get("created_at") or ""
+                        scored_records.append((score, timestamp, r))
+
+                if scored_records:
+                    scored_records.sort(key=lambda item: (item[0], item[1]), reverse=True)
+                    matched_record = scored_records[0][2]
+                    ranked_records = [item[2] for item in scored_records]
                     slot_name = matched_record.get("extracted_slot", "")
                     r_value = matched_record.get("extracted_value", "")
                     answer = synthesize_memory_answer(
@@ -110,7 +137,7 @@ def retrieve(plan, legacy_memory=None, raw_user_message=None):
                         pet_type=matched_record.get("pet_type", "")
                     )
                     result["found"] = True
-                    result["records"] = [matched_record]
+                    result["records"] = ranked_records
                     result["slot_used"] = slot_name
                     result["source"] = "long_term"
                     result["raw_text"] = matched_record.get("raw_text", "")

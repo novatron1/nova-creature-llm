@@ -1,0 +1,42 @@
+{
+  "id": "/",
+  "name": "Nova Companion",
+  "short_name": "Nova",
+  "description": "Nova's private, local-first AI Companion.",
+  "start_url": "/companion?source=installed",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#0b0b18",
+  "theme_color": "#151528",
+  "orientation": "any",
+  "categories": ["productivity", "utilities", "developer"],
+  "icons": [
+    {
+      "src": "/assets/nova_app_icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova Companion",
+      "short_name": "Companion",
+      "url": "/companion",
+      "icons": [{"src": "/assets/nova_app_icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Nova Classic",
+      "short_name": "Classic",
+      "url": "/classic",
+      "icons": [{"src": "/assets/nova_app_icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Nova Settings",
+      "short_name": "Settings",
+      "url": "/classic?panel=settings",
+      "icons": [{"src": "/assets/nova_app_icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    }
+  ]
+}

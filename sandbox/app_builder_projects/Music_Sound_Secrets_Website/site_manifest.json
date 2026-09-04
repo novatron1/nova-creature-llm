@@ -1,0 +1,73 @@
+{
+  "project_name": "Music Sound Secrets Website",
+  "brand_name": "Music Sound Secrets",
+  "page_count": 6,
+  "pages": [
+    {
+      "file": "index.html",
+      "nav": "Home",
+      "title": "Music Sound Secrets",
+      "heading": "Make music that sounds finished, full, and intentional.",
+      "intro": "A complete learning path for turning raw ideas into clearer recordings, stronger arrangements, better mixes, and smarter release checks.",
+      "focus": "Start with the listening mindset, the signal chain, and the habit of comparing every decision against a trusted reference.",
+      "stat_label": "Learning path",
+      "stat_value": "6 pages",
+      "stat_note": "From ear training to mix translation, every page teaches one part of better sound."
+    },
+    {
+      "file": "foundations.html",
+      "nav": "Foundations",
+      "title": "Music Sound Secrets Foundations",
+      "heading": "Train your ears before chasing another plugin.",
+      "intro": "Great sound starts with gain staging, clean source choices, level balance, arrangement space, and knowing what problem you are solving.",
+      "focus": "Teach the core habits that make every later music production decision easier and less random.",
+      "stat_label": "First rule",
+      "stat_value": "Listen",
+      "stat_note": "Reference tracks, level matching, and quiet decisions beat guesswork."
+    },
+    {
+      "file": "sound-quality.html",
+      "nav": "Sound Quality",
+      "title": "Music Sound Secrets Sound Quality",
+      "heading": "Shape tone at the source, then polish with purpose.",
+      "intro": "The sound-quality page covers recording choices, sample selection, arrangement density, EQ cleanup, compression intent, saturation, and depth.",
+      "focus": "Show how music gets expensive-sounding through source, space, contrast, and restraint.",
+      "stat_label": "Core chain",
+      "stat_value": "Source first",
+      "stat_note": "Fix the capture or sample before stacking effects on top of a weak sound."
+    },
+    {
+      "file": "mixing.html",
+      "nav": "Mixing",
+      "title": "Music Sound Secrets Mixing",
+      "heading": "Build mixes that translate outside your room.",
+      "intro": "Learn balance, pan position, EQ moves, compression timing, vocal presence, low-end control, reverb sends, automation, and simple mastering checks.",
+      "focus": "Turn mixing into a repeatable system instead of a mystery: balance, contrast, motion, translation, and final checks.",
+      "stat_label": "Mix secret",
+      "stat_value": "Balance",
+      "stat_note": "Most professional polish starts with volume, arrangement, and space before advanced processing."
+    },
+    {
+      "file": "workflow.html",
+      "nav": "Workflow",
+      "title": "Music Sound Secrets Workflow",
+      "heading": "Finish more songs by making decisions in the right order.",
+      "intro": "Use a practical workflow: organize the session, rough-balance fast, solve the biggest problems, automate emotion, and print review versions.",
+      "focus": "Give music makers a calm, repeatable process for moving from idea to finished mix without getting stuck.",
+      "stat_label": "Session mode",
+      "stat_value": "Repeatable",
+      "stat_note": "Templates, naming, versioning, and review notes keep creative energy from leaking away."
+    },
+    {
+      "file": "resources.html",
+      "nav": "Resources",
+      "title": "Music Sound Secrets Resources",
+      "heading": "Keep the checklist close and the hype far away.",
+      "intro": "Collect reference routines, translation checks, ear-training drills, mix notes, room setup basics, and a release-readiness checklist.",
+      "focus": "Make the site useful after the first read with checklists, drills, and practical decision tools.",
+      "stat_label": "Final pass",
+      "stat_value": "Translate",
+      "stat_note": "Check earbuds, car speakers, quiet volume, mono, and loud reference level before calling a mix done."
+    }
+  ]
+}

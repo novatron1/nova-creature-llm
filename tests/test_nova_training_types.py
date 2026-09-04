@@ -50,6 +50,20 @@ def test_generation_result_with_error_is_not_ok():
     assert result.error == "checkpoint missing"
 
 
+def test_generation_result_allows_guarded_fallback_finish_reason():
+    result = GenerationResult(
+        text="Find the bug by reproducing the wrong total.",
+        role="left_hemisphere",
+        checkpoint_path="checkpoints/brain_slots/left_hemisphere/winner.pt",
+        checkpoint_hash="a" * 64,
+        tokens_generated=8,
+        elapsed_seconds=0.02,
+        tokens_per_second=400.0,
+        finish_reason="guarded_fallback",
+    )
+    assert result.ok is True
+
+
 @pytest.mark.parametrize(
     "kwargs",
     [

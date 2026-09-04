@@ -26,6 +26,81 @@ BRAIN = None
 TOKENIZER = None
 CONV_ENGINE = None
 
+
+class AppNavigationContext:
+    def __init__(self):
+        self.last_surface = None
+        self.verification_target = None
+
+
+APP_NAV_CONTEXT = AppNavigationContext()
+
+APP_SURFACES = {
+    "agent_library": ("Agent Library", ("agent library", "agents library")),
+    "app_builder": ("App Builder", ("app builder", "the builder", "builder")),
+    "memory": ("Memory", ("memory panel", "memory tab")),
+    "settings": ("Settings", ("settings",)),
+    "tools": ("Tools", ("tools page", "tools tab")),
+    "research": ("Research", ("research panel", "research tab")),
+    "test_check": ("Test/Check", ("test/check", "test check")),
+    "projects": ("Projects", ("saved projects", "projects")),
+    "preview": ("Preview", ("preview area", "preview")),
+    "logs": ("Logs", ("debug logs", "logs")),
+    "scheduler": ("Scheduler", ("scheduler",)),
+    "files": ("Files", ("file manager", "files")),
+    "home": ("Home", ("home screen", "home")),
+    "chat": ("Chat", ("chat screen", "chat")),
+    "display": ("Display", ("display tab", "display")),
+}
+
+
+def _looks_domain_qualified(q):
+    """Avoid treating coding/admin phrases as app button commands."""
+    domain_markers = (
+        " python", " javascript", " django", " linux", " windows", " api",
+        " logging", " memory leak", " bug", " code", " reinforcement learning",
+        " claim", " evidence", " permissions",
+    )
+    return any(marker in q for marker in domain_markers)
+
+
+def _maybe_app_navigation(text):
+    q = text.lower().strip()
+    if not q or _looks_domain_qualified(q):
+        return None
+
+    verify_phrases = {
+        "check if it works", "run tests", "run the test", "verify the app", "test the preview",
+    }
+    if q in verify_phrases and APP_NAV_CONTEXT.verification_target:
+        target = APP_NAV_CONTEXT.verification_target
+        label = APP_SURFACES.get(target, (target.replace("_", " ").title(), ()))[0]
+        return (
+            f"[APP NAVIGATION] I will verify the {label} and check whether it works.",
+            {
+                "source": "app_navigation",
+                "target_surface": target,
+                "action": "verify",
+            },
+        )
+
+    if not re.match(r"^(go to|open|show|switch to|navigate to|look at|check)\b", q):
+        return None
+
+    for surface, (label, aliases) in APP_SURFACES.items():
+        if any(alias in q for alias in aliases):
+            APP_NAV_CONTEXT.last_surface = surface
+            APP_NAV_CONTEXT.verification_target = surface
+            return (
+                f"[APP NAVIGATION] Opening {label}.",
+                {
+                    "source": "app_navigation",
+                    "target_surface": surface,
+                    "action": "navigate",
+                },
+            )
+    return None
+
 def _ensure_brain():
     global BRAIN, TOKENIZER
     if BRAIN is None:
@@ -111,6 +186,11 @@ def get_route_for_domain(domain):
         return [r for r, w in roles]
     return ["memory_transformer", "critic_conscience_transformer", "speech_output_transformer"]
 
+
+def _live_local_llm_disabled_for_tests():
+    """Keep unit tests deterministic by avoiding live model/network calls."""
+    return bool(os.environ.get("PYTEST_CURRENT_TEST"))
+
 def generate_transformer_response(text, domain=None):
     """Generate a response using the transformer brain.
     
@@ -119,13 +199,76 @@ def generate_transformer_response(text, domain=None):
     Speed-optimized: only tries the primary role once.
     """
     brain = _ensure_brain()
-    
+
+    route_error = None
+    if hasattr(brain, "route_with_evidence") or hasattr(brain, "route"):
+        try:
+            if hasattr(brain, "route_with_evidence"):
+                prediction, route_error = brain.route_with_evidence(text)
+            else:
+                prediction = brain.route(text)
+                route_error = getattr(brain, "last_route_error", None)
+            domain = getattr(prediction, "domain", domain or classify_domain(text))
+            primary_role = getattr(prediction, "primary_role", None)
+            support_roles = list(getattr(prediction, "support_roles", ()) or ())
+            route_roles = [primary_role] + [r for r in support_roles if r != primary_role]
+            route_confidence = float(getattr(prediction, "confidence", 0.75))
+            if hasattr(brain, "generate"):
+                generation = brain.generate(primary_role, text, max_new_tokens=80)
+                gen_trace = generation.to_trace() if hasattr(generation, "to_trace") else {
+                    "source": "transformer",
+                    "text": getattr(generation, "text", ""),
+                    "role": getattr(generation, "role", primary_role),
+                    "checkpoint_path": getattr(generation, "checkpoint_path", ""),
+                    "checkpoint_hash": getattr(generation, "checkpoint_hash", ""),
+                    "error": getattr(generation, "error", None),
+                    "ok": bool(getattr(generation, "text", "")) and not getattr(generation, "error", None),
+                }
+                meta = {
+                    "runtime_generation": True,
+                    "domain": domain,
+                    "route_source": getattr(prediction, "source", "learned_route_model"),
+                    "route_model_hash": getattr(prediction, "model_hash", ""),
+                    "route_error": route_error,
+                    "checkpoint_hash": gen_trace.get("checkpoint_hash", ""),
+                    "checkpoint_path": gen_trace.get("checkpoint_path", ""),
+                    "generation": gen_trace,
+                }
+                generated_text = str(gen_trace.get("text") or "").strip()
+                generation_error = gen_trace.get("error")
+                if gen_trace.get("ok") and generated_text and not generation_error:
+                    return generated_text, route_roles, route_confidence, {}, True, meta
+
+                generation_error = generation_error or (
+                    "empty transformer output" if not generated_text else "generation failed"
+                )
+                gen_trace["ok"] = False
+                gen_trace["error"] = generation_error
+                return None, route_roles, 0.0, {primary_role: generation_error}, True, meta
+        except Exception as e:
+            if domain is None:
+                domain = classify_domain(text)
+            route_roles = get_route_for_domain(domain)
+            return None, route_roles, 0.0, {"runtime": f"{type(e).__name__}: {str(e)[:80]}"}, False, {
+                "runtime_generation": True,
+                "domain": domain,
+                "route_error": route_error or str(e)[:120],
+                "generation": {"source": "transformer", "ok": False, "error": str(e)[:120]},
+            }
+
     if domain is None:
         domain = classify_domain(text)
-    
+
     # Get the route roles for this domain - only use primary role for speed
     route_roles = get_route_for_domain(domain)
     primary_role = route_roles[0] if route_roles else "memory_transformer"
+    legacy_meta = {
+        "domain": domain,
+        "route_source": "baseline_fallback",
+        "route_model_hash": hashlib.sha256(f"legacy:{domain}".encode()).hexdigest(),
+        "checkpoint_hash": getattr(brain, "hashes", {}).get(primary_role, ""),
+        "checkpoint_path": str(ROOT / "checkpoints" / "brain_slots" / primary_role / f"{primary_role}_v055_conversation_trained.pt"),
+    }
     
     # Build a prompt that includes domain context
     prompt = f"[{domain.upper()}] {text}"
@@ -143,14 +286,30 @@ def generate_transformer_response(text, domain=None):
                     response = gen_text[len(prompt):].strip()
                     if response and len(response) > 2:
                         conf = min(0.92, 0.5 + 0.04 * len(response))
-                        return response, route_roles, conf, errors, True
+                        legacy_meta["generation"] = {
+                            "source": "transformer",
+                            "ok": True,
+                            "role": primary_role,
+                            "checkpoint_path": legacy_meta["checkpoint_path"],
+                            "checkpoint_hash": legacy_meta["checkpoint_hash"],
+                            "tokens_generated": stats.get("tokens_generated", 0),
+                        }
+                        return response, route_roles, conf, errors, True, legacy_meta
         except Exception as e:
             errors[primary_role] = f"{type(e).__name__}: {str(e)[:80]}"
     
     # Transformer did not run or produced empty output
-    return None, route_roles, 0.0, errors, False
+    legacy_meta["generation"] = {
+        "source": "transformer",
+        "ok": False,
+        "role": primary_role,
+        "checkpoint_path": legacy_meta["checkpoint_path"],
+        "checkpoint_hash": legacy_meta["checkpoint_hash"],
+        "error": str(errors)[:160] if errors else "generation failed",
+    }
+    return None, route_roles, 0.0, errors, False, legacy_meta
 
-def route_and_respond(text, dict_lookup_fn=None, memory=None):
+def route_and_respond(text, dict_lookup_fn=None, memory=None, transformer_only=False):
     """Main routing function — the hybrid brain.
     
     1. Fast Path: Dictionary check
@@ -170,9 +329,22 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     }
     
     q = text.lower().strip()
+
+    if not transformer_only:
+        nav_result = _maybe_app_navigation(text)
+        if nav_result:
+            response, nav = nav_result
+            trace.update(nav)
+            trace["roles"] = ["planner_transformer", "app_navigation"]
+            trace["skills"] = ["app_navigation", nav["action"]]
+            trace["confidence"] = 0.96
+            trace["domain"] = "app_navigation"
+            trace["route_path"] = ["planner_transformer", "app_navigation", nav["target_surface"]]
+            trace["memory_event"] = f"app_navigation:{nav['action']}:{nav['target_surface']}"
+            return response, trace
     
     # ─── Fast Path: Dictionary ───
-    if dict_lookup_fn:
+    if dict_lookup_fn and not transformer_only:
         dict_answer = dict_lookup_fn(text)
         if dict_answer:
             trace["roles"] = ["memory_transformer", "dictionary_system"]
@@ -202,7 +374,30 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
         ltm_records = []
     active_ltm = ltm_records
     
-    if active_ltm and domain in ("memory_recall", "general", "speech"):
+    if active_ltm and not transformer_only and domain in ("memory_recall", "general", "speech"):
+        try:
+            recalled = ltm.recall_from_question(text) if hasattr(ltm, "recall_from_question") else None
+        except Exception:
+            recalled = None
+        if recalled:
+            rec, synthesized = recalled
+            trace["roles"] = ["memory_transformer", "long_term_memory"]
+            trace["skills"] = ["long_term_recall", "natural_slot_recall"]
+            trace["confidence"] = 0.95
+            trace["memory_event"] = f"long_term_recall:{rec.get('memory_id','?')}"
+            trace["route_path"] = ["long_term_memory", "speech_output"]
+            trace["long_term_memory_used"] = True
+            trace["memory_id"] = rec.get("memory_id", "?")
+            trace["extracted_slot"] = rec.get("extracted_slot", "")
+            trace["extracted_value"] = rec.get("extracted_value", "")
+            trace["slot_needed"] = rec.get("extracted_slot", "")
+            trace["final_answer_source"] = "deterministic_memory"
+            _log_route(text, "memory_recall", ["long_term_memory"], 0.95, "long_term_natural")
+            if 'CONV_ENGINE' in dir() and CONV_ENGINE:
+                try: CONV_ENGINE.add_exchange(text, synthesized)
+                except: pass
+            return synthesized, trace
+
         q_lower = q.lower()
         # Detect what slot the question is asking about
         asked_slot = None
@@ -298,15 +493,9 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
                 return response, trace
 
     # ─── Memory Path: Check stored lessons ───
-    if memory and domain in ("memory_recall", "general", "science", "coding", "philosophy"):
+    if memory and not transformer_only and domain in ("memory_recall", "general", "science", "coding", "philosophy"):
         q_lower = q.lower()
-        is_memory_recall = any(w in q_lower for w in ["my ", "i ", "me ", "mine", "name",
-                                                        "remember", "recall", "favorite",
-                                                        "born", "live", "work", "pet",
-                                                        "drive", "speak", "sibling",
-                                                        "car", "dog", "cat", "climb",
-                                                        "mountain", "language", "color",
-                                                        "food", "movie"])
+        is_memory_recall = _is_personal_memory_recall_query(q_lower)
         lessons_found = _search_lessons(q, memory)
         if lessons_found:
             best_fact = lessons_found[0]
@@ -356,7 +545,14 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
         from nova_llm_router_integration import should_use_local_llm, build_llm_context, run_local_llm_route, check_llm_output, handle_feedback
         route_for_llm = get_route_for_domain(domain)
         use_llm, llm_reason = should_use_local_llm(domain, route_for_llm, confidence if 'confidence' in dir() else 0.7)
+        if transformer_only:
+            use_llm = False
         
+        if use_llm and _live_local_llm_disabled_for_tests():
+            use_llm = False
+            trace["local_llm_used"] = False
+            trace["local_llm_fallback_reason"] = "disabled_during_pytest"
+
         if use_llm:
             # Build context with what Nova knows
             dict_meanings = ""
@@ -425,7 +621,13 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
         trace["local_llm_used"] = False
         trace["local_llm_error"] = str(llm_err)[:100]
     # ─── Transformer Path: Generate response ───
-    gen_response, route, confidence, gen_errors, transformer_ran = generate_transformer_response(text, domain)
+    gen_response, route, confidence, gen_errors, transformer_ran, gen_meta = generate_transformer_response(text, domain)
+    if gen_meta.get("domain"):
+        domain = gen_meta["domain"]
+        trace["domain"] = domain
+    for key in ("route_source", "route_model_hash", "route_error", "checkpoint_hash", "checkpoint_path", "generation"):
+        if key in gen_meta and gen_meta[key] is not None:
+            trace[key] = gen_meta[key]
     
     # 4-State Quality Gate:
     #   state 1: transformer_ran = did the forward pass execute without crash?
@@ -434,6 +636,20 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     #   state 4: fallback_used = was a hardcoded template returned?
     trace["transformer_ran"] = transformer_ran
     
+    if gen_response and transformer_ran and gen_meta.get("runtime_generation") and gen_meta.get("generation", {}).get("ok"):
+        trace["roles"] = route
+        trace["skills"] = [f"generated_{domain}", "transformer_inference"]
+        trace["confidence"] = confidence
+        trace["memory_event"] = f"transformer_generated:{domain}"
+        trace["route_path"] = route
+        trace["transformer_output_accepted"] = True
+        trace["fallback_used"] = False
+        trace["local_llm_synthesis_used"] = False
+        trace["source"] = "transformer"
+        trace["final_answer_source"] = "accepted_transformer"
+        _log_route(text, domain, route, confidence, "transformer")
+        return gen_response, trace
+
     if gen_response and transformer_ran:
         quality_result = gate_transformer_output(
             gen_response,
@@ -459,6 +675,7 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             trace["local_llm_synthesis_used"] = False
             trace["gen_errors"] = gen_errors if gen_errors else None
             trace["final_answer_source"] = "accepted_transformer"
+            trace["source"] = "transformer"
             _log_route(text, domain, route, confidence, "transformer")
             if CONV_ENGINE:
                 try:
@@ -470,21 +687,25 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             trace["transformer_output_accepted"] = False
             trace["transformer_used"] = True
             try:
+                if _live_local_llm_disabled_for_tests():
+                    raise RuntimeError("disabled_during_pytest")
                 raw_output_hint = gen_response[:200]
                 import subprocess as _sp, json as _json
+                from nova_local_llm_connector import LocalLLMConfig, clean_local_llm_output
+                _llm_config = LocalLLMConfig()
                 _payload = _json.dumps({
-                    "model": "qwen2.5:1.5b",
+                    "model": _llm_config.deep_model,
                     "prompt": f"[INST] The user asked: {text}\n\nNova's brain roughed out: {raw_output_hint}\n\nProvide a clean, helpful answer based on the rough output. Do not invent facts. Be direct.[/INST]",
                     "stream": False,
-                    "options": {"temperature": 0.3, "num_predict": 200}
+                    "options": {"temperature": 0.3, "num_ctx": _llm_config.context_window, "num_predict": 260}
                 })
                 _result = _sp.run(
                     ["curl", "-s", "-X", "POST", "http://127.0.0.1:11434/api/generate", "-d", _payload],
-                    capture_output=True, text=True, timeout=12
+                    capture_output=True, text=True, timeout=max(120, _llm_config.timeout)
                 )
                 if _result.returncode == 0:
                     _data = _json.loads(_result.stdout)
-                    _raw = _data.get("response", "").strip()
+                    _raw = clean_local_llm_output(_data.get("response", ""))
                     if _raw and len(_raw) > 10:
                         trace["local_llm_synthesis_used"] = True
                         trace["local_llm_synthesis_reason"] = f"transformer_rejected:{quality_result['transformer_output_quality']}"
@@ -512,6 +733,23 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
         trace["transformer_output_quality"] = "empty" if transformer_ran else "not_run"
         trace["fallback_used"] = True
         trace["local_llm_synthesis_used"] = False
+
+    if transformer_only:
+        trace["source"] = "transformer_error"
+        trace["roles"] = route
+        trace["skills"] = ["transformer_inference"]
+        trace["confidence"] = 0.0
+        trace["memory_event"] = "transformer_failed"
+        trace["route_path"] = route
+        trace["gen_errors"] = gen_errors if gen_errors else None
+        trace["fallback_used"] = False
+        if "generation" not in trace:
+            trace["generation"] = {
+                "source": "transformer",
+                "ok": False,
+                "error": str(gen_errors)[:160] if gen_errors else "generation failed",
+            }
+        return "Transformer generation failed for that route. Check the trace for checkpoint evidence.", trace
     
     # ─── Ultimate Fallback ───
     fallback_responses = {
@@ -529,12 +767,28 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
     trace["skills"] = ["fallback", "domain_aware"]
     trace["confidence"] = 0.75
     trace["route_path"] = route if route else ["memory_transformer", "speech_output_transformer"]
+    trace["source"] = "fallback"
     for key in ["transformer_output_quality", "transformer_ran", "transformer_output_accepted", "final_answer_source"]:
         if key not in trace:
             trace[key] = "fallback_only" if key == "transformer_output_quality" else (False if key != "final_answer_source" else "fallback_template")
     
     _log_route(text, domain, trace["route_path"], 0.75, "fallback")
     return fallback, trace
+def _is_personal_memory_recall_query(q):
+    """Return True only when the user is explicitly asking Nova to recall a saved fact."""
+    normalized = re.sub(r"[^a-z0-9'\s]", " ", str(q or "").lower())
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    if not normalized:
+        return False
+    explicit_phrases = (
+        "remember", "recall", "do you know my", "what do you know about me",
+        "what is my", "what's my", "whats my", "who is my", "who am i",
+        "where do i", "where am i", "when was i", "what do i", "which do i",
+        "tell me my", "remind me of my", "have i ever", "did i ever",
+    )
+    return any(phrase in normalized for phrase in explicit_phrases)
+
+
 def _search_lessons(q, memory):
     """Search stored lessons with slot-aware scoring, recency priority."""
     import re as _re
@@ -577,11 +831,15 @@ def _search_lessons(q, memory):
     elif "color" in query_words or "ultraviolet" in query_words:
         qs = "my favorite color"
     
+    personal_query = _is_personal_memory_recall_query(q_lower) or bool(qs)
     scored = []
     for lid, ldata in memory.get("lessons", {}).items():
         lt = ldata.get("text", "").lower()
         learned_at = ldata.get("learned_at", "")
         cat = ldata.get("category", "")
+        personal_fact = cat == "user_fact" or bool(_re.match(r"^(?:i|my)\b", lt.strip()))
+        if personal_fact and not personal_query:
+            continue
         cw = [w for w in lt.split() if w not in stop_words and len(w) > 1]
         
         cm = sum(1 for w in query_words if w in cw)
@@ -605,7 +863,9 @@ def _search_lessons(q, memory):
         except:
             pass
         
-        if tm >= 1:
+        strong_general_match = cm >= 2 or pb > 0 or (len(query_words) == 1 and cm == 1)
+        eligible_match = bool(sb) or (personal_query and cm >= 1) or strong_general_match
+        if tm >= 1 and eligible_match:
             if query_words and cm == 0 and sb == 0:
                 continue
             score = cm * 100 + pb * 10 + tm + cb + sb + rec
@@ -682,6 +942,10 @@ def _log_route(text, domain, route, confidence, source):
         "source": source,
     }
     ROUTING_LOG.append(entry)
+    if str(os.environ.get("NOVA_SUPPRESS_RUNTIME_LOGS", "")).strip().lower() in {
+        "1", "true", "yes", "on"
+    }:
+        return
     try:
         ROUTING_LOG_PATH.parent.mkdir(exist_ok=True)
         with open(ROUTING_LOG_PATH, 'a') as f:

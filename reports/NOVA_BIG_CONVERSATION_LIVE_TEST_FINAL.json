@@ -1,0 +1,150 @@
+{
+  "schema_version": "nova-companion-live-check-1.0",
+  "created_at": "2026-08-19T08:23:01+00:00",
+  "content_logged": false,
+  "summary": {
+    "turns": 8,
+    "passed": 8,
+    "failed": 0,
+    "duration_ms": 4203,
+    "training_unchanged": true
+  },
+  "training_data": {
+    "file": "conversation_training_data.jsonl",
+    "before_sha256": "6a58eaff152efb378d558b77ebdaea9af1fcc7c1fe8c16875db69bf24f24450d",
+    "after_sha256": "6a58eaff152efb378d558b77ebdaea9af1fcc7c1fe8c16875db69bf24f24450d",
+    "unchanged": true
+  },
+  "cases": [
+    {
+      "case_id": "greeting",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 328,
+      "route": "companion_continuity",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "companionship",
+        "relationship_stage": "trusted",
+        "memory_count": 3,
+        "interaction_count": 53,
+        "state_persisted": true,
+        "social_tone": "warm_conversational",
+        "reference_memory": true
+      }
+    },
+    {
+      "case_id": "casual_follow_up",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 297,
+      "route": "companion_continuity",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "casual_chat",
+        "relationship_stage": "trusted",
+        "memory_count": 4,
+        "interaction_count": 54,
+        "state_persisted": true,
+        "social_tone": "warm_conversational",
+        "reference_memory": true
+      }
+    },
+    {
+      "case_id": "venting",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 281,
+      "route": "reviewed_conversation_response",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "venting",
+        "relationship_stage": "trusted",
+        "memory_count": 4,
+        "interaction_count": 55,
+        "state_persisted": true,
+        "social_tone": "warm_reflective",
+        "reference_memory": true
+      }
+    },
+    {
+      "case_id": "advice",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 94,
+      "route": "companion_continuity",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "advice",
+        "relationship_stage": "trusted",
+        "memory_count": 0,
+        "interaction_count": 56,
+        "state_persisted": true,
+        "social_tone": "warm_direct",
+        "reference_memory": false
+      }
+    },
+    {
+      "case_id": "joking",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 156,
+      "route": "companion_continuity",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "joking",
+        "relationship_stage": "trusted",
+        "memory_count": 4,
+        "interaction_count": 57,
+        "state_persisted": true,
+        "social_tone": "playful_warm",
+        "reference_memory": true
+      }
+    },
+    {
+      "case_id": "technical_help",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 2735,
+      "route": "cognitive_os",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "technical_help",
+        "relationship_stage": "trusted",
+        "memory_count": 4,
+        "interaction_count": 58,
+        "state_persisted": true,
+        "social_tone": "direct_clear",
+        "reference_memory": false
+      }
+    },
+    {
+      "case_id": "memory_recall",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 281,
+      "route": "cognitive_os",
+      "companion": {
+        "enabled": true,
+        "primary_mode": "casual_chat",
+        "relationship_stage": "trusted",
+        "memory_count": 4,
+        "interaction_count": 59,
+        "state_persisted": true,
+        "social_tone": "warm_conversational",
+        "reference_memory": true
+      }
+    },
+    {
+      "case_id": "current_fact_protection",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 16,
+      "route": "fact_grounding_guard",
+      "companion": {
+        "enabled": false,
+        "memory_count": 0
+      }
+    }
+  ]
+}

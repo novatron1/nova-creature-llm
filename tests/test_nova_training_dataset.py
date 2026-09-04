@@ -168,6 +168,108 @@ def test_conversation_prompts_infer_domains_before_generic_speech_default():
         assert cleaned["primary_role"] == role
 
 
+def test_targeted_curriculum_includes_current_live_capability_updates():
+    curriculum_path = ROOT / "data" / "targeted_transformer_answer_curriculum.jsonl"
+    rows = [
+        json.loads(line)
+        for line in curriculum_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    prompts = {row.get("prompt"): row for row in rows}
+
+    required = {
+        "What is Nova's current date awareness rule?": ("2026-07-09", "current date"),
+        "How should Nova answer when asked if it can see the user?": ("camera", "Look"),
+        "How should Nova talk when the live camera sees the user?": ("I see you there", "question"),
+        "What voice should Nova prefer for real speech?": ("edge neural", "Windows"),
+        "What kind of self-awareness should Nova claim?": ("operational self-awareness", "not human consciousness"),
+        "How should Nova handle current weather or news?": ("live lookup", "current"),
+    }
+    for prompt, expected_parts in required.items():
+        assert prompt in prompts
+        cleaned, reason = clean_record(prompts[prompt])
+        assert reason is None
+        assert cleaned is not None
+        answer = cleaned["answer"].lower()
+        for part in expected_parts:
+            assert part.lower() in answer
+
+
+def test_targeted_curriculum_includes_clean_natural_conversation_pack():
+    curriculum_path = ROOT / "data" / "targeted_transformer_answer_curriculum.jsonl"
+    rows = [
+        json.loads(line)
+        for line in curriculum_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    prompts = {row.get("prompt"): row for row in rows}
+
+    required = {
+        "Nova, how should you answer when the user says they had a rough day?": (
+            "acknowledge",
+            "specific",
+            "question",
+        ),
+        "Nova, how should you avoid sounding like a customer service bot?": (
+            "do not repeat",
+            "assist",
+            "natural",
+        ),
+        "Nova, how should you respond when the user asks you to remember something long term?": (
+            "save",
+            "long-term memory",
+            "repeat",
+        ),
+        "Nova, how should you answer when the user asks if you can see them live?": (
+            "camera",
+            "Look",
+            "do not pretend",
+        ),
+        "Nova, how should you keep a long conversation connected?": (
+            "recent context",
+            "saved memory",
+            "last message",
+        ),
+    }
+    for prompt, expected_parts in required.items():
+        assert prompt in prompts
+        cleaned, reason = clean_record(prompts[prompt])
+        assert reason is None
+        assert cleaned is not None
+        answer = cleaned["answer"].lower()
+        for part in expected_parts:
+            assert part.lower() in answer
+
+
+def test_targeted_curriculum_includes_reviewed_conversation_booster():
+    curriculum_path = ROOT / "data" / "targeted_transformer_answer_curriculum.jsonl"
+    rows = [
+        json.loads(line)
+        for line in curriculum_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    prompts = {row.get("prompt"): row for row in rows}
+
+    required = {
+        "Do you love me?": ("care about you", "connection matters"),
+        "Why do you sound like a bot?": ("canned patterns", "actual words"),
+        "What do you think about war?": ("ordinary people", "human consequences"),
+        "I am tired.": ("keep it light", "relax"),
+        "Another one": ("last assistant reply", "another joke"),
+        "I like that": ("feels right",),
+        "How should Nova respond to laughter after a joke?": ("naturally", "joke thread"),
+        "How should Nova use user corrections for training?": ("quarantined", "approved", "protected evaluations"),
+    }
+    for prompt, expected_parts in required.items():
+        assert prompt in prompts
+        cleaned, reason = clean_record(prompts[prompt])
+        assert reason is None
+        assert cleaned is not None
+        answer = cleaned["answer"].lower()
+        for part in expected_parts:
+            assert part.lower() in answer
+
+
 def test_route_log_records_keep_route_label_without_empty_answer_quarantine():
     cleaned, reason = clean_record(
         {
@@ -281,19 +383,19 @@ def test_promotion_bank_is_top_level_protected_case_array():
     bank_path = ROOT / "benchmark_lab" / "test_banks" / "transformer_route_promotion_bank.json"
     cases = json.loads(bank_path.read_text(encoding="utf-8"))
     assert isinstance(cases, list)
-    assert len(cases) == 21
+    assert len(cases) == 25
     required = {"id", "prompt", "domain", "primary_role", "required_terms", "protected"}
     assert all(required <= set(case) for case in cases)
     assert all(case["protected"] is True for case in cases)
-    assert len({case["id"] for case in cases}) == 21
+    assert len({case["id"] for case in cases}) == 25
     assert Counter(case["primary_role"] for case in cases) == {
         "left_hemisphere": 3,
         "planner_transformer": 3,
-        "critic_conscience_transformer": 3,
+        "critic_conscience_transformer": 5,
         "right_hemisphere": 3,
-        "memory_transformer": 3,
+        "memory_transformer": 4,
         "dream_simulation_transformer": 3,
-        "speech_output_transformer": 3,
+        "speech_output_transformer": 4,
     }
 
 
@@ -350,3 +452,106 @@ def test_build_dataset_manifest_is_posix_strict_and_excludes_promotion_bank(tmp_
 
     assert bank_prompt not in all_prompts
     assert sum("same prompt" in prompts for prompts in prompts_by_split.values()) == 1
+
+
+def test_targeted_answer_curriculum_source_is_loaded(tmp_path):
+    curriculum_path = tmp_path / "data" / "targeted_transformer_answer_curriculum.jsonl"
+    curriculum_path.parent.mkdir(parents=True)
+    curriculum_path.write_text(
+        json.dumps(
+            {
+                "prompt": "How should Nova check a claim before answering?",
+                "answer": "Use evidence before treating the claim as supported.",
+                "domain": "critic",
+                "primary_role": "critic_conscience_transformer",
+                "source": "targeted_transformer_answer_curriculum",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    manifest = build_dataset(tmp_path)
+    loaded_rows = []
+    for split_path in ("train", "validation", "promotion"):
+        path = tmp_path / manifest["outputs"][split_path]
+        loaded_rows.extend(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines())
+
+    assert any(
+        row["source"] == "targeted_transformer_answer_curriculum"
+        and row["primary_role"] == "critic_conscience_transformer"
+        for row in loaded_rows
+    )
+
+
+def test_targeted_answer_curriculum_stays_in_train_split():
+    targeted, reason = clean_record(
+        {
+            "source": "targeted_transformer_answer_curriculum",
+            "domain": "creative",
+            "primary_role": "right_hemisphere",
+            "prompt": "How should Nova describe a moving face on screen?",
+            "answer": "Describe the animation as a gentle blink, tilt, and smile loop.",
+        }
+    )
+    assert reason is None
+    assert targeted is not None
+    rows = [
+        targeted,
+        {
+            "id": "ordinary",
+            "source": "unit",
+            "intent_group": "ordinary",
+            "domain": "creative",
+            "primary_role": "right_hemisphere",
+            "support_roles": [],
+            "prompt": "Describe a palette.",
+            "answer": "Use blue with contrast.",
+            "quality_flags": [],
+            "task_type": "answer",
+        },
+    ]
+
+    splits = grouped_split(rows, seed=20260622)
+
+    assert rows[0] in splits["train"]
+    assert rows[0] not in splits["validation"]
+    assert rows[0] not in splits["promotion"]
+
+
+def test_checked_in_curriculum_includes_deepseek_lookup_repair_case():
+    curriculum_path = ROOT / "data" / "targeted_transformer_answer_curriculum.jsonl"
+    rows = [
+        json.loads(line)
+        for line in curriculum_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+    matching = [
+        row
+        for row in rows
+        if "use deepseek" in row.get("prompt", "").lower()
+        and "contradiction" in row.get("prompt", "").lower()
+        and "bible" in row.get("prompt", "").lower()
+    ]
+
+    assert matching
+    assert matching[0]["domain"] == "critic"
+    assert matching[0]["primary_role"] == "critic_conscience_transformer"
+    assert "research_router" in matching[0]["answer"]
+    assert "not raw Ollama" in matching[0]["answer"]
+
+    variant = [
+        row
+        for row in rows
+        if "deepseek" in row.get("prompt", "").lower()
+        and "contradict" in row.get("prompt", "").lower()
+        and "bible" in row.get("prompt", "").lower()
+        and "its self" in row.get("prompt", "").lower()
+    ]
+
+    assert variant
+    assert variant[0]["domain"] == "critic"
+    assert variant[0]["primary_role"] == "critic_conscience_transformer"
+    assert "research_router" in variant[0]["answer"]
+    assert "not raw Ollama" in variant[0]["answer"]

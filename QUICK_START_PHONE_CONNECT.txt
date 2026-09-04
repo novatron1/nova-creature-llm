@@ -1,11 +1,40 @@
-QUICK START: Connect Phone to Nova
+QUICK START: Use Nova on a Phone Anywhere
 
-1. Run Nova on computer.
-2. Click 'Phone Connect' or run the network server.
-3. Scan QR code with phone camera.
-4. Pair phone.
-5. Type or talk to Nova.
-6. Enable camera only if you want.
-7. Press Stop All anytime.
+ONE-TIME SETUP
 
-Same Wi-Fi required. Browser permissions required for mic/camera.
+1. Install Tailscale on this PC and on the phone.
+2. Sign into the same private network on both devices.
+
+DAILY START
+
+1. Double-click START_NOVA_ANYWHERE_WINDOWS.bat on the PC.
+2. Wait for the launcher to report private phone access at an address like:
+     https://THIS-PC.YOUR-NETWORK.ts.net:8443
+3. Keep that launcher window open. It starts Nova privately on this PC.
+4. On the PC, open Nova Settings -> Secure phone pairing -> Create Pairing Code.
+5. Scan the QR code with the phone, enter a phone name, and tap Pair This Device.
+6. In the phone browser, choose Add to Home Screen / Install App for an app icon.
+7. Type or talk to Nova. Enable microphone or camera only if you want.
+
+IMPORTANT
+
+- Keep the PC awake, Nova running, and Tailscale connected on both devices.
+- The phone can work on mobile data or another Wi-Fi network, but it cannot reach
+  Nova while the PC is off or asleep.
+- Pairing codes expire after five minutes and work only once. Revoke a phone from
+  Nova Settings on the PC at any time.
+- The standard START_NOVA_WINDOWS.bat launcher remains local-only.
+- Nova uses private Tailscale Serve on port 8443. Existing port 443 settings are
+  preserved, and Nova does not use public Funnel access.
+- Do not create a router port-forward and never expose Nova's Ollama port 11434.
+
+GPU HUB FROM THE PHONE (OPTIONAL)
+
+- Start and verify the model worker on the PC first. Use a loopback/private
+  network endpoint or a private Tailscale tunnel; never expose the worker publicly.
+- In GPU Hub, enter the worker endpoint, exact model, and provider, then tap
+  Test / Verify worker. The page has no key field and stores no key in the phone.
+- Auto may use a healthy verified Local or Vast worker; otherwise it uses CPU.
+  If verification expires, tap Test / Verify worker again.
+- A public worker hostname is rejected unless that exact hostname is configured
+  on the PC in NOVA_GPU_HUB_REMOTE_MODEL_ALLOWLIST before Nova starts.

@@ -269,14 +269,20 @@ INTENT_PATTERNS = {
     "farewell": ["bye", "goodbye", "see you", "later", "peace", "cya", "gotta go", "gtg"],
     "introduction": ["my name is", "i am", "i'm ", "call me", "name's "],
     "capability_query": ["what can you do", "what are you", "who are you", "what do you do", "capabilities", "features"],
-    "status_query": ["status", "how are you", "you ok", "you good", "what's up with you"],
+    "status_query": [
+        "status", "how are you", "you ok", "you good", "what's up with you",
+        "what you doing", "what are you doing", "what u doing", "what are u doing",
+    ],
     "teaching": ["learn this", "remember that", "remember this", "here's a fact", "teach you", "learn that"],
     "testing": ["test yourself", "quiz", "examine", "ask me", "question me", "self test"],
     "help_request": ["help", "how to", "how do i", "can you help", "guide", "tutorial"],
     "opinion_query": ["what do you think", "what's your opinion", "do you think", "in your opinion", "what about"],
     "deep_question": ["what is the meaning", "why are we", "what happens after", "does god", "is there", "purpose of", "nature of reality", "what is love", "what is life", "what is death", "what is time", "what is reality", "what is truth", "what is beauty", "what is art", "what is the soul", "what is the self", "what is consciousness", "what is a dream"],
     "coding_help": ["code", "program", "python", "javascript", "bug", "debug", "function", "variable", "algorithm"],
-    "science_question": ["physics", "chemistry", "biology", "science", "experiment", "hypothesis", "theory of"],
+    "science_question": [
+        "physics", "chemistry", "biology", "science", "experiment", "hypothesis", "theory of",
+        "evolution", "human origins", "origin of humans", "first human", "homo sapiens",
+    ],
     "philosophy_question": ["philosophy", "consciousness", "free will", "ethics", "morality", "truth", "reality", "existence"],
     "psychology_question": ["psychology", "cognition", "emotion", "mental health", "therapy", "personality", "brain"],
     "math_question": ["math", "equation", "formula", "calculate", "solve", "algebra", "geometry"],
@@ -287,9 +293,23 @@ INTENT_PATTERNS = {
     "slang_query": ["what does", "mean", "definition", "define", "slang for"],
     "follow_up": ["yeah", "yes", "no", "ok", "okay", "got it", "tell me more", "again", "more", "and", "also", "why"],
     "feedback": ["good", "great", "awesome", "bad", "wrong", "incorrect", "that's not", "actually"],
-    "planning": ["plan", "steps", "first", "next", "then", "how to build", "schedule", "organize"],
+    "planning": [
+        "plan", "steps", "first step", "next step", "what next", "then what",
+        "how to build", "schedule", "organize",
+    ],
     "emotion_sharing": ["i feel", "i'm feeling", "i am feeling", "i'm sad", "i'm happy", "i'm scared", "i love", "i hate"],
 }
+
+
+def _intent_pattern_matches(text, pattern):
+    """Match one-word intents as tokens so `hi` never matches `think`."""
+    candidate = str(text or "").lower()
+    marker = str(pattern or "").lower().strip()
+    if not marker:
+        return False
+    if " " not in marker:
+        return bool(re.search(r"(?<![a-z0-9'])" + re.escape(marker) + r"(?![a-z0-9'])", candidate))
+    return marker in candidate
 
 def hypothesize_intent(text, expanded_text=None):
     """Figure out what the user actually wants."""
@@ -301,10 +321,11 @@ def hypothesize_intent(text, expanded_text=None):
     for intent, patterns in INTENT_PATTERNS.items():
         score = 0
         for pattern in patterns:
-            if pattern in q or q.startswith(pattern) or q == pattern:
+            if _intent_pattern_matches(q, pattern):
                 score += 1
                 # Exact/starting matches score higher
-                if q.startswith(pattern) or q == pattern:
+                clean_pattern = pattern.strip()
+                if q.startswith(clean_pattern) or q == clean_pattern:
                     score += 0.5
         if score > 0:
             scores[intent] = score
@@ -315,12 +336,12 @@ def hypothesize_intent(text, expanded_text=None):
         for intent, patterns in INTENT_PATTERNS.items():
             if intent not in scores:
                 for pattern in patterns:
-                    if pattern in q_exp:
+                    if _intent_pattern_matches(q_exp, pattern):
                         scores[intent] = 0.5
                         break
             else:
                 for pattern in patterns:
-                    if pattern in q_exp and pattern not in q:
+                    if _intent_pattern_matches(q_exp, pattern) and not _intent_pattern_matches(q, pattern):
                         scores[intent] += 0.3
     
     if not scores:

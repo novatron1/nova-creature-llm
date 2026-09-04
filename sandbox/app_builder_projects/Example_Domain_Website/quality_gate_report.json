@@ -1,0 +1,284 @@
+{
+  "ok": true,
+  "passed": true,
+  "score": 100,
+  "project_id": "Example_Domain_Website",
+  "project_name": "Example Domain Website",
+  "project_url": "/sandbox/app_builder_projects/Example_Domain_Website/index.html",
+  "pages_inspected": 6,
+  "links_checked": 78,
+  "pages": [
+    {
+      "file": "foundations.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "index.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "resources.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "strategy.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "toolkit.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "workflow.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    }
+  ],
+  "visuals": [
+    {
+      "page": "foundations.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/foundations-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/foundations-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "foundations.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/foundations-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/foundations-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "index.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/index-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/index-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "index.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/index-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/index-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "resources.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/resources-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/resources-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "resources.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/resources-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/resources-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "strategy.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/strategy-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/strategy-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "strategy.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/strategy-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/strategy-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "toolkit.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/toolkit-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/toolkit-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "toolkit.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/toolkit-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/toolkit-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "workflow.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/workflow-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/workflow-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "workflow.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/workflow-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Example_Domain_Website/quality_gate_screenshots/workflow-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    }
+  ],
+  "visuals_created": 12,
+  "visual_snapshot_dir": "quality_gate_screenshots",
+  "checks": [
+    {
+      "name": "index page exists",
+      "passed": true,
+      "detail": "index.html is present"
+    },
+    {
+      "name": "html pages discovered",
+      "passed": true,
+      "detail": "6 HTML page(s) found"
+    },
+    {
+      "name": "title on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "viewport on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "favicon on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "h1 on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "main landmark on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "responsive css on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "internal links resolve",
+      "passed": true,
+      "detail": "all internal links resolve"
+    },
+    {
+      "name": "no placeholder content",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "visual snapshots created",
+      "passed": true,
+      "detail": "12 of 12 snapshots created"
+    },
+    {
+      "name": "no blank visual pages",
+      "passed": true,
+      "detail": "all visual checks pass"
+    },
+    {
+      "name": "no horizontal overflow risk",
+      "passed": true,
+      "detail": "all visual checks pass"
+    },
+    {
+      "name": "no console error risk",
+      "passed": true,
+      "detail": "all visual checks pass"
+    }
+  ],
+  "blockers": [],
+  "fixes_applied": [],
+  "generated_at": "2026-07-04T23:00:16",
+  "report_file": "quality_gate_report.json"
+}

@@ -52,16 +52,24 @@ def _call_llm_planner(user_message, timeout=2):
             resp = httpx.get(base_url, timeout=1.0)
             if resp.status_code >= 500:
                 return None
+        except ImportError:
+            pass
         except Exception:
             return None  # LLM not available, skip to deterministic
         prompt = PLANNER_PROMPT.format(user_message=user_message)
         # Generate with the formatted prompt as context
-        from nova_local_llm_connector import LocalLLMResponse
+        from nova_local_llm_connector import LocalLLMConfig, LocalLLMResponse
+        config = LocalLLMConfig()
+        planner_timeout = max(1, min(int(timeout or 2), config.timeout))
         # Build context dict properly
         context = {
+            "raw_prompt": prompt,
             "user_message": user_message,
             "normalized_message": user_message,
             "selected_route": "planner",
+            "local_llm_model": config.fast_model,
+            "local_llm_timeout": planner_timeout,
+            "ollama_options": {"temperature": 0, "num_ctx": config.context_window, "num_predict": 160},
             "task_instruction": "Return a JSON plan with route, intent, slot_needed, needs_memory, needs_dictionary, needs_math, needs_weather, needs_web, needs_llm_synthesis, answer_style, and confidence."
         }
         response = llm.generate(context)
@@ -120,7 +128,230 @@ DEFAULT_PLAN = {
 }
 
 
-def plan(user_message, force_llm=True):
+def _direct_answer_fast_plan(user_message, timestamp):
+    """Answer simple stable identity/science facts without waiting on the LLM."""
+    q = user_message.lower().strip()
+    normalized = re.sub(r"[^a-z0-9\s']", " ", q)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    common = {
+        "route": "general_conversation",
+        "slot_needed": None,
+        "needs_memory": False,
+        "needs_dictionary": False,
+        "needs_math": False,
+        "needs_weather": False,
+        "needs_web": False,
+        "needs_tool": False,
+        "needs_llm_synthesis": False,
+        "answer_style": "short_answer",
+        "confidence": 0.98,
+        "_planner_used": "deterministic_direct_answer",
+        "_planner_timestamp": timestamp.isoformat(),
+    }
+
+    if re.search(r"\b(?:is|isn't|isnt)\s+(?:the\s+)?earth\s+flat\b", normalized) or "flat earth" in normalized:
+        return {
+            **common,
+            "intent": "answer stable earth-shape fact",
+            "_direct_answer": "No. Earth is not flat; it is roughly spherical, more precisely an oblate spheroid.",
+        }
+
+    if (
+        re.search(r"\bhow\s+old\s+(?:are|r|is)\s+(?:you|u)\b", normalized)
+        or re.search(r"\bwhat\s+is\s+(?:your|ur)\s+age\b", normalized)
+    ):
+        return {
+            **common,
+            "intent": "answer Nova age identity question",
+            "_direct_answer": "I’m Nova Creature, so I don’t have a human age. I’m a live AI app/session, and my progress is measured by tests instead of birthdays.",
+        }
+
+    return None
+
+
+def _social_checkin_fast_plan(user_message, timestamp):
+    """Keep lightweight human check-ins out of web search and slow LLM planning."""
+    q = user_message.lower().strip()
+    normalized = re.sub(r"[^a-z0-9\s']", " ", q)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    if not normalized:
+        return None
+
+    social_patterns = (
+        r"\bhow\s+(?:are|r)\s+(?:you|u)\b",
+        r"\bhow\s+(?:are|r)\s+(?:you|u)\s+doing\b",
+        r"\bhow\s+(?:you|u)\s+doing\b",
+        r"\bhow\s+do\s+(?:you|u)\s+feel\b",
+        r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\b",
+        r"\b(?:how\s+(?:is|has|was)|how'?s)\s+(?:your|ur)\s+day(?:\s+(?:going|been))?\b",
+        r"\b(?:did|do|have|would)\s+(?:you|u)\s+(?:really\s+)?miss(?:ed)?\s+(?:me|us)\b",
+        r"\bwhat\s+(?:(?:are|r)\s+)?(?:you|u)\s+doing(?:\s+(?:today|now|right\s+now))?\b",
+        r"\bwhat'?s\s+on\s+your\s+mind\b",
+        r"\bwhat\s+is\s+on\s+your\s+mind\b",
+    )
+    if not any(re.search(pattern, normalized) for pattern in social_patterns):
+        return None
+
+    return {
+        "route": "general_conversation",
+        "intent": "social check-in",
+        "slot_needed": None,
+        "answer_style": "short_answer",
+        "needs_memory": False,
+        "needs_dictionary": False,
+        "needs_math": False,
+        "needs_weather": False,
+        "needs_web": False,
+        "needs_tool": False,
+        "needs_llm_synthesis": False,
+        "confidence": 0.96,
+        "_planner_used": "deterministic_social_checkin",
+        "_planner_timestamp": timestamp.isoformat(),
+    }
+
+
+def _shared_conversation_fast_plan(conversation_decision, timestamp):
+    """Translate reviewed social meaning into the existing planner contract."""
+
+    family = str(getattr(conversation_decision, "intent_family", "") or "")
+    if family not in {"relationship", "emotional", "social"}:
+        return None
+    return {
+        "route": "general_conversation",
+        "intent": "social check-in",
+        "slot_needed": None,
+        "answer_style": "short_answer",
+        "needs_memory": bool(
+            getattr(conversation_decision, "memory_recommended", False)
+        ),
+        "needs_dictionary": False,
+        "needs_math": False,
+        "needs_weather": False,
+        "needs_web": False,
+        "needs_tool": False,
+        "needs_llm_synthesis": False,
+        "confidence": float(getattr(conversation_decision, "confidence", 0.9)),
+        "_planner_used": "shared_conversation_decision",
+        "_planner_timestamp": timestamp.isoformat(),
+    }
+
+
+def _academic_fast_plan(user_message, timestamp):
+    """Route obvious college/exam prompts without waiting on the LLM planner."""
+    q = user_message.lower().strip()
+    common = {
+        "slot_needed": None,
+        "needs_memory": False,
+        "needs_dictionary": False,
+        "needs_math": False,
+        "needs_weather": False,
+        "needs_web": False,
+        "needs_tool": False,
+        "needs_llm_synthesis": True,
+        "confidence": 0.93,
+        "_planner_used": "deterministic_academic_fast_path",
+        "_planner_timestamp": timestamp.isoformat(),
+    }
+
+    asks_for_taught_fact = any(
+        phrase in q
+        for phrase in (
+            "what is",
+            "what does",
+            "what was",
+            "what are",
+            "recall",
+            "remember",
+        )
+    )
+    is_nova_named_test = "nova college test" in q or bool(re.search(r"\bnova\b.*\btest\b", q))
+    if is_nova_named_test and asks_for_taught_fact:
+        return {
+            **common,
+            "route": "memory_recall",
+            "intent": "recall taught named-test knowledge",
+            "answer_style": "short_answer",
+            "needs_memory": True,
+            "needs_llm_synthesis": False,
+        }
+
+    if (
+        "college coding" in q
+        or "fix this python" in q
+        or "debug this python" in q
+        or re.search(r"\bpython\b.*\berror\b", q)
+    ):
+        return {
+            **common,
+            "route": "coding_help",
+            "intent": "college coding help",
+            "answer_style": "code",
+        }
+
+    if (
+        "college algebra" in q
+        or re.search(r"solve\s+\d+\s*[a-z]\s*[\+\-]\s*\d+\s*=\s*\d+", q)
+        or re.search(r"\d+\s*[a-z]\s*[\+\-]\s*\d+\s*=\s*\d+", q)
+    ):
+        return {
+            **common,
+            "route": "general_conversation",
+            "intent": "college algebra explanation",
+            "answer_style": "explanation",
+        }
+
+    if any(
+        marker in q
+        for marker in ("calculus", "differentiate", "derivative", "integral")
+    ):
+        return {
+            **common,
+            "route": "general_conversation",
+            "intent": "calculus reasoning",
+            "answer_style": "explanation",
+        }
+
+    if (
+        "college physics" in q
+        or "f = ma" in q
+        or "f=ma" in q
+        or "newton" in q
+    ):
+        return {
+            **common,
+            "route": "general_conversation",
+            "intent": "college physics explanation",
+            "answer_style": "explanation",
+        }
+
+    if "college psychology" in q or "cognitive dissonance" in q:
+        return {
+            **common,
+            "route": "general_conversation",
+            "intent": "college psychology explanation",
+            "answer_style": "explanation",
+        }
+
+    if "cross-domain" in q or "cross domain" in q or "connect physics and psychology" in q:
+        return {
+            **common,
+            "route": "general_conversation",
+            "intent": "college cross-domain reasoning",
+            "answer_style": "explanation",
+        }
+
+    if "college philosophy" in q or "empiricism" in q or "rationalism" in q:
+        return {
+            **common,
+            "route": "general_conversation",
+            "intent": "college philosophy comparison",
+            "answer_style": "explanation",
+        }
+
+    return None
+
+
+def plan(user_message, force_llm=True, conversation_decision=None):
     """
     Plan the user's intent.
 
@@ -132,6 +363,25 @@ def plan(user_message, force_llm=True):
         dict: The plan JSON with route, intent, slots, etc.
     """
     start_time = datetime.now()
+
+    shared_plan = _shared_conversation_fast_plan(
+        conversation_decision,
+        start_time,
+    )
+    if shared_plan:
+        return shared_plan
+
+    direct_plan = _direct_answer_fast_plan(user_message, start_time)
+    if direct_plan:
+        return direct_plan
+
+    social_plan = _social_checkin_fast_plan(user_message, start_time)
+    if social_plan:
+        return social_plan
+
+    academic_plan = _academic_fast_plan(user_message, start_time)
+    if academic_plan:
+        return academic_plan
 
     # Try LLM planner
     llm_planner_used = False
@@ -326,13 +576,32 @@ def plan(user_message, force_llm=True):
         }
 
     # Memory recall questions (deterministic patterns) — must come before dictionary/math
+    favorite_recall = re.search(r"what(?:'s| is| are) my favo?u?rite ([a-z0-9_]+)", q)
+    if favorite_recall:
+        prop = favorite_recall.group(1).strip("_")
+        return {
+            "route": "memory_recall",
+            "intent": "recall saved user favorite",
+            "slot_needed": "favorite_" + prop,
+            "answer_style": "second_person_direct",
+            "needs_memory": True,
+            "needs_dictionary": False,
+            "needs_math": False,
+            "needs_weather": False,
+            "needs_web": False,
+            "needs_tool": False,
+            "needs_llm_synthesis": False,
+            "confidence": 0.97,
+            "_planner_used": "deterministic_fast_path",
+            "_planner_timestamp": start_time.isoformat(),
+        }
+
     recall_patterns = [
         (r"what(?:'s| is)? my name", "name", "second_person_direct", 0.97),
         (r"where (?:do|am) i live", "location", "second_person_direct", 0.97),
         (r"when (?:was|am) i born", "birth_year", "second_person_direct", 0.97),
         (r"where (?:do|am) i from", "origin", "second_person_direct", 0.97),
         (r"where do i work", "workplace", "second_person_direct", 0.97),
-        (r"what(?:'s| is| are) my favorite \w+", None, "second_person_direct", 0.95),
         (r"what (?:do|does) i like", "likes", "second_person_direct", 0.95),
         (r"what (?:do|does) i love", "likes", "second_person_direct", 0.95),
         (r"what(?:'s| is| are) my \w+ name", "pet_name", "second_person_direct", 0.90),
@@ -361,7 +630,15 @@ def plan(user_message, force_llm=True):
             }
 
     # Dictionary lookups — use strict pattern (not "what is" which overlaps with memory)
-    dict_match = re.match(r'(?:define|what does|meaning of)\s+(.+?)(?:\?)?$', q)
+    dict_match = re.match(
+        r'(?:define|what does|meaning of|definition of|what is)\s+([a-z][a-z-]*)(?:\s+mean)?(?:\?)?$',
+        q,
+    )
+    if not dict_match:
+        dict_match = re.match(
+            r'(?:can you tell(?: me)? what|tell me what)\s+([a-z][a-z-]*)\s+is(?:\?)?$',
+            q,
+        )
     if dict_match:
         return {
             "route": "dictionary_lookup",
@@ -405,7 +682,21 @@ def plan(user_message, force_llm=True):
 
     # Also detect storm/rain/snow/hot/cold/windy as weather questions
     weather_symptoms = ["rain", "snow", "storm", "windy", "humid", "forecast"]
-    if any(w in q for w in weather_symptoms):
+    weather_preference = bool(
+        re.search(
+            r"\b(?:which|what|do you|would you)\b.{0,48}"
+            r"\b(?:like|prefer|favorite|better)\b",
+            q,
+        )
+        or re.search(
+            r"\b(?:like|prefer|favorite)\b.{0,48}\b(?:rain|snow)\b",
+            q,
+        )
+    )
+    if (
+        not weather_preference
+        and any(re.search(rf"\b{re.escape(word)}\b", q) for word in weather_symptoms)
+    ):
         return {
             "route": "weather_lookup",
             "intent": "get current weather",
@@ -447,7 +738,11 @@ def plan(user_message, force_llm=True):
         }
 
     # Math detection
-    math_match = re.search(r'(\d+\s*[\+\-\*xX/]\s*\d+)', q)
+    math_match = re.fullmatch(
+        r"\s*(?:(?:what is|calculate|compute|solve|evaluate)\s+)?"
+        r"\d+\s*[\+\-\*xX/]\s*\d+\s*[?!.]*\s*",
+        q,
+    )
     if math_match:
         return {
             "route": "math_solver",

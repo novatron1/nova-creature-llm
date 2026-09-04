@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "records": [
+    {
+      "evidence_id": "example-stable-fact",
+      "topic": "replace with a stable factual topic",
+      "content": "Replace with a concise fact copied from a trusted source.",
+      "source_name": "Trusted source name",
+      "source_type": "local_reference",
+      "source_url": "https://example.com/source",
+      "verified_at": "2026-01-01T00:00:00+00:00",
+      "expires_at": "",
+      "trust_level": 0.9,
+      "tags": ["example"],
+      "metadata": {},
+      "schema_version": "1.0"
+    }
+  ]
+}
