@@ -287,6 +287,33 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .telemetry{font-size:12px;color:#cfd0ee;line-height:1.4;border:1px solid #30305d;background:#101020;border-radius:10px;padding:9px;min-height:40px}
 .route-model{font-size:11px;color:#7cffaa;margin-bottom:7px;border:1px solid #29533d;background:#102018;border-radius:999px;padding:5px 8px;display:inline-flex}
 #chat-panel{overflow:hidden;padding:0;min-height:0}
+.chat-toolbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;border-bottom:1px solid #2a2a4a;background:#111122;min-width:0}
+.chat-toolbar-title{font-size:12px;color:#dfe0ff;font-weight:700;white-space:nowrap}
+.chat-toolbar-note{font-size:10px;color:#9294bb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-toolbar-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chat-toolbar .panel-action{margin-top:0;padding:5px 8px;font-size:11px;white-space:nowrap}
+.chat-history-drawer{position:absolute;z-index:20;top:48px;right:12px;width:min(430px,calc(100% - 24px));max-height:min(70dvh,620px);overflow:auto;border:1px solid #55559a;border-radius:14px;background:linear-gradient(145deg,#111124,#21182f);box-shadow:0 20px 60px #000b;padding:11px}
+.chat-history-drawer[hidden]{display:none}
+.chat-history-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.chat-history-head strong{font-size:14px;color:#fff}
+.chat-history-head button{border:1px solid #555577;background:#20203b;color:#ddd;border-radius:8px;padding:5px 8px;cursor:pointer}
+.chat-history-tools{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.chat-history-tools input{flex:1;min-width:0;border:1px solid #3f3f72;background:#0d0d1a;color:#f5f5ff;border-radius:9px;padding:7px 9px;font-size:11px}
+.chat-history-tools .panel-action{margin-top:0;padding:6px 8px}
+.chat-history-list{display:grid;gap:7px}
+.chat-history-item{display:grid;gap:5px;border:1px solid #30305d;background:#0d0d1a;border-radius:10px;padding:9px;color:#d9d9ee}
+.chat-history-item.active{border-color:#7c7cff;box-shadow:0 0 0 1px #7c7cff44 inset}
+.chat-history-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.chat-history-item-head strong{font-size:12px;color:#f3f3ff;overflow-wrap:anywhere}
+.chat-history-item-head small{font-size:9px;color:#9affc4;white-space:nowrap}
+.chat-history-item-preview{font-size:10px;color:#bfc1df;line-height:1.35;overflow-wrap:anywhere}
+.chat-history-item-meta{font-size:9px;color:#888aae}
+.chat-history-item-actions{display:flex;gap:6px;flex-wrap:wrap}
+.chat-history-item-actions button{border:1px solid #44447a;background:#242447;color:#ddd;border-radius:8px;padding:5px 7px;font-size:10px;cursor:pointer}
+.chat-history-item-actions button.danger{border-color:#824156;color:#ffc4d1;background:#2a151e}
+.chat-history-empty{font-size:11px;color:#989abf;padding:10px 3px}
+#chat-panel{position:relative}
+@media(max-width:600px){.chat-toolbar{align-items:flex-start;flex-direction:column;padding:7px 10px}.chat-toolbar-actions{width:100%;justify-content:flex-start}.chat-toolbar .panel-action{flex:1 1 92px}.chat-history-drawer{top:86px;right:8px;width:calc(100% - 16px);max-height:68dvh}.chat-history-tools{flex-wrap:wrap}.chat-history-tools input{flex-basis:100%}}
 .chat{flex:1;min-height:0;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain;overflow-anchor:none;scroll-padding-bottom:24px;-webkit-overflow-scrolling:touch}
 .msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .msg.user{background:#2a2a4a;color:#e0e0e0;align-self:flex-end;border-bottom-right-radius:4px}
@@ -593,6 +620,25 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </nav>
 <main class="workspace">
 <section class="workspace-panel active" id="chat-panel">
+<div class="chat-toolbar" aria-label="Conversation history controls">
+<div><div class="chat-toolbar-title">Conversation</div><div class="chat-toolbar-note" id="chatHistoryState">Auto-saving on this device</div></div>
+<div class="chat-toolbar-actions">
+<button class="panel-action" id="chatHistoryBtn" type="button" onclick="toggleChatHistory()">History</button>
+<button class="panel-action" id="chatSaveBtn" type="button" onclick="saveCurrentConversation()">Save chat</button>
+<button class="panel-action" type="button" onclick="startNewConversation()">New</button>
+<button class="panel-action" type="button" onclick="exportCurrentConversation()">Export</button>
+</div>
+</div>
+<aside class="chat-history-drawer" id="chatHistoryDrawer" aria-label="Saved conversations" hidden>
+<div class="chat-history-head"><strong>Chat history</strong><button type="button" onclick="toggleChatHistory(false)" aria-label="Close chat history">Close</button></div>
+<div class="chat-history-tools">
+<input id="chatHistorySearch" type="search" placeholder="Search saved chats" aria-label="Search saved chats" oninput="renderChatHistory()">
+<label class="chat-history-archived-toggle"><input id="chatHistoryShowArchived" type="checkbox" onchange="renderChatHistory()"> Show archived</label>
+<button class="panel-action" type="button" onclick="importConversationFile()">Import</button>
+<input id="chatHistoryImportInput" type="file" accept="application/json,.json" hidden onchange="handleConversationImport(event)">
+</div>
+<div class="chat-history-list" id="chatHistoryList" aria-live="polite"></div>
+</aside>
 <div class="chat" id="chat" role="log" aria-live="polite" aria-relevant="additions"></div>
 <div class="typing" id="typing" role="status" aria-live="polite"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Nova is thinking...</div>
 </section>
@@ -714,7 +760,7 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <div class="dream-studio-options">
 <label>Width<input id="dreamStudioWidth" type="number" min="64" max="4096" step="64" value="512"></label>
 <label>Height<input id="dreamStudioHeight" type="number" min="64" max="4096" step="64" value="512"></label>
-<label>Steps<input id="dreamStudioSteps" type="number" min="1" max="200" value="8"></label>
+<label>Steps<input id="dreamStudioSteps" type="number" min="1" max="200" value="24"></label>
 <label>Seed<input id="dreamStudioSeed" type="number" min="0" step="1" placeholder="random"></label>
 <label data-dream-video-option hidden>Frames<input id="dreamStudioFrames" type="number" min="8" max="600" value="48"></label>
 <label data-dream-video-option hidden>FPS<input id="dreamStudioFps" type="number" min="1" max="60" value="12"></label>
@@ -726,10 +772,16 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <option value="pan_right">Pan right</option>
 </select>
 </label>
+<label data-dream-video-option hidden>Video engine
+<select id="dreamStudioVideoEngine" aria-label="Video engine"></select>
+</label>
 </div>
 <div class="dream-studio-actions">
 <button class="panel-action primary" id="dreamStudioGenerateBtn" type="button" onclick="generateDreamMedia()" disabled>Generate</button>
+<button class="panel-action" type="button" onclick="improveDreamPrompt()">Improve Prompt</button>
 <button class="panel-action" id="dreamStudioCancelBtn" type="button" onclick="cancelDreamStudioJob()" disabled>Cancel Job</button>
+<button class="panel-action" id="dreamStudioResumeBtn" type="button" onclick="resumeDreamStudioJob()" disabled>Resume Job</button>
+<button class="panel-action" id="dreamStudioReconnectImageBtn" type="button" onclick="reconnectDreamStudioImageWorkflow()">Reconnect Image Workflow</button>
 <button class="panel-action" type="button" onclick="loadDreamStudio()">Refresh Studio</button>
 </div>
 </div>
@@ -1449,7 +1501,7 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <span class="model-control-label">Model</span>
 <select class="model-mode-select" id="mainModelModeSelect" aria-label="Choose Nova model mode" onchange="selectModelMode(this.value)">
 <option value="nova">Nova</option>
-<option value="strong">Nova Strong · Qwen 3 8B</option>
+<option value="strong">Nova Strong · Qwen 3 4B · GPU</option><option value="dolphin_deep">Dolphin Deep · GPU · tools stay on</option>
 <option value="raw_memory">Raw + Memory · Qwen</option>
 <option value="qwen">Raw Qwen · no tools</option>
 <option value="dolphin">Raw Dolphin · no tools</option>
@@ -1510,8 +1562,33 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 </div>
 </div>
 </div>
+<script src="assets/nova_chat_history.js?v=1"></script>
 <script src="assets/nova_connection_recovery.js"></script>
 <script>
+// Keep the chat-history contract available even when a restrictive embedded
+// browser declines to execute optional external UI assets.
+if(!window.NovaChatHistory){
+  window.NovaChatHistory = (function(){
+    const STORAGE_KEY='nova_saved_conversations_v1', SCHEMA_VERSION=1, MAX_RECORDS=60, MAX_MESSAGES=48, MAX_CONTENT=4000, MAX_TITLE=100;
+    const text=(value,limit)=>String(value==null?'':value).replace(/\s+/g,' ').trim().slice(0,limit);
+    const iso=(value,fallback)=>{const candidate=String(value||'').trim();return candidate&&!Number.isNaN(Date.parse(candidate))?candidate:(fallback||new Date().toISOString());};
+    const validMessages=value=>Array.isArray(value)?value.filter(item=>item&&(item.role==='user'||item.role==='assistant')&&typeof item.content==='string').map(item=>({role:item.role,content:item.content.trim().slice(0,MAX_CONTENT)})).filter(item=>item.content).slice(-MAX_MESSAGES):[];
+    const titleFrom=(messages,fallback)=>text(fallback||(messages.find(item=>item.role==='user')||{}).content||'New conversation',MAX_TITLE)||'New conversation';
+    function normalize(value){
+      if(!value||typeof value!=='object'||Array.isArray(value)) return null;
+      const conversationId=text(value.conversation_id||value.id,160); if(!conversationId) return null;
+      const messages=validMessages(value.messages), now=new Date().toISOString(), firstUser=messages.find(item=>item.role==='user');
+      return {schema_version:SCHEMA_VERSION,conversation_id:conversationId,title:titleFrom(messages,value.title),preview:text(value.preview||firstUser?.content||'No messages yet',180),created_at:iso(value.created_at,now),updated_at:iso(value.updated_at,now),saved:value.saved===true,summary:value.summary&&typeof value.summary==='object'&&!Array.isArray(value.summary)?value.summary:null,messages,message_count:messages.length};
+    }
+    function load(storage){try{const raw=storage?.getItem(STORAGE_KEY);if(!raw)return[];const payload=JSON.parse(raw),rows=Array.isArray(payload)?payload:payload?.conversations;if(!Array.isArray(rows))return[];return rows.map(normalize).filter(Boolean).sort((a,b)=>Date.parse(b.updated_at)-Date.parse(a.updated_at));}catch(error){return[];}}
+    function write(storage,records){const normalized=(Array.isArray(records)?records:[]).map(normalize).filter(Boolean).sort((a,b)=>Date.parse(b.updated_at)-Date.parse(a.updated_at)).slice(0,MAX_RECORDS);try{if(!normalized.length)storage?.removeItem(STORAGE_KEY);else storage?.setItem(STORAGE_KEY,JSON.stringify({schema_version:SCHEMA_VERSION,conversations:normalized}));}catch(error){}return normalized;}
+    function upsert(storage,value){const incoming=normalize(value);if(!incoming)return load(storage);const existing=load(storage).find(item=>item.conversation_id===incoming.conversation_id);if(existing){incoming.created_at=existing.created_at;incoming.saved=existing.saved||incoming.saved;if(!value.title&&existing.title)incoming.title=existing.title;}return write(storage,[incoming,...load(storage).filter(item=>item.conversation_id!==incoming.conversation_id)]);}
+    function remove(storage,id){const target=text(id,160),records=load(storage),remaining=records.filter(item=>item.conversation_id!==target);if(remaining.length===records.length)return false;write(storage,remaining);return true;}
+    function exportRecord(value){const record=normalize(value);if(!record)throw new Error('Cannot export an invalid conversation.');return JSON.stringify({nova_chat_export:SCHEMA_VERSION,conversation:record},null,2);}
+    function parseExport(raw){const payload=typeof raw==='string'?JSON.parse(raw):raw;return normalize(payload?.conversation||payload);}
+    return {STORAGE_KEY,MAX_RECORDS,MAX_MESSAGES,normalize,load,write,upsert,remove,exportRecord,parseExport};
+  })();
+}
 const chat=document.getElementById('chat'),input=document.getElementById('input'),typing=document.getElementById('typing'),sendBtn=document.getElementById('sendBtn');
 const statusTag=document.getElementById('statusTag'),sessionEl=document.getElementById('sessionId');
 const eyeL=document.getElementById('eyeL'),eyeR=document.getElementById('eyeR'),mouth=document.getElementById('mouth');
@@ -1531,6 +1608,7 @@ const sensorOverlay=document.getElementById('sensorOverlay'),sensorOverlayStatus
 const spaceCameraState=document.getElementById('spaceCameraState');
 const screenModeLabel=document.getElementById('screenModeLabel'),screenLine1=document.getElementById('screenLine1'),screenLine2=document.getElementById('screenLine2');
 const brainNodes=[...document.querySelectorAll('.brain-node')];
+const chatHistoryDrawer=document.getElementById('chatHistoryDrawer'),chatHistoryList=document.getElementById('chatHistoryList'),chatHistorySearch=document.getElementById('chatHistorySearch'),chatHistoryState=document.getElementById('chatHistoryState'),chatSaveBtn=document.getElementById('chatSaveBtn'),chatHistoryImportInput=document.getElementById('chatHistoryImportInput'),chatHistoryShowArchived=document.getElementById('chatHistoryShowArchived');
 let SERVER_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:53910' : window.location.origin;
 let connected = false;
 const MAX_VISION_UPLOAD_DIMENSION = 1536;
@@ -1552,6 +1630,10 @@ let activeChatStopping = false;
 let recentConversationHistory = [];
 let conversationSummary = null;
 let conversationId = '';
+let conversationHistoryRecords = [];
+let activeConversationSaved = false;
+let pendingDeleteConversationId = null;
+let pendingRenameConversationId = null;
 let conversationPersistenceEnabled = true;
 let privateModeEnabled = false;
 let researchHistory = [];
@@ -1577,7 +1659,7 @@ const ADAPTER_MODE_STORAGE_KEY = 'nova_adapter_mode_state_v1';
 const CONVERSATION_STORAGE_KEY = 'nova_recent_conversation_v1';
 const CONVERSATION_PREFS_STORAGE_KEY = 'nova_conversation_preferences_v1';
 const RESEARCH_HISTORY_KEY = 'nova_research_history_v1';
-const CONVERSATION_MAX_MESSAGES = 12;
+const CONVERSATION_MAX_MESSAGES = 24;
 const RESEARCH_HISTORY_MAX = 8;
 const sensorAwarenessState = {
   enabled:false,
@@ -2297,9 +2379,11 @@ async function playNovaServerVoice(text, options={}){
     audio.onplay = () => {
       document.body.dataset.novaSpeaking = 'true';
       window.__novaSpeechEvents.push({event:'server_audio_play', voice:data.voice_name || null, at:Date.now()});
-      const engineLabel = data.voice_engine === 'edge_neural'
-        ? 'Neural Voice'
-        : (data.voice_engine === 'windows_sapi' ? 'Windows Voice' : 'Real Voice');
+      const engineLabel = data.voice_engine === 'kokoro_gpu'
+        ? 'Neural GPU Voice'
+        : (data.voice_engine === 'edge_neural'
+          ? 'Neural Voice'
+          : (data.voice_engine === 'windows_sapi' ? 'Windows Voice' : 'Real Voice'));
       updateVoiceModeLabel(data.voice_name ? engineLabel + ': ' + data.voice_name : engineLabel);
     };
     audio.onended = () => {
@@ -3254,7 +3338,291 @@ function validConversationSummary(value){
   return {...value};
 }
 
+function chatHistoryApi(){
+  return window.NovaChatHistory || null;
+}
+
+function currentConversationRecord(savedOverride){
+  const api = chatHistoryApi();
+  if(!api || !conversationId) return null;
+  const messages = storedConversationMessages();
+  if(!messages.length) return null;
+  return api.normalize({
+    conversation_id: conversationId,
+    title: '',
+    created_at: conversationHistoryRecords.find(item => item.conversation_id === conversationId)?.created_at,
+    updated_at: new Date().toISOString(),
+    summary: conversationSummary,
+    messages,
+    saved: savedOverride === undefined ? activeConversationSaved : !!savedOverride
+  });
+}
+
+function refreshChatHistoryRecords(){
+  const api = chatHistoryApi();
+  conversationHistoryRecords = api ? api.load(window.localStorage) : [];
+  activeConversationSaved = !!conversationHistoryRecords.find(item => item.conversation_id === conversationId)?.saved;
+  renderChatHistory();
+  updateChatHistoryUi();
+  return conversationHistoryRecords;
+}
+
+function syncConversationHistoryEntry(savedOverride){
+  const api = chatHistoryApi();
+  const record = currentConversationRecord(savedOverride);
+  if(!api || !record || !conversationPersistenceEnabled || privateModeEnabled) return null;
+  conversationHistoryRecords = api.upsert(window.localStorage, record);
+  activeConversationSaved = !!conversationHistoryRecords.find(item => item.conversation_id === conversationId)?.saved;
+  renderChatHistory();
+  updateChatHistoryUi();
+  return record;
+}
+
+function updateChatHistoryUi(){
+  const count = conversationHistoryRecords.length;
+  if(chatHistoryState) chatHistoryState.textContent = conversationPersistenceEnabled
+    ? `${count} chat${count === 1 ? '' : 's'} on this device${activeConversationSaved ? ' · current saved' : ''}`
+    : 'Saving paused on this device';
+  if(chatSaveBtn){
+    chatSaveBtn.textContent = activeConversationSaved ? 'Saved ✓' : 'Save chat';
+    chatSaveBtn.disabled = !storedConversationMessages().length;
+  }
+}
+
+function formatChatHistoryTime(value){
+  const stamp = Date.parse(value || '');
+  if(!Number.isFinite(stamp)) return 'Unknown time';
+  try { return new Date(stamp).toLocaleString([], {dateStyle:'short', timeStyle:'short'}); }
+  catch(error) { return new Date(stamp).toLocaleString(); }
+}
+
+function renderChatHistory(){
+  if(!chatHistoryList) return;
+  const query = String(chatHistorySearch?.value || '').trim().toLowerCase();
+  const showArchived = !!chatHistoryShowArchived?.checked;
+  const records = conversationHistoryRecords.filter(item => (showArchived || !item.archived) && (!query || `${item.title} ${item.preview}`.toLowerCase().includes(query)));
+  chatHistoryList.innerHTML = '';
+  if(!records.length){
+    const empty = document.createElement('div');
+    empty.className = 'chat-history-empty';
+    empty.textContent = query ? 'No saved chats match that search.' : 'No saved chats yet. Start talking, then press Save chat.';
+    chatHistoryList.appendChild(empty);
+    return;
+  }
+  records.forEach(record => {
+    const item = document.createElement('article');
+    item.className = 'chat-history-item' + (record.conversation_id === conversationId ? ' active' : '');
+    item.dataset.conversationId = record.conversation_id;
+    const head = document.createElement('div');
+    head.className = 'chat-history-item-head';
+    const title = document.createElement('strong');
+    title.textContent = record.title || 'New conversation';
+    const badge = document.createElement('small');
+    badge.textContent = record.archived ? 'ARCHIVED' : (record.saved ? 'SAVED' : 'DRAFT');
+    head.append(title, badge);
+    const preview = document.createElement('div');
+    preview.className = 'chat-history-item-preview';
+    preview.textContent = record.preview || 'No messages yet';
+    const meta = document.createElement('div');
+    meta.className = 'chat-history-item-meta';
+    meta.textContent = `${formatChatHistoryTime(record.updated_at)} · ${record.message_count || 0} message${record.message_count === 1 ? '' : 's'}`;
+    const actions = document.createElement('div');
+    actions.className = 'chat-history-item-actions';
+    const open = document.createElement('button');
+    open.type = 'button'; open.textContent = 'Open';
+    open.addEventListener('click', () => openSavedConversation(record.conversation_id));
+    const rename = document.createElement('button');
+    rename.type = 'button'; rename.textContent = 'Rename';
+    rename.addEventListener('click', () => renameSavedConversation(record.conversation_id));
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = pendingDeleteConversationId === record.conversation_id ? 'Confirm delete' : 'Delete';
+    remove.className = 'danger';
+    remove.addEventListener('click', () => deleteSavedConversation(record.conversation_id));
+    const archive = document.createElement('button');
+    archive.type = 'button';
+    archive.textContent = record.archived ? 'Restore' : 'Archive';
+    archive.addEventListener('click', () => archiveSavedConversation(record.conversation_id, record.archived));
+    if(pendingRenameConversationId === record.conversation_id){
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text'; nameInput.value = record.title || 'New conversation';
+      nameInput.maxLength = 100; nameInput.setAttribute('aria-label', 'New chat name');
+      nameInput.className = 'chat-history-rename-input';
+      const nameSave = document.createElement('button');
+      nameSave.type = 'button'; nameSave.textContent = 'Save name';
+      nameSave.addEventListener('click', () => commitRenamedConversation(record.conversation_id, nameInput.value));
+      const nameCancel = document.createElement('button');
+      nameCancel.type = 'button'; nameCancel.textContent = 'Cancel';
+      nameCancel.addEventListener('click', () => { pendingRenameConversationId = null; renderChatHistory(); });
+      actions.append(nameInput, nameSave, nameCancel, archive, remove);
+      queueMicrotask(() => nameInput.focus());
+    } else {
+      actions.append(open, rename, archive, remove);
+    }
+    item.append(head, preview, meta, actions);
+    chatHistoryList.appendChild(item);
+  });
+}
+
+function archiveSavedConversation(id, archived){
+  const api = chatHistoryApi();
+  if(!api || !api[archived ? 'restore' : 'archive'](window.localStorage, id)) return false;
+  conversationHistoryRecords = api.load(window.localStorage);
+  renderChatHistory(); updateChatHistoryUi();
+  updateConversationContextUi(archived ? 'Chat restored to history.' : 'Chat archived. Use Show archived to find it again.');
+  return true;
+}
+
+function toggleChatHistory(force){
+  if(!chatHistoryDrawer) return;
+  const open = force === undefined ? chatHistoryDrawer.hidden : !!force;
+  chatHistoryDrawer.hidden = !open;
+  if(open){ refreshChatHistoryRecords(); chatHistorySearch?.focus(); }
+}
+
+function saveCurrentConversation(){
+  if(!storedConversationMessages().length){
+    updateConversationContextUi('Start a conversation before saving it.');
+    return false;
+  }
+  const existing = conversationHistoryRecords.find(item => item.conversation_id === conversationId);
+  const suggested = existing?.title || currentConversationRecord()?.title || 'New conversation';
+  const api = chatHistoryApi();
+  const record = currentConversationRecord(true);
+  if(!api || !record) return false;
+  record.title = String(existing?.title || record.title || suggested).trim().slice(0, 100) || suggested;
+  conversationHistoryRecords = api.upsert(window.localStorage, record);
+  activeConversationSaved = true;
+  renderChatHistory(); updateChatHistoryUi();
+  updateConversationContextUi('Chat saved on this device.');
+  toggleChatHistory(true);
+  return true;
+}
+
+function renameSavedConversation(id){
+  const record = conversationHistoryRecords.find(item => item.conversation_id === id);
+  if(!record) return false;
+  if(typeof window.prompt !== 'function'){
+    return beginInlineRename(id);
+  }
+  let requested;
+  try { requested = window.prompt('Rename this chat', record.title); }
+  catch(error) { return beginInlineRename(id); }
+  if(requested === null) return false;
+  return commitRenamedConversation(id, requested);
+}
+
+function beginInlineRename(id){
+  pendingRenameConversationId = id;
+  pendingDeleteConversationId = null;
+  renderChatHistory();
+  updateConversationContextUi('Enter a new name, then choose Save name.');
+  return true;
+}
+
+function commitRenamedConversation(id, requested){
+  const record = conversationHistoryRecords.find(item => item.conversation_id === id);
+  if(!record) return false;
+  const api = chatHistoryApi();
+  if(!api) return false;
+  record.title = String(requested || record.title).trim().slice(0, 100) || record.title;
+  conversationHistoryRecords = api.upsert(window.localStorage, record);
+  pendingRenameConversationId = null;
+  renderChatHistory(); updateChatHistoryUi();
+  updateConversationContextUi('Chat renamed on this device.');
+  return true;
+}
+
+function deleteSavedConversation(id){
+  const record = conversationHistoryRecords.find(item => item.conversation_id === id);
+  if(!record) return false;
+  let confirmed = null;
+  if(typeof window.confirm === 'function'){
+    try { confirmed = window.confirm(`Delete “${record.title}” from chat history? Nova’s long-term memory will not be changed.`); }
+    catch(error) { confirmed = null; }
+    if(confirmed === false) return false;
+  }
+  if(confirmed !== true && pendingDeleteConversationId !== id){
+    pendingDeleteConversationId = id;
+    pendingRenameConversationId = null;
+    renderChatHistory();
+    updateConversationContextUi('Tap Confirm delete again to remove this transcript. Nova’s long-term memory will not be changed.');
+    return false;
+  }
+  const api = chatHistoryApi();
+  if(!api) return false;
+  pendingDeleteConversationId = null;
+  api.remove(window.localStorage, id);
+  conversationHistoryRecords = api.load(window.localStorage);
+  if(id === conversationId){
+    recentConversationHistory = [];
+    conversationSummary = null;
+    conversationId = createConversationId();
+    activeConversationSaved = false;
+    try { localStorage.removeItem(CONVERSATION_STORAGE_KEY); } catch(error) {}
+    if(conversationPersistenceEnabled) persistConversationContext();
+    chat.innerHTML = '';
+    addMsg('nova', 'That chat was deleted from history. Nova’s long-term memory was not changed.', {no_feedback:true, memory_event:'conversation_history_deleted'});
+  }
+  renderChatHistory(); updateChatHistoryUi();
+  return true;
+}
+
+function openSavedConversation(id){
+  const record = conversationHistoryRecords.find(item => item.conversation_id === id);
+  if(!record) return false;
+  if(chatRequestInFlight && typeof window.confirm === 'function' && !window.confirm('A response is still running. Open this saved chat anyway?')) return false;
+  conversationId = record.conversation_id;
+  conversationSummary = validConversationSummary(record.summary);
+  recentConversationHistory = (record.messages || []).map(item => ({role:item.role, content:item.content}));
+  activeConversationSaved = !!record.saved;
+  if(conversationPersistenceEnabled) persistConversationContext();
+  chat.innerHTML = '';
+  renderRestoredConversationContext();
+  addMsg('nova', `Opened “${record.title}”.`, {no_feedback:true, memory_event:'conversation_history_opened'});
+  updateConversationContextUi(`Opened “${record.title}”.`);
+  toggleChatHistory(false);
+  return true;
+}
+
+function exportCurrentConversation(){
+  const api = chatHistoryApi();
+  const record = currentConversationRecord() || conversationHistoryRecords.find(item => item.conversation_id === conversationId);
+  if(!api || !record){ updateConversationContextUi('Start a conversation before exporting it.'); return false; }
+  const blob = new Blob([api.exportRecord(record)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `${(record.title || 'nova-chat').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-|-$/g, '').slice(0, 60) || 'nova-chat'}.json`;
+  document.body.appendChild(anchor); anchor.click(); anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  updateConversationContextUi('Chat exported as a JSON backup.');
+  return true;
+}
+
+function importConversationFile(){ chatHistoryImportInput?.click(); }
+
+async function handleConversationImport(event){
+  const file = event?.target?.files?.[0];
+  if(!file) return;
+  try {
+    const api = chatHistoryApi();
+    const record = api?.parseExport(await file.text());
+    if(!api || !record) throw new Error('That file is not a Nova chat export.');
+    record.saved = true;
+    conversationHistoryRecords = api.upsert(window.localStorage, record);
+    renderChatHistory(); updateChatHistoryUi();
+    updateConversationContextUi(`Imported “${record.title}”.`);
+    toggleChatHistory(true);
+  } catch(error) {
+    updateConversationContextUi('Import failed: ' + String(error.message || error));
+  } finally {
+    if(event?.target) event.target.value = '';
+  }
+}
+
 function loadConversationContext(){
+  refreshChatHistoryRecords();
   try {
     const rawPrefs = localStorage.getItem(CONVERSATION_PREFS_STORAGE_KEY);
     if(rawPrefs){
@@ -3270,6 +3638,7 @@ function loadConversationContext(){
         .filter(item => item && ['user','assistant'].includes(item.role) && typeof item.content === 'string')
         .slice(-CONVERSATION_MAX_MESSAGES)
         .map(item => ({role:item.role, content:item.content.slice(0, 4000)}));
+      activeConversationSaved = !!conversationHistoryRecords.find(item => item.conversation_id === conversationId)?.saved;
     }
   } catch(error) {
     recentConversationHistory = [];
@@ -3296,6 +3665,7 @@ function persistConversationContext(){
       messages:storedConversationMessages()
     }));
   } catch(error) {}
+  syncConversationHistoryEntry();
   updateConversationContextUi();
 }
 
@@ -3320,6 +3690,7 @@ function updateConversationContextUi(message=''){
       ? 'Private-mode turns remain in temporary context only and are not stored.'
       : (conversationPersistenceEnabled ? 'Recent context is stored only in this browser.' : 'Saving is paused; current context remains available until this page closes.'));
   }
+  updateChatHistoryUi();
 }
 
 function renderRestoredConversationContext(){
@@ -3334,6 +3705,10 @@ function clearConversationContext(confirmFirst=true, announce=true){
   if(confirmFirst && !window.confirm('Clear the recent conversation context saved in this browser?')) return false;
   recentConversationHistory = [];
   conversationSummary = null;
+  if(!activeConversationSaved){
+    const api = chatHistoryApi();
+    if(api && conversationId){ api.remove(window.localStorage, conversationId); conversationHistoryRecords = api.load(window.localStorage); }
+  }
   try { localStorage.removeItem(CONVERSATION_STORAGE_KEY); } catch(error) {}
   if(conversationPersistenceEnabled) persistConversationContext();
   if(announce){
@@ -3346,14 +3721,17 @@ function clearConversationContext(confirmFirst=true, announce=true){
 
 function startNewConversation(){
   if(!window.confirm('Start a new conversation? Saved Nova memories will stay intact.')) return;
+  syncConversationHistoryEntry();
   recentConversationHistory = [];
   conversationSummary = null;
   conversationId = createConversationId();
+  activeConversationSaved = false;
   try { localStorage.removeItem(CONVERSATION_STORAGE_KEY); } catch(error) {}
   if(conversationPersistenceEnabled) persistConversationContext();
   chat.innerHTML = '';
   addMsg('nova', 'New conversation started. Your long-term Nova memory is still available.', {no_feedback:true, memory_event:'new_conversation'});
   updateConversationContextUi('New conversation ready.');
+  renderChatHistory();
 }
 
 function toggleConversationPersistence(){
@@ -3372,7 +3750,7 @@ function updateAdapterOnlyButton(){
   const dolphinRuntime = adapterRuntimeCapabilities[DOLPHIN_LORA_ADAPTER_ID];
   const dolphinSlowCpu = !!dolphinRuntime?.slow_cpu_override_available;
   const dolphinReason = dolphinSlowCpu
-    ? 'CPU slow mode: choosing Dolphin permits the long local load. Nova will not switch models or replace its answer.'
+    ? 'GPU preferred mode: choosing Dolphin permits the long local load. Nova will not switch models or replace its answer.'
     : String(dolphinRuntime?.reason || 'Raw Dolphin adapter control.');
   const mainBtn = document.getElementById('mainAdapterOnlyBtn');
   if(mainBtn){
@@ -3424,7 +3802,7 @@ function updateModelControlUi(memoryData=latestModelMemoryStatus){
     return;
   }
   if(mode === 'strong'){
-    status.textContent = 'Strong · Qwen 3 8B · CPU slow';
+    status.textContent = 'Strong · GPU model route';
     return;
   }
   if(mode === 'raw_memory'){
@@ -3434,33 +3812,83 @@ function updateModelControlUi(memoryData=latestModelMemoryStatus){
   }
   const resident = mode === 'dolphin' ? memoryData?.dolphin : memoryData?.qwen;
   const loaded = resident?.loaded ? 'loaded' : 'loads on first message';
-  status.textContent = mode === 'dolphin' ? `RAW · no web/tools · CPU slow · ${loaded}` : `RAW · no web/tools · ${loaded}`;
+  status.textContent = mode === 'dolphin' ? `RAW · no web/tools · GPU preferred · ${loaded}` : `RAW · no web/tools · ${loaded}`;
 }
 
 function selectModelMode(mode, announce=true){
-  const requested = ['nova','strong','qwen','dolphin','raw_memory'].includes(mode) ? mode : 'nova';
+  const requested = ['nova','strong','dolphin_deep','qwen','dolphin','raw_memory'].includes(mode) ? mode : 'nova';
   if(activeChatController || chatRequestInFlight){
     updateModelControlUi();
     const status = document.getElementById('mainModelModeStatus');
     if(status) status.textContent = 'Wait for the current answer before switching';
     return;
   }
+  const previous = currentModelMode();
+  const switching = previous !== requested;
+  if(switching && typeof projectJson === 'function' && SERVER_BASE){
+    const status = document.getElementById('mainModelModeStatus');
+    if(status) status.textContent = 'Freeing old model memory...';
+    projectJson('/api/models/memory/unload', {method:'POST', body:{target:'idle'}}).catch(() => {});
+  }
   dolphinAdapterOnlyMode = requested === 'dolphin';
   trainedAdapterOnlyMode = ['qwen','dolphin'].includes(requested);
-  managedModelMode = ['strong','raw_memory'].includes(requested) ? requested : 'nova';
+  managedModelMode = ['strong','dolphin_deep','raw_memory'].includes(requested) ? requested : 'nova';
   persistAdapterModeState();
   refreshAdapterModeUi();
   if(!announce) return;
   const messages = {
     nova:'Nova mode is active. Identity, memory, routing, tools, and permissions stay in control.',
-    strong:'Nova Strong keeps identity, memory, tools, and safety while Qwen 3 8B handles model-generated answers. It may respond slowly on this CPU.',
+    strong:'Nova Strong keeps identity, memory, tools, and safety while the selected local GPU model handles generated answers.',
+    dolphin_deep:'Dolphin Deep generates through Nova\'s managed route on the GPU; memory, tools, permissions, and verification remain active.',
     raw_memory:'Raw + Memory keeps browser memory operations available while Qwen generates the answer. It cannot browse, run tools, or verify live facts; claims that it will take an action are generated text only.',
     qwen:'Raw Qwen is active. Memory save and recall still work. The raw adapter cannot browse, run tools, or verify live facts; claims that it will take an action are generated text only. Nova will not intercept, replace, or reroute the adapter answer.',
-    dolphin:'Raw Dolphin is active. It will run on this CPU and may take several minutes. The raw adapter cannot browse, run tools, or verify live facts; claims that it will take an action are generated text only. Nova will not intercept, replace, or reroute the adapter answer.'
+    dolphin:'Raw Dolphin is active. Free RAM is released before loading it, and Ollama will place it on the GPU when available. The raw adapter cannot browse, run tools, or verify live facts; claims that it will take an action are generated text only. Nova will not intercept, replace, or reroute the adapter answer.'
   };
   addMsg('nova', messages[requested], {memory_event:'model_mode:' + requested, confidence:0.99, no_feedback:true});
 }
 
+function applyAppNavigationTrace(meta){
+  if(!meta || meta.source !== 'app_navigation' || meta.blocked) return false;
+  const panelBySurface = {home:'chat-panel', chat:'chat-panel', agent_library:'agent-library-panel', app_builder:'app-builder-panel', memory_panel:'memory-panel', settings:'settings-panel', tools_page:'agent-library-panel', research_panel:'research-panel', test_check_page:'debug-logs-panel', saved_projects:'saved-projects-panel', preview_area:'preview-panel', debug_logs:'debug-logs-panel', file_manager:'file-manager-panel'};
+  const panel = panelBySurface[String(meta.target_surface || '')];
+  if(!panel || typeof openPanel !== 'function') return false;
+  openPanel(panel);
+  return true;
+}
+// Voice-safe controls for Nova's own UI. External desktop apps remain behind
+// the typed tool registry and explicit approval.
+async function handleLocalUiCommand(rawText){
+  const text = String(rawText || '').trim().toLowerCase();
+  const panelsByName = {chat:'chat-panel', settings:'settings-panel', memory:'memory-panel', logs:'debug-logs-panel', research:'research-panel', 'dream studio':'dream-studio-panel', 'gpu hub':'gpu-hub-panel', projects:'saved-projects-panel', files:'file-manager-panel', preview:'preview-panel', 'agent library':'agent-library-panel'};
+  const openMatch = text.match(/^(?:open|show|go to|navigate to)\s+(.+)$/);
+  if(openMatch){
+    const key = openMatch[1].replace(/\s+(tab|panel|page)$/, '').trim();
+    const panel = panelsByName[key];
+    if(!panel) return false;
+    openPanel(panel);
+    const label = key.replace(/\b\w/g, c => c.toUpperCase());
+    addMsg('nova', `Opened ${label}.`, {source:'voice_command', action:'open_panel', panel});
+    speakNova(`Opened ${label}.`);
+    return true;
+  }
+  const micOn = /^(?:turn|switch|enable|activate)\s+(?:the\s+)?mic(?:rophone)?\s+on$/.test(text);
+  const micOff = /^(?:turn|switch|disable|deactivate)\s+(?:the\s+)?mic(?:rophone)?\s+off$/.test(text);
+  const camOn = /^(?:turn|switch|enable|activate)\s+(?:the\s+)?camera\s+on$/.test(text);
+  const camOff = /^(?:turn|switch|disable|deactivate)\s+(?:the\s+)?camera\s+off$/.test(text);
+  if(micOn && !sensoryState.mic) toggleMicPermission();
+  if(micOff && sensoryState.mic) toggleMicPermission();
+  if(camOn && !sensoryState.camera) toggleCameraPermission();
+  if(camOff && sensoryState.camera) toggleCameraPermission();
+  if(micOn || micOff || camOn || camOff) return true;
+  if(/^(?:stop all|emergency stop)$/.test(text)){
+    if(sensoryState.mic) toggleMicPermission();
+    if(sensoryState.camera) toggleCameraPermission();
+    if(sensoryState.listening) toggleListening();
+    addMsg('nova', 'Stopped Nova sensors and listening.', {source:'voice_command', action:'stop_all'});
+    return true;
+  }
+  return false;
+}
 function toggleAdvancedActivationControls(){
   const open = document.body.classList.toggle('advanced-controls-open');
   const button = document.getElementById('mainMoreControlsBtn');
@@ -5572,6 +6000,21 @@ function evidenceDrawerHtml(meta){
   return `<details class="evidence-drawer"><summary>Evidence details &middot; ${summary}</summary><div class="evidence-claims">${cards}</div></details>`;
 }
 
+function formatSafetyStatus(value){
+  const key = String(value || 'not_checked').trim().toLowerCase();
+  const labels = {
+    passed: 'passed',
+    passed_after_retry: 'passed after retry',
+    blocked: 'blocked',
+    fact_grounding_blocked: 'current fact blocked',
+    stream_postcheck_warning: 'review warning',
+    bypassed_verified: 'verified route',
+    bypassed_raw: 'raw mode · not checked',
+    not_checked: 'not checked'
+  };
+  return labels[key] || 'not checked';
+}
+
 function buildAnswerStatus(status){
   if(!status || typeof status !== 'object') return null;
   const container = document.createElement("div");
@@ -5582,7 +6025,7 @@ function buildAnswerStatus(status){
     ["Brain", status.model || "Nova"],
     ["Intent", status.intent || "conversation"],
     ["Memory", status.memory || "not used"],
-    ["Safety", status.safety || "checked"],
+    ["Safety", formatSafetyStatus(status.safety)],
     ["Vision", status.vision || "not used"]
   ];
   labels.forEach(([name, value]) => {
@@ -5594,7 +6037,7 @@ function buildAnswerStatus(status){
   const details = document.createElement("div");
   details.className = "answer-status-details";
   details.hidden = true;
-  [["Repair", status.repair || "not needed"], ["Safety", status.safety || "checked"]]
+  [["Repair", status.repair || "not needed"], ["Safety", formatSafetyStatus(status.safety)]]
     .forEach(([name, value]) => {
       const line = document.createElement("div");
       line.textContent = `${name}: ${String(value)}`;
@@ -5627,13 +6070,15 @@ function messageHtml(text, meta){
     if(meta.roles) html += '<span class="tag route">🧠 '+meta.roles.join(' → ')+'</span>';
     if(meta.confidence!==undefined) html += '<span class="tag conf">⚡ '+Math.round(meta.confidence*100)+'%</span>';
     if(meta.memory_event) html += '<span class="tag mem">💾 '+meta.memory_event+'</span>';
-    const activeProvider = String(meta.local_llm_provider || meta.remote_model_provider || '').trim();
-    const activeBackend = String(meta.gpu_backend || '').trim();
-    if(activeProvider || activeBackend){
-      const computeLabel = [activeProvider, activeBackend].filter(Boolean).join(' · ');
+    const routeSummary = meta.route_summary && typeof meta.route_summary === 'object' ? meta.route_summary : {};
+    const activeProvider = String(meta.local_llm_provider || meta.remote_model_provider || routeSummary.provider || '').trim();
+    const activeModel = String(meta.local_llm_model || routeSummary.model || '').trim();
+    const activeBackend = String(meta.gpu_backend || routeSummary.backend || '').trim();
+    if(activeProvider || activeModel || activeBackend){
+      const computeLabel = [activeProvider, activeBackend, activeModel].filter(Boolean).join(' · ');
       html += '<span class="tag route" title="Actual model provider and compute backend">GPU: '+escapeHtml(computeLabel)+'</span>';
     }
-    const responseTimeMs = Number(meta.response_time_ms);
+    const responseTimeMs = Number(meta.response_time_ms ?? routeSummary.latency_ms);
     if(Number.isFinite(responseTimeMs) && responseTimeMs >= 0){
       html += '<span class="tag route" title="Total time from request to answer">⏱ '+Math.round(responseTimeMs)+' ms</span>';
     }
@@ -5660,6 +6105,37 @@ function messageHtml(text, meta){
     }
     if(meta.conversation_emotion){
       html += '<span class="tag mem" title="Recent conversation tone">tone: '+escapeHtml(String(meta.conversation_emotion))+'</span>';
+    }
+    const companion = meta.companion && typeof meta.companion === 'object' ? meta.companion : null;
+    if(companion && companion.enabled !== false){
+      const socialPlan = companion.social_plan && typeof companion.social_plan === 'object' ? companion.social_plan : {};
+      const personalityModes = {
+        companionship: 'companion',
+        casual_chat: 'casual',
+        emotional_support: 'supportive',
+        advice: 'supportive',
+        technical_help: 'focused',
+        brainstorming: 'creative',
+        task_execution: 'focused',
+        celebration: 'celebratory',
+        joking: 'playful'
+      };
+      const personalityTones = {
+        warm_conversational: 'warm',
+        direct_clear: 'direct',
+        reflective: 'reflective',
+        creative: 'creative',
+        supportive: 'supportive',
+        playful: 'playful'
+      };
+      const modeKey = String(companion.primary_mode || socialPlan.primary_mode || '').trim().toLowerCase();
+      const toneKey = String(socialPlan.tone || '').trim().toLowerCase();
+      const personalityParts = [personalityModes[modeKey], personalityTones[toneKey]].filter(Boolean);
+      if(!personalityParts.length) personalityParts.push('adaptive');
+      html += '<span class="tag mem" title="Nova personality plan for this answer">✨ Personality: '+escapeHtml(personalityParts.join(' · '))+'</span>';
+      const stages = {new:'new', familiar:'familiar', established:'established', trusted:'trusted', deepening:'deepening'};
+      const stageKey = String(companion.relationship_stage || '').trim().toLowerCase();
+      if(stages[stageKey]) html += '<span class="tag mem" title="Nova relationship continuity">Bond: '+escapeHtml(stages[stageKey])+'</span>';
     }
     if(Number(meta.context_anchor_distance || 0) > 0){
       html += '<span class="tag mem" title="Nova followed the substantive subject across a bridge turn">context: '+Number(meta.context_anchor_distance)+' turn back</span>';
@@ -5885,7 +6361,7 @@ async function saveCorrectionExample(box, userText, novaText, betterText, trace)
 function buildChatPayload(text){
   const payload = {text};
   payload.private_mode = privateModeEnabled;
-  payload.conversation_history = recentConversationHistory.slice(-8).map(item => ({role:item.role, content:item.content}));
+  payload.conversation_history = recentConversationHistory.slice(-20).map(item => ({role:item.role, content:item.content}));
   payload.conversation_summary_history = recentConversationHistory
     .filter(item => item && !item.private && !item.ephemeral)
     .slice(-8)
@@ -5897,6 +6373,7 @@ function buildChatPayload(text){
       payload.nova_model_mode = 'strong';
     }
     if(managedModelMode === 'raw_memory' && !trainedAdapterOnlyMode && !dolphinAdapterOnlyMode) payload.nova_model_mode = 'raw_memory';
+    if(managedModelMode === 'dolphin_deep' && !trainedAdapterOnlyMode && !dolphinAdapterOnlyMode) payload.nova_model_mode = 'dolphin_deep';
   }
   if(trainedAdapterOnlyMode){
     payload.adapter_only_mode = true;
@@ -5906,7 +6383,7 @@ function buildChatPayload(text){
   }
   if(dolphinAdapterOnlyMode){
     payload.dolphin_adapter_only = true;
-    payload.allow_slow_dolphin_cpu = true;
+    payload.allow_slow_dolphin_cpu = false;
   }
   const sensor_snapshot = sensorSnapshotForNova();
   if(sensor_snapshot) payload.sensor_snapshot = sensor_snapshot;
@@ -7877,6 +8354,7 @@ async function send(){
   if(chatRequestInFlight) return;
   const text=input.value.trim(); if(!text) return;
   openPanel('chat-panel');
+  if(typeof handleLocalUiCommand === 'function' && await handleLocalUiCommand(text)) return;
   chatRequestInFlight = true;
   updateModelControlUi();
   if(shouldUseActiveVisionContext(text)){
@@ -8163,6 +8641,7 @@ async function sendBotChat(){
     const answer = data.cancelled ? (bodyStreamText || 'Stopped.') : (data.response || bodyStreamText || 'I heard you.');
     if(bodyStreamLine) updateBotChatLine(bodyStreamLine, 'nova', answer);
     else addBotChatLine('nova', answer);
+    applyAppNavigationTrace(trace);
     updateDisplayTelemetry(trace, text);
     if(data.permissions) updatePerms(data.permissions);
     const roles = normalizeRoles(trace);

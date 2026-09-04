@@ -806,6 +806,7 @@ OUTPUT RULES:
             "top_k": 40,
             "num_ctx": self.config.context_window,
             "num_predict": 256,
+            "num_gpu": 999,
         }
         if options_override:
             options.update(options_override)
@@ -814,6 +815,12 @@ OUTPUT RULES:
             "model": active_model,
             "prompt": prompt,
             "stream": False,
+            # Ollama's Qwen3 family can spend most of the turn in hidden
+            # reasoning unless this provider-level flag is explicit. Nova's
+            # prompt directive controls the intended mode; mirror it here so
+            # normal chat does not appear to hang while still preserving deep
+            # reasoning when requested.
+            "think": str(prompt).lstrip().startswith("/think"),
             "options": options,
             "keep_alive": str(keep_alive_override or self.config.ollama_keep_alive),
         }
@@ -887,6 +894,7 @@ OUTPUT RULES:
             "top_k": 40,
             "num_ctx": self.config.context_window,
             "num_predict": 256,
+            "num_gpu": 999,
         }
         if options_override:
             options.update(options_override)
@@ -894,6 +902,7 @@ OUTPUT RULES:
             "model": active_model,
             "prompt": prompt,
             "stream": True,
+            "think": str(prompt).lstrip().startswith("/think"),
             "options": options,
             "keep_alive": str(keep_alive_override or self.config.ollama_keep_alive),
         }

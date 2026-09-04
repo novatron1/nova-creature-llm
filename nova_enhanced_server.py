@@ -114,8 +114,10 @@ FACT_EVIDENCE_STORE = LocalEvidenceStore(
     or (Path(ROOT) / "data" / "nova_grounding_evidence.json")
 )
 WEB_SOURCE_RETRIEVER = NovaSourceRetriever.from_environment()
-NOVA_TTS_ENGINE = os.environ.get("NOVA_TTS_ENGINE", "edge_neural").strip().lower()
+NOVA_TTS_ENGINE = os.environ.get("NOVA_TTS_ENGINE", "kokoro_gpu").strip().lower()
 NOVA_TTS_NEURAL_VOICE = os.environ.get("NOVA_TTS_NEURAL_VOICE", "en-US-GuyNeural").strip() or "en-US-GuyNeural"
+NOVA_TTS_KOKORO_URL = os.environ.get("NOVA_TTS_KOKORO_URL", "http://127.0.0.1:8890").strip().rstrip("/")
+NOVA_TTS_KOKORO_VOICE = os.environ.get("NOVA_TTS_KOKORO_VOICE", "af_heart").strip() or "af_heart"
 NOVA_TTS_RATE = os.environ.get("NOVA_TTS_RATE", "+0%").strip()
 NOVA_TTS_PITCH = os.environ.get("NOVA_TTS_PITCH", "+0Hz").strip()
 NOVA_APP_VERSION = NOVA_VERSION
@@ -1189,7 +1191,6 @@ def _extract_nova_preference_topic(text):
     patterns = (
         r"^(?:do you|do u|did you|would you)\s+(?:like|love|enjoy|care about|find interesting)\s+(.+)$",
         r"^(?:are you|r u)\s+(?:into|interested in)\s+(.+)$",
-        r"^(?:what do you think about|how do you feel about)\s+(.+)$",
     )
     for pattern in patterns:
         match = re.match(pattern, q)
@@ -3237,6 +3238,34 @@ def _generate_edge_neural_tts_audio_base64(text, voice=None):
             pass
 
 
+def _generate_kokoro_tts_audio_base64(text, voice=None):
+    """Generate speech through Nova's private local Kokoro GPU worker."""
+    spoken = _clean_tts_text(text)
+    if not spoken:
+        raise ValueError("No speakable text")
+    payload = json.dumps({
+        "text": spoken,
+        "voice": (voice or NOVA_TTS_KOKORO_VOICE),
+    }).encode("utf-8")
+    request = urllib.request.Request(
+        NOVA_TTS_KOKORO_URL + "/synthesize",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=60) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    audio_b64 = str(result.get("audio_base64") or "")
+    if not result.get("ok") or not audio_b64:
+        raise RuntimeError(str(result.get("error") or "Local GPU voice returned no audio"))
+    return (
+        audio_b64,
+        str(result.get("voice_name") or voice or NOVA_TTS_KOKORO_VOICE),
+        str(result.get("mime_type") or "audio/wav"),
+        str(result.get("device") or "cuda"),
+    )
+
+
 def _generate_windows_tts_wav_base64(text):
     """Generate a WAV speech clip with the local Windows SAPI voice."""
     spoken = _clean_tts_text(text)
@@ -3297,6 +3326,23 @@ def _tts_response_from_text(body):
             "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
         }, 400
     neural_error = None
+    if NOVA_TTS_ENGINE in ("kokoro", "kokoro_gpu", "local_gpu"):
+        try:
+            audio_b64, voice_name, mime_type, device = _generate_kokoro_tts_audio_base64(
+                text, NOVA_TTS_KOKORO_VOICE
+            )
+            return {
+                "ok": True,
+                "mime_type": mime_type,
+                "audio_base64": audio_b64,
+                "voice_engine": "kokoro_gpu",
+                "voice_name": voice_name,
+                "device": device,
+                "text": text,
+                "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
+            }, 200
+        except Exception as exc:
+            neural_error = str(exc)
     if NOVA_TTS_ENGINE not in ("windows", "windows_sapi", "sapi"):
         try:
             audio_b64, voice_name, mime_type = _generate_edge_neural_tts_audio_base64(text, NOVA_TTS_NEURAL_VOICE)
@@ -3310,7 +3356,7 @@ def _tts_response_from_text(body):
                 "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
             }, 200
         except Exception as exc:
-            neural_error = str(exc)
+            neural_error = "; ".join(part for part in (neural_error, str(exc)) if part)
     try:
         audio_b64, voice_name = _generate_windows_tts_wav_base64(text)
         payload = {
@@ -4156,7 +4202,10 @@ def _fetch_research_web_sources(topic, timeout=6):
 
 
 def _live_source_lines(live_sources):
-    lines = []
+    lines = [
+        "Use the recent conversation to answer the latest user question. Preserve explicit names, dates, and constraints, and apply any later user updates.",
+        "",
+    ]
     for source in live_sources or []:
         status = source.get("status")
         if isinstance(status, int) and 200 <= status < 400:
@@ -4166,7 +4215,10 @@ def _live_source_lines(live_sources):
 
 
 def _live_source_evidence_lines(live_sources):
-    lines = []
+    lines = [
+        "Use the recent conversation to answer the latest user question. Preserve explicit names, dates, and constraints, and apply any later user updates.",
+        "",
+    ]
     for source in live_sources or []:
         status = source.get("status")
         if not (isinstance(status, int) and 200 <= status < 400):
@@ -4685,7 +4737,10 @@ def _is_nova_self_state_question(text):
         return False
     if _is_nova_self_awareness_question(text):
         return True
-    if re.search(r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\b", q):
+    if re.search(r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\b", q) and not re.search(
+        r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\s+about\b",
+        q,
+    ):
         return True
     if re.search(
         r"\bhow\s+(?:is|s|has|was)\s+(?:your|ur)\s+day(?:\s+(?:going|been))?\b",
@@ -4956,6 +5011,24 @@ def _is_distance_awareness_question(text):
         "winter",
         "season",
     )
+    relationship_markers = (
+        "friend",
+        "friendship",
+        "relationship",
+        "partner",
+        "family",
+        "love",
+        "trust",
+        "long distance",
+        "far apart",
+        "live far apart",
+        "emotional distance",
+        "social distance",
+    )
+    if any(marker in q for marker in relationship_markers) and not any(
+        marker in q for marker in sensor_markers
+    ):
+        return False
     if any(marker in q for marker in astronomy_markers) and not any(
         marker in q for marker in sensor_markers
     ):
@@ -6615,7 +6688,7 @@ def _start_training_studio_lora_job(dataset, base_model=None):
                 "running": False,
                 "needs_gpu": True,
                 "recommended_path": "Export Kaggle bundle",
-                "message": "This computer has no usable CUDA GPU, so Nova prepared the dataset but did not start slow local LoRA training.",
+                "message": "CUDA is required for local LoRA training. Nova prepared the dataset but did not start a CPU fallback.",
             }
         dataset_dir = str(dataset.get("dataset_dir") or "")
         job_id = "studio_lora_" + uuid.uuid4().hex[:8]
@@ -6692,7 +6765,7 @@ def _training_studio_train(body):
         "report": report,
         "lora_job": lora_job,
         "kaggle_bundle_endpoint": "/api/training/studio/kaggle-bundle.zip?dataset_id=" + quote_plus(str(dataset.get("dataset_id"))),
-        "message": "Dataset validated. Use Export Kaggle Bundle for real LoRA/GPU training, or start local LoRA on a CUDA machine.",
+        "message": "Dataset validated. Use Export Kaggle Bundle for remote GPU training, or start local LoRA on a CUDA machine.",
     }
 
 
@@ -12132,7 +12205,7 @@ def _optional_strong_model_decision(context: dict | None, raw_adapter_request: b
     if raw_adapter_request:
         decision["reason"] = "raw_adapter_bypass"
         return decision
-    if mode != "strong":
+    if mode not in {"strong", "dolphin_deep"}:
         decision["reason"] = "unsupported_mode"
         return decision
 
@@ -12140,9 +12213,14 @@ def _optional_strong_model_decision(context: dict | None, raw_adapter_request: b
         from nova_local_llm_connector import LocalLLMConfig
 
         config = LocalLLMConfig()
-        configured_model = str(config.optional_strong_model or "").strip()
-        configured_timeout = int(config.optional_strong_timeout)
-        configured_keep_alive = str(config.optional_strong_keep_alive)
+        if mode == "dolphin_deep":
+            configured_model = str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_MODEL") or "nova-dolphin3-lora").strip()
+            configured_timeout = max(300, int(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_TIMEOUT") or 900))
+            configured_keep_alive = str(getattr(config, "ollama_keep_alive", "30m") or "30m")
+        else:
+            configured_model = str(config.optional_strong_model or "").strip()
+            configured_timeout = int(config.optional_strong_timeout)
+            configured_keep_alive = str(config.optional_strong_keep_alive)
         if str(config.provider or "").strip().lower() != "ollama":
             decision["reason"] = "provider_not_supported"
             return decision
@@ -12167,7 +12245,7 @@ def _optional_strong_model_decision(context: dict | None, raw_adapter_request: b
                 candidate
                 for candidate in provider.list_models()
                 if str(getattr(candidate, "model_id", "") or "").strip().lower()
-                == configured_model.lower()
+                == configured_model.lower() or str(getattr(candidate, "model_id", "") or "").strip().lower().removesuffix(":latest") == configured_model.lower().removesuffix(":latest")
             ),
             None,
         )
@@ -12196,7 +12274,7 @@ def _optional_strong_model_decision(context: dict | None, raw_adapter_request: b
         estimated_model_bytes=estimated_model_bytes,
         timeout_seconds=configured_timeout,
         keep_alive=configured_keep_alive,
-        tier="strong",
+        tier=("dolphin_deep" if mode == "dolphin_deep" else "strong"),
     )
     return decision
 
@@ -14078,7 +14156,7 @@ def _run_nova_chat_turn_impl(text, context=None):
             _emit_chat_progress(
                 context,
                 "strong_local_model",
-                "Nova Strong is using Qwen 3 8B locally.",
+                f"Nova Strong is using {optional_model_mode['model']} locally.",
                 18,
             )
         else:

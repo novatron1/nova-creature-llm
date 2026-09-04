@@ -348,7 +348,10 @@ def installed_ollama_model_size_bytes(model_name: str, timeout: int = 3) -> int:
 
 def nova_managed_ollama_models() -> set[str]:
     """Return configured Ollama model names Nova is allowed to unload."""
-    names = {str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_MODEL") or "nova-dolphin3-lora").strip()}
+    names = {
+        str(os.environ.get("NOVA_DOLPHIN_LORA_OLLAMA_MODEL") or "nova-dolphin3-lora").strip(),
+        str(os.environ.get("NOVA_QWEN_LORA_OLLAMA_MODEL") or "nova-qwen2.5-1.5b-lora").strip(),
+    }
     names.add(str(os.environ.get("NOVA_VISION_MODEL") or "moondream").strip())
     try:
         from nova_local_llm_connector import LocalLLMConfig

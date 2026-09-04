@@ -209,6 +209,8 @@ class ExistingConnectorProvider(NovaModelProvider):
         }
         if self.force_cpu:
             options["num_gpu"] = 0
+        else:
+            options["num_gpu"] = 999
         return {
             "raw_prompt": request.prompt,
             "user_message": request.metadata.get("user_message", ""),

@@ -28,6 +28,8 @@ if %errorlevel% equ 0 (
     )
 )
 
+if exist "F:\Nova\kokoro-tts\.venv\Scripts\python.exe" set "PYTHON=F:\Nova\kokoro-tts\.venv\Scripts\python.exe"
+
 echo [OK] Found Python: %PYTHON%
 %PYTHON% --version
 
@@ -55,6 +57,9 @@ if %errorlevel% neq 0 (
 echo.
 echo [START] Launching Nova Server on http://127.0.0.1:3000
 echo.
+
+REM Start Nova's optional local neural GPU voice. It falls back safely while loading.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\start_nova_kokoro_voice.ps1" -ProjectRoot "%~dp0."
 
 REM Start the enhanced Cognitive OS server
 %PYTHON% nova_enhanced_server.py 3000

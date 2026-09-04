@@ -109,6 +109,11 @@ class ExistingNovaProvider(NovaModelProvider):
             "conversation_summary_history",
             "conversation_summary_write_allowed",
             "nova_model_mode",
+            "primary_model_override",
+            "primary_model_timeout",
+            "primary_model_keep_alive",
+            "primary_model_tier",
+            "primary_model_size_bytes",
         }
     )
 

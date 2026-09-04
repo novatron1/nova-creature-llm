@@ -102,6 +102,37 @@ test('answer traces visibly show measured response time', () => {
   assert.match(rendered, /⏱ 1889 ms/);
 });
 
+test('answer tags can render gateway route-summary model and latency', () => {
+  assert.match(html, /routeSummary\.provider/);
+  assert.match(html, /routeSummary\.model/);
+  assert.match(html, /routeSummary\.latency_ms/);
+});
+
+test('companion traces visibly show Nova personality and relationship state', () => {
+  const messageHtmlSource = extractFunction('messageHtml');
+  const render = new Function(
+    'linkifyMessageText',
+    'escapeHtml',
+    'evidenceDrawerHtml',
+    `${messageHtmlSource}; return messageHtml;`,
+  )(
+    text => text,
+    text => String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+    () => '',
+  );
+
+  const rendered = render('Companion answer', {
+    companion: {
+      primary_mode: 'companionship',
+      relationship_stage: 'established',
+      social_plan: {tone: 'warm_conversational'},
+    },
+  });
+
+  assert.match(rendered, /Personality: companion · warm/);
+  assert.match(rendered, /Bond: established/);
+});
+
 test('stream latency is copied into the trace used by answer tags', () => {
   const source = extractFunction('withResponseLatency');
   const addLatency = new Function(`${source}; return withResponseLatency;`)();

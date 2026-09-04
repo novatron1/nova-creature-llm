@@ -38,6 +38,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Nova core smoke check failed." }
     Write-Host "[OK] Nova core smoke check passed."
 
+    & $Python.Command @($Python.Arguments) tools\nova_doctor.py --root $Root --port 3000
+    if ($LASTEXITCODE -ne 0) { throw "Nova installation diagnostics found a required problem." }
+    Write-Host "[OK] Nova installation diagnostics passed."
+
     Write-Host "GPU Hub is available inside Nova after you start Nova normally."
     Write-Host "Health check: http://127.0.0.1:3000/healthz"
     Write-Host "Use a loopback, private-network, or Tailscale worker endpoint."

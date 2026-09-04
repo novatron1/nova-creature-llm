@@ -29,6 +29,8 @@ if %errorlevel% equ 0 (
     )
 )
 
+if exist "F:\Nova\kokoro-tts\.venv\Scripts\python.exe" set "PYTHON=F:\Nova\kokoro-tts\.venv\Scripts\python.exe"
+
 echo [OK] Found Python: %PYTHON%
 %PYTHON% --version
 
@@ -48,6 +50,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [START] Preparing private phone access...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\start_nova_kokoro_voice.ps1" -ProjectRoot "%~dp0."
 %PYTHON% "%~dp0tools\nova_anywhere.py" --root "%~dp0." --port 3000 --https-port 8443
 if %errorlevel% neq 0 (
     echo [ERROR] Nova Anywhere did not start. Read the message above, then try again.
