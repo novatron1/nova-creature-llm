@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "backend": "windows_sandbox",
+  "os_sandbox": true,
+  "run_id": "f2bca1993f516a166ae068e0f90de8a8",
+  "artifact_dir": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-1gy73s9z\\sandboxed_terminal\\sandbox-artifacts\\f2bca1993f516a166ae068e0f90de8a8",
+  "input_sha256": {
+    "bootstrap.ps1": "76c274568719ea6edd74c4d96d506df6b97a08a19a47301fd5d8cde952b351c8",
+    "candidate.ps1": "c3ecfa7b5e1fe7d603970c77db79c8b7c6ff652ca11189d1ee47831c7918875c",
+    "plan.json": "cc7bd3d8b8cefea0758336feb50482bc038ef5e7317869fbe670471531100fb8"
+  },
+  "evidence": {
+    "nonce": "d15cff645faf0459d63d3c36576f37987100d77ab1682b125d12f384501fa982",
+    "schema_version": 1,
+    "terminal_output": "hello, nova",
+    "candidate_after": "c3ecfa7b5e1fe7d603970c77db79c8b7c6ff652ca11189d1ee47831c7918875c",
+    "terminal_exit_code": 0,
+    "passed": true,
+    "backend": "windows_sandbox",
+    "run_id": "f2bca1993f516a166ae068e0f90de8a8",
+    "edited_sha256": "c3f50c4b1b4e3b875079ae0c08c35f38bde73d9071b2329897e3f4288b9cb845",
+    "candidate_before": "c3ecfa7b5e1fe7d603970c77db79c8b7c6ff652ca11189d1ee47831c7918875c"
+  },
+  "result_sha256": "02d43a72ae87413c4d79db72488110795ad99aa7c854e4e4d3f1579b6afe7649"
+}
