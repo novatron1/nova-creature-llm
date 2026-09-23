@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "tools/nova_identity_proof.py",
+    "--output",
+    "[REDACTED]\\memory_identity_restart\\report.json"
+  ],
+  "duration_seconds": 11.109000000054948,
+  "exit_code": 0,
+  "name": "memory_identity_restart",
+  "passed": true,
+  "stderr_tail": "",
+  "stdout_tail": "[REDACTED]",
+  "timed_out": false
+}

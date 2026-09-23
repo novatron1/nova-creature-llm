@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "tools/nova_sandbox_proof.py",
+    "--output",
+    "[REDACTED]\\sandboxed_terminal\\report.json"
+  ],
+  "duration_seconds": 28.57799999997951,
+  "exit_code": 0,
+  "name": "sandboxed_terminal",
+  "passed": true,
+  "stderr_tail": "",
+  "stdout_tail": "[REDACTED]",
+  "timed_out": false
+}

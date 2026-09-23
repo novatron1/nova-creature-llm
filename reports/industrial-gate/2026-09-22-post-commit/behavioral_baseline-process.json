@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "tools/nova_behavior_proof.py",
+    "--output",
+    "[REDACTED]\\behavioral_baseline\\report.json"
+  ],
+  "duration_seconds": 600.030999999959,
+  "exit_code": 1,
+  "name": "behavioral_baseline",
+  "passed": false,
+  "stderr_tail": "",
+  "stdout_tail": "",
+  "timed_out": true
+}

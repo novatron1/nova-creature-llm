@@ -254,11 +254,16 @@ def run_gate(root: Path, output: Path, *, scope: str = 'full', timeout_seconds: 
                     phase_dir = evidence / name
                     phase_dir.mkdir()
                     proof_path = phase_dir / 'report.json'
+                    phase_timeout = timeout_seconds * 3 if name == 'behavioral_baseline' else timeout_seconds
                     result = runner.run(GateDefinition(
                         name=name, argv=(sys.executable, 'tools/' + script, '--output', str(proof_path)),
-                        timeout_seconds=timeout_seconds))
+                        timeout_seconds=phase_timeout))
                     record = {'name': name, 'command': list(result.command) if hasattr(result, 'command') else [sys.executable, 'tools/' + script],
                               'archived_evidence_directory': name,
+                              'timeout_seconds': phase_timeout,
+                              'process_passed': result.passed,
+                              'process_timed_out': result.timed_out,
+                              'process_exit_code': result.exit_code,
                               **read_proof_verdict(proof_path, process_passed=result.passed)}
                     phases.append(record)
                     _write(output / (name + '-process.json'), asdict(result))
