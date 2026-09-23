@@ -1,0 +1,54 @@
+{
+  "not_applicable": [
+    {
+      "test": "tests.test_nova_release_gates::test_linux_preflight_probes_real_pidfd_without_descriptor_leak",
+      "reason": "Linux PIDFD proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_gate_runner_kills_sigterm_ignoring_descendant_after_leader_exit",
+      "reason": "POSIX signal behavior"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_real_posix_cleanup_does_not_reuse_reaped_group_identity",
+      "reason": "Linux PID reuse proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_posix_supervisor_pins_session_after_candidate_exit",
+      "reason": "POSIX supervisor behavior"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_posix_supervisor_reports_spawn_failure_without_fd_leak",
+      "reason": "Linux FD/process proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_posix_payload_encoding_failure_closes_all_descriptors",
+      "reason": "Linux FD/process proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_posix_handshake_timeout_reaps_supervisor_before_late_spawn",
+      "reason": "Linux handshake proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_failed_posix_launch_reports_indeterminate_cleanup_and_reaps_supervisor",
+      "reason": "Linux cleanup proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_posix_blocked_payload_honors_deadline_and_reaps_supervisor",
+      "reason": "Linux pipe proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_posix_delayed_handshake_uses_only_remaining_caller_budget",
+      "reason": "Linux handshake proof"
+    },
+    {
+      "test": "tests.test_nova_release_gates::test_clean_start_smoke_launch_setup_obeys_one_second_absolute_budget",
+      "reason": "Linux handshake proof"
+    }
+  ],
+  "unresolved": [
+    {
+      "test": "tests.test_nova_release_policy::test_workspace_scan_records_directory_symlink_without_following",
+      "reason": "directory symlinks are not supported for this test user: [WinError 1314] A required privilege is not held by the client: 'C:\\\\Users\\\\nova\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-unknown\\\\pytest-22\\\\test_workspace_scan_records_di0\\\\external' -> 'C:\\\\Users\\\\nova\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-unknown\\\\pytest-22\\\\test_workspace_scan_records_di0\\\\repo\\\\assets\\\\linked'"
+    }
+  ]
+}

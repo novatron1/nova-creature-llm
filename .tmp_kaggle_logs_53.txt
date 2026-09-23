@@ -1,0 +1,744 @@
+[{"stream_name":"stderr","time":8.354563997,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.354650722,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.354655413,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.354658146,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":9.006705275,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":9.006738236,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":9.006744129,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":9.006748281,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":13.606769616,"data":"Requirement already satisfied: transformers\u003c6,\u003e=5.0 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (5.0.0)\n"}
+,{"stream_name":"stdout","time":13.742524362,"data":"Collecting datasets\u003c5,\u003e=4.0 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4))\n"}
+,{"stream_name":"stdout","time":13.808947882,"data":"Requirement already satisfied: transformers\u003c6,\u003e=5.0 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (5.0.0)\n"}
+,{"stream_name":"stdout","time":13.808984126,"data":"Collecting datasets\u003c5,\u003e=4.0 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4))\n"}
+,{"stream_name":"stdout","time":13.810347494,"data":"  Downloading datasets-4.8.5-py3-none-any.whl.metadata (19 kB)\n"}
+,{"stream_name":"stdout","time":13.855198676,"data":"Requirement already satisfied: peft\u003c1,\u003e=0.17 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (0.19.1)\n"}
+,{"stream_name":"stdout","time":13.931757906,"data":"Collecting trl\u003c1,\u003e=0.21 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 6))\n"}
+,{"stream_name":"stdout","time":13.948449181,"data":"  Downloading trl-0.29.1-py3-none-any.whl.metadata (11 kB)\n"}
+,{"stream_name":"stdout","time":14.012984171,"data":"  Downloading datasets-4.8.5-py3-none-any.whl.metadata (19 kB)\n"}
+,{"stream_name":"stdout","time":14.01301221,"data":"Requirement already satisfied: peft\u003c1,\u003e=0.17 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (0.19.1)\n"}
+,{"stream_name":"stdout","time":14.013021189,"data":"Collecting trl\u003c1,\u003e=0.21 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 6))\n"}
+,{"stream_name":"stdout","time":14.013027187,"data":"  Downloading trl-0.29.1-py3-none-any.whl.metadata (11 kB)\n"}
+,{"stream_name":"stdout","time":14.113831492,"data":"Collecting unsloth\u003e=2026.7 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":14.130486751,"data":"  Downloading unsloth-2026.8.12-py3-none-any.whl.metadata (73 kB)\n"}
+,{"stream_name":"stdout","time":14.157306766,"data":"     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.7/73.7 kB 2.7 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":14.316201329,"data":"Collecting unsloth\u003e=2026.7 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":14.316240074,"data":"  Downloading unsloth-2026.8.12-py3-none-any.whl.metadata (73 kB)\n"}
+,{"stream_name":"stdout","time":14.316246404,"data":"     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.7/73.7 kB 2.7 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":14.597447009,"data":"Requirement already satisfied: safetensors\u003c1,\u003e=0.5 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 8)) (0.7.0)\n"}
+,{"stream_name":"stdout","time":14.599651358,"data":"Requirement already satisfied: sentence-transformers\u003c6,\u003e=5 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (5.4.1)\n"}
+,{"stream_name":"stdout","time":14.636237917,"data":"Requirement already satisfied: filelock in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (3.29.0)\n"}
+,{"stream_name":"stdout","time":14.638642719,"data":"Requirement already satisfied: huggingface-hub\u003c2.0,\u003e=1.3.0 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (1.11.0)\n"}
+,{"stream_name":"stdout","time":14.646109938,"data":"Requirement already satisfied: numpy\u003e=1.17 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (2.0.2)\n"}
+,{"stream_name":"stdout","time":14.647380132,"data":"Requirement already satisfied: packaging\u003e=20.0 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (26.1)\n"}
+,{"stream_name":"stdout","time":14.648725399,"data":"Requirement already satisfied: pyyaml\u003e=5.1 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (6.0.3)\n"}
+,{"stream_name":"stdout","time":14.651320166,"data":"Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (2025.11.3)\n"}
+,{"stream_name":"stdout","time":14.652756248,"data":"Requirement already satisfied: tokenizers\u003c=0.23.0,\u003e=0.22.0 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (0.22.2)\n"}
+,{"stream_name":"stdout","time":14.654023988,"data":"Requirement already satisfied: typer-slim in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (0.24.0)\n"}
+,{"stream_name":"stdout","time":14.65820089,"data":"Requirement already satisfied: tqdm\u003e=4.27 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (4.67.3)\n"}
+,{"stream_name":"stdout","time":14.678677291,"data":"Requirement already satisfied: pyarrow\u003e=21.0.0 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (24.0.0)\n"}
+,{"stream_name":"stdout","time":14.680154868,"data":"Requirement already satisfied: dill\u003c0.4.2,\u003e=0.3.0 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.4.1)\n"}
+,{"stream_name":"stdout","time":14.689753586,"data":"Requirement already satisfied: pandas in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.3.3)\n"}
+,{"stream_name":"stdout","time":14.691012694,"data":"Requirement already satisfied: requests\u003e=2.32.2 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.32.4)\n"}
+,{"stream_name":"stdout","time":14.692554246,"data":"Requirement already satisfied: httpx\u003c1.0.0 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.28.1)\n"}
+,{"stream_name":"stdout","time":14.695949006,"data":"Requirement already satisfied: xxhash in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.6.0)\n"}
+,{"stream_name":"stdout","time":14.697223717,"data":"Requirement already satisfied: multiprocess\u003c0.70.20 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.70.16)\n"}
+,{"stream_name":"stdout","time":14.699538266,"data":"Requirement already satisfied: fsspec\u003c=2026.2.0,\u003e=2023.1.0 in /usr/local/lib/python3.12/dist-packages (from fsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2025.3.0)\n"}
+,{"stream_name":"stdout","time":14.711765118,"data":"Requirement already satisfied: psutil in /usr/local/lib/python3.12/dist-packages (from peft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (5.9.5)\n"}
+,{"stream_name":"stdout","time":14.714552214,"data":"Requirement already satisfied: torch\u003e=1.13.0 in /usr/local/lib/python3.12/dist-packages (from peft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (2.10.0+cu128)\n"}
+,{"stream_name":"stdout","time":14.719588419,"data":"Requirement already satisfied: accelerate\u003e=0.21.0 in /usr/local/lib/python3.12/dist-packages (from peft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.13.0)\n"}
+,{"stream_name":"stdout","time":14.799982108,"data":"Requirement already satisfied: safetensors\u003c1,\u003e=0.5 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 8)) (0.7.0)\n"}
+,{"stream_name":"stdout","time":14.800008831,"data":"Requirement already satisfied: sentence-transformers\u003c6,\u003e=5 in /usr/local/lib/python3.12/dist-packages (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (5.4.1)\n"}
+,{"stream_name":"stdout","time":14.800014312,"data":"Requirement already satisfied: filelock in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (3.29.0)\n"}
+,{"stream_name":"stdout","time":14.800020783,"data":"Requirement already satisfied: huggingface-hub\u003c2.0,\u003e=1.3.0 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (1.11.0)\n"}
+,{"stream_name":"stdout","time":14.800028707,"data":"Requirement already satisfied: numpy\u003e=1.17 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (2.0.2)\n"}
+,{"stream_name":"stdout","time":14.8000317,"data":"Requirement already satisfied: packaging\u003e=20.0 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (26.1)\n"}
+,{"stream_name":"stdout","time":14.800034675,"data":"Requirement already satisfied: pyyaml\u003e=5.1 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (6.0.3)\n"}
+,{"stream_name":"stdout","time":14.800037571,"data":"Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (2025.11.3)\n"}
+,{"stream_name":"stdout","time":14.800041537,"data":"Requirement already satisfied: tokenizers\u003c=0.23.0,\u003e=0.22.0 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (0.22.2)\n"}
+,{"stream_name":"stdout","time":14.800044586,"data":"Requirement already satisfied: typer-slim in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (0.24.0)\n"}
+,{"stream_name":"stdout","time":14.800047518,"data":"Requirement already satisfied: tqdm\u003e=4.27 in /usr/local/lib/python3.12/dist-packages (from transformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (4.67.3)\n"}
+,{"stream_name":"stdout","time":14.800050353,"data":"Requirement already satisfied: pyarrow\u003e=21.0.0 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (24.0.0)\n"}
+,{"stream_name":"stdout","time":14.800064279,"data":"Requirement already satisfied: dill\u003c0.4.2,\u003e=0.3.0 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.4.1)\n"}
+,{"stream_name":"stdout","time":14.800067628,"data":"Requirement already satisfied: pandas in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.3.3)\n"}
+,{"stream_name":"stdout","time":14.800070546,"data":"Requirement already satisfied: requests\u003e=2.32.2 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.32.4)\n"}
+,{"stream_name":"stdout","time":14.800073345,"data":"Requirement already satisfied: httpx\u003c1.0.0 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.28.1)\n"}
+,{"stream_name":"stdout","time":14.800076577,"data":"Requirement already satisfied: xxhash in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.6.0)\n"}
+,{"stream_name":"stdout","time":14.800079436,"data":"Requirement already satisfied: multiprocess\u003c0.70.20 in /usr/local/lib/python3.12/dist-packages (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.70.16)\n"}
+,{"stream_name":"stdout","time":14.800082461,"data":"Requirement already satisfied: fsspec\u003c=2026.2.0,\u003e=2023.1.0 in /usr/local/lib/python3.12/dist-packages (from fsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2025.3.0)\n"}
+,{"stream_name":"stdout","time":14.800085579,"data":"Requirement already satisfied: psutil in /usr/local/lib/python3.12/dist-packages (from peft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (5.9.5)\n"}
+,{"stream_name":"stdout","time":14.800088381,"data":"Requirement already satisfied: torch\u003e=1.13.0 in /usr/local/lib/python3.12/dist-packages (from peft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (2.10.0+cu128)\n"}
+,{"stream_name":"stdout","time":14.800091275,"data":"Requirement already satisfied: accelerate\u003e=0.21.0 in /usr/local/lib/python3.12/dist-packages (from peft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.13.0)\n"}
+,{"stream_name":"stdout","time":14.914604956,"data":"Collecting unsloth_zoo\u003e=2026.8.6 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":14.932549988,"data":"  Downloading unsloth_zoo-2026.8.9-py3-none-any.whl.metadata (33 kB)\n"}
+,{"stream_name":"stdout","time":14.957724955,"data":"Requirement already satisfied: wheel\u003e=0.42.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.47.0)\n"}
+,{"stream_name":"stdout","time":14.96043684,"data":"Requirement already satisfied: torchvision in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.25.0+cu128)\n"}
+,{"stream_name":"stdout","time":15.117129077,"data":"Collecting unsloth_zoo\u003e=2026.8.6 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.117158033,"data":"  Downloading unsloth_zoo-2026.8.9-py3-none-any.whl.metadata (33 kB)\n"}
+,{"stream_name":"stdout","time":15.117163384,"data":"Requirement already satisfied: wheel\u003e=0.42.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.47.0)\n"}
+,{"stream_name":"stdout","time":15.117168784,"data":"Requirement already satisfied: torchvision in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.25.0+cu128)\n"}
+,{"stream_name":"stdout","time":15.185360998,"data":"Collecting tyro (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.202140434,"data":"  Downloading tyro-1.0.15-py3-none-any.whl.metadata (12 kB)\n"}
+,{"stream_name":"stdout","time":15.2230275,"data":"Requirement already satisfied: protobuf in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (5.29.5)\n"}
+,{"stream_name":"stdout","time":15.306504897,"data":"Collecting xformers\u003e=0.0.27.post2 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.324168141,"data":"  Downloading xformers-0.0.35-py39-none-manylinux_2_28_x86_64.whl.metadata (1.2 kB)\n"}
+,{"stream_name":"stdout","time":15.387589554,"data":"Collecting tyro (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.387614071,"data":"  Downloading tyro-1.0.15-py3-none-any.whl.metadata (12 kB)\n"}
+,{"stream_name":"stdout","time":15.387619579,"data":"Requirement already satisfied: protobuf in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (5.29.5)\n"}
+,{"stream_name":"stdout","time":15.387625136,"data":"Collecting xformers\u003e=0.0.27.post2 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.387629863,"data":"  Downloading xformers-0.0.35-py39-none-manylinux_2_28_x86_64.whl.metadata (1.2 kB)\n"}
+,{"stream_name":"stdout","time":15.397916434,"data":"Collecting bitsandbytes!=0.46.0,!=0.48.0,\u003e=0.45.5 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.419001693,"data":"  Downloading bitsandbytes-0.50.0-py3-none-manylinux_2_24_x86_64.whl.metadata (10 kB)\n"}
+,{"stream_name":"stdout","time":15.437400567,"data":"Requirement already satisfied: triton\u003e=3.0.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (3.6.0)\n"}
+,{"stream_name":"stdout","time":15.43874763,"data":"Requirement already satisfied: sentencepiece\u003e=0.2.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.2.1)\n"}
+,{"stream_name":"stdout","time":15.459168184,"data":"Collecting datasets\u003c5,\u003e=4.0 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4))\n"}
+,{"stream_name":"stdout","time":15.476021817,"data":"  Downloading datasets-4.3.0-py3-none-any.whl.metadata (18 kB)\n"}
+,{"stream_name":"stdout","time":15.600482525,"data":"Collecting bitsandbytes!=0.46.0,!=0.48.0,\u003e=0.45.5 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.600511853,"data":"  Downloading bitsandbytes-0.50.0-py3-none-manylinux_2_24_x86_64.whl.metadata (10 kB)\n"}
+,{"stream_name":"stdout","time":15.600515208000001,"data":"Requirement already satisfied: triton\u003e=3.0.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (3.6.0)\n"}
+,{"stream_name":"stdout","time":15.600518789,"data":"Requirement already satisfied: sentencepiece\u003e=0.2.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.2.1)\n"}
+,{"stream_name":"stdout","time":15.600532928,"data":"Collecting datasets\u003c5,\u003e=4.0 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4))\n"}
+,{"stream_name":"stdout","time":15.600538202,"data":"  Downloading datasets-4.3.0-py3-none-any.whl.metadata (18 kB)\n"}
+,{"stream_name":"stdout","time":15.601736408,"data":"Collecting hf_transfer (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.618244617,"data":"  Downloading hf_transfer-0.1.9-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.7 kB)\n"}
+,{"stream_name":"stdout","time":15.634938748,"data":"Requirement already satisfied: diffusers in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.37.1)\n"}
+,{"stream_name":"stdout","time":15.781077076999999,"data":"Collecting transformers\u003c6,\u003e=5.0 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3))\n"}
+,{"stream_name":"stdout","time":15.796610728,"data":"  Downloading transformers-5.5.0-py3-none-any.whl.metadata (32 kB)\n"}
+,{"stream_name":"stdout","time":15.803912171,"data":"Collecting hf_transfer (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":15.803937782,"data":"  Downloading hf_transfer-0.1.9-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.7 kB)\n"}
+,{"stream_name":"stdout","time":15.803944013,"data":"Requirement already satisfied: diffusers in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.37.1)\n"}
+,{"stream_name":"stdout","time":15.803961045,"data":"Collecting transformers\u003c6,\u003e=5.0 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3))\n"}
+,{"stream_name":"stdout","time":15.803966422,"data":"  Downloading transformers-5.5.0-py3-none-any.whl.metadata (32 kB)\n"}
+,{"stream_name":"stdout","time":15.90660841,"data":"Collecting trl\u003c1,\u003e=0.21 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 6))\n"}
+,{"stream_name":"stdout","time":15.922721635,"data":"  Downloading trl-0.24.0-py3-none-any.whl.metadata (11 kB)\n"}
+,{"stream_name":"stdout","time":15.947854943,"data":"Requirement already satisfied: typer\u003e=0.12.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.24.2)\n"}
+,{"stream_name":"stdout","time":15.950403282,"data":"Requirement already satisfied: pydantic in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (2.12.3)\n"}
+,{"stream_name":"stdout","time":15.951839947,"data":"Requirement already satisfied: nest-asyncio in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (1.6.0)\n"}
+,{"stream_name":"stdout","time":15.999781848,"data":"Collecting structlog\u003e=24.1.0 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.015476987,"data":"  Downloading structlog-26.1.0-py3-none-any.whl.metadata (9.7 kB)\n"}
+,{"stream_name":"stdout","time":16.029586649,"data":"Requirement already satisfied: click\u003e=8.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (8.3.3)\n"}
+,{"stream_name":"stdout","time":16.031106892,"data":"Requirement already satisfied: rich in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (13.9.4)\n"}
+,{"stream_name":"stdout","time":16.108939519,"data":"Collecting trl\u003c1,\u003e=0.21 (from -r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 6))\n"}
+,{"stream_name":"stdout","time":16.108967343,"data":"  Downloading trl-0.24.0-py3-none-any.whl.metadata (11 kB)\n"}
+,{"stream_name":"stdout","time":16.108970744,"data":"Requirement already satisfied: typer\u003e=0.12.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.24.2)\n"}
+,{"stream_name":"stdout","time":16.108973995,"data":"Requirement already satisfied: pydantic in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (2.12.3)\n"}
+,{"stream_name":"stdout","time":16.108976819,"data":"Requirement already satisfied: nest-asyncio in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (1.6.0)\n"}
+,{"stream_name":"stdout","time":16.108999939,"data":"Collecting structlog\u003e=24.1.0 (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.109005373,"data":"  Downloading structlog-26.1.0-py3-none-any.whl.metadata (9.7 kB)\n"}
+,{"stream_name":"stdout","time":16.109009579,"data":"Requirement already satisfied: click\u003e=8.0 in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (8.3.3)\n"}
+,{"stream_name":"stdout","time":16.109014316,"data":"Requirement already satisfied: rich in /usr/local/lib/python3.12/dist-packages (from unsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (13.9.4)\n"}
+,{"stream_name":"stdout","time":16.127938299,"data":"Collecting dill\u003c0.4.1,\u003e=0.3.0 (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4))\n"}
+,{"stream_name":"stdout","time":16.145487571,"data":"  Downloading dill-0.4.0-py3-none-any.whl.metadata (10 kB)\n"}
+,{"stream_name":"stdout","time":16.250184147,"data":"Requirement already satisfied: scikit-learn\u003e=0.22.0 in /usr/local/lib/python3.12/dist-packages (from sentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (1.6.1)\n"}
+,{"stream_name":"stdout","time":16.256933113,"data":"Requirement already satisfied: scipy\u003e=1.0.0 in /usr/local/lib/python3.12/dist-packages (from sentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (1.16.3)\n"}
+,{"stream_name":"stdout","time":16.258101682,"data":"Requirement already satisfied: typing_extensions\u003e=4.5.0 in /usr/local/lib/python3.12/dist-packages (from sentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (4.15.0)\n"}
+,{"stream_name":"stdout","time":16.303003787,"data":"Requirement already satisfied: aiohttp!=4.0.0a0,!=4.0.0a1 in /usr/local/lib/python3.12/dist-packages (from fsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.13.5)\n"}
+,{"stream_name":"stdout","time":16.306493346,"data":"Requirement already satisfied: anyio in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (4.13.0)\n"}
+,{"stream_name":"stdout","time":16.307606483,"data":"Requirement already satisfied: certifi in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2026.4.22)\n"}
+,{"stream_name":"stdout","time":16.30960942,"data":"Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.0.9)\n"}
+,{"stream_name":"stdout","time":16.31099546,"data":"Requirement already satisfied: idna in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.13)\n"}
+,{"stream_name":"stdout","time":16.315400883,"data":"Requirement already satisfied: h11\u003e=0.16 in /usr/local/lib/python3.12/dist-packages (from httpcore==1.*-\u003ehttpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.16.0)\n"}
+,{"stream_name":"stdout","time":16.33021508,"data":"Collecting dill\u003c0.4.1,\u003e=0.3.0 (from datasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4))\n"}
+,{"stream_name":"stdout","time":16.330239256,"data":"  Downloading dill-0.4.0-py3-none-any.whl.metadata (10 kB)\n"}
+,{"stream_name":"stdout","time":16.330244809,"data":"Requirement already satisfied: scikit-learn\u003e=0.22.0 in /usr/local/lib/python3.12/dist-packages (from sentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (1.6.1)\n"}
+,{"stream_name":"stdout","time":16.330250398,"data":"Requirement already satisfied: scipy\u003e=1.0.0 in /usr/local/lib/python3.12/dist-packages (from sentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (1.16.3)\n"}
+,{"stream_name":"stdout","time":16.330255917,"data":"Requirement already satisfied: typing_extensions\u003e=4.5.0 in /usr/local/lib/python3.12/dist-packages (from sentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (4.15.0)\n"}
+,{"stream_name":"stdout","time":16.330261062,"data":"Requirement already satisfied: aiohttp!=4.0.0a0,!=4.0.0a1 in /usr/local/lib/python3.12/dist-packages (from fsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.13.5)\n"}
+,{"stream_name":"stdout","time":16.330266527,"data":"Requirement already satisfied: anyio in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (4.13.0)\n"}
+,{"stream_name":"stdout","time":16.330271622,"data":"Requirement already satisfied: certifi in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2026.4.22)\n"}
+,{"stream_name":"stdout","time":16.330307793,"data":"Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.0.9)\n"}
+,{"stream_name":"stdout","time":16.330318254,"data":"Requirement already satisfied: idna in /usr/local/lib/python3.12/dist-packages (from httpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.13)\n"}
+,{"stream_name":"stdout","time":16.330323415,"data":"Requirement already satisfied: h11\u003e=0.16 in /usr/local/lib/python3.12/dist-packages (from httpcore==1.*-\u003ehttpx\u003c1.0.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.16.0)\n"}
+,{"stream_name":"stdout","time":16.352164729,"data":"Requirement already satisfied: hf-xet\u003c2.0.0,\u003e=1.4.3 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub\u003c2.0,\u003e=1.3.0-\u003etransformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (1.4.3)\n"}
+,{"stream_name":"stdout","time":16.38201271,"data":"Requirement already satisfied: charset_normalizer\u003c4,\u003e=2 in /usr/local/lib/python3.12/dist-packages (from requests\u003e=2.32.2-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.4.7)\n"}
+,{"stream_name":"stdout","time":16.384042194,"data":"Requirement already satisfied: urllib3\u003c3,\u003e=1.21.1 in /usr/local/lib/python3.12/dist-packages (from requests\u003e=2.32.2-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.5.0)\n"}
+,{"stream_name":"stdout","time":16.399134724,"data":"Requirement already satisfied: joblib\u003e=1.2.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn\u003e=0.22.0-\u003esentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (1.5.3)\n"}
+,{"stream_name":"stdout","time":16.400629466,"data":"Requirement already satisfied: threadpoolctl\u003e=3.1.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn\u003e=0.22.0-\u003esentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (3.6.0)\n"}
+,{"stream_name":"stdout","time":16.430470288,"data":"Requirement already satisfied: setuptools in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (81.0.0)\n"}
+,{"stream_name":"stdout","time":16.432042535,"data":"Requirement already satisfied: sympy\u003e=1.13.3 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.14.0)\n"}
+,{"stream_name":"stdout","time":16.43371848,"data":"Requirement already satisfied: networkx\u003e=2.5.1 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.6.1)\n"}
+,{"stream_name":"stdout","time":16.434903545,"data":"Requirement already satisfied: jinja2 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.1.6)\n"}
+,{"stream_name":"stdout","time":16.436461395,"data":"Requirement already satisfied: cuda-bindings==12.9.4 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.9.4)\n"}
+,{"stream_name":"stdout","time":16.437818932,"data":"Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.8.93 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.93)\n"}
+,{"stream_name":"stdout","time":16.439157221,"data":"Requirement already satisfied: nvidia-cuda-runtime-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.90)\n"}
+,{"stream_name":"stdout","time":16.440672937,"data":"Requirement already satisfied: nvidia-cuda-cupti-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.90)\n"}
+,{"stream_name":"stdout","time":16.442144767,"data":"Requirement already satisfied: nvidia-cudnn-cu12==9.10.2.21 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (9.10.2.21)\n"}
+,{"stream_name":"stdout","time":16.443620779,"data":"Requirement already satisfied: nvidia-cublas-cu12==12.8.4.1 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.4.1)\n"}
+,{"stream_name":"stdout","time":16.44511568,"data":"Requirement already satisfied: nvidia-cufft-cu12==11.3.3.83 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (11.3.3.83)\n"}
+,{"stream_name":"stdout","time":16.446529289,"data":"Requirement already satisfied: nvidia-curand-cu12==10.3.9.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (10.3.9.90)\n"}
+,{"stream_name":"stdout","time":16.448104189,"data":"Requirement already satisfied: nvidia-cusolver-cu12==11.7.3.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (11.7.3.90)\n"}
+,{"stream_name":"stdout","time":16.449541463,"data":"Requirement already satisfied: nvidia-cusparse-cu12==12.5.8.93 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.5.8.93)\n"}
+,{"stream_name":"stdout","time":16.450904381,"data":"Requirement already satisfied: nvidia-cusparselt-cu12==0.7.1 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (0.7.1)\n"}
+,{"stream_name":"stdout","time":16.452313982,"data":"Requirement already satisfied: nvidia-nccl-cu12==2.27.5 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (2.27.5)\n"}
+,{"stream_name":"stdout","time":16.453855837,"data":"Requirement already satisfied: nvidia-nvshmem-cu12==3.4.5 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.4.5)\n"}
+,{"stream_name":"stdout","time":16.455294817,"data":"Requirement already satisfied: nvidia-nvtx-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.90)\n"}
+,{"stream_name":"stdout","time":16.456672487,"data":"Requirement already satisfied: nvidia-nvjitlink-cu12==12.8.93 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.93)\n"}
+,{"stream_name":"stdout","time":16.458054005,"data":"Requirement already satisfied: nvidia-cufile-cu12==1.13.1.3 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.13.1.3)\n"}
+,{"stream_name":"stdout","time":16.466781797,"data":"Requirement already satisfied: cuda-pathfinder~=1.1 in /usr/local/lib/python3.12/dist-packages (from cuda-bindings==12.9.4-\u003etorch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.5.3)\n"}
+,{"stream_name":"stdout","time":16.508362859000002,"data":"Requirement already satisfied: shellingham\u003e=1.3.0 in /usr/local/lib/python3.12/dist-packages (from typer\u003e=0.12.0-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (1.5.4)\n"}
+,{"stream_name":"stdout","time":16.510416092,"data":"Requirement already satisfied: annotated-doc\u003e=0.0.2 in /usr/local/lib/python3.12/dist-packages (from typer\u003e=0.12.0-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.0.4)\n"}
+,{"stream_name":"stdout","time":16.51540856,"data":"Requirement already satisfied: markdown-it-py\u003e=2.2.0 in /usr/local/lib/python3.12/dist-packages (from rich-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (4.0.0)\n"}
+,{"stream_name":"stdout","time":16.51651004,"data":"Requirement already satisfied: pygments\u003c3.0.0,\u003e=2.13.0 in /usr/local/lib/python3.12/dist-packages (from rich-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (2.20.0)\n"}
+,{"stream_name":"stdout","time":16.555014277,"data":"Requirement already satisfied: hf-xet\u003c2.0.0,\u003e=1.4.3 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub\u003c2.0,\u003e=1.3.0-\u003etransformers\u003c6,\u003e=5.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 3)) (1.4.3)\n"}
+,{"stream_name":"stdout","time":16.555046011,"data":"Requirement already satisfied: charset_normalizer\u003c4,\u003e=2 in /usr/local/lib/python3.12/dist-packages (from requests\u003e=2.32.2-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (3.4.7)\n"}
+,{"stream_name":"stdout","time":16.555050746,"data":"Requirement already satisfied: urllib3\u003c3,\u003e=1.21.1 in /usr/local/lib/python3.12/dist-packages (from requests\u003e=2.32.2-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.5.0)\n"}
+,{"stream_name":"stdout","time":16.555075322,"data":"Requirement already satisfied: joblib\u003e=1.2.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn\u003e=0.22.0-\u003esentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (1.5.3)\n"}
+,{"stream_name":"stdout","time":16.555082114,"data":"Requirement already satisfied: threadpoolctl\u003e=3.1.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn\u003e=0.22.0-\u003esentence-transformers\u003c6,\u003e=5-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 9)) (3.6.0)\n"}
+,{"stream_name":"stdout","time":16.555088216,"data":"Requirement already satisfied: setuptools in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (81.0.0)\n"}
+,{"stream_name":"stdout","time":16.555094013,"data":"Requirement already satisfied: sympy\u003e=1.13.3 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.14.0)\n"}
+,{"stream_name":"stdout","time":16.555100516,"data":"Requirement already satisfied: networkx\u003e=2.5.1 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.6.1)\n"}
+,{"stream_name":"stdout","time":16.555105666,"data":"Requirement already satisfied: jinja2 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.1.6)\n"}
+,{"stream_name":"stdout","time":16.555110548000002,"data":"Requirement already satisfied: cuda-bindings==12.9.4 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.9.4)\n"}
+,{"stream_name":"stdout","time":16.555115391,"data":"Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.8.93 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.93)\n"}
+,{"stream_name":"stdout","time":16.555124678,"data":"Requirement already satisfied: nvidia-cuda-runtime-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.90)\n"}
+,{"stream_name":"stdout","time":16.555128253,"data":"Requirement already satisfied: nvidia-cuda-cupti-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.90)\n"}
+,{"stream_name":"stdout","time":16.555131359,"data":"Requirement already satisfied: nvidia-cudnn-cu12==9.10.2.21 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (9.10.2.21)\n"}
+,{"stream_name":"stdout","time":16.555134453,"data":"Requirement already satisfied: nvidia-cublas-cu12==12.8.4.1 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.4.1)\n"}
+,{"stream_name":"stdout","time":16.555141234,"data":"Requirement already satisfied: nvidia-cufft-cu12==11.3.3.83 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (11.3.3.83)\n"}
+,{"stream_name":"stdout","time":16.555144744,"data":"Requirement already satisfied: nvidia-curand-cu12==10.3.9.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (10.3.9.90)\n"}
+,{"stream_name":"stdout","time":16.555147923,"data":"Requirement already satisfied: nvidia-cusolver-cu12==11.7.3.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (11.7.3.90)\n"}
+,{"stream_name":"stdout","time":16.555151049,"data":"Requirement already satisfied: nvidia-cusparse-cu12==12.5.8.93 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.5.8.93)\n"}
+,{"stream_name":"stdout","time":16.555154459,"data":"Requirement already satisfied: nvidia-cusparselt-cu12==0.7.1 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (0.7.1)\n"}
+,{"stream_name":"stdout","time":16.55515814,"data":"Requirement already satisfied: nvidia-nccl-cu12==2.27.5 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (2.27.5)\n"}
+,{"stream_name":"stdout","time":16.555172165,"data":"Requirement already satisfied: nvidia-nvshmem-cu12==3.4.5 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.4.5)\n"}
+,{"stream_name":"stdout","time":16.555178591,"data":"Requirement already satisfied: nvidia-nvtx-cu12==12.8.90 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.90)\n"}
+,{"stream_name":"stdout","time":16.555184107,"data":"Requirement already satisfied: nvidia-nvjitlink-cu12==12.8.93 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (12.8.93)\n"}
+,{"stream_name":"stdout","time":16.555190099,"data":"Requirement already satisfied: nvidia-cufile-cu12==1.13.1.3 in /usr/local/lib/python3.12/dist-packages (from torch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.13.1.3)\n"}
+,{"stream_name":"stdout","time":16.555195149,"data":"Requirement already satisfied: cuda-pathfinder~=1.1 in /usr/local/lib/python3.12/dist-packages (from cuda-bindings==12.9.4-\u003etorch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.5.3)\n"}
+,{"stream_name":"stdout","time":16.555203793,"data":"Requirement already satisfied: shellingham\u003e=1.3.0 in /usr/local/lib/python3.12/dist-packages (from typer\u003e=0.12.0-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (1.5.4)\n"}
+,{"stream_name":"stdout","time":16.55520878,"data":"Requirement already satisfied: annotated-doc\u003e=0.0.2 in /usr/local/lib/python3.12/dist-packages (from typer\u003e=0.12.0-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.0.4)\n"}
+,{"stream_name":"stdout","time":16.555213773,"data":"Requirement already satisfied: markdown-it-py\u003e=2.2.0 in /usr/local/lib/python3.12/dist-packages (from rich-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (4.0.0)\n"}
+,{"stream_name":"stdout","time":16.555218566,"data":"Requirement already satisfied: pygments\u003c3.0.0,\u003e=2.13.0 in /usr/local/lib/python3.12/dist-packages (from rich-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (2.20.0)\n"}
+,{"stream_name":"stdout","time":16.576190888,"data":"Collecting torchao\u003e=0.13.0 (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.594166804,"data":"  Downloading torchao-0.18.0-cp310-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (21 kB)\n"}
+,{"stream_name":"stdout","time":16.652702079,"data":"Collecting cut_cross_entropy (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.669176239,"data":"  Downloading cut_cross_entropy-25.1.1-py3-none-any.whl.metadata (9.3 kB)\n"}
+,{"stream_name":"stdout","time":16.6971507,"data":"Requirement already satisfied: pillow in /usr/local/lib/python3.12/dist-packages (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (11.3.0)\n"}
+,{"stream_name":"stdout","time":16.778422431,"data":"Collecting torchao\u003e=0.13.0 (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.778467795,"data":"  Downloading torchao-0.18.0-cp310-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (21 kB)\n"}
+,{"stream_name":"stdout","time":16.778473644,"data":"Collecting cut_cross_entropy (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.778478495,"data":"  Downloading cut_cross_entropy-25.1.1-py3-none-any.whl.metadata (9.3 kB)\n"}
+,{"stream_name":"stdout","time":16.778482369,"data":"Requirement already satisfied: pillow in /usr/local/lib/python3.12/dist-packages (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (11.3.0)\n"}
+,{"stream_name":"stdout","time":16.858478875,"data":"Collecting msgspec (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":16.876898531,"data":"  Downloading msgspec-0.21.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.8 kB)\n"}
+,{"stream_name":"stdout","time":16.915716177,"data":"Requirement already satisfied: importlib-metadata in /usr/local/lib/python3.12/dist-packages (from diffusers-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (8.7.1)\n"}
+,{"stream_name":"stdout","time":16.948695533,"data":"Requirement already satisfied: python-dateutil\u003e=2.8.2 in /usr/local/lib/python3.12/dist-packages (from pandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.9.0.post0)\n"}
+,{"stream_name":"stdout","time":16.950603971,"data":"Requirement already satisfied: pytz\u003e=2020.1 in /usr/local/lib/python3.12/dist-packages (from pandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2025.2)\n"}
+,{"stream_name":"stdout","time":16.951721365,"data":"Requirement already satisfied: tzdata\u003e=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2026.1)\n"}
+,{"stream_name":"stdout","time":16.967657367,"data":"Requirement already satisfied: annotated-types\u003e=0.6.0 in /usr/local/lib/python3.12/dist-packages (from pydantic-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.7.0)\n"}
+,{"stream_name":"stdout","time":16.968983053,"data":"Requirement already satisfied: pydantic-core==2.41.4 in /usr/local/lib/python3.12/dist-packages (from pydantic-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (2.41.4)\n"}
+,{"stream_name":"stdout","time":16.970708826,"data":"Requirement already satisfied: typing-inspection\u003e=0.4.2 in /usr/local/lib/python3.12/dist-packages (from pydantic-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.4.2)\n"}
+,{"stream_name":"stdout","time":16.991307179,"data":"Requirement already satisfied: docstring-parser\u003e=0.16 in /usr/local/lib/python3.12/dist-packages (from tyro-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.18.0)\n"}
+,{"stream_name":"stdout","time":16.992562003,"data":"Requirement already satisfied: typeguard\u003e=4.0.0 in /usr/local/lib/python3.12/dist-packages (from tyro-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (4.5.1)\n"}
+,{"stream_name":"stdout","time":17.001260094,"data":"Requirement already satisfied: aiohappyeyeballs\u003e=2.5.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.6.1)\n"}
+,{"stream_name":"stdout","time":17.002510556,"data":"Requirement already satisfied: aiosignal\u003e=1.4.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.4.0)\n"}
+,{"stream_name":"stdout","time":17.004085884,"data":"Requirement already satisfied: attrs\u003e=17.3.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (26.1.0)\n"}
+,{"stream_name":"stdout","time":17.006148779,"data":"Requirement already satisfied: frozenlist\u003e=1.1.1 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.8.0)\n"}
+,{"stream_name":"stdout","time":17.007388027,"data":"Requirement already satisfied: multidict\u003c7.0,\u003e=4.5 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (6.7.1)\n"}
+,{"stream_name":"stdout","time":17.009047226,"data":"Requirement already satisfied: propcache\u003e=0.2.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.4.1)\n"}
+,{"stream_name":"stdout","time":17.013304033,"data":"Requirement already satisfied: yarl\u003c2.0,\u003e=1.17.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.23.0)\n"}
+,{"stream_name":"stdout","time":17.044018608,"data":"Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.12/dist-packages (from markdown-it-py\u003e=2.2.0-\u003erich-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.1.2)\n"}
+,{"stream_name":"stdout","time":17.061020953,"data":"Collecting msgspec (from unsloth_zoo\u003e=2026.8.6-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7))\n"}
+,{"stream_name":"stdout","time":17.061041448,"data":"  Downloading msgspec-0.21.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.8 kB)\n"}
+,{"stream_name":"stdout","time":17.061046453,"data":"Requirement already satisfied: importlib-metadata in /usr/local/lib/python3.12/dist-packages (from diffusers-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (8.7.1)\n"}
+,{"stream_name":"stdout","time":17.061052055,"data":"Requirement already satisfied: python-dateutil\u003e=2.8.2 in /usr/local/lib/python3.12/dist-packages (from pandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.9.0.post0)\n"}
+,{"stream_name":"stdout","time":17.061057396,"data":"Requirement already satisfied: pytz\u003e=2020.1 in /usr/local/lib/python3.12/dist-packages (from pandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2025.2)\n"}
+,{"stream_name":"stdout","time":17.061076167,"data":"Requirement already satisfied: tzdata\u003e=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2026.1)\n"}
+,{"stream_name":"stdout","time":17.061081221,"data":"Requirement already satisfied: annotated-types\u003e=0.6.0 in /usr/local/lib/python3.12/dist-packages (from pydantic-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.7.0)\n"}
+,{"stream_name":"stdout","time":17.061086049,"data":"Requirement already satisfied: pydantic-core==2.41.4 in /usr/local/lib/python3.12/dist-packages (from pydantic-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (2.41.4)\n"}
+,{"stream_name":"stdout","time":17.061091696,"data":"Requirement already satisfied: typing-inspection\u003e=0.4.2 in /usr/local/lib/python3.12/dist-packages (from pydantic-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.4.2)\n"}
+,{"stream_name":"stdout","time":17.061096516,"data":"Requirement already satisfied: docstring-parser\u003e=0.16 in /usr/local/lib/python3.12/dist-packages (from tyro-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.18.0)\n"}
+,{"stream_name":"stdout","time":17.061101231,"data":"Requirement already satisfied: typeguard\u003e=4.0.0 in /usr/local/lib/python3.12/dist-packages (from tyro-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (4.5.1)\n"}
+,{"stream_name":"stdout","time":17.06110612,"data":"Requirement already satisfied: aiohappyeyeballs\u003e=2.5.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (2.6.1)\n"}
+,{"stream_name":"stdout","time":17.061111282,"data":"Requirement already satisfied: aiosignal\u003e=1.4.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.4.0)\n"}
+,{"stream_name":"stdout","time":17.061116401,"data":"Requirement already satisfied: attrs\u003e=17.3.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (26.1.0)\n"}
+,{"stream_name":"stdout","time":17.061121476,"data":"Requirement already satisfied: frozenlist\u003e=1.1.1 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.8.0)\n"}
+,{"stream_name":"stdout","time":17.061127045,"data":"Requirement already satisfied: multidict\u003c7.0,\u003e=4.5 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (6.7.1)\n"}
+,{"stream_name":"stdout","time":17.061135429,"data":"Requirement already satisfied: propcache\u003e=0.2.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (0.4.1)\n"}
+,{"stream_name":"stdout","time":17.061140663,"data":"Requirement already satisfied: yarl\u003c2.0,\u003e=1.17.0 in /usr/local/lib/python3.12/dist-packages (from aiohttp!=4.0.0a0,!=4.0.0a1-\u003efsspec[http]\u003c=2026.2.0,\u003e=2023.1.0-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.23.0)\n"}
+,{"stream_name":"stdout","time":17.061145854,"data":"Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.12/dist-packages (from markdown-it-py\u003e=2.2.0-\u003erich-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (0.1.2)\n"}
+,{"stream_name":"stdout","time":17.062825015,"data":"Requirement already satisfied: six\u003e=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil\u003e=2.8.2-\u003epandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.17.0)\n"}
+,{"stream_name":"stdout","time":17.073570469,"data":"Requirement already satisfied: mpmath\u003c1.4,\u003e=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy\u003e=1.13.3-\u003etorch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.3.0)\n"}
+,{"stream_name":"stdout","time":17.109438554,"data":"Requirement already satisfied: zipp\u003e=3.20 in /usr/local/lib/python3.12/dist-packages (from importlib-metadata-\u003ediffusers-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (3.23.1)\n"}
+,{"stream_name":"stdout","time":17.113535635,"data":"Requirement already satisfied: MarkupSafe\u003e=2.0 in /usr/local/lib/python3.12/dist-packages (from jinja2-\u003etorch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.0.3)\n"}
+,{"stream_name":"stdout","time":17.204398139,"data":"Downloading unsloth-2026.8.12-py3-none-any.whl (82.2 MB)\n"}
+,{"stream_name":"stdout","time":17.265491441,"data":"Requirement already satisfied: six\u003e=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil\u003e=2.8.2-\u003epandas-\u003edatasets\u003c5,\u003e=4.0-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 4)) (1.17.0)\n"}
+,{"stream_name":"stdout","time":17.265518112,"data":"Requirement already satisfied: mpmath\u003c1.4,\u003e=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy\u003e=1.13.3-\u003etorch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (1.3.0)\n"}
+,{"stream_name":"stdout","time":17.265524566,"data":"Requirement already satisfied: zipp\u003e=3.20 in /usr/local/lib/python3.12/dist-packages (from importlib-metadata-\u003ediffusers-\u003eunsloth\u003e=2026.7-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 7)) (3.23.1)\n"}
+,{"stream_name":"stdout","time":17.265537773,"data":"Requirement already satisfied: MarkupSafe\u003e=2.0 in /usr/local/lib/python3.12/dist-packages (from jinja2-\u003etorch\u003e=1.13.0-\u003epeft\u003c1,\u003e=0.17-\u003e-r /kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/training/requirements-qwen35.txt (line 5)) (3.0.3)\n"}
+,{"stream_name":"stdout","time":17.26554285,"data":"Downloading unsloth-2026.8.12-py3-none-any.whl (82.2 MB)\n"}
+,{"stream_name":"stdout","time":18.017337741,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 82.2/82.2 MB 23.1 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.032826902,"data":"Downloading transformers-5.5.0-py3-none-any.whl (10.2 MB)\n"}
+,{"stream_name":"stdout","time":18.177364461,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 72.1 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.193215252,"data":"Downloading datasets-4.3.0-py3-none-any.whl (506 kB)\n"}
+,{"stream_name":"stdout","time":18.212353378,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 506.8/506.8 kB 30.0 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.219250537,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 82.2/82.2 MB 23.1 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.219270963,"data":"Downloading transformers-5.5.0-py3-none-any.whl (10.2 MB)\n"}
+,{"stream_name":"stdout","time":18.219276816,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 72.1 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.219297331,"data":"Downloading datasets-4.3.0-py3-none-any.whl (506 kB)\n"}
+,{"stream_name":"stdout","time":18.219303912,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 506.8/506.8 kB 30.0 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.230436559,"data":"Downloading trl-0.24.0-py3-none-any.whl (423 kB)\n"}
+,{"stream_name":"stdout","time":18.251018343,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 423.1/423.1 kB 22.8 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.271513643,"data":"Downloading bitsandbytes-0.50.0-py3-none-manylinux_2_24_x86_64.whl (40.9 MB)\n"}
+,{"stream_name":"stdout","time":18.433507463,"data":"Downloading trl-0.24.0-py3-none-any.whl (423 kB)\n"}
+,{"stream_name":"stdout","time":18.433535636,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 423.1/423.1 kB 22.8 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.433545697,"data":"Downloading bitsandbytes-0.50.0-py3-none-manylinux_2_24_x86_64.whl (40.9 MB)\n"}
+,{"stream_name":"stdout","time":18.653299643,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.9/40.9 MB 46.3 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.668557375,"data":"Downloading dill-0.4.0-py3-none-any.whl (119 kB)\n"}
+,{"stream_name":"stdout","time":18.689624534,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 119.7/119.7 kB 6.3 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.70361538,"data":"Downloading structlog-26.1.0-py3-none-any.whl (73 kB)\n"}
+,{"stream_name":"stdout","time":18.720352271,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.8/73.8 kB 4.4 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.738039674,"data":"Downloading unsloth_zoo-2026.8.9-py3-none-any.whl (1.4 MB)\n"}
+,{"stream_name":"stdout","time":18.769725874,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 47.2 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.790994416,"data":"Downloading xformers-0.0.35-py39-none-manylinux_2_28_x86_64.whl (3.3 MB)\n"}
+,{"stream_name":"stdout","time":18.843397769,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 65.4 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.855255239,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.9/40.9 MB 46.3 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.855318196,"data":"Downloading dill-0.4.0-py3-none-any.whl (119 kB)\n"}
+,{"stream_name":"stdout","time":18.85532547,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 119.7/119.7 kB 6.3 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.855331671,"data":"Downloading structlog-26.1.0-py3-none-any.whl (73 kB)\n"}
+,{"stream_name":"stdout","time":18.855335933,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.8/73.8 kB 4.4 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.855340653,"data":"Downloading unsloth_zoo-2026.8.9-py3-none-any.whl (1.4 MB)\n"}
+,{"stream_name":"stdout","time":18.855344834,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 47.2 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.855349494,"data":"Downloading xformers-0.0.35-py39-none-manylinux_2_28_x86_64.whl (3.3 MB)\n"}
+,{"stream_name":"stdout","time":18.855353868,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 65.4 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.862144697,"data":"Downloading hf_transfer-0.1.9-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.6 MB)\n"}
+,{"stream_name":"stdout","time":18.919290874,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.6/3.6 MB 65.1 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.934455667,"data":"Downloading tyro-1.0.15-py3-none-any.whl (215 kB)\n"}
+,{"stream_name":"stdout","time":18.959756971,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 215.0/215.0 kB 9.0 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":18.981685035,"data":"Downloading torchao-0.18.0-cp310-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (3.4 MB)\n"}
+,{"stream_name":"stdout","time":19.032120511,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 70.5 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":19.048194287,"data":"Downloading cut_cross_entropy-25.1.1-py3-none-any.whl (22 kB)\n"}
+,{"stream_name":"stdout","time":19.064404539,"data":"Downloading hf_transfer-0.1.9-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.6 MB)\n"}
+,{"stream_name":"stdout","time":19.064423828,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.6/3.6 MB 65.1 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":19.064429512,"data":"Downloading tyro-1.0.15-py3-none-any.whl (215 kB)\n"}
+,{"stream_name":"stdout","time":19.064434155,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 215.0/215.0 kB 9.0 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":19.06443873,"data":"Downloading torchao-0.18.0-cp310-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (3.4 MB)\n"}
+,{"stream_name":"stdout","time":19.064448933,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 70.5 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":19.06445328,"data":"Downloading cut_cross_entropy-25.1.1-py3-none-any.whl (22 kB)\n"}
+,{"stream_name":"stdout","time":19.077923926,"data":"Downloading msgspec-0.21.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (225 kB)\n"}
+,{"stream_name":"stdout","time":19.09611588,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 225.0/225.0 kB 13.7 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":19.280600167,"data":"Downloading msgspec-0.21.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (225 kB)\n"}
+,{"stream_name":"stdout","time":19.28063526,"data":"   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 225.0/225.0 kB 13.7 MB/s eta 0:00:00\n"}
+,{"stream_name":"stdout","time":22.011870161,"data":"Installing collected packages: torchao, structlog, msgspec, hf_transfer, dill, tyro, xformers, cut_cross_entropy, bitsandbytes, datasets, transformers, trl, unsloth_zoo, unsloth\n"}
+,{"stream_name":"stdout","time":22.012197745,"data":"  Attempting uninstall: torchao\n"}
+,{"stream_name":"stdout","time":22.145906902,"data":"    Found existing installation: torchao 0.10.0\n"}
+,{"stream_name":"stdout","time":22.214390396,"data":"Installing collected packages: torchao, structlog, msgspec, hf_transfer, dill, tyro, xformers, cut_cross_entropy, bitsandbytes, datasets, transformers, trl, unsloth_zoo, unsloth\n"}
+,{"stream_name":"stdout","time":22.214417068,"data":"  Attempting uninstall: torchao\n"}
+,{"stream_name":"stdout","time":22.214421026,"data":"    Found existing installation: torchao 0.10.0\n"}
+,{"stream_name":"stdout","time":22.237552062,"data":"    Uninstalling torchao-0.10.0:\n"}
+,{"stream_name":"stdout","time":22.440119032,"data":"    Uninstalling torchao-0.10.0:\n"}
+,{"stream_name":"stdout","time":22.648980776,"data":"      Successfully uninstalled torchao-0.10.0\n"}
+,{"stream_name":"stdout","time":22.85184528,"data":"      Successfully uninstalled torchao-0.10.0\n"}
+,{"stream_name":"stdout","time":23.981475233,"data":"  Attempting uninstall: dill\n"}
+,{"stream_name":"stdout","time":24.093548316,"data":"    Found existing installation: dill 0.4.1\n"}
+,{"stream_name":"stdout","time":24.103126757,"data":"    Uninstalling dill-0.4.1:\n"}
+,{"stream_name":"stdout","time":24.163673151,"data":"      Successfully uninstalled dill-0.4.1\n"}
+,{"stream_name":"stdout","time":24.183796732,"data":"  Attempting uninstall: dill\n"}
+,{"stream_name":"stdout","time":24.183818635,"data":"    Found existing installation: dill 0.4.1\n"}
+,{"stream_name":"stdout","time":24.183837164,"data":"    Uninstalling dill-0.4.1:\n"}
+,{"stream_name":"stdout","time":24.183842128,"data":"      Successfully uninstalled dill-0.4.1\n"}
+,{"stream_name":"stdout","time":25.524721305,"data":"  Attempting uninstall: datasets\n"}
+,{"stream_name":"stdout","time":25.558119397,"data":"    Found existing installation: datasets 5.0.0\n"}
+,{"stream_name":"stdout","time":25.609377511,"data":"    Uninstalling datasets-5.0.0:\n"}
+,{"stream_name":"stdout","time":25.727396666,"data":"  Attempting uninstall: datasets\n"}
+,{"stream_name":"stdout","time":25.72742383,"data":"    Found existing installation: datasets 5.0.0\n"}
+,{"stream_name":"stdout","time":25.72743467,"data":"    Uninstalling datasets-5.0.0:\n"}
+,{"stream_name":"stdout","time":25.747586645,"data":"      Successfully uninstalled datasets-5.0.0\n"}
+,{"stream_name":"stdout","time":25.950351686,"data":"      Successfully uninstalled datasets-5.0.0\n"}
+,{"stream_name":"stdout","time":26.11086515,"data":"  Attempting uninstall: transformers\n"}
+,{"stream_name":"stdout","time":26.313693111,"data":"  Attempting uninstall: transformers\n"}
+,{"stream_name":"stdout","time":26.424563879,"data":"    Found existing installation: transformers 5.0.0\n"}
+,{"stream_name":"stdout","time":26.627249928,"data":"    Found existing installation: transformers 5.0.0\n"}
+,{"stream_name":"stdout","time":26.844068958,"data":"    Uninstalling transformers-5.0.0:\n"}
+,{"stream_name":"stdout","time":27.04630764,"data":"    Uninstalling transformers-5.0.0:\n"}
+,{"stream_name":"stdout","time":28.77786274,"data":"      Successfully uninstalled transformers-5.0.0\n"}
+,{"stream_name":"stdout","time":28.980142086,"data":"      Successfully uninstalled transformers-5.0.0\n"}
+,{"stream_name":"stdout","time":44.747714454,"data":"Successfully installed bitsandbytes-0.50.0 cut_cross_entropy-25.1.1 datasets-4.3.0 dill-0.4.0 hf_transfer-0.1.9 msgspec-0.21.1 structlog-26.1.0 torchao-0.18.0 transformers-5.5.0 trl-0.24.0 tyro-1.0.15 unsloth-2026.8.12 unsloth_zoo-2026.8.9 xformers-0.0.35\n"}
+,{"stream_name":"stdout","time":44.955070626,"data":"Successfully installed bitsandbytes-0.50.0 cut_cross_entropy-25.1.1 datasets-4.3.0 dill-0.4.0 hf_transfer-0.1.9 msgspec-0.21.1 structlog-26.1.0 torchao-0.18.0 transformers-5.5.0 trl-0.24.0 tyro-1.0.15 unsloth-2026.8.12 unsloth_zoo-2026.8.9 xformers-0.0.35\n"}
+,{"stream_name":"stdout","time":51.021553307,"data":"{\n"}
+,{"stream_name":"stdout","time":51.021654142,"data":"  \"compatible\": true,\n"}
+,{"stream_name":"stdout","time":51.02166435,"data":"  \"compute_capability\": [\n"}
+,{"stream_name":"stdout","time":51.021671104,"data":"    7,\n"}
+,{"stream_name":"stdout","time":51.021677431,"data":"    5\n"}
+,{"stream_name":"stdout","time":51.021683266,"data":"  ],\n"}
+,{"stream_name":"stdout","time":51.021689263,"data":"  \"gpu_name\": \"Tesla T4\",\n"}
+,{"stream_name":"stdout","time":51.021696063,"data":"  \"package_versions\": {\n"}
+,{"stream_name":"stdout","time":51.021701803,"data":"    \"peft\": \"0.19.1\",\n"}
+,{"stream_name":"stdout","time":51.02171874,"data":"    \"transformers\": \"5.5.0\",\n"}
+,{"stream_name":"stdout","time":51.021725344,"data":"    \"trl\": \"0.24.0\",\n"}
+,{"stream_name":"stdout","time":51.0217313,"data":"    \"unsloth\": \"2026.8.12\"\n"}
+,{"stream_name":"stdout","time":51.021737669,"data":"  },\n"}
+,{"stream_name":"stdout","time":51.0217434,"data":"  \"precision\": \"bf16\",\n"}
+,{"stream_name":"stdout","time":51.021749607,"data":"  \"problems\": [],\n"}
+,{"stream_name":"stdout","time":51.021755504,"data":"  \"torch_version\": \"2.10.0+cu128\",\n"}
+,{"stream_name":"stdout","time":51.021773946,"data":"  \"use_4bit\": false,\n"}
+,{"stream_name":"stdout","time":51.021779144,"data":"  \"vram_gib\": 14.56,\n"}
+,{"stream_name":"stdout","time":51.021784231,"data":"  \"working_dir\": \"/kaggle/working\"\n"}
+,{"stream_name":"stdout","time":51.021789382,"data":"}\n"}
+,{"stream_name":"stdout","time":51.224492673,"data":"{\n"}
+,{"stream_name":"stdout","time":51.224527692,"data":"  \"compatible\": true,\n"}
+,{"stream_name":"stdout","time":51.224533343,"data":"  \"compute_capability\": [\n"}
+,{"stream_name":"stdout","time":51.224543071,"data":"    7,\n"}
+,{"stream_name":"stdout","time":51.224546413,"data":"    5\n"}
+,{"stream_name":"stdout","time":51.224548976,"data":"  ],\n"}
+,{"stream_name":"stdout","time":51.224551482,"data":"  \"gpu_name\": \"Tesla T4\",\n"}
+,{"stream_name":"stdout","time":51.224554251,"data":"  \"package_versions\": {\n"}
+,{"stream_name":"stdout","time":51.224556993,"data":"    \"peft\": \"0.19.1\",\n"}
+,{"stream_name":"stdout","time":51.224560456,"data":"    \"transformers\": \"5.5.0\",\n"}
+,{"stream_name":"stdout","time":51.224578079,"data":"    \"trl\": \"0.24.0\",\n"}
+,{"stream_name":"stdout","time":51.224583083,"data":"    \"unsloth\": \"2026.8.12\"\n"}
+,{"stream_name":"stdout","time":51.224587693,"data":"  },\n"}
+,{"stream_name":"stdout","time":51.224592091,"data":"  \"precision\": \"bf16\",\n"}
+,{"stream_name":"stdout","time":51.224596676,"data":"  \"problems\": [],\n"}
+,{"stream_name":"stdout","time":51.224601103,"data":"  \"torch_version\": \"2.10.0+cu128\",\n"}
+,{"stream_name":"stdout","time":51.224605151,"data":"  \"use_4bit\": false,\n"}
+,{"stream_name":"stdout","time":51.224609071,"data":"  \"vram_gib\": 14.56,\n"}
+,{"stream_name":"stdout","time":51.224612981,"data":"  \"working_dir\": \"/kaggle/working\"\n"}
+,{"stream_name":"stdout","time":51.224617042,"data":"}\n"}
+,{"stream_name":"stdout","time":53.511952126,"data":"{\n"}
+,{"stream_name":"stdout","time":53.511983391,"data":"  \"sha256\": {\n"}
+,{"stream_name":"stdout","time":53.511988612,"data":"    \"train\": \"522f64e3e045c8b3cc06c266b33733042713288ea5ea858ba57269da91d59e2d\",\n"}
+,{"stream_name":"stdout","time":53.511993213,"data":"    \"validation\": \"ab77c771a44d0860d918a5e35af1897ac45330397fff66a184647b16e615f883\"\n"}
+,{"stream_name":"stdout","time":53.511997784,"data":"  },\n"}
+,{"stream_name":"stdout","time":53.512001929,"data":"  \"splits\": {\n"}
+,{"stream_name":"stdout","time":53.512006034,"data":"    \"train\": 360,\n"}
+,{"stream_name":"stdout","time":53.512009951,"data":"    \"validation\": 20\n"}
+,{"stream_name":"stdout","time":53.512013835,"data":"  }\n"}
+,{"stream_name":"stdout","time":53.51201766,"data":"}\n"}
+,{"stream_name":"stdout","time":53.714462529,"data":"{\n"}
+,{"stream_name":"stdout","time":53.71449802,"data":"  \"sha256\": {\n"}
+,{"stream_name":"stdout","time":53.714505469,"data":"    \"train\": \"522f64e3e045c8b3cc06c266b33733042713288ea5ea858ba57269da91d59e2d\",\n"}
+,{"stream_name":"stdout","time":53.714510706,"data":"    \"validation\": \"ab77c771a44d0860d918a5e35af1897ac45330397fff66a184647b16e615f883\"\n"}
+,{"stream_name":"stdout","time":53.714515146,"data":"  },\n"}
+,{"stream_name":"stdout","time":53.714520794,"data":"  \"splits\": {\n"}
+,{"stream_name":"stdout","time":53.714529813,"data":"    \"train\": 360,\n"}
+,{"stream_name":"stdout","time":53.714533025,"data":"    \"validation\": 20\n"}
+,{"stream_name":"stdout","time":53.714535746,"data":"  }\n"}
+,{"stream_name":"stdout","time":53.714538346,"data":"}\n"}
+,{"stream_name":"stderr","time":94.098275772,"data":"[unsloth_zoo.log|ERROR]Unsloth: Failed to create directory `unsloth_compiled_cache` because [Errno 30] Read-only file system: 'unsloth_compiled_cache'\n"}
+,{"stream_name":"stderr","time":94.305825396,"data":"[unsloth_zoo.log|ERROR]Unsloth: Failed to create directory `unsloth_compiled_cache` because [Errno 30] Read-only file system: 'unsloth_compiled_cache'\n"}
+,{"stream_name":"stderr","time":94.305861691,"data":"\n"}
+,{"stream_name":"stderr","time":94.305866807,"data":"[unsloth_zoo.log|ERROR]Unsloth: Failed to create directory `unsloth_compiled_cache` because [Errno 30] Read-only file system: 'unsloth_compiled_cache'\n"}
+,{"stream_name":"stdout","time":101.259948631,"data":"🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.\n"}
+,{"stream_name":"stdout","time":101.260071071,"data":"🦥 Unsloth Zoo will now patch everything to make training faster!\n"}
+,{"stream_name":"stdout","time":101.260082739,"data":"==((====))==  Unsloth 2026.8.12: Fast Qwen3_5 patching. Transformers: 5.5.0.\n"}
+,{"stream_name":"stdout","time":101.260087993,"data":"   \\\\   /|    Tesla T4. Num GPUs = 2. Max memory: 14.562 GB. Platform: Linux.\n"}
+,{"stream_name":"stdout","time":101.260092931,"data":"O^O/ \\_/ \\    Torch: 2.10.0+cu128. CUDA: 7.5. CUDA Toolkit: 12.8. Triton: 3.6.0\n"}
+,{"stream_name":"stdout","time":101.260097631,"data":"\\        /    Bfloat16 = FALSE. FA [Xformers = 0.0.35. FA2 = False]\n"}
+,{"stream_name":"stdout","time":101.260102625,"data":" \"-____-\"     Free license: http://github.com/unslothai/unsloth\n"}
+,{"stream_name":"stdout","time":101.260109173,"data":"Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!\n"}
+,{"stream_name":"stdout","time":101.462575928,"data":"🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.\n"}
+,{"stream_name":"stdout","time":101.462621087,"data":"🦥 Unsloth Zoo will now patch everything to make training faster!\n"}
+,{"stream_name":"stdout","time":101.462628476,"data":"==((====))==  Unsloth 2026.8.12: Fast Qwen3_5 patching. Transformers: 5.5.0.\n"}
+,{"stream_name":"stdout","time":101.462634202,"data":"   \\\\   /|    Tesla T4. Num GPUs = 2. Max memory: 14.562 GB. Platform: Linux.\n"}
+,{"stream_name":"stdout","time":101.46263933,"data":"O^O/ \\_/ \\    Torch: 2.10.0+cu128. CUDA: 7.5. CUDA Toolkit: 12.8. Triton: 3.6.0\n"}
+,{"stream_name":"stdout","time":101.462645042,"data":"\\        /    Bfloat16 = FALSE. FA [Xformers = 0.0.35. FA2 = False]\n"}
+,{"stream_name":"stdout","time":101.462650192,"data":" \"-____-\"     Free license: http://github.com/unslothai/unsloth\n"}
+,{"stream_name":"stdout","time":101.462655202,"data":"Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!\n"}
+,{"stream_name":"stdout","time":105.069410524,"data":"Unsloth: Using float16 precision for qwen3_5 won't work! Using float32.\n"}
+,{"stream_name":"stdout","time":105.271469987,"data":"Unsloth: Using float16 precision for qwen3_5 won't work! Using float32.\n"}
+,{"stream_name":"stderr","time":105.761718902,"data":"Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n"}
+,{"stream_name":"stderr","time":105.964685015,"data":"Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n"}
+,{"stream_name":"stderr","time":105.964740011,"data":"\n"}
+,{"stream_name":"stderr","time":105.964748454,"data":"Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n"}
+,{"stream_name":"stderr","time":150.369857124,"data":"The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d\n"}
+,{"stream_name":"stdout","time":150.57155059,"data":"Unsloth: QLoRA and full finetuning all not selected. Switching to 16bit LoRA.\n"}
+,{"stream_name":"stderr","time":150.579772072,"data":"\rLoading weights:   0%|          | 0/617 [00:00\u003c?, ?it/s]The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d\n"}
+,{"stream_name":"stderr","time":150.579799598,"data":"\n"}
+,{"stream_name":"stderr","time":150.579805185,"data":"The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d\n"}
+,{"stream_name":"stdout","time":150.77541904,"data":"Unsloth: QLoRA and full finetuning all not selected. Switching to 16bit LoRA.\n"}
+,{"stream_name":"stderr","time":150.777706781,"data":"\rLoading weights:   0%|          | 1/617 [00:00\u003c02:03,  4.97it/s]\rLoading weights:   0%|          | 0/617 [00:00\u003c?, ?it/s]\rLoading weights:   0%|          | 1/617 [00:00\u003c02:03,  4.97it/s]\n"}
+,{"stream_name":"stderr","time":151.075951791,"data":"\rLoading weights:   0%|          | 0/617 [00:00\u003c?, ?it/s]\rLoading weights:   0%|          | 1/617 [00:00\u003c02:03,  4.97it/s]\rLoading weights:   7%|▋         | 41/617 [00:00\u003c00:03, 168.88it/s]\rLoading weights:  13%|█▎        | 80/617 [00:00\u003c00:02, 248.35it/s]\rLoading weights:   7%|▋         | 41/617 [00:00\u003c00:03, 168.88it/s]\rLoading weights:  13%|█▎        | 80/617 [00:00\u003c00:02, 248.35it/s]\n"}
+,{"stream_name":"stderr","time":151.279188993,"data":"\rLoading weights:   7%|▋         | 41/617 [00:00\u003c00:03, 168.88it/s]\rLoading weights:  13%|█▎        | 80/617 [00:00\u003c00:02, 248.35it/s]\rLoading weights:  19%|█▉        | 118/617 [00:00\u003c00:01, 293.67it/s]\rLoading weights:  25%|██▍       | 152/617 [00:00\u003c00:01, 307.37it/s]\rLoading weights:  19%|█▉        | 118/617 [00:00\u003c00:01, 293.67it/s]\rLoading weights:  25%|██▍       | 152/617 [00:00\u003c00:01, 307.37it/s]\n"}
+,{"stream_name":"stderr","time":151.490215211,"data":"\rLoading weights:  19%|█▉        | 118/617 [00:00\u003c00:01, 293.67it/s]\rLoading weights:  25%|██▍       | 152/617 [00:00\u003c00:01, 307.37it/s]\rLoading weights:  32%|███▏      | 195/617 [00:00\u003c00:01, 336.84it/s]\rLoading weights:  37%|███▋      | 231/617 [00:00\u003c00:01, 341.75it/s]\rLoading weights:  32%|███▏      | 195/617 [00:00\u003c00:01, 336.84it/s]\rLoading weights:  37%|███▋      | 231/617 [00:00\u003c00:01, 341.75it/s]\n"}
+,{"stream_name":"stderr","time":151.695407913,"data":"\rLoading weights:  32%|███▏      | 195/617 [00:00\u003c00:01, 336.84it/s]\rLoading weights:  37%|███▋      | 231/617 [00:00\u003c00:01, 341.75it/s]\rLoading weights:  43%|████▎     | 267/617 [00:00\u003c00:01, 343.56it/s]\rLoading weights:  50%|████▉     | 307/617 [00:01\u003c00:00, 353.64it/s]\rLoading weights:  43%|████▎     | 267/617 [00:00\u003c00:01, 343.56it/s]\rLoading weights:  50%|████▉     | 307/617 [00:01\u003c00:00, 353.64it/s]\n"}
+,{"stream_name":"stderr","time":151.894581807,"data":"\rLoading weights:  43%|████▎     | 267/617 [00:00\u003c00:01, 343.56it/s]\rLoading weights:  50%|████▉     | 307/617 [00:01\u003c00:00, 353.64it/s]\rLoading weights:  64%|██████▍   | 395/617 [00:01\u003c00:00, 509.29it/s]\rLoading weights:  84%|████████▍ | 517/617 [00:01\u003c00:00, 717.24it/s]\rLoading weights: 100%|██████████| 617/617 [00:01\u003c00:00, 466.54it/s]\n"}
+,{"stream_name":"stderr","time":151.902476339,"data":"\rLoading weights:  64%|██████▍   | 395/617 [00:01\u003c00:00, 509.29it/s]\rLoading weights:  84%|████████▍ | 517/617 [00:01\u003c00:00, 717.24it/s]\rLoading weights: 100%|██████████| 617/617 [00:01\u003c00:00, 466.54it/s]\n"}
+,{"stream_name":"stderr","time":151.902506489,"data":"\n"}
+,{"stream_name":"stderr","time":151.902511834,"data":"\rLoading weights:  64%|██████▍   | 395/617 [00:01\u003c00:00, 509.29it/s]\rLoading weights:  84%|████████▍ | 517/617 [00:01\u003c00:00, 717.24it/s]\rLoading weights: 100%|██████████| 617/617 [00:01\u003c00:00, 466.54it/s]\n"}
+,{"stream_name":"stderr","time":165.530863626,"data":"[unsloth_zoo.log|WARNING]Unsloth: Failed to register input-embedding hook for `model.base_model.model.model.visual`: `get_input_embeddings` not auto‑handled for Qwen3_5VisionModel; please override in the subclass.. Falling back to pre-forward hook.\n"}
+,{"stream_name":"stderr","time":165.733784461,"data":"[unsloth_zoo.log|WARNING]Unsloth: Failed to register input-embedding hook for `model.base_model.model.model.visual`: `get_input_embeddings` not auto‑handled for Qwen3_5VisionModel; please override in the subclass.. Falling back to pre-forward hook.\n"}
+,{"stream_name":"stderr","time":165.733835315,"data":"\n"}
+,{"stream_name":"stderr","time":165.733840305,"data":"[unsloth_zoo.log|WARNING]Unsloth: Failed to register input-embedding hook for `model.base_model.model.model.visual`: `get_input_embeddings` not auto‑handled for Qwen3_5VisionModel; please override in the subclass.. Falling back to pre-forward hook.\n"}
+,{"stream_name":"stderr","time":173.888626448,"data":"warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.\n"}
+,{"stream_name":"stderr","time":174.090866422,"data":"warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.\n"}
+,{"stream_name":"stderr","time":174.090901199,"data":"\n"}
+,{"stream_name":"stderr","time":174.090906484,"data":"warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.\n"}
+,{"stream_name":"stderr","time":174.316101202,"data":"warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.\n"}
+,{"stream_name":"stderr","time":174.413202201,"data":"The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.\n"}
+,{"stream_name":"stderr","time":174.518724645,"data":"warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.\n"}
+,{"stream_name":"stderr","time":174.518780373,"data":"The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.\n"}
+,{"stream_name":"stderr","time":174.518786762,"data":"\n"}
+,{"stream_name":"stderr","time":174.5187904,"data":"warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.\n"}
+,{"stream_name":"stderr","time":174.518794198,"data":"The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.\n"}
+,{"stream_name":"stderr","time":175.003910961,"data":"==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1\n"}
+,{"stream_name":"stderr","time":175.00396238,"data":"   \\\\   /|    Num examples = 360 | Num Epochs = 1 | Total steps = 12\n"}
+,{"stream_name":"stderr","time":175.003981564,"data":"O^O/ \\_/ \\    Batch size per device = 2 | Gradient accumulation steps = 16\n"}
+,{"stream_name":"stderr","time":175.003986691,"data":"\\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32\n"}
+,{"stream_name":"stderr","time":175.003990984,"data":" \"-____-\"     Trainable parameters = 23,110,656 of 2,236,352,320 (1.03% trained)\n"}
+,{"stream_name":"stderr","time":175.206158481,"data":"==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1\n"}
+,{"stream_name":"stderr","time":175.20620966,"data":"   \\\\   /|    Num examples = 360 | Num Epochs = 1 | Total steps = 12\n"}
+,{"stream_name":"stderr","time":175.20621525,"data":"O^O/ \\_/ \\    Batch size per device = 2 | Gradient accumulation steps = 16\n"}
+,{"stream_name":"stderr","time":175.206219692,"data":"\\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32\n"}
+,{"stream_name":"stderr","time":175.20622367,"data":" \"-____-\"     Trainable parameters = 23,110,656 of 2,236,352,320 (1.03% trained)\n"}
+,{"stream_name":"stderr","time":175.206227925,"data":"\n"}
+,{"stream_name":"stderr","time":175.206231907,"data":"==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1\n"}
+,{"stream_name":"stderr","time":175.206235737,"data":"   \\\\   /|    Num examples = 360 | Num Epochs = 1 | Total steps = 12\n"}
+,{"stream_name":"stderr","time":175.206239487,"data":"O^O/ \\_/ \\    Batch size per device = 2 | Gradient accumulation steps = 16\n"}
+,{"stream_name":"stderr","time":175.206243141,"data":"\\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32\n"}
+,{"stream_name":"stderr","time":175.206247207,"data":" \"-____-\"     Trainable parameters = 23,110,656 of 2,236,352,320 (1.03% trained)\n"}
+,{"stream_name":"stdout","time":176.122207325,"data":"Unsloth: Switching to float32 training since model cannot work with float16\n"}
+,{"stream_name":"stdout","time":176.324489188,"data":"Unsloth: Switching to float32 training since model cannot work with float16\n"}
+,{"stream_name":"stderr","time":176.325377563,"data":"\r  0%|          | 0/12 [00:00\u003c?, ?it/s]\r  0%|          | 0/12 [00:00\u003c?, ?it/s]\n"}
+,{"stream_name":"stderr","time":552.027273527,"data":"\r  0%|          | 0/12 [00:00\u003c?, ?it/s]\r  8%|▊         | 1/12 [06:15\u003c1:08:52, 375.70s/it]\r  8%|▊         | 1/12 [06:15\u003c1:08:52, 375.70s/it]\n"}
+,{"stream_name":"stderr","time":598.719820869,"data":"\r  8%|▊         | 1/12 [06:15\u003c1:08:52, 375.70s/it]\r 17%|█▋        | 2/12 [07:02\u003c30:21, 182.16s/it]  \r 17%|█▋        | 2/12 [07:02\u003c30:21, 182.16s/it]  \n"}
+,{"stream_name":"stderr","time":640.16097984,"data":"\r 17%|█▋        | 2/12 [07:02\u003c30:21, 182.16s/it]  \r 25%|██▌       | 3/12 [07:43\u003c17:41, 117.91s/it]\r 25%|██▌       | 3/12 [07:43\u003c17:41, 117.91s/it]\n"}
+,{"stream_name":"stderr","time":679.320514427,"data":"\r 25%|██▌       | 3/12 [07:43\u003c17:41, 117.91s/it]\r 33%|███▎      | 4/12 [08:22\u003c11:34, 86.82s/it] \r 33%|███▎      | 4/12 [08:22\u003c11:34, 86.82s/it] \n"}
+,{"stream_name":"stderr","time":727.076216301,"data":"\r 33%|███▎      | 4/12 [08:22\u003c11:34, 86.82s/it] \r 42%|████▏     | 5/12 [09:10\u003c08:29, 72.73s/it]\r 42%|████▏     | 5/12 [09:10\u003c08:29, 72.73s/it]\n"}
+,{"stream_name":"stderr","time":769.166013305,"data":"\r 42%|████▏     | 5/12 [09:10\u003c08:29, 72.73s/it]\r 50%|█████     | 6/12 [09:52\u003c06:13, 62.31s/it]\r 50%|█████     | 6/12 [09:52\u003c06:13, 62.31s/it]\n"}
+,{"stream_name":"stderr","time":812.231881914,"data":"\r 50%|█████     | 6/12 [09:52\u003c06:13, 62.31s/it]\r 58%|█████▊    | 7/12 [10:35\u003c04:40, 56.02s/it]\r 58%|█████▊    | 7/12 [10:35\u003c04:40, 56.02s/it]\n"}
+,{"stream_name":"stderr","time":859.26406024,"data":"\r 58%|█████▊    | 7/12 [10:35\u003c04:40, 56.02s/it]\r 67%|██████▋   | 8/12 [11:22\u003c03:32, 53.16s/it]\r 67%|██████▋   | 8/12 [11:22\u003c03:32, 53.16s/it]\n"}
+,{"stream_name":"stderr","time":899.231116818,"data":"\r 67%|██████▋   | 8/12 [11:22\u003c03:32, 53.16s/it]\r 75%|███████▌  | 9/12 [12:02\u003c02:27, 49.04s/it]\r 75%|███████▌  | 9/12 [12:02\u003c02:27, 49.04s/it]\n"}
+,{"stream_name":"stderr","time":942.553743606,"data":"\r 75%|███████▌  | 9/12 [12:02\u003c02:27, 49.04s/it]\r 83%|████████▎ | 10/12 [12:46\u003c01:34, 47.27s/it]\r 83%|████████▎ | 10/12 [12:46\u003c01:34, 47.27s/it]\n"}
+,{"stream_name":"stderr","time":985.981848023,"data":"\r 83%|████████▎ | 10/12 [12:46\u003c01:34, 47.27s/it]\r 92%|█████████▏| 11/12 [13:29\u003c00:46, 46.10s/it]\r 92%|█████████▏| 11/12 [13:29\u003c00:46, 46.10s/it]\n"}
+,{"stream_name":"stderr","time":992.734965451,"data":"\r 92%|█████████▏| 11/12 [13:29\u003c00:46, 46.10s/it]\r100%|██████████| 12/12 [13:36\u003c00:00, 34.19s/it]\n"}
+,{"stream_name":"stdout","time":992.734965453,"data":"Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.\n"}
+,{"stream_name":"stdout","time":992.735038087,"data":"Unsloth: Will smartly offload gradients to save VRAM!\n"}
+,{"stream_name":"stderr","time":992.778949068,"data":"\rMap:   0%|          | 0/20 [00:00\u003c?, ? examples/s]\u001b[A\rMap: 100%|██████████| 20/20 [00:00\u003c00:00, 458.06 examples/s]\n"}
+,{"stream_name":"stderr","time":992.783013653,"data":"\n"}
+,{"stream_name":"stderr","time":992.804008724,"data":"\rFilter:   0%|          | 0/20 [00:00\u003c?, ? examples/s]\u001b[A\rFilter: 100%|██████████| 20/20 [00:00\u003c00:00, 973.69 examples/s]\n"}
+,{"stream_name":"stderr","time":992.8329042,"data":"Unsloth: Not an error, but Qwen3_5ForConditionalGeneration does not accept `num_items_in_batch`.\n"}
+,{"stream_name":"stderr","time":992.832937862,"data":"Using gradient accumulation will be very slightly less accurate.\n"}
+,{"stream_name":"stderr","time":992.832944166,"data":"Read more on gradient accumulation issues here: https://unsloth.ai/blog/gradient\n"}
+,{"stream_name":"stderr","time":992.928597382,"data":"\r100%|██████████| 12/12 [13:36\u003c00:00, 34.19s/it]\n"}
+,{"stream_name":"stderr","time":992.928640257,"data":"\rMap:   0%|          | 0/20 [00:00\u003c?, ? examples/s]\u001b[A\rMap: 100%|██████████| 20/20 [00:00\u003c00:00, 458.06 examples/s]\n"}
+,{"stream_name":"stderr","time":992.928648559,"data":"\n"}
+,{"stream_name":"stderr","time":992.92865448,"data":"\rFilter:   0%|          | 0/20 [00:00\u003c?, ? examples/s]\u001b[A\rFilter: 100%|██████████| 20/20 [00:00\u003c00:00, 973.69 examples/s]\n"}
+,{"stream_name":"stderr","time":992.928661615,"data":"Unsloth: Not an error, but Qwen3_5ForConditionalGeneration does not accept `num_items_in_batch`.\n"}
+,{"stream_name":"stderr","time":992.928667806,"data":"Using gradient accumulation will be very slightly less accurate.\n"}
+,{"stream_name":"stderr","time":992.928673399,"data":"Read more on gradient accumulation issues here: https://unsloth.ai/blog/gradient\n"}
+,{"stream_name":"stderr","time":992.928688247,"data":"\n"}
+,{"stream_name":"stderr","time":992.928712306,"data":"\r100%|██████████| 12/12 [13:36\u003c00:00, 34.19s/it]\n"}
+,{"stream_name":"stderr","time":992.928717442,"data":"\rMap:   0%|          | 0/20 [00:00\u003c?, ? examples/s]\u001b[A\rMap: 100%|██████████| 20/20 [00:00\u003c00:00, 458.06 examples/s]\n"}
+,{"stream_name":"stderr","time":992.928722855,"data":"\n"}
+,{"stream_name":"stderr","time":992.928727215,"data":"\rFilter:   0%|          | 0/20 [00:00\u003c?, ? examples/s]\u001b[A\rFilter: 100%|██████████| 20/20 [00:00\u003c00:00, 973.69 examples/s]\n"}
+,{"stream_name":"stderr","time":992.928732082,"data":"Unsloth: Not an error, but Qwen3_5ForConditionalGeneration does not accept `num_items_in_batch`.\n"}
+,{"stream_name":"stderr","time":992.928736698,"data":"Using gradient accumulation will be very slightly less accurate.\n"}
+,{"stream_name":"stderr","time":992.92874152,"data":"Read more on gradient accumulation issues here: https://unsloth.ai/blog/gradient\n"}
+,{"stream_name":"stdout","time":992.937039891,"data":"Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.\n"}
+,{"stream_name":"stdout","time":992.937074824,"data":"Unsloth: Will smartly offload gradients to save VRAM!\n"}
+,{"stream_name":"stderr","time":998.824659037,"data":"\n"}
+,{"stream_name":"stderr","time":999.027438959,"data":"\r  0%|          | 0/10 [00:00\u003c?, ?it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":999.027489493,"data":"\r  0%|          | 0/10 [00:00\u003c?, ?it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":999.027495515,"data":"\n"}
+,{"stream_name":"stderr","time":999.4712283,"data":"\r  0%|          | 0/10 [00:00\u003c?, ?it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":999.673954127,"data":"\r 20%|██        | 2/10 [00:00\u003c00:02,  3.09it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":999.673990166,"data":"\r 20%|██        | 2/10 [00:00\u003c00:02,  3.09it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":999.673996159,"data":"\n"}
+,{"stream_name":"stderr","time":1000.462777026,"data":"\r 20%|██        | 2/10 [00:00\u003c00:02,  3.09it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1000.665662366,"data":"\r 30%|███       | 3/10 [00:01\u003c00:04,  1.66it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1000.665707392,"data":"\r 30%|███       | 3/10 [00:01\u003c00:04,  1.66it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1000.665712377,"data":"\n"}
+,{"stream_name":"stderr","time":1001.419134573,"data":"\r 30%|███       | 3/10 [00:01\u003c00:04,  1.66it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1001.622119374,"data":"\r 40%|████      | 4/10 [00:02\u003c00:04,  1.36it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1001.622161796,"data":"\r 40%|████      | 4/10 [00:02\u003c00:04,  1.36it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1001.622166811,"data":"\n"}
+,{"stream_name":"stderr","time":1002.357394105,"data":"\r 40%|████      | 4/10 [00:02\u003c00:04,  1.36it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1002.560236235,"data":"\r 50%|█████     | 5/10 [00:03\u003c00:04,  1.24it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1002.560298579,"data":"\r 50%|█████     | 5/10 [00:03\u003c00:04,  1.24it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1002.560308605,"data":"\n"}
+,{"stream_name":"stderr","time":1003.20075517,"data":"\r 50%|█████     | 5/10 [00:03\u003c00:04,  1.24it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1003.403511981,"data":"\r 60%|██████    | 6/10 [00:04\u003c00:03,  1.22it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1003.403586279,"data":"\r 60%|██████    | 6/10 [00:04\u003c00:03,  1.22it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1003.40361657,"data":"\n"}
+,{"stream_name":"stderr","time":1003.948785235,"data":"\r 60%|██████    | 6/10 [00:04\u003c00:03,  1.22it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1004.152008048,"data":"\r 70%|███████   | 7/10 [00:05\u003c00:02,  1.26it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1004.152048827,"data":"\r 70%|███████   | 7/10 [00:05\u003c00:02,  1.26it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1004.152055358,"data":"\n"}
+,{"stream_name":"stderr","time":1004.296437014,"data":"\r 70%|███████   | 7/10 [00:05\u003c00:02,  1.26it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1004.499136098,"data":"\r 80%|████████  | 8/10 [00:05\u003c00:01,  1.53it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1004.499193754,"data":"\r 80%|████████  | 8/10 [00:05\u003c00:01,  1.53it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1004.499202321,"data":"\n"}
+,{"stream_name":"stderr","time":1005.198143965,"data":"\r 80%|████████  | 8/10 [00:05\u003c00:01,  1.53it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1005.400932198,"data":"\r 90%|█████████ | 9/10 [00:06\u003c00:00,  1.37it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1005.400976913,"data":"\r 90%|█████████ | 9/10 [00:06\u003c00:00,  1.37it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1005.400982225,"data":"\n"}
+,{"stream_name":"stderr","time":1015.130038244,"data":"\r 90%|█████████ | 9/10 [00:06\u003c00:00,  1.37it/s]\u001b[A\n"}
+,{"stream_name":"stderr","time":1015.332590652,"data":"\r100%|██████████| 10/10 [00:16\u003c00:00,  3.56s/it]\u001b[A\n"}
+,{"stream_name":"stderr","time":1015.332632338,"data":"\r100%|██████████| 10/10 [00:16\u003c00:00,  3.56s/it]\u001b[A\n"}
+,{"stream_name":"stderr","time":1015.332638609,"data":"\n"}
+,{"stream_name":"stderr","time":1015.354133692,"data":"\r100%|██████████| 10/10 [00:16\u003c00:00,  3.56s/it]\u001b[A\r                                               \r\n"}
+,{"stream_name":"stderr","time":1015.354549432,"data":"\r                                               \r\u001b[A\r100%|██████████| 12/12 [13:59\u003c00:00, 34.19s/it]\n"}
+,{"stream_name":"stderr","time":1015.35506213,"data":"\r100%|██████████| 10/10 [00:16\u003c00:00,  3.56s/it]\u001b[A\n"}
+,{"stream_name":"stderr","time":1015.557307582,"data":"\r                                               \u001b[A\r                                               \r\n"}
+,{"stream_name":"stderr","time":1015.557345,"data":"\r                                               \r\u001b[A\r100%|██████████| 12/12 [13:59\u003c00:00, 34.19s/it]\n"}
+,{"stream_name":"stderr","time":1015.557358845,"data":"\r100%|██████████| 10/10 [00:16\u003c00:00,  3.56s/it]\u001b[A\n"}
+,{"stream_name":"stderr","time":1015.557363103,"data":"\r                                               \u001b[A\n"}
+,{"stream_name":"stderr","time":1015.557366727,"data":"\r                                               \r\n"}
+,{"stream_name":"stderr","time":1015.557370724,"data":"\r                                               \r\u001b[A\r100%|██████████| 12/12 [13:59\u003c00:00, 34.19s/it]\n"}
+,{"stream_name":"stderr","time":1015.557374676,"data":"\r100%|██████████| 10/10 [00:16\u003c00:00,  3.56s/it]\u001b[A\n"}
+,{"stream_name":"stderr","time":1016.006521578,"data":"\r                                               \u001b[AUnsloth: Restored added_tokens_decoder metadata in /kaggle/working/nova-qwen35-2b-reasoning-pilot-20260802/checkpoints/checkpoint-12/tokenizer_config.json.\n"}
+,{"stream_name":"stderr","time":1016.21625626,"data":"Unsloth: Restored added_tokens_decoder metadata in /kaggle/working/nova-qwen35-2b-reasoning-pilot-20260802/checkpoints/checkpoint-12/tokenizer_config.json.\n"}
+,{"stream_name":"stderr","time":1016.216283675,"data":"\n"}
+,{"stream_name":"stderr","time":1016.216305653,"data":"Unsloth: Restored added_tokens_decoder metadata in /kaggle/working/nova-qwen35-2b-reasoning-pilot-20260802/checkpoints/checkpoint-12/tokenizer_config.json.\n"}
+,{"stream_name":"stderr","time":1017.426117912,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stdout","time":1017.426299466,"data":"{'eval_loss': '1.453', 'eval_runtime': '22.55', 'eval_samples_per_second': '0.843', 'eval_steps_per_second': '0.444', 'epoch': '1'}\n"}
+,{"stream_name":"stderr","time":1017.426690371,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py\", line 116, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1017.428669445,"data":"    raise SystemExit(main())\n"}
+,{"stream_name":"stderr","time":1017.42904216,"data":"                     ^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.429053944,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py\", line 100, in main\n"}
+,{"stream_name":"stderr","time":1017.429749986,"data":"    result = trainer.train()\n"}
+,{"stream_name":"stderr","time":1017.43015053,"data":"             ^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.430159431,"data":"  File \"/usr/local/lib/python3.12/dist-packages/unsloth/trainer.py\", line 971, in _train_with_reset\n"}
+,{"stream_name":"stderr","time":1017.430741316,"data":"    return _orig_train(*train_args, **train_kwargs)\n"}
+,{"stream_name":"stderr","time":1017.43150874,"data":"           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.43152791,"data":"  File \"/tmp/unsloth_compiled_cache/UnslothSFTTrainer.py\", line 109, in wrapper\n"}
+,{"stream_name":"stderr","time":1017.431673336,"data":"    output = f(self, *args, **kwargs)\n"}
+,{"stream_name":"stderr","time":1017.432248619,"data":"             ^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.432260257,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 1424, in train\n"}
+,{"stream_name":"stderr","time":1017.432900787,"data":"    return inner_training_loop(\n"}
+,{"stream_name":"stderr","time":1017.433360057,"data":"           ^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.433373702,"data":"  File \"\u003cstring\u003e\", line 81, in _fast_inner_training_loop\n"}
+,{"stream_name":"stderr","time":1017.433472283,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 1775, in _run_epoch\n"}
+,{"stream_name":"stderr","time":1017.434146139,"data":"    self._maybe_log_save_evaluate(\n"}
+,{"stream_name":"stderr","time":1017.43418907,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 2088, in _maybe_log_save_evaluate\n"}
+,{"stream_name":"stderr","time":1017.434927586,"data":"    self._save_checkpoint(model, trial)\n"}
+,{"stream_name":"stderr","time":1017.434941658,"data":"  File \"/tmp/unsloth_compiled_cache/UnslothSFTTrainer.py\", line 1444, in _save_checkpoint\n"}
+,{"stream_name":"stderr","time":1017.435457403,"data":"    super()._save_checkpoint(model, trial)\n"}
+,{"stream_name":"stderr","time":1017.435475414,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3046, in _save_checkpoint\n"}
+,{"stream_name":"stderr","time":1017.436333807,"data":"    self.save_model(output_dir, _internal_call=True)\n"}
+,{"stream_name":"stderr","time":1017.436399274,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3797, in save_model\n"}
+,{"stream_name":"stderr","time":1017.437333121,"data":"    self._save(output_dir)\n"}
+,{"stream_name":"stderr","time":1017.437347677,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3840, in _save\n"}
+,{"stream_name":"stderr","time":1017.43829324,"data":"    torch.save(self.args, os.path.join(output_dir, TRAINING_ARGS_NAME))\n"}
+,{"stream_name":"stderr","time":1017.438378831,"data":"  File \"/usr/local/lib/python3.12/dist-packages/torch/serialization.py\", line 977, in save\n"}
+,{"stream_name":"stderr","time":1017.438853926,"data":"    _save(\n"}
+,{"stream_name":"stderr","time":1017.438862465,"data":"  File \"/usr/local/lib/python3.12/dist-packages/torch/serialization.py\", line 1227, in _save\n"}
+,{"stream_name":"stderr","time":1017.439316832,"data":"    pickler.dump(obj)\n"}
+,{"stream_name":"stderr","time":1017.439531912,"data":"_pickle.PicklingError: Can't pickle \u003cclass 'trl.trainer.sft_config.SFTConfig'\u003e: it's not the same object as trl.trainer.sft_config.SFTConfig\n"}
+,{"stream_name":"stdout","time":1017.629062367,"data":"{'eval_loss': '1.453', 'eval_runtime': '22.55', 'eval_samples_per_second': '0.843', 'eval_steps_per_second': '0.444', 'epoch': '1'}\n"}
+,{"stream_name":"stderr","time":1017.630140686,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":1017.630168657,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py\", line 116, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1017.630175878,"data":"    raise SystemExit(main())\n"}
+,{"stream_name":"stderr","time":1017.630180986,"data":"                     ^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630186196,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py\", line 100, in main\n"}
+,{"stream_name":"stderr","time":1017.630191358,"data":"    result = trainer.train()\n"}
+,{"stream_name":"stderr","time":1017.630195777,"data":"             ^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630200022,"data":"  File \"/usr/local/lib/python3.12/dist-packages/unsloth/trainer.py\", line 971, in _train_with_reset\n"}
+,{"stream_name":"stderr","time":1017.630204802,"data":"    return _orig_train(*train_args, **train_kwargs)\n"}
+,{"stream_name":"stderr","time":1017.630208896,"data":"           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630213403,"data":"  File \"/tmp/unsloth_compiled_cache/UnslothSFTTrainer.py\", line 109, in wrapper\n"}
+,{"stream_name":"stderr","time":1017.630218272,"data":"    output = f(self, *args, **kwargs)\n"}
+,{"stream_name":"stderr","time":1017.6302237,"data":"             ^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630228362,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 1424, in train\n"}
+,{"stream_name":"stderr","time":1017.630233665,"data":"    return inner_training_loop(\n"}
+,{"stream_name":"stderr","time":1017.630237907,"data":"           ^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630242578,"data":"  File \"\u003cstring\u003e\", line 81, in _fast_inner_training_loop\n"}
+,{"stream_name":"stderr","time":1017.630247336,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 1775, in _run_epoch\n"}
+,{"stream_name":"stderr","time":1017.630252443,"data":"    self._maybe_log_save_evaluate(\n"}
+,{"stream_name":"stderr","time":1017.630256642,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 2088, in _maybe_log_save_evaluate\n"}
+,{"stream_name":"stderr","time":1017.630292981,"data":"    self._save_checkpoint(model, trial)\n"}
+,{"stream_name":"stderr","time":1017.630301921,"data":"  File \"/tmp/unsloth_compiled_cache/UnslothSFTTrainer.py\", line 1444, in _save_checkpoint\n"}
+,{"stream_name":"stderr","time":1017.630307451,"data":"    super()._save_checkpoint(model, trial)\n"}
+,{"stream_name":"stderr","time":1017.630312504,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3046, in _save_checkpoint\n"}
+,{"stream_name":"stderr","time":1017.630317554,"data":"    self.save_model(output_dir, _internal_call=True)\n"}
+,{"stream_name":"stderr","time":1017.630322133,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3797, in save_model\n"}
+,{"stream_name":"stderr","time":1017.630326347,"data":"    self._save(output_dir)\n"}
+,{"stream_name":"stderr","time":1017.630330667,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3840, in _save\n"}
+,{"stream_name":"stderr","time":1017.630336353,"data":"    torch.save(self.args, os.path.join(output_dir, TRAINING_ARGS_NAME))\n"}
+,{"stream_name":"stderr","time":1017.630341137,"data":"  File \"/usr/local/lib/python3.12/dist-packages/torch/serialization.py\", line 977, in save\n"}
+,{"stream_name":"stderr","time":1017.630346398,"data":"    _save(\n"}
+,{"stream_name":"stderr","time":1017.630352641,"data":"  File \"/usr/local/lib/python3.12/dist-packages/torch/serialization.py\", line 1227, in _save\n"}
+,{"stream_name":"stderr","time":1017.630357272,"data":"    pickler.dump(obj)\n"}
+,{"stream_name":"stderr","time":1017.630362124,"data":"_pickle.PicklingError: Can't pickle \u003cclass 'trl.trainer.sft_config.SFTConfig'\u003e: it's not the same object as trl.trainer.sft_config.SFTConfig\n"}
+,{"stream_name":"stderr","time":1017.630367454,"data":"\n"}
+,{"stream_name":"stderr","time":1017.630371679,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":1017.630376369,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py\", line 116, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1017.630381848,"data":"    raise SystemExit(main())\n"}
+,{"stream_name":"stderr","time":1017.630386605,"data":"                     ^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630391196,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py\", line 100, in main\n"}
+,{"stream_name":"stderr","time":1017.630396548,"data":"    result = trainer.train()\n"}
+,{"stream_name":"stderr","time":1017.630400785,"data":"             ^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630405144,"data":"  File \"/usr/local/lib/python3.12/dist-packages/unsloth/trainer.py\", line 971, in _train_with_reset\n"}
+,{"stream_name":"stderr","time":1017.630410406,"data":"    return _orig_train(*train_args, **train_kwargs)\n"}
+,{"stream_name":"stderr","time":1017.630415396,"data":"           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630419642,"data":"  File \"/tmp/unsloth_compiled_cache/UnslothSFTTrainer.py\", line 109, in wrapper\n"}
+,{"stream_name":"stderr","time":1017.630424816,"data":"    output = f(self, *args, **kwargs)\n"}
+,{"stream_name":"stderr","time":1017.630429086,"data":"             ^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630433671,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 1424, in train\n"}
+,{"stream_name":"stderr","time":1017.630442774,"data":"    return inner_training_loop(\n"}
+,{"stream_name":"stderr","time":1017.630447363,"data":"           ^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":1017.630452161,"data":"  File \"\u003cstring\u003e\", line 81, in _fast_inner_training_loop\n"}
+,{"stream_name":"stderr","time":1017.630456676,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 1775, in _run_epoch\n"}
+,{"stream_name":"stderr","time":1017.630461162,"data":"    self._maybe_log_save_evaluate(\n"}
+,{"stream_name":"stderr","time":1017.630472637,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 2088, in _maybe_log_save_evaluate\n"}
+,{"stream_name":"stderr","time":1017.630478103,"data":"    self._save_checkpoint(model, trial)\n"}
+,{"stream_name":"stderr","time":1017.63048284,"data":"  File \"/tmp/unsloth_compiled_cache/UnslothSFTTrainer.py\", line 1444, in _save_checkpoint\n"}
+,{"stream_name":"stderr","time":1017.630487194,"data":"    super()._save_checkpoint(model, trial)\n"}
+,{"stream_name":"stderr","time":1017.630491642,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3046, in _save_checkpoint\n"}
+,{"stream_name":"stderr","time":1017.630496619,"data":"    self.save_model(output_dir, _internal_call=True)\n"}
+,{"stream_name":"stderr","time":1017.630501289,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3797, in save_model\n"}
+,{"stream_name":"stderr","time":1017.630505796,"data":"    self._save(output_dir)\n"}
+,{"stream_name":"stderr","time":1017.630510471,"data":"  File \"/usr/local/lib/python3.12/dist-packages/transformers/trainer.py\", line 3840, in _save\n"}
+,{"stream_name":"stderr","time":1017.630515849,"data":"    torch.save(self.args, os.path.join(output_dir, TRAINING_ARGS_NAME))\n"}
+,{"stream_name":"stderr","time":1017.630521262,"data":"  File \"/usr/local/lib/python3.12/dist-packages/torch/serialization.py\", line 977, in save\n"}
+,{"stream_name":"stderr","time":1017.630526048,"data":"    _save(\n"}
+,{"stream_name":"stderr","time":1017.630530507,"data":"  File \"/usr/local/lib/python3.12/dist-packages/torch/serialization.py\", line 1227, in _save\n"}
+,{"stream_name":"stderr","time":1017.630535182,"data":"    pickler.dump(obj)\n"}
+,{"stream_name":"stderr","time":1017.63053952,"data":"_pickle.PicklingError: Can't pickle \u003cclass 'trl.trainer.sft_config.SFTConfig'\u003e: it's not the same object as trl.trainer.sft_config.SFTConfig\n"}
+,{"stream_name":"stderr","time":1020.157481397,"data":"\r100%|██████████| 12/12 [14:04\u003c00:00, 70.34s/it]\n"}
+,{"stream_name":"stderr","time":1020.360333197,"data":"\r100%|██████████| 12/12 [14:04\u003c00:00, 70.34s/it]\n"}
+,{"stream_name":"stderr","time":1020.360377891,"data":"\n"}
+,{"stream_name":"stderr","time":1020.360396052,"data":"\r100%|██████████| 12/12 [14:04\u003c00:00, 70.34s/it]\n"}
+,{"stream_name":"stderr","time":1023.693858266,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":1023.693899049,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/run_kaggle.py\", line 20, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1023.696882466,"data":"    subprocess.run(\n"}
+,{"stream_name":"stderr","time":1023.696913859,"data":"  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n"}
+,{"stream_name":"stderr","time":1023.70053497,"data":"    raise CalledProcessError(retcode, process.args,\n"}
+,{"stream_name":"stderr","time":1023.700563132,"data":"subprocess.CalledProcessError: Command '['/usr/bin/python3', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py', '--dataset', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/dataset']' returned non-zero exit status 1.\n"}
+,{"stream_name":"stderr","time":1023.73039327,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":1023.730429044,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/run_kaggle.py\", line 20, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1023.730436449,"data":"    subprocess.run(\n"}
+,{"stream_name":"stderr","time":1023.730440686,"data":"  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n"}
+,{"stream_name":"stderr","time":1023.730444923,"data":"    raise CalledProcessError(retcode, process.args,\n"}
+,{"stream_name":"stderr","time":1023.730449234,"data":"subprocess.CalledProcessError: Command '['/usr/bin/python3', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py', '--dataset', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/dataset']' returned non-zero exit status 1.\n"}
+,{"stream_name":"stderr","time":1023.730454244,"data":"\n"}
+,{"stream_name":"stderr","time":1023.730458661,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":1023.730462717,"data":"  File \"/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/run_kaggle.py\", line 20, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1023.73046711,"data":"    subprocess.run(\n"}
+,{"stream_name":"stderr","time":1023.730471096,"data":"  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n"}
+,{"stream_name":"stderr","time":1023.730475089,"data":"    raise CalledProcessError(retcode, process.args,\n"}
+,{"stream_name":"stderr","time":1023.730479096,"data":"subprocess.CalledProcessError: Command '['/usr/bin/python3', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/tools/train_nova_qwen35_sft.py', '--dataset', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/dataset']' returned non-zero exit status 1.\n"}
+,{"stream_name":"stderr","time":1024.168854937,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":1024.168891939,"data":"  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":1024.168896961,"data":"  File \"/usr/local/lib/python3.12/dist-packages/papermill/execute.py\", line 131, in execute_notebook\n"}
+,{"stream_name":"stderr","time":1024.169048892,"data":"    raise_for_execution_errors(nb, output_path)\n"}
+,{"stream_name":"stderr","time":1024.169057705,"data":"  File \"/usr/local/lib/python3.12/dist-packages/papermill/execute.py\", line 251, in raise_for_execution_errors\n"}
+,{"stream_name":"stderr","time":1024.169316872,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":1024.169575633,"data":"papermill.exceptions.PapermillExecutionError: \n"}
+,{"stream_name":"stderr","time":1024.169584632,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":1024.169589836,"data":"Exception encountered at \"In [1]\":\n"}
+,{"stream_name":"stderr","time":1024.169594213,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":1024.169598287,"data":"CalledProcessError                        Traceback (most recent call last)\n"}
+,{"stream_name":"stderr","time":1024.169602479,"data":"/tmp/ipykernel_22/1472313065.py in \u003ccell line: 0\u003e()\n"}
+,{"stream_name":"stderr","time":1024.16960676,"data":"     11         shutil.copy2(os.path.join(source, name), os.path.join(root, name))\n"}
+,{"stream_name":"stderr","time":1024.169611033,"data":"     12 subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', os.path.join(root, 'training', 'requirements-qwen35.txt')])\n"}
+,{"stream_name":"stderr","time":1024.169630875,"data":"---\u003e 13 subprocess.check_call([sys.executable, os.path.join(root, 'run_kaggle.py')], cwd=root)\n"}
+,{"stream_name":"stderr","time":1024.169636067,"data":"\n"}
+,{"stream_name":"stderr","time":1024.169639964,"data":"/usr/lib/python3.12/subprocess.py in check_call(*popenargs, **kwargs)\n"}
+,{"stream_name":"stderr","time":1024.169644373,"data":"    411         if cmd is None:\n"}
+,{"stream_name":"stderr","time":1024.169648352,"data":"    412             cmd = popenargs[0]\n"}
+,{"stream_name":"stderr","time":1024.169652331,"data":"--\u003e 413         raise CalledProcessError(retcode, cmd)\n"}
+,{"stream_name":"stderr","time":1024.169656484,"data":"    414     return 0\n"}
+,{"stream_name":"stderr","time":1024.16966046,"data":"    415 \n"}
+,{"stream_name":"stderr","time":1024.169664478,"data":"\n"}
+,{"stream_name":"stderr","time":1024.169668389,"data":"CalledProcessError: Command '['/usr/bin/python3', '/kaggle/input/datasets/novatron513/nova-qwen3-5-2b-reasoning-pilot-20260804/run_kaggle.py']' returned non-zero exit status 1.\n"}
+,{"stream_name":"stderr","time":1024.169672961,"data":"\n"}
+,{"stream_name":"stderr","time":1026.858859563,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":1026.858904348,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":1027.053250479,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":1027.053320832,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":1027.79197628,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":1028.182967599,"data":"[NbConvertApp] Writing 50507 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":1031.163141067,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":1032.167949964,"data":"[NbConvertApp] Writing 325170 bytes to __results__.html\n"}
+]

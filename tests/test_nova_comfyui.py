@@ -203,3 +203,125 @@ def test_comfyui_cancels_only_owned_queued_job(tmp_path: Path, monkeypatch):
         engine.cancel_job("job-video-1", owner_id="different_phone")
     assert engine.cancel_job("job-video-1", owner_id="phone_one") is True
     assert ("POST", "/queue", {"delete": ["job-video-1"]}) in calls
+
+
+def test_comfyui_launches_local_server_from_configured_python(tmp_path: Path, monkeypatch):
+    root = tmp_path / "ComfyUI-NovaMind"
+    python_dir = root / ".venv" / "Scripts"
+    python_dir.mkdir(parents=True)
+    python_exe = python_dir / "python.exe"
+    python_exe.write_text("python", encoding="utf-8")
+    (root / "main.py").write_text("print('comfyui')", encoding="utf-8")
+
+    engine = ComfyUIEngine(
+        enabled=True,
+        base_url="http://127.0.0.1:8188",
+        launch_python_path=python_exe,
+        image_workflow_path=root / "workflow.json",
+    )
+
+    launched = {}
+
+    class FakeProcess:
+        pid = 4321
+
+    def fake_popen(cmd, cwd=None, stdout=None, stderr=None, env=None, creationflags=0):
+        launched.update(cmd=cmd, cwd=cwd, env=env, creationflags=creationflags)
+        return FakeProcess()
+
+    monkeypatch.setattr(comfyui_module.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(
+        engine,
+        "health_check",
+        lambda: {
+            "ok": False,
+            "status": "unavailable",
+            "image_workflow_configured": True,
+            "video_workflow_configured": False,
+        },
+    )
+
+    result = engine.launch_local_server()
+
+    assert result["ok"] is True
+    assert result["started"] is True
+    assert result["process_id"] == 4321
+    assert launched["cmd"][0] == str(python_exe)
+    assert launched["cmd"][1] == str(root / "main.py")
+
+
+def test_comfyui_launch_uses_cpu_flag_when_cuda_is_unavailable(tmp_path: Path, monkeypatch):
+    root = tmp_path / "ComfyUI-NovaMind"
+    python_dir = root / ".venv" / "Scripts"
+    python_dir.mkdir(parents=True)
+    python_exe = python_dir / "python.exe"
+    python_exe.write_text("python", encoding="utf-8")
+    (root / "main.py").write_text("print('comfyui')", encoding="utf-8")
+
+    engine = ComfyUIEngine(
+        enabled=True,
+        base_url="http://127.0.0.1:8188",
+        launch_python_path=python_exe,
+        image_workflow_path=root / "workflow.json",
+    )
+
+    launched = {}
+
+    class FakeProcess:
+        pid = 9876
+
+    def fake_run(*args, **kwargs):
+        class Result:
+            returncode = 0
+            stdout = "0\n"
+            stderr = ""
+
+        return Result()
+
+    def fake_popen(cmd, cwd=None, stdout=None, stderr=None, env=None, creationflags=0):
+        launched["cmd"] = cmd
+        return FakeProcess()
+
+    monkeypatch.setattr(comfyui_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(comfyui_module.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(
+        engine,
+        "health_check",
+        lambda: {
+            "ok": False,
+            "status": "unavailable",
+            "image_workflow_configured": True,
+            "video_workflow_configured": False,
+        },
+    )
+
+    result = engine.launch_local_server()
+
+    assert result["ok"] is True
+    assert launched["cmd"][0] == str(python_exe)
+    assert launched["cmd"][1] == str(root / "main.py")
+    assert "--cpu" in launched["cmd"]
+
+
+def test_comfyui_windows_launch_avoids_console_detach_close(tmp_path: Path, monkeypatch):
+    root = tmp_path / "ComfyUI-NovaMind"
+    root.mkdir()
+    python_exe = root / "python.exe"
+    python_exe.write_text("python", encoding="utf-8")
+    (root / "main.py").write_text("print('comfyui')", encoding="utf-8")
+    engine = ComfyUIEngine(enabled=True, base_url="http://127.0.0.1:8188", launch_python_path=python_exe)
+    launched = {}
+
+    class FakeProcess:
+        pid = 1111
+
+    monkeypatch.setattr(comfyui_module.os, "name", "nt")
+    monkeypatch.setattr(comfyui_module.subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200, raising=False)
+    monkeypatch.setattr(comfyui_module.subprocess, "CREATE_NO_WINDOW", 0x08000000, raising=False)
+    monkeypatch.setattr(comfyui_module.subprocess, "DETACHED_PROCESS", 0x00000008, raising=False)
+    monkeypatch.setattr(engine, "health_check", lambda: {"ok": False, "status": "unavailable"})
+    monkeypatch.setattr(comfyui_module.subprocess, "run", lambda *a, **k: type("R", (), {"returncode": 0, "stdout": "0\n"})())
+    monkeypatch.setattr(comfyui_module.subprocess, "Popen", lambda *a, **k: (launched.update(flags=k["creationflags"]) or FakeProcess()))
+    engine.launch_local_server()
+    assert launched["flags"] & 0x08000000
+    assert not (launched["flags"] & 0x00000008)

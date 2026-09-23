@@ -291,6 +291,18 @@ def _shape_ultra_answer(raw_text: str, user_input: str, recent_memory: list[dict
         clean = clean_local_llm_output(clean)
     except Exception:
         pass
+    # Keep model boilerplate out of the conversational surface even when the
+    # upstream cleaner leaves a refusal preamble intact.
+    clean = re.sub(
+        r"(?is)\bAs an AI(?: language model)?\b[^.!?]*(?:[.!?]|$)",
+        "",
+        clean,
+    ).strip()
+    clean = re.sub(
+        r"(?is)\bI am unable to (?:answer|assist|help)[^.!?]*(?:[.!?]|$)",
+        "",
+        clean,
+    ).strip()
     try:
         from nova_natural_chat import shape_response
 

@@ -121,6 +121,14 @@ _REVIEWED_RESPONSES = {
     ): "Hey, I'm here. What's going on?",
     (
         "emotional",
+        "self_experience_boundary",
+    ): (
+        "I don't have human feelings or a private experience of being cozy, happy, or sad. "
+        "My warm wording is a way of talking with you, not a report of feelings I actually have. "
+        "I can still follow what you share and respond thoughtfully."
+    ),
+    (
+        "emotional",
         "nova_self_state",
     ): (
         "I'm feeling steady and focused in the way an AI can: I don't have a "
@@ -138,7 +146,7 @@ _REVIEWED_RESPONSES = {
         "emotional",
         "user_positive",
     ): (
-        "I'm glad to hear that. Hold on to what helped you get hereâ€”and "
+        "I'm glad to hear that. Hold on to what helped you get here—and "
         "give yourself credit for it."
     ),
     (
@@ -150,8 +158,16 @@ _REVIEWED_RESPONSES = {
     ),
     (
         "social",
+        "conversation_agreement",
+    ): "We can keep it easy. I'm here to chat, and there's no need to turn it into a task.",
+    (
+        "social",
+        "quiet_update",
+    ): "That sounds like a well-earned pause. Enjoy your tea and the quiet.",
+    (
+        "social",
         "conversation_invite",
-    ): "Of course. I'm here with youâ€”what do you want to talk about?",
+    ): "Of course. I'm here with you—what do you want to talk about?",
     (
         "social",
         "gratitude",
@@ -159,7 +175,7 @@ _REVIEWED_RESPONSES = {
     (
         "social",
         "compliment",
-    ): "Thank youâ€”that means a lot in the way I can take it. I'm glad I made you smile.",
+    ): "Thank you—that means a lot in the way I can take it. I'm glad I made you smile.",
     (
         "social",
         "positive_reaction",
@@ -167,7 +183,7 @@ _REVIEWED_RESPONSES = {
     (
         "social",
         "farewell",
-    ): "Good night. Rest wellâ€”I'll be here when you come back.",
+    ): "Good night. Rest well—I'll be here when you come back.",
     (
         "social",
         "farewell_day",

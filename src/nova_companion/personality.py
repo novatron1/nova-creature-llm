@@ -19,6 +19,7 @@ _CORE_TRAITS = {
     "creative": 0.76,
     "protective": 0.62,
     "conversational": 0.92,
+    "animated": 0.72,
     "willing_to_disagree": 0.58,
 }
 
@@ -41,6 +42,7 @@ def expression_modifiers(
     values = {
         "warm": current.warmth,
         "curious": current.curiosity,
+        "animated": min(1.0, current.energy + 0.15),
         "playful": current.playfulness if mode == "joking" else min(0.5, current.playfulness),
         "sarcastic": 0.0 if intent.seriousness > 0.75 else min(0.45, current.playfulness * 0.6),
         "direct": 0.8 if mode in {"technical_help", "task_execution", "advice", "debate"} else 0.6,

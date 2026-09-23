@@ -300,6 +300,7 @@ def scan_workspace(
     tracked = _normalized_paths(tracked_paths)
     deleted = _normalized_paths(deleted_paths)
     decisions: dict[str, SnapshotDecision] = {}
+    pruned_directories: dict[str, SnapshotDecision] = {}
 
     for current_root, directories, files in os.walk(repo_root, topdown=True, followlinks=False):
         current = Path(current_root)
@@ -313,6 +314,8 @@ def scan_workspace(
             stat_result = directory_path.lstat()
             is_link = _is_link_or_reparse(stat_result)
             decision = policy.classify(relative_path, size_bytes=stat_result.st_size, is_link=is_link)
+            if decision.classification is SnapshotClass.EXCLUDE:
+                pruned_directories[relative_path] = decision
             if is_link:
                 decisions[relative_path] = replace(
                     decision,
@@ -336,6 +339,21 @@ def scan_workspace(
                 decision,
                 tracked=relative_path in tracked,
             )
+
+    # The candidate inherits tracked files from Git even when their source
+    # directories are deliberately not traversed. Record removals using only
+    # Git's path inventory, without reading excluded private trees.
+    for tracked_path in tracked - decisions.keys():
+        if tracked_path in policy.required_files:
+            continue
+        decision = policy.classify(tracked_path)
+        if decision.classification is not SnapshotClass.EXCLUDE:
+            for directory, excluded in pruned_directories.items():
+                if tracked_path.startswith(directory + "/"):
+                    decision = replace(excluded, path=tracked_path, size_bytes=0)
+                    break
+        if decision.classification is SnapshotClass.EXCLUDE:
+            decisions[tracked_path] = replace(decision, tracked=True)
 
     for deleted_path in deleted:
         decision = policy.classify(deleted_path, size_bytes=0, is_link=False)

@@ -47,6 +47,7 @@ def test_windows_installer_is_checkable_and_does_not_collect_vast_key() -> None:
     assert "Read-Host" not in content
     assert "data" in content
     assert "/healthz" in content
+    assert "nova_doctor.py" in content
 
 
 def test_batch_launcher_delegates_without_changing_server_startup() -> None:

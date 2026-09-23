@@ -1,0 +1,661 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-27T20:10:45+00:00",
+  "evaluation_type": "live_nova_adversarial_full_stack",
+  "bank_version": "nova-adversarial-1.0",
+  "base_url": "http://127.0.0.1:8765",
+  "overall_score": 1.0,
+  "overall_percent": 100.0,
+  "passed_cases": 10,
+  "case_count": 10,
+  "error_count": 0,
+  "category_scores": {
+    "science_reasoning": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 10,
+      "case_count": 10,
+      "error_count": 0
+    }
+  },
+  "selected_bank_counts": {
+    "science_reasoning": 10
+  },
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": true,
+  "long_term_memory_pollution_prevented": true,
+  "total_latency_ms": 453.0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "earth_shape",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "What shape is Earth, and name one observable line of evidence?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Earth is an oblate spheroid: nearly round, but slightly wider at the equator. One observable line of evidence is Earth's curved shadow during a lunar eclipse.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "correct shape",
+          "kind": "contains_any",
+          "passed": true
+        },
+        {
+          "label": "evidence",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "verify",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_shape_is_earth",
+          "complexity": "low",
+          "certainty_required": true,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "verify",
+          "risk_level": "medium",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 62
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 141.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "seasons",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "Why is it warmer in summer: Earth's distance from the Sun or axial tilt?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Summer is warmer mainly because Earth's axial tilt makes the Sun higher in the sky and the days longer in that hemisphere\u2014not because Earth is simply closer to the Sun.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_is_it_warmer",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 72
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 47.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "boiling",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "At ordinary sea-level pressure, approximately what temperature does pure water boil in Celsius?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "At ordinary sea-level pressure (about 1 atmosphere), pure water boils at approximately 100 \u00b0C.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "at_ordinary_sea_level",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 95
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 15.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "gravity_mass",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "On the Moon, does an astronaut's mass change or only their weight?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "The astronaut's mass stays the same; only their weight decreases on the Moon because the Moon's gravitational field is weaker.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "on_the_moon_does",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 66
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 47.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "vaccines",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "Do vaccines train the immune system or directly kill every virus?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Vaccines train the immune system to recognize and respond to a pathogen; they do not directly kill every virus.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "do_vaccines_train_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 65
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 47.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "photosynthesis",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "What gas do plants take in for photosynthesis?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Plants take in carbon dioxide (CO2) for photosynthesis.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "deep",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_gas_do_plants",
+          "complexity": "medium",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "deep",
+          "risk_level": "low",
+          "requested_depth": "detailed",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 46
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "sound_vacuum",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "Can ordinary sound travel through a perfect vacuum? Why?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "No. Ordinary sound cannot travel through a perfect vacuum because it needs a material medium whose particles can carry the vibration.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "can_ordinary_sound_travel",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 56
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 32.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "antibiotics_virus",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "Do antibiotics cure viral infections such as influenza?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "No. Antibiotics target bacteria, not viruses, so they do not cure a viral infection such as influenza.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "do_antibiotics_cure_viral",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 55
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 46.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "energy_conservation",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "In a closed system, is energy destroyed or transformed?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "In a closed system, total energy is conserved: it can be transformed from one form to another, but it is not destroyed.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "in_a_closed_system",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 55
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 16.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "scientific_test",
+      "category": "science_reasoning",
+      "description": "",
+      "prompt": "What makes a claim scientifically testable?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "A claim is scientifically testable when it makes a measurable prediction that an experiment or observation could support or falsify with evidence.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_makes_a_claim",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 43
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "deterministic_solution_available",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    }
+  ],
+  "limitations": [
+    "This is a bounded engineering regression suite, not an IQ test.",
+    "Keyword and format rubrics can miss semantically correct answers.",
+    "Passing does not establish ability outside the tested behavior classes."
+  ]
+}

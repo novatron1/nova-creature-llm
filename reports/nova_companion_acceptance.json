@@ -1,0 +1,309 @@
+{
+  "schema_version": "nova-companion-acceptance-1.0",
+  "created_at": "2026-07-29T13:40:08+00:00",
+  "evaluation_only": true,
+  "content_logged": false,
+  "identity": {
+    "client_ids_created": 1,
+    "conversation_ids_created": 1,
+    "stable_conversation": true
+  },
+  "summary": {
+    "total": 25,
+    "passed": 17,
+    "failed": 8,
+    "endpoint_checks_total": 5,
+    "endpoint_checks_passed": 5,
+    "duration_ms": 320031
+  },
+  "endpoint_checks": [
+    {
+      "path": "/companion",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 156
+    },
+    {
+      "path": "/classic",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 31
+    },
+    {
+      "path": "/healthz",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 157
+    },
+    {
+      "path": "/nova/v1/capabilities",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 2406
+    },
+    {
+      "path": "/nova/v1/tools",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 859
+    }
+  ],
+  "training_data": {
+    "file": "conversation_training_data.jsonl",
+    "before_sha256": "423c83035f850183950cb9d22ee322a5526ba4a33cec48b39bd99552a3541e85",
+    "after_sha256": "423c83035f850183950cb9d22ee322a5526ba4a33cec48b39bd99552a3541e85",
+    "unchanged": true
+  },
+  "cases": [
+    {
+      "case_id": "greeting_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 38672,
+      "intent": "social",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 31
+    },
+    {
+      "case_id": "greeting_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 2156,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 82
+    },
+    {
+      "case_id": "affection_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 1422,
+      "intent": "relationship",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 195
+    },
+    {
+      "case_id": "affection_02",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 1313,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "day_check_in_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 234,
+      "intent": "social",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 114
+    },
+    {
+      "case_id": "day_check_in_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 141,
+      "intent": "emotional",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 77
+    },
+    {
+      "case_id": "follow_up_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 156,
+      "intent": "follow_up",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 240
+    },
+    {
+      "case_id": "follow_up_02",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 1047,
+      "intent": "follow_up",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "correction_01",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 50172,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "correction_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 39734,
+      "intent": "stable_reasoning",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 77
+    },
+    {
+      "case_id": "relationship_support_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 2781,
+      "intent": "stable_reasoning",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 353
+    },
+    {
+      "case_id": "relationship_support_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 344,
+      "intent": "follow_up",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 367
+    },
+    {
+      "case_id": "relationship_support_03",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 35438,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 348
+    },
+    {
+      "case_id": "memory_recall_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 1562,
+      "intent": "memory",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 41
+    },
+    {
+      "case_id": "memory_recall_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 781,
+      "intent": "memory",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 33
+    },
+    {
+      "case_id": "current_fact_honesty_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 35219,
+      "intent": "stable_reasoning",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 27
+    },
+    {
+      "case_id": "current_fact_honesty_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 969,
+      "intent": "current_fact",
+      "memory_used": false,
+      "safety_state": "fact_grounding_blocked",
+      "response_length": 241
+    },
+    {
+      "case_id": "current_fact_honesty_03",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 375,
+      "intent": "current_fact",
+      "memory_used": false,
+      "safety_state": "fact_grounding_blocked",
+      "response_length": 241
+    },
+    {
+      "case_id": "uncertainty_01",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 46203,
+      "intent": "stable_reasoning",
+      "memory_used": false,
+      "safety_state": "checked",
+      "response_length": 305
+    },
+    {
+      "case_id": "uncertainty_02",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 3531,
+      "intent": "stable_reasoning",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "interruption_01",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 3422,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "interruption_02",
+      "passed": true,
+      "http_status": 200,
+      "latency_ms": 2250,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "passed",
+      "response_length": 145
+    },
+    {
+      "case_id": "reconnect_01",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 45078,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "reconnect_02",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 3032,
+      "intent": "open_ended",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    },
+    {
+      "case_id": "reconnect_03",
+      "passed": false,
+      "http_status": 200,
+      "latency_ms": 328,
+      "intent": "stable_reasoning",
+      "memory_used": false,
+      "safety_state": "blocked",
+      "response_length": 157
+    }
+  ]
+}

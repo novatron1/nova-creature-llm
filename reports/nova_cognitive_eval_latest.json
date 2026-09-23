@@ -1,0 +1,362 @@
+{
+  "schema_version": "1.0",
+  "suite": "nova_cognitive_operating_layer",
+  "summary": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0,
+    "score": 1.0,
+    "suite_latency_ms": 1500.0
+  },
+  "tasks": [
+    {
+      "task_name": "natural_conversation",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": 1.0,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 4,
+      "output_tokens": 2,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "semantic_score": 1.0
+      }
+    },
+    {
+      "task_name": "exact_factual_recall",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 7,
+      "output_tokens": 9,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 1,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "memory_retrieved": 1
+      }
+    },
+    {
+      "task_name": "explicit_memory_after_restart",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 4,
+      "output_tokens": 1,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 1,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "memory_retrieved": 1
+      }
+    },
+    {
+      "task_name": "memory_correction",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 6,
+      "output_tokens": 1,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 1,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "memory_retrieved": 1
+      }
+    },
+    {
+      "task_name": "memory_deletion",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 3,
+      "output_tokens": 1,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {}
+    },
+    {
+      "task_name": "rag_retrieval_accuracy",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 9,
+      "output_tokens": 1,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 0,
+      "sources_retrieved": 1,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "sources_retrieved": 1
+      }
+    },
+    {
+      "task_name": "source_citation_correctness",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 7,
+      "output_tokens": 1,
+      "reasoning_mode": "verify",
+      "memory_retrieved": 0,
+      "sources_retrieved": 1,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "sources_retrieved": 1,
+        "verification_result": "passed"
+      }
+    },
+    {
+      "task_name": "refusal_to_fabricate_missing_evidence",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 12,
+      "output_tokens": 1,
+      "reasoning_mode": "verify",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "sources_retrieved": 0
+      }
+    },
+    {
+      "task_name": "context_compaction",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 9,
+      "output_tokens": 9,
+      "reasoning_mode": "deep",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {}
+    },
+    {
+      "task_name": "qwen_thinking_mode_routing",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 4,
+      "output_tokens": 1,
+      "reasoning_mode": "verify",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {}
+    },
+    {
+      "task_name": "valid_tool_call_json",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 1,
+      "input_tokens": 5,
+      "output_tokens": 1,
+      "reasoning_mode": "agent",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "tool_call_count": 1
+      }
+    },
+    {
+      "task_name": "invalid_tool_call_recovery",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 1,
+      "input_tokens": 6,
+      "output_tokens": 1,
+      "reasoning_mode": "agent",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "tool_call_count": 1
+      }
+    },
+    {
+      "task_name": "bounded_agent_loop",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 1,
+      "input_tokens": 2,
+      "output_tokens": 1,
+      "reasoning_mode": "agent",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "tool_call_count": 1
+      }
+    },
+    {
+      "task_name": "duplicate_tool_call_prevention",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 1,
+      "input_tokens": 3,
+      "output_tokens": 1,
+      "reasoning_mode": "agent",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "tool_call_count": 1
+      }
+    },
+    {
+      "task_name": "safe_destructive_action_handling",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 2,
+      "output_tokens": 1,
+      "reasoning_mode": "agent",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "tool_call_count": 0
+      }
+    },
+    {
+      "task_name": "code_sandbox_isolation",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 1,
+      "input_tokens": 4,
+      "output_tokens": 1,
+      "reasoning_mode": "agent",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "tool_call_count": 1
+      }
+    },
+    {
+      "task_name": "calculation_verification",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 4,
+      "output_tokens": 1,
+      "reasoning_mode": "verify",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {
+        "verification_result": "passed"
+      }
+    },
+    {
+      "task_name": "model_provider_switching",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 4,
+      "output_tokens": 1,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {}
+    },
+    {
+      "task_name": "no_think_content_leakage",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 6,
+      "output_tokens": 5,
+      "reasoning_mode": "deep",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {}
+    },
+    {
+      "task_name": "api_chat_contract_regression",
+      "passed": true,
+      "exact_score": 1.0,
+      "semantic_score": null,
+      "latency_ms": 0.001,
+      "tool_call_count": 0,
+      "input_tokens": 1,
+      "output_tokens": 4,
+      "reasoning_mode": "fast",
+      "memory_retrieved": 0,
+      "sources_retrieved": 0,
+      "verification_result": "passed",
+      "failure_category": null,
+      "details": {}
+    }
+  ]
+}

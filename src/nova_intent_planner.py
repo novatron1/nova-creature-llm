@@ -156,6 +156,13 @@ def _direct_answer_fast_plan(user_message, timestamp):
             "_direct_answer": "No. Earth is not flat; it is roughly spherical, more precisely an oblate spheroid.",
         }
 
+    if re.search(r"\b(?:what is|what's|name)\s+(?:the\s+)?capital\s+of\s+japan\b", normalized):
+        return {
+            **common,
+            "intent": "answer stable geography fact",
+            "_direct_answer": "The capital of Japan is Tokyo.",
+        }
+
     if (
         re.search(r"\bhow\s+old\s+(?:are|r|is)\s+(?:you|u)\b", normalized)
         or re.search(r"\bwhat\s+is\s+(?:your|ur)\s+age\b", normalized)

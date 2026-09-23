@@ -95,3 +95,62 @@ def test_proof_job_result_to_dict_is_json_serializable(tmp_path: Path) -> None:
 
     assert payload["run"]["state"] == "completed"
     assert payload["run"]["history"]
+
+
+# Fixture browser tests exercise orchestration, not real-browser readiness.
+import pytest
+import subprocess
+
+
+@pytest.mark.parametrize("failure", ["test", "browser", "app"])
+def test_failed_verification_restores_exact_bytes_without_success_memory(tmp_path, failure):
+    project = tmp_path / "project"
+    project.mkdir()
+    original = b'def answer():\r\n    return "hello"\r\n'
+    if failure == "app":
+        original += b'raise RuntimeError("app failure")\r\n'
+    (project / "app.py").write_bytes(original)
+    (project / "test_app.py").write_text("def test_result():\n    assert " + str(failure != "test") + "\n")
+    class FailedPage(_FakePage):
+        def content(self):
+            return "wrong result"
+    result = run_proof_job(project_root=project, output_dir=tmp_path / "work",
+                          page_factory=FailedPage if failure == "browser" else _fake_page_factory)
+    assert result.run.state.value == "rolled_back"
+    assert result.report.final_verification["passed"] is False
+    assert (tmp_path / "work" / "app.py").read_bytes() == original
+    assert (project / "app.py").read_bytes() == original
+    assert not (tmp_path / "work" / "provenance_memory.jsonl").exists()
+    assert result.report.rollback_information["restored"] is True
+    assert result.run.contract.metadata["isolation"]["os_sandbox"] is False
+
+
+def test_pytest_subprocess_has_finite_timeout(tmp_path, monkeypatch):
+    from nova_runtime import orchestrator
+    def fake_run(*args, **kwargs):
+        assert 0 < kwargs["timeout"] <= 300
+        raise subprocess.TimeoutExpired(args[0], kwargs["timeout"])
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    result = orchestrator._run_pytest(tmp_path)
+    assert result.returncode != 0
+    assert "timeout" in result.stderr.lower()
+
+
+def test_bounded_process_terminates_sleeping_child(tmp_path):
+    from nova_runtime.orchestrator import _run_bounded
+    result = _run_bounded([sys.executable, "-c", "import time; time.sleep(10)"], tmp_path, 0.1)
+    assert result.returncode == 124
+
+
+def test_verification_exception_restores_original(tmp_path, monkeypatch):
+    from nova_runtime import orchestrator
+    project = tmp_path / "project"
+    project.mkdir()
+    original = b'def answer():\n    return "hello"\n'
+    (project / "app.py").write_bytes(original)
+    def fail(*args, **kwargs):
+        raise OSError("verification disk error")
+    monkeypatch.setattr(orchestrator, "verify_playwright_page", fail)
+    with pytest.raises(OSError, match="verification disk error"):
+        run_proof_job(project_root=project, output_dir=tmp_path / "work")
+    assert (tmp_path / "work" / "app.py").read_bytes() == original

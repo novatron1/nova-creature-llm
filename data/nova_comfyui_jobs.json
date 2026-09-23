@@ -1,0 +1,154 @@
+{
+  "jobs": [
+    {
+      "client_id": "paired-device:33893cc7acb84038a6471564b03007ed",
+      "created_at": "2026-07-18T14:56:20.335803+00:00",
+      "job_id": "7788b77e-79f0-48f8-866d-150e9eaf424f",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-07-18T14:59:00.474899+00:00"
+    },
+    {
+      "client_id": "paired-device:e9a6d8906f46431091d120c6f1bf0564",
+      "created_at": "2026-07-18T15:00:39.495188+00:00",
+      "job_id": "e423525c-6792-46f4-887b-ba63dc0bd656",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-07-18T15:03:35.954843+00:00"
+    },
+    {
+      "client_id": "video-lite:nvl_0f440e90e379fc9b5d2e5b5d",
+      "created_at": "2026-07-18T17:51:25.742548+00:00",
+      "job_id": "ff84085f-e011-4fba-8422-9967554cc085",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-07-18T17:56:49.465779+00:00"
+    },
+    {
+      "client_id": "paired-device:153cac3c24fb4f17a7168331b4cf1f9a",
+      "created_at": "2026-07-22T17:57:36.371312+00:00",
+      "job_id": "ee4b2966-d4fd-44e6-99ef-bd315b2fe67f",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-07-22T18:01:48.103782+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-21T05:08:40.628838+00:00",
+      "job_id": "beecc058-5e6b-45ea-8061-e23b6b87bc49",
+      "operation": "text_to_image",
+      "status": "queued",
+      "updated_at": "2026-08-21T05:08:40.628838+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-21T05:31:08.618793+00:00",
+      "job_id": "a7fb9840-7ca0-45a3-89ea-ac04fea56383",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-21T05:36:00.759824+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-21T06:21:47.708620+00:00",
+      "job_id": "7d81fe75-8772-4a6c-a022-daad1c9d5265",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-21T06:23:46.188194+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-21T06:53:17.879818+00:00",
+      "job_id": "2ecb48d5-0577-4d34-8d4d-e9b2f32c0697",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-21T07:00:53.106115+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-21T07:03:28.057943+00:00",
+      "job_id": "44db396f-d240-4bf7-9c95-23271e406fa6",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-21T07:08:26.726720+00:00"
+    },
+    {
+      "client_id": "video-lite:nvl_c766c5c5c44f8f01019fbaf5",
+      "created_at": "2026-08-21T07:22:09.766288+00:00",
+      "job_id": "552ced30-b8be-4286-a6b0-baf1097e9c32",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-21T07:22:30.111220+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-25T11:53:20.068354+00:00",
+      "job_id": "3d0575fc-61a0-4d80-b47b-85ae80cdc443",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-25T11:57:10.567219+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-28T17:23:08.300158+00:00",
+      "job_id": "96223515-9c2f-4208-bb62-de4d2b3bb4ee",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-28T17:28:32.351406+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-29T00:11:41.027408+00:00",
+      "job_id": "4947c5dd-2c98-4323-bb9a-3a4e945426e6",
+      "operation": "text_to_image",
+      "status": "running",
+      "updated_at": "2026-08-29T00:11:41.926316+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-31T00:35:48.751503+00:00",
+      "job_id": "2a92b05a-f677-4e66-a507-8d9f5ce2d68b",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-31T00:40:47.423243+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-31T00:53:16.955894+00:00",
+      "job_id": "bb062c24-c5cc-4a3a-ab72-f3deb732bf9e",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-31T00:55:23.973558+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-08-31T01:33:11.818769+00:00",
+      "job_id": "faf02160-31a2-4ad1-b590-db75dd26fd0a",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-08-31T01:41:31.904303+00:00"
+    },
+    {
+      "client_id": "paired-device:0da380029d774ad3bc1ce11b57639ba1",
+      "created_at": "2026-09-08T20:22:19.001925+00:00",
+      "job_id": "f22e3e33-b04f-4ab5-ae23-00ec2ae28d90",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-09-08T20:30:19.069040+00:00"
+    },
+    {
+      "client_id": "local-client",
+      "created_at": "2026-09-17T13:21:51.203409+00:00",
+      "job_id": "c1ec6831-37ef-44cb-b490-b656e1aefe1f",
+      "operation": "text_to_image",
+      "status": "completed",
+      "updated_at": "2026-09-17T13:25:10.034861+00:00"
+    }
+  ],
+  "privacy": {
+    "output_file_content_stored": false,
+    "prompt_content_stored": false,
+    "workflow_content_stored": false
+  },
+  "schema_version": "1.0"
+}

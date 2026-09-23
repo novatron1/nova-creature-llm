@@ -1,0 +1,254 @@
+{
+  "ok": true,
+  "passed": false,
+  "score": 93,
+  "project_id": "Nova_Creature_Website",
+  "project_name": "Nova Creature Website",
+  "project_url": "/sandbox/app_builder_projects/Nova_Creature_Website/index.html",
+  "pages_inspected": 5,
+  "links_checked": 55,
+  "pages": [
+    {
+      "file": "about.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "agents.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": true
+    },
+    {
+      "file": "index.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "projects.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    },
+    {
+      "file": "research.html",
+      "has_title": true,
+      "has_viewport": true,
+      "has_favicon": true,
+      "has_h1": true,
+      "has_main": true,
+      "has_responsive_css": true,
+      "has_placeholder": false
+    }
+  ],
+  "visuals": [
+    {
+      "page": "about.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/about-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/about-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "about.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/about-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/about-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "agents.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/agents-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/agents-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "agents.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/agents-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/agents-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "index.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/index-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/index-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "index.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/index-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/index-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "projects.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/projects-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/projects-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "projects.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/projects-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/projects-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "research.html",
+      "viewport": "desktop",
+      "width": 1366,
+      "height": 768,
+      "screenshot_file": "quality_gate_screenshots/research-desktop.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/research-desktop.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    },
+    {
+      "page": "research.html",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "screenshot_file": "quality_gate_screenshots/research-mobile.svg",
+      "screenshot_url": "/sandbox/app_builder_projects/Nova_Creature_Website/quality_gate_screenshots/research-mobile.svg",
+      "blank": false,
+      "overflow_risk": false,
+      "console_error_risk": false
+    }
+  ],
+  "visuals_created": 10,
+  "visual_snapshot_dir": "quality_gate_screenshots",
+  "checks": [
+    {
+      "name": "index page exists",
+      "passed": true,
+      "detail": "index.html is present"
+    },
+    {
+      "name": "html pages discovered",
+      "passed": true,
+      "detail": "5 HTML page(s) found"
+    },
+    {
+      "name": "title on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "viewport on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "favicon on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "h1 on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "main landmark on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "responsive css on every page",
+      "passed": true,
+      "detail": "all pages pass"
+    },
+    {
+      "name": "internal links resolve",
+      "passed": true,
+      "detail": "all internal links resolve"
+    },
+    {
+      "name": "no placeholder content",
+      "passed": false,
+      "detail": "placeholder text found: agents.html"
+    },
+    {
+      "name": "visual snapshots created",
+      "passed": true,
+      "detail": "10 of 10 snapshots created"
+    },
+    {
+      "name": "no blank visual pages",
+      "passed": true,
+      "detail": "all visual checks pass"
+    },
+    {
+      "name": "no horizontal overflow risk",
+      "passed": true,
+      "detail": "all visual checks pass"
+    },
+    {
+      "name": "no console error risk",
+      "passed": true,
+      "detail": "all visual checks pass"
+    }
+  ],
+  "blockers": [
+    "placeholder text found: agents.html"
+  ],
+  "fixes_applied": [],
+  "generated_at": "2026-09-08T16:31:53",
+  "report_file": "quality_gate_report.json"
+}

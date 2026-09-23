@@ -1,0 +1,231 @@
+{
+  "run": {
+    "state": "failed",
+    "history": [
+      {
+        "state": "planned",
+        "reason": "run created",
+        "timestamp": "2026-09-04T23:14:52.506197+00:00",
+        "contract_hash": "f3c9991807f22433e9010eee8c5ec92f62b49f676707506e66bbedc8311cb7b6"
+      },
+      {
+        "state": "authorized",
+        "reason": "proof job authorized",
+        "timestamp": "2026-09-04T23:14:52.506197+00:00",
+        "contract_hash": "f3c9991807f22433e9010eee8c5ec92f62b49f676707506e66bbedc8311cb7b6"
+      },
+      {
+        "state": "executing",
+        "reason": "proof job executing",
+        "timestamp": "2026-09-04T23:14:52.506197+00:00",
+        "contract_hash": "f3c9991807f22433e9010eee8c5ec92f62b49f676707506e66bbedc8311cb7b6"
+      },
+      {
+        "state": "verifying",
+        "reason": "browser verification",
+        "timestamp": "2026-09-04T23:14:54.039300+00:00",
+        "contract_hash": "f3c9991807f22433e9010eee8c5ec92f62b49f676707506e66bbedc8311cb7b6"
+      },
+      {
+        "state": "failed",
+        "reason": "proof job failed",
+        "timestamp": "2026-09-04T23:14:55.922766+00:00",
+        "contract_hash": "f3c9991807f22433e9010eee8c5ec92f62b49f676707506e66bbedc8311cb7b6"
+      }
+    ],
+    "contract": {
+      "run_id": "proof_eb7a57727a23",
+      "goal": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+      "goal_hash": "3b78b81b3a1e689907760247019f3528d546eb5e683d6bf4721f762ce443ad14",
+      "goal_summary": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+      "owner_id": "nova",
+      "project_id": "failure-source",
+      "workspace_root": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work",
+      "allowed_roots": [
+        "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work"
+      ],
+      "allowed_tools": [
+        "filesystem.read",
+        "filesystem.write",
+        "terminal.run",
+        "playwright.verify"
+      ],
+      "allowed_resources": [
+        "filesystem://workspace",
+        "terminal://workspace",
+        "browser://workspace"
+      ],
+      "time_budget_seconds": 300,
+      "tool_budget": 12,
+      "cost_budget": 0.0,
+      "memory_budget": 8,
+      "created_at": "2026-09-04T23:14:52.506197+00:00",
+      "contract_hash": "f3c9991807f22433e9010eee8c5ec92f62b49f676707506e66bbedc8311cb7b6",
+      "metadata": {
+        "proof_job": true,
+        "isolation": {
+          "kind": "copied_workspace",
+          "os_sandbox": false,
+          "host_filesystem_access_restricted": false,
+          "network_access_restricted": false,
+          "subprocess_timeout_seconds": {
+            "app": 20,
+            "pytest": 120
+          },
+          "authorization": "caller_invocation_for_trusted_project"
+        }
+      }
+    }
+  },
+  "report": {
+    "goal": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+    "plan": [
+      "Read the project.",
+      "Edit one file in a copied workspace (not an OS sandbox).",
+      "Run tests.",
+      "Verify the browser output.",
+      "Write provenance memory and publish a structured report."
+    ],
+    "tools_used": [
+      "filesystem.read",
+      "filesystem.write",
+      "terminal.run",
+      "playwright.verify"
+    ],
+    "files_changed": [
+      "app.py"
+    ],
+    "tests_executed": [
+      "python -m pytest -q"
+    ],
+    "browser_evidence": {
+      "url": "file:///C:/Users/nova/Documents/NOVA%20LLM%20CREATURE%20DESKTOP/reports/proof-artifacts/failure-work/proof.html",
+      "verification_backend": "playwright",
+      "passed": true,
+      "page_title": "",
+      "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+      "dom_hash": "fdd5de2938dd22029c5336644d601d6f3cf259e8bfbdfcf635303232848706fa",
+      "console_summary": {
+        "count": 0,
+        "messages": [],
+        "errors": []
+      },
+      "network_summary": {
+        "count": 1,
+        "requests": [
+          "file:///C:/Users/nova/Documents/NOVA%20LLM%20CREATURE%20DESKTOP/reports/proof-artifacts/failure-work/proof.html"
+        ],
+        "failures": []
+      }
+    },
+    "failures_and_retries": [
+      {
+        "phase": "test",
+        "app_returncode": 0,
+        "app_stderr": "",
+        "returncode": 1,
+        "stdout": "F                                                                        [100%]\n================================== FAILURES ===================================\n_________________________________ test_answer _________________________________\n\n    def test_answer():\n>       assert answer() == 'intentional verification failure'\nE       AssertionError: assert 'hello, nova' == 'intentional ...ation failure'\nE         \nE         - intentional verification failure\nE         + hello, nova\n\ntest_app.py:4: AssertionError\n============================== warnings summary ===============================\n..\\..\\..\\..\\..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:475\n  C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:475: PytestCacheWarning: could not create cache path C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.pytest_cache\\v\\cache\\nodeids: [WinError 5] Access is denied: 'C:\\\\Users\\\\nova\\\\Documents\\\\NOVA LLM CREATURE DESKTOP\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n..\\..\\..\\..\\..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:429\n  C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:429: PytestCacheWarning: could not create cache path C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.pytest_cache\\v\\cache\\lastfailed: [WinError 5] Access is denied: 'C:\\\\Users\\\\nova\\\\Documents\\\\NOVA LLM CREATURE DESKTOP\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/lastfailed\", self.lastfailed)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED test_app.py::test_answer - AssertionError: assert 'hello, nova' == 'in...\n1 failed, 2 warnings in 0.59s\n",
+        "stderr": ""
+      }
+    ],
+    "final_verification": {
+      "passed": false,
+      "pytest_returncode": 1,
+      "browser_passed": true,
+      "app_returncode": 0,
+      "isolation": {
+        "kind": "copied_workspace",
+        "os_sandbox": false,
+        "host_filesystem_access_restricted": false,
+        "network_access_restricted": false,
+        "subprocess_timeout_seconds": {
+          "app": 20,
+          "pytest": 120
+        },
+        "authorization": "caller_invocation_for_trusted_project"
+      }
+    },
+    "unresolved_blockers": [
+      "proof job did not fully verify"
+    ],
+    "rollback_information": {
+      "available": true,
+      "original_hash": "981e83b18c4e67c650071635504ad31a0c448701d6809c4a741be58a004caa6b",
+      "updated_hash": "c55fdf8c5832c3e713ec57d61946fb9991e17c9350a42b5e8be7c93e18a6b392",
+      "rollback_point": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work\\rollback\\app.py.original",
+      "original_bytes_sha256": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+      "restored": true,
+      "scope": "app.py only; arbitrary subprocess side effects are not reverted"
+    },
+    "sections": [
+      {
+        "title": "plan",
+        "content": "read -> edit -> test -> verify -> report",
+        "metadata": {
+          "goal_hash": "3b78b81b3a1e689907760247019f3528d546eb5e683d6bf4721f762ce443ad14"
+        }
+      },
+      {
+        "title": "verification",
+        "content": "Browser verification completed",
+        "metadata": {
+          "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d"
+        }
+      }
+    ],
+    "created_at": "2026-09-04T23:14:55+00:00"
+  },
+  "workspace_root": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work",
+  "report_path": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work\\agent_report.json",
+  "proof_artifacts": {
+    "pytest_stdout": "F                                                                        [100%]\n================================== FAILURES ===================================\n_________________________________ test_answer _________________________________\n\n    def test_answer():\n>       assert answer() == 'intentional verification failure'\nE       AssertionError: assert 'hello, nova' == 'intentional ...ation failure'\nE         \nE         - intentional verification failure\nE         + hello, nova\n\ntest_app.py:4: AssertionError\n============================== warnings summary ===============================\n..\\..\\..\\..\\..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:475\n  C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:475: PytestCacheWarning: could not create cache path C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.pytest_cache\\v\\cache\\nodeids: [WinError 5] Access is denied: 'C:\\\\Users\\\\nova\\\\Documents\\\\NOVA LLM CREATURE DESKTOP\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n..\\..\\..\\..\\..\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:429\n  C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\cacheprovider.py:429: PytestCacheWarning: could not create cache path C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\.pytest_cache\\v\\cache\\lastfailed: [WinError 5] Access is denied: 'C:\\\\Users\\\\nova\\\\Documents\\\\NOVA LLM CREATURE DESKTOP\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/lastfailed\", self.lastfailed)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED test_app.py::test_answer - AssertionError: assert 'hello, nova' == 'in...\n1 failed, 2 warnings in 0.59s\n",
+    "pytest_stderr": "",
+    "verification": {
+      "url": "file:///C:/Users/nova/Documents/NOVA%20LLM%20CREATURE%20DESKTOP/reports/proof-artifacts/failure-work/proof.html",
+      "passed": true,
+      "page_title": "",
+      "screenshot_path": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work\\playwright_evidence\\_C__Users_nova_Documents_NOVA_20LLM_20CREATURE_20DESKTOP_reports_proof-artifacts_failure-work_proof_html-1788563695.png",
+      "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+      "dom_hash": "fdd5de2938dd22029c5336644d601d6f3cf259e8bfbdfcf635303232848706fa",
+      "console_summary": {
+        "count": 0,
+        "messages": [],
+        "errors": []
+      },
+      "network_summary": {
+        "count": 1,
+        "requests": [
+          "file:///C:/Users/nova/Documents/NOVA%20LLM%20CREATURE%20DESKTOP/reports/proof-artifacts/failure-work/proof.html"
+        ],
+        "failures": []
+      },
+      "failure_trace": {
+        "passed": true,
+        "error": null,
+        "failed_assertions": [],
+        "screenshot_path": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work\\playwright_evidence\\_C__Users_nova_Documents_NOVA_20LLM_20CREATURE_20DESKTOP_reports_proof-artifacts_failure-work_proof_html-1788563695.png",
+        "dom_hash": "fdd5de2938dd22029c5336644d601d6f3cf259e8bfbdfcf635303232848706fa",
+        "console_errors": [],
+        "network_failures": []
+      },
+      "assertions": [
+        {
+          "assertion": {
+            "type": "contains",
+            "contains": "hello, nova"
+          },
+          "passed": true,
+          "detail": "text contained 'hello, nova'"
+        }
+      ],
+      "elapsed_ms": 1878.469,
+      "verified_at": "2026-09-04T23:14:55+00:00",
+      "evidence": {
+        "error": null,
+        "output_dir": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\failure-work\\playwright_evidence",
+        "page_path": "_C__Users_nova_Documents_NOVA_20LLM_20CREATURE_20DESKTOP_reports_proof-artifacts_failure-work_proof_html",
+        "screenshot_size": 7043
+      }
+    }
+  }
+}

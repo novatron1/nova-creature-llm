@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="12" tests="118" time="147.460" timestamp="2026-09-04T20:49:29.241840-04:00" hostname="DESKTOP-L7OIQO8"><testcase classname="tests.test_nova_release_gates" name="test_unsupported_posix_is_rejected_before_report_mutation" time="0.039" /><testcase classname="tests.test_nova_release_gates" name="test_linux_preflight_rejects_missing_pidfd_api_before_report_mutation[pidfd_open]" time="0.008" /><testcase classname="tests.test_nova_release_gates" name="test_linux_preflight_rejects_missing_pidfd_api_before_report_mutation[pidfd_send_signal]" time="0.005" /><testcase classname="tests.test_nova_release_gates" name="test_linux_preflight_rejects_kernel_pidfd_failure_and_closes_probe" time="0.004" /><testcase classname="tests.test_nova_release_gates" name="test_linux_preflight_probes_real_pidfd_without_descriptor_leak" time="0.001"><skipped type="pytest.skip" message="Linux PIDFD proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:281: Linux PIDFD proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_linux_session_scan_fails_closed_at_entry_and_process_caps" time="0.056" /><testcase classname="tests.test_nova_release_gates" name="test_linux_session_scan_fails_closed_when_absolute_deadline_is_exhausted" time="0.006" /><testcase classname="tests.test_nova_release_gates" name="test_linux_session_scan_treats_uncertain_stat_as_incomplete[malformed]" time="0.009" /><testcase classname="tests.test_nova_release_gates" name="test_linux_session_scan_treats_uncertain_stat_as_incomplete[oversized]" time="0.010" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_records_observed_result" time="1.442" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_times_out_and_kills_process_tree" time="5.101" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_bounds_each_output_tail" time="1.018" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_redacts_secret_and_candidate_path_output" time="0.773" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_redacts_name_and_every_command_argument" time="1.079" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_redacts_sensitive_option_value_sequences" time="1.542" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_handles_json_escaped_and_slash_path_variants" time="0.002" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_suppresses_entire_multiline_private_record[prompt]" time="0.002" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_suppresses_entire_multiline_private_record[response]" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_suppresses_entire_multiline_private_record[memory]" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_suppresses_entire_multiline_private_record[database_row]" time="0.004" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_suppresses_entire_multiline_private_record[private]" time="0.004" /><testcase classname="tests.test_nova_release_gates" name="test_redact_gate_output_suppresses_multiline_structured_json_record" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_reapplies_byte_cap_after_invalid_utf8_decode" time="0.980" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_reapplies_byte_cap_after_redaction" time="1.124" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_remembers_secret_marker_that_scrolls_out_of_tail" time="0.652" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_preserves_valid_split_multibyte_suffix" time="0.724" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_uses_only_sanitized_environment" time="0.886" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_cleans_child_after_successful_leader_exit" time="1.548" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_kills_sigterm_ignoring_descendant_after_leader_exit" time="0.002"><skipped type="pytest.skip" message="POSIX signal behavior">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:749: POSIX signal behavior</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_cleanup_rechecks_session_after_supervisor_is_reaped" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_posix_cleanup_never_signals_numeric_group_after_supervisor_reap" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_uses_and_closes_retained_supervisor_pidfd[live]" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_uses_and_closes_retained_supervisor_pidfd[reaped]" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_does_not_reacquire_reaped_supervisor_pid" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_without_retained_pidfd_is_indeterminate_while_live" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_closes_retained_pidfd_when_setup_raises" time="0.002" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_never_scans_reused_session_after_supervisor_reap" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_pidfd_signal_failure_has_no_numeric_pid_fallback" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_real_posix_cleanup_does_not_reuse_reaped_group_identity" time="0.000"><skipped type="pytest.skip" message="Linux PID reuse proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1264: Linux PID reuse proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_cleanup_kills_and_reaps_stalled_supervisor" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_windows_blocked_payload_preserves_timeout_and_cleanup_uncertainty" time="0.406" /><testcase classname="tests.test_nova_release_gates" name="test_windows_launch_propagates_known_writer_cleanup_failure" time="0.045" /><testcase classname="tests.test_nova_release_gates" name="test_posix_launch_retains_supervisor_pidfd_before_handshake_reaps_process" time="0.005" /><testcase classname="tests.test_nova_release_gates" name="test_successful_posix_launch_closes_setup_only_supervisor_pidfd" time="0.009" /><testcase classname="tests.test_nova_release_gates" name="test_posix_launch_clears_pidfd_ownership_when_setup_close_raises" time="0.007" /><testcase classname="tests.test_nova_release_gates" name="test_posix_launch_preserves_timeout_classification_across_pidfd_cleanup_fault[signal]" time="0.006" /><testcase classname="tests.test_nova_release_gates" name="test_posix_launch_preserves_timeout_classification_across_pidfd_cleanup_fault[close]" time="0.004" /><testcase classname="tests.test_nova_release_gates" name="test_posix_supervisor_pins_session_after_candidate_exit" time="0.040"><skipped type="pytest.skip" message="POSIX supervisor behavior">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1653: POSIX supervisor behavior</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_supervisor_reports_spawn_failure_without_fd_leak" time="0.001"><skipped type="pytest.skip" message="Linux FD/process proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1680: Linux FD/process proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_payload_encoding_failure_closes_all_descriptors" time="0.009"><skipped type="pytest.skip" message="Linux FD/process proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1697: Linux FD/process proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_handshake_timeout_reaps_supervisor_before_late_spawn" time="0.001"><skipped type="pytest.skip" message="Linux handshake proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1714: Linux handshake proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_launch_rejects_expired_deadline_before_spawning_process" time="0.009" /><testcase classname="tests.test_nova_release_gates" name="test_supervisor_payload_is_bounded_before_serialization[argument-count]" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_supervisor_payload_is_bounded_before_serialization[argument-size]" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_launch_bootstrap_cap_is_shorter_than_long_caller_budget" time="0.309" /><testcase classname="tests.test_nova_release_gates" name="test_gate_launch_setup_obeys_one_second_absolute_budget" time="1.304" /><testcase classname="tests.test_nova_release_gates" name="test_failed_posix_launch_reports_indeterminate_cleanup_and_reaps_supervisor" time="0.001"><skipped type="pytest.skip" message="Linux cleanup proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1853: Linux cleanup proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_blocked_payload_honors_deadline_and_reaps_supervisor" time="0.000"><skipped type="pytest.skip" message="Linux pipe proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1902: Linux pipe proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_posix_delayed_handshake_uses_only_remaining_caller_budget" time="0.001"><skipped type="pytest.skip" message="Linux handshake proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:1934: Linux handshake proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_listener_ownership_accepts_only_contained_listener" time="5.280" /><testcase classname="tests.test_nova_release_gates" name="test_listener_ownership_rejects_live_contained_competitor" time="3.759" /><testcase classname="tests.test_nova_release_gates" name="test_connection_ownership_rejects_handoff_after_valid_listener_sample" time="4.307" /><testcase classname="tests.test_nova_release_gates" name="test_linux_connection_resolver_rejects_oversized_tcp_table" time="0.084" /><testcase classname="tests.test_nova_release_gates" name="test_linux_connection_resolver_caps_process_and_fd_enumeration" time="0.021" /><testcase classname="tests.test_nova_release_gates" name="test_linux_connection_resolver_rejects_oversized_proc_component" time="0.009" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_requires_pipe_drains_to_finish_after_tree_cleanup" time="4.072"><failure message="assert 4.047000000020489 &lt; 4">tmp_path = WindowsPath('C:/Users/nova/AppData/Local/Temp/pytest-of-nova/pytest-407/test_gate_runner_requires_pipe0')
+
+    def test_gate_runner_requires_pipe_drains_to_finish_after_tree_cleanup(
+        tmp_path: Path,
+    ) -&gt; None:
+        candidate, reports = _gate_paths(tmp_path)
+        child_pid_path = candidate / "pipe-child.pid"
+        script = (
+            "import pathlib, subprocess, sys; "
+            "child = subprocess.Popen([sys.executable, '-c', "
+            "'import time; time.sleep(30)']); "
+            f"pathlib.Path({str(child_pid_path)!r}).write_text(str(child.pid))"
+        )
+    
+        started = time.monotonic()
+        result = GateRunner(candidate, reports).run(
+            GateDefinition(
+                name="pipe-cleanup",
+                argv=(sys.executable, "-c", script),
+                timeout_seconds=5,
+            )
+        )
+        elapsed = time.monotonic() - started
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+    
+        try:
+            assert result.passed is True
+&gt;           assert elapsed &lt; 4
+E           assert 4.047000000020489 &lt; 4
+
+tests\test_nova_release_gates.py:2206: AssertionError</failure></testcase><testcase classname="tests.test_nova_release_gates" name="test_finish_capture_fails_closed_without_touching_live_reader_streams" time="0.001" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_rejects_report_directory_inside_candidate" time="0.008" /><testcase classname="tests.test_nova_release_gates" name="test_gate_runner_rejects_linked_report_directory" time="1.803" /><testcase classname="tests.test_nova_release_gates" name="test_safe_report_write_never_follows_directory_substitution" time="0.022" /><testcase classname="tests.test_nova_release_gates" name="test_windows_report_write_pins_every_existing_ancestor" time="0.033" /><testcase classname="tests.test_nova_release_gates" name="test_windows_pinned_identity_is_queried_from_retained_handle" time="0.016" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_rejects_redirected_output_before_launch[smoke.json]" time="1.162" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_rejects_redirected_output_before_launch[smoke.server.stdout.log]" time="0.932" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_rejects_redirected_output_before_launch[smoke.server.stderr.log]" time="0.719" /><testcase classname="tests.test_nova_release_gates" name="test_default_gate_definitions_cover_required_release_checks" time="0.009" /><testcase classname="tests.test_nova_release_gates" name="test_default_artifact_gate_rejects_redirect_before_launch[sbom-nova-sbom.json]" time="0.457" /><testcase classname="tests.test_nova_release_gates" name="test_default_artifact_gate_rejects_redirect_before_launch[conversation_560-conversation-560.json]" time="0.437" /><testcase classname="tests.test_nova_release_gates" name="test_gate_artifact_must_retain_reserved_identity_and_content" time="7.677" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_rejects_modified_delayed_body_checker_before_network" time="0.117" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_rejects_approved_checker_through_link_before_launch" time="0.739" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_redirect_without_contacting_location" time="7.561"><failure message="AssertionError: assert 'redirect' in 'probe proxy exceeded connection limit'&#10; +  where 'probe proxy exceeded connection limit' = GateResult(name='clean_start_smoke', command=['C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.ex...duration_seconds=7.35899999999674, timed_out=True, stdout_tail='', stderr_tail='probe proxy exceeded connection limit').stderr_tail">tmp_path = WindowsPath('C:/Users/nova/AppData/Local/Temp/pytest-of-nova/pytest-407/test_clean_start_proxy_rejects0')
+
+    def test_clean_start_proxy_rejects_redirect_without_contacting_location(
+        tmp_path: Path,
+    ) -&gt; None:
+        import socket
+        import threading
+    
+        candidate = tmp_path / "candidate"
+        candidate.mkdir()
+        redirect_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        redirect_listener.bind(("127.0.0.1", 0))
+        redirect_listener.listen(1)
+        redirect_listener.settimeout(4)
+        redirect_port = int(redirect_listener.getsockname()[1])
+        redirect_contacted = threading.Event()
+    
+        def serve_redirect_target() -&gt; None:
+            try:
+                connection, _ = redirect_listener.accept()
+            except OSError:
+                return
+            with connection:
+                redirect_contacted.set()
+                try:
+                    connection.recv(65_536)
+                    body = b'{"ok":true,"version":"2026.redirect"}'
+                    connection.sendall(
+                        b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n"
+                        + f"Content-Length: {len(body)}\r\nConnection: close\r\n\r\n".encode(
+                            "ascii"
+                        )
+                        + body
+                    )
+                except OSError:
+                    pass
+    
+        redirect_thread = threading.Thread(target=serve_redirect_target)
+        redirect_thread.start()
+        _write_fake_smoke_candidate(
+            candidate,
+            f"""
+            import json
+            from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+            import sys
+    
+            class Handler(BaseHTTPRequestHandler):
+                health_requests = 0
+    
+                def do_GET(self):
+                    if self.path == "/healthz":
+                        type(self).health_requests += 1
+                        if type(self).health_requests &gt; 1:
+                            self.send_response(302)
+                            self.send_header("Location", "http://127.0.0.1:{redirect_port}/escape")
+                            self.send_header("Content-Length", "0")
+                            self.end_headers()
+                            return
+                        body = json.dumps({{"ok": True, "version": "2026.fake"}}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/status":
+                        body = json.dumps({{"ok": True}}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/api/reliability/status":
+                        body = json.dumps({{
+                            "ok": True,
+                            "diagnostics": {{}},
+                            "backups": {{}},
+                            "encryption_available": True,
+                            "vault_exports": [],
+                        }}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/api/desktop/status":
+                        body = json.dumps({{
+                            "ok": True,
+                            "autostart_enabled": False,
+                            "autostart_available": True,
+                        }}).encode()
+                        content_type = "application/json"
+                    elif self.path == "/assets/nova_foundation_ui.js":
+                        body = b"loadReliabilityStatus applyPairingLink installNovaApp submitEncryptedBackupVault"
+                        content_type = "application/javascript"
+                    elif self.path == "/assets/nova_foundation_ui.css":
+                        body = b".reliability-check .pairing-qr-wrap .nova-vault-dialog"
+                        content_type = "text/css"
+                    elif self.path == "/manifest.webmanifest":
+                        body = json.dumps({{"display": "standalone", "icons": [{{}}]}}).encode()
+                        content_type = "application/manifest+json"
+                    elif self.path == "/service-worker.js":
+                        body = b"url.pathname.startsWith('/api/')"
+                        content_type = "application/javascript"
+                    else:
+                        body = b"&lt;html&gt;Nova Recovery&lt;/html&gt;"
+                        content_type = "text/html"
+                    self.send_response(200)
+                    self.send_header("Content-Type", content_type)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+    
+                def log_message(self, format, *args):
+                    return
+    
+            ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), Handler).serve_forever()
+            """,
+        )
+        _write_approved_smoke_checker(candidate)
+    
+        try:
+            result = run_clean_start_smoke(
+                candidate,
+                tmp_path / "reports" / "smoke.json",
+                timeout_seconds=8,
+            )
+        finally:
+            redirect_listener.close()
+            redirect_thread.join(timeout=5)
+    
+        assert result.passed is False
+&gt;       assert "redirect" in result.stderr_tail
+E       AssertionError: assert 'redirect' in 'probe proxy exceeded connection limit'
+E        +  where 'probe proxy exceeded connection limit' = GateResult(name='clean_start_smoke', command=['C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.ex...duration_seconds=7.35899999999674, timed_out=True, stdout_tail='', stderr_tail='probe proxy exceeded connection limit').stderr_tail
+
+tests\test_nova_release_gates.py:2985: AssertionError</failure></testcase><testcase classname="tests.test_nova_release_gates" name="test_probe_proxy_rejects_queued_tenth_connection_during_stop" time="0.065" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_launch_setup_obeys_one_second_absolute_budget" time="0.001"><skipped type="pytest.skip" message="Linux handshake proof">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_gates.py:3010: Linux handshake proof</skipped></testcase><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unrelated_local_client_before_upstream" time="8.441" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[post-body]" time="4.375" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[unknown-path]" time="4.128" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[unknown-header]" time="4.537" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[duplicate-host]" time="4.239" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[chunked-body]" time="4.297" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[pipelined-request]" time="4.416" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[malformed-request]" time="4.168" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_rejects_unapproved_http_before_upstream[oversized-request]" time="4.209" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_requires_exact_nine_path_probe_sequence[incomplete]" time="4.232" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_requires_exact_nine_path_probe_sequence[duplicate]" time="4.220"><failure message="AssertionError: assert 'exact smoke request sequence' in ''&#10; +  where '' = GateResult(name='clean_start_smoke', command=['C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.ex...erver.py', '57814'], passed=False, exit_code=1, duration_seconds=4.125, timed_out=True, stdout_tail='', stderr_tail='').stderr_tail">tmp_path = WindowsPath('C:/Users/nova/AppData/Local/Temp/pytest-of-nova/pytest-407/test_clean_start_proxy_require1')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000020CD35145F0&gt;
+paths = ('/healthz', '/healthz')
+
+    @pytest.mark.parametrize(
+        "paths",
+        [
+            ("/healthz",),
+            ("/healthz", "/healthz"),
+        ],
+        ids=("incomplete", "duplicate"),
+    )
+    def test_clean_start_proxy_requires_exact_nine_path_probe_sequence(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        paths: tuple[str, ...],
+    ) -&gt; None:
+        candidate = tmp_path / "candidate"
+        candidate.mkdir()
+        _write_proxy_policy_server(candidate, candidate / "proxied-request")
+        (candidate / "tools" / "nova_smoke_check.py").write_text(
+            textwrap.dedent(
+                f"""
+                import argparse
+                from urllib.request import Request, urlopen
+    
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--url", required=True)
+                args = parser.parse_args()
+                for path in {paths!r}:
+                    request = Request(args.url + path, method="GET")
+                    with urlopen(request, timeout=2) as response:
+                        response.read()
+                """
+            ),
+            encoding="utf-8",
+        )
+        _allow_custom_probe_for_proxy_policy_test(candidate, monkeypatch)
+    
+        result = run_clean_start_smoke(
+            candidate,
+            tmp_path / "reports" / "smoke.json",
+            timeout_seconds=5,
+        )
+    
+        assert result.passed is False
+&gt;       assert "exact smoke request sequence" in result.stderr_tail
+E       AssertionError: assert 'exact smoke request sequence' in ''
+E        +  where '' = GateResult(name='clean_start_smoke', command=['C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.ex...erver.py', '57814'], passed=False, exit_code=1, duration_seconds=4.125, timed_out=True, stdout_tail='', stderr_tail='').stderr_tail
+
+tests\test_nova_release_gates.py:3251: AssertionError</failure></testcase><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_caps_total_accepted_connections" time="4.723" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_caps_aggregate_relayed_bytes" time="10.375" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_proxy_allows_exact_contained_read_only_probe_paths" time="3.262" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_reports_startup_probe_and_process_tree_cleanup" time="3.841" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_persisted_log_honors_exact_byte_cap" time="3.824" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_durably_syncs_only_authoritative_report" time="1.104" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_records_server_exit_before_health_as_failure" time="2.074" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_rejects_oversized_health_body_before_probe" time="1.181" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_trickled_health_body_obeys_global_deadline" time="0.354" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_probe_cannot_round_past_global_deadline" time="0.182" /><testcase classname="tests.test_nova_release_gates" name="test_clean_start_smoke_requires_leader_alive_after_readiness" time="1.085" /><testcase classname="tests.test_nova_release_gates" name="test_release_smoke_cli_runs_isolated_candidate_and_writes_report" time="2.598" /><testcase classname="tests.test_nova_release_gates" name="test_release_smoke_cli_sanitizes_unsafe_report_path_error" time="0.707" /><testcase classname="tests.test_nova_release_policy" name="test_exclusion_overrides_inclusion" time="0.024" /><testcase classname="tests.test_nova_release_policy" name="test_large_static_asset_and_link_fail_closed" time="0.006" /><testcase classname="tests.test_nova_release_policy" name="test_production_policy_excludes_known_local_development_artifacts" time="0.009" /><testcase classname="tests.test_nova_release_policy" name="test_required_reviewed_training_seed_overrides_broad_data_exclusion" time="0.009" /><testcase classname="tests.test_nova_release_policy" name="test_unsafe_paths_fail_closed_and_separators_are_normalized" time="0.091" /><testcase classname="tests.test_nova_release_policy" name="test_unapproved_binary_suffix_fails_closed" time="0.011" /><testcase classname="tests.test_nova_release_policy" name="test_workspace_scan_is_sorted_and_preserves_tracked_deletion" time="0.011" /><testcase classname="tests.test_nova_release_policy" name="test_workspace_scan_prunes_policy_excluded_directories" time="0.010" /><testcase classname="tests.test_nova_release_policy" name="test_workspace_scan_records_directory_symlink_without_following" time="0.017"><skipped type="pytest.skip" message="directory symlinks are not supported for this test user: [WinError 1314] A required privilege is not held by the client: 'C:\\Users\\nova\\AppData\\Local\\Temp\\pytest-of-nova\\pytest-407\\test_workspace_scan_records_di0\\external' -&gt; 'C:\\Users\\nova\\AppData\\Local\\Temp\\pytest-of-nova\\pytest-407\\test_workspace_scan_records_di0\\repo\\assets\\linked'">C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\tests\test_nova_release_policy.py:239: directory symlinks are not supported for this test user: [WinError 1314] A required privilege is not held by the client: 'C:\\Users\\nova\\AppData\\Local\\Temp\\pytest-of-nova\\pytest-407\\test_workspace_scan_records_di0\\external' -&gt; 'C:\\Users\\nova\\AppData\\Local\\Temp\\pytest-of-nova\\pytest-407\\test_workspace_scan_records_di0\\repo\\assets\\linked'</skipped></testcase><testcase classname="tests.test_nova_release_policy" name="test_workspace_scan_records_windows_junction_without_following" time="0.132" /></testsuite></testsuites>

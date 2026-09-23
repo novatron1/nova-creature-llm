@@ -1,0 +1,165 @@
+[
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_enhanced_server.py",
+      "tests/test_nova_llm_synthesizer.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "-o",
+      "faulthandler_timeout=60",
+      "--junitxml=[REDACTED]\\server_regression.xml"
+    ],
+    "duration_seconds": 48.96799999999348,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "d29697741f78fbb1c531ce3e90e5cc4ec3000b3e002a32fc528c19548852a73d",
+    "name": "server_regression",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 451,
+      "skipped": 0,
+      "total": 451
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_runtime_contracts.py",
+      "tests/test_nova_runtime_permissions.py",
+      "tests/test_nova_runtime_ledger.py",
+      "tests/test_nova_runtime_scheduler.py",
+      "tests/test_nova_runtime_memory.py",
+      "tests/test_nova_runtime_agent_report.py",
+      "tests/test_nova_runtime_eval_bank.py",
+      "tests/test_nova_runtime_end_to_end.py",
+      "tests/test_nova_runtime_verification_playwright.py",
+      "tests/test_nova_industrial_gate.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "-o",
+      "faulthandler_timeout=60",
+      "--junitxml=[REDACTED]\\runtime_contracts.xml"
+    ],
+    "duration_seconds": 10.78100000001723,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "21767f4a7c69e49cd3982da4664b3b0cdca9143ca4584a0436c5c6fd40deae36",
+    "name": "runtime_contracts",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 47,
+      "skipped": 0,
+      "total": 47
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_memory_v2.py",
+      "tests/test_nova_conversation_intelligence.py",
+      "tests/test_nova_conversation_eval.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "-o",
+      "faulthandler_timeout=60",
+      "--junitxml=[REDACTED]\\memory_and_conversation.xml"
+    ],
+    "duration_seconds": 9.311999999976251,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "d85e4a67537b2abdf24420fb413a5b80887ca93759c3baaaa12688630546989f",
+    "name": "memory_and_conversation",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 56,
+      "skipped": 0,
+      "total": 56
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_release_worktree.py",
+      "tests/test_nova_release_lock.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "-o",
+      "faulthandler_timeout=60",
+      "--junitxml=[REDACTED]\\release_rollback.xml"
+    ],
+    "duration_seconds": 96.57799999997951,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "aa3ceed725e0d8d76121418b8766d92a57558afe98d4b77ed273bc7dc3a69b46",
+    "name": "release_rollback",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 70,
+      "skipped": 0,
+      "total": 70
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "-o",
+      "faulthandler_timeout=60",
+      "--junitxml=[REDACTED]\\unit_suite.xml"
+    ],
+    "duration_seconds": 292.18800000002375,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "15d44a97adb64963662930598f4b9918d8e6618156a821cc3c588b5ceaaaf7f3",
+    "name": "unit_suite",
+    "passed": false,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 2200,
+      "skipped": 22,
+      "total": 2222
+    },
+    "timed_out": false
+  }
+]

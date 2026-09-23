@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="0.622" timestamp="2026-09-06T21:30:49.464065-04:00" hostname="DESKTOP-L7OIQO8"><testcase classname="tests.test_nova_symlink_sandbox_proof" name="test_release_probe_waits_for_mapped_directory_handle" time="0.014"><failure message="PermissionError: [WinError 5] Access is denied.">tests\test_nova_symlink_sandbox_proof.py:119: in test_release_probe_waits_for_mapped_directory_handle
+    assert not proof._files_released((tmp_path,))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E:\NovaVerification\20260904-industrial\release-lock\11c4fb93eb50\20260905T212229Z-7b7ab67766f0-3b71\candidate\tools\nova_symlink_sandbox_proof.py:111: in _files_released
+    raise ctypes.WinError(error)
+E   PermissionError: [WinError 5] Access is denied.</failure></testcase><testcase classname="tests.test_nova_symlink_sandbox_proof" name="test_guest_timeout_waits_for_mapping_cleanup_and_preserves_failure[False]" time="0.115"><failure message="assert False is True">tests\test_nova_symlink_sandbox_proof.py:155: in test_guest_timeout_waits_for_mapping_cleanup_and_preserves_failure
+    assert result['teardown']['processes_stopped'] is True
+E   assert False is True</failure></testcase><testcase classname="tests.test_nova_symlink_sandbox_proof" name="test_guest_timeout_waits_for_mapping_cleanup_and_preserves_failure[True]" time="0.054"><failure message="assert False is True">tests\test_nova_symlink_sandbox_proof.py:155: in test_guest_timeout_waits_for_mapping_cleanup_and_preserves_failure
+    assert result['teardown']['processes_stopped'] is True
+E   assert False is True</failure></testcase></testsuite></testsuites>

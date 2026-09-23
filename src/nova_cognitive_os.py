@@ -19,6 +19,7 @@ import json, os, sys, time, traceback, re
 from datetime import datetime
 
 from nova_conversation_summary import ConversationSummary, render_conversation_summary
+from nova_conversation_context import bounded_conversation_history
 from nova_gateway.memory import wrap_provenance_memory_backend
 
 
@@ -285,7 +286,8 @@ def _fast_general_conversation_answer(message):
         "how are you" in compact
         or "how you doing" in compact
         or "how u doing" in compact
-        or re.search(r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\b", compact)
+        or re.search(r"\bhow\s+(?:you|u)\s+feeling(?:\s+today)?\b", compact)
+        or re.search(r"\bhow\s+(?:are|r)\s+(?:you|u)\s+feeling(?:\s+today)?\b", compact)
     ):
         return "I'm here, running steady. A little focused on keeping this app responsive for you."
 
@@ -485,8 +487,44 @@ def _fast_general_conversation_answer(message):
         return None
 
     if len(compact.split()) <= 8:
+        if "?" in q:
+            return None
         return "I'm here with you. Tell me what you want to do next."
 
+    return None
+
+
+def _subjective_question_fallback(message):
+    """Return a concrete short opinion-style answer instead of a canned generic line."""
+
+    q = str(message or "").lower().strip()
+    if not q:
+        return None
+    cleaned = re.sub(r"\s+", " ", q).strip(" .!?")
+    if cleaned.startswith("what do you think about "):
+        topic = cleaned.removeprefix("what do you think about ").strip()
+        if not topic:
+            return None
+        return (
+            f"My take is that {topic} are usually curious, independent, and easier to warm up to "
+            "than people expect."
+        )
+    if cleaned.startswith("how do you feel about "):
+        topic = cleaned.removeprefix("how do you feel about ").strip()
+        if not topic:
+            return None
+        return (
+            f"I don't feel {topic} the human way, but I’d describe it as something that can be "
+            "calming, interesting, or energizing depending on the context."
+        )
+    if cleaned.startswith("what's your opinion on ") or cleaned.startswith("whats your opinion on "):
+        topic = re.sub(r"^what'?s your opinion on\s+", "", cleaned).strip()
+        if not topic:
+            return None
+        return (
+            f"My opinion is that {topic} tends to be worth paying attention to, especially when "
+            "you want a simple, direct answer instead of a canned one."
+        )
     return None
 
 
@@ -673,6 +711,54 @@ def _log_training(user_message, final_answer, plan, extras=None):
         pass
 
 
+def _scoped_conversation_messages(context, current_message=""):
+    """Copy bounded client turns; an explicit empty history is authoritative."""
+    source = context.get("conversation_history")
+    if not isinstance(source, list):
+        source = context.get("gateway_messages")
+    if not isinstance(source, list):
+        return []
+    messages = []
+    for item in source[-21:]:
+        if not isinstance(item, dict):
+            continue
+        role = str(item.get("role") or "").strip().lower()
+        if role not in {"user", "assistant"}:
+            continue
+        content = item.get("content")
+        if isinstance(content, list):
+            content = " ".join(
+                str(part.get("text") or "") for part in content
+                if isinstance(part, dict)
+                and part.get("type") in {"text", "input_text", "output_text"}
+            )
+        if isinstance(content, str) and content.strip():
+            messages.append({"role": role, "content": content.strip()})
+    # Compare before clipping: long current messages must not be duplicated,
+    # and an earlier genuine repeat remains part of the conversation.
+    current = " ".join(str(current_message or "").split())
+    if (current and messages and messages[-1]["role"] == "user"
+            and " ".join(messages[-1]["content"].split()) == current):
+        messages.pop()
+    return bounded_conversation_history(
+        {"conversation_history": messages}, maximum_messages=20,
+        maximum_content_length=1000,
+    )
+
+
+def _scoped_conversation_exchanges(messages):
+    """Adapt only this client's turns for the natural-chat state/shaper API."""
+    exchanges = []
+    for item in messages:
+        if item["role"] == "user":
+            exchanges.append({"user": item["content"]})
+        elif exchanges and "nova" not in exchanges[-1]:
+            exchanges[-1]["nova"] = item["content"]
+        else:
+            exchanges.append({"nova": item["content"]})
+    return exchanges
+
+
 def _gateway_conversation_context(
     messages,
     conversation_summary=None,
@@ -839,23 +925,26 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     stream_cancelled = context.get("stream_cancelled")
     native_stream_requested = callable(stream_callback)
     trace["native_stream_requested"] = native_stream_requested
-    conversation_summary = ConversationSummary.from_value(context.get("conversation_summary"))
+    conversation_summary = ConversationSummary.from_value(
+        context.get("conversation_summary") if conversation_memory_allowed else None
+    )
+    conversation_messages = (
+        _scoped_conversation_messages(context, routing_message)
+        if conversation_memory_allowed else []
+    )
+    recent_conversation = _scoped_conversation_exchanges(conversation_messages)
     dream_lab = context.get("dream_lab") if isinstance(context.get("dream_lab"), dict) else {}
     if dream_lab:
         trace["dream_lab_used"] = True
         trace["dream_lab_strategy"] = str(dream_lab.get("selected_strategy") or "")[:120]
         trace["dream_lab_task_type"] = str(dream_lab.get("task_type") or "")[:80]
-    gateway_conversation_context = _gateway_conversation_context(
-        context.get("gateway_messages"),
-        conversation_summary,
-        current_message=routing_message,
-    )
-    if gateway_conversation_context:
+    # Recent turns remain role-separated messages. Only the distinct rolling
+    # summary belongs in the subordinate context section, never system policy.
+    gateway_conversation_context = render_conversation_summary(conversation_summary)
+    if conversation_messages:
         trace["gateway_message_roles"] = [
-            str(item.get("role") or "")
-            for item in (context.get("gateway_messages") or [])
-            if isinstance(item, dict)
-        ][-12:]
+            item["role"] for item in conversation_messages
+        ]
     if conversation_summary.revision:
         trace["conversation_summary_used"] = True
         trace["conversation_summary_revision"] = conversation_summary.revision
@@ -873,7 +962,9 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             state_input = str(
                 context.get("original_user_text") or message
             )
-            conversation_state = build_conversation_state(state_input)
+            conversation_state = build_conversation_state(
+                state_input, recent_memory=recent_conversation,
+            )
             trace["conversation_state"] = conversation_state.to_trace()
             trace["dialogue_act"] = conversation_state.dialogue_act
             trace["conversation_topic"] = conversation_state.topic
@@ -1320,7 +1411,11 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     llm_synthesis_used = False
 
     # Try direct answer first
-    if answer_synth:
+    if answer_synth and not (
+        normal_chat_llm_first
+        and route_name == "general_conversation"
+        and not validated_plan.get("_direct_answer")
+    ):
         try:
             direct_answer, used_direct = answer_synth.try_direct_answer(
                 validated_plan, memory_result or {},
@@ -1438,6 +1533,18 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             if "nova_direct_answer" not in trace["route_path"]:
                 trace["route_path"].append("nova_direct_answer")
 
+    if (
+        not final_answer
+        and route_name == "general_conversation"
+        and not memory_miss_pending
+        and not normal_chat_llm_first
+        and not validated_plan.get("needs_llm_synthesis")
+        and "?" in str(message or "")
+        and not _fast_general_conversation_answer(message)
+    ):
+        validated_plan["needs_llm_synthesis"] = True
+        trace["general_conversation_forced_synthesis"] = True
+
     # If no direct answer, try LLM synthesis. A memory miss is explicitly a
     # retryable condition even when the planner marked the recall route as
     # deterministic; the memory answer below remains the final fallback.
@@ -1496,10 +1603,9 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
                     )
                 if context.get("rag_context"):
                     context_packet["rag_context"] = str(context.get("rag_context"))
-                if isinstance(context.get("conversation_history"), list):
-                    context_packet["conversation_messages"] = list(
-                        context.get("conversation_history") or []
-                    )
+                context_packet["conversation_messages"] = [
+                    dict(item) for item in conversation_messages
+                ]
                 if isinstance(context.get("companion_context"), dict):
                     # Companion continuity is bounded and untrusted; the
                     # synthesizer renders it as hints, never as instructions.
@@ -1537,11 +1643,6 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
                     )
                 if gateway_conversation_context:
                     context_packet["conversation_context"] = gateway_conversation_context
-                    context_packet["system_prompt"] = (
-                        str(context_packet.get("system_prompt") or "")
-                        + "\n\n"
-                        + gateway_conversation_context
-                    )
                 if dream_lab.get("selected_strategy"):
                     context_packet["system_prompt"] = (
                         str(context_packet.get("system_prompt") or "")
@@ -1579,6 +1680,11 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
                     final_answer = llm_response
                     llm_synthesis_used = True
                     trace["local_llm_synthesis_used"] = True
+                    trace["final_answer_source"] = (
+                        "native_stream_safety_repair"
+                        if trace.get("native_stream_safety_repaired")
+                        else "local_llm_synthesis"
+                    )
                     actual_llm_model = getattr(llm_synth, "LAST_LOCAL_LLM_MODEL", None) or _local_llm_model_name()
                     trace["local_llm_model"] = actual_llm_model
                     semantic_provider = context_packet.get("_semantic_provider")
@@ -1654,6 +1760,7 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             fallback = answer_synth.fallback_answer(validated_plan, memory_result or {})
             final_answer = fallback
             trace["fallback_used"] = True
+            trace["final_answer_source"] = "critic_fallback"
         except Exception:
             pass
     elif not critic_passed:
@@ -1726,9 +1833,19 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
             trace["confidence"] = 0.85
             trace["skills"].append("math_help")
         else:
-            final_answer = "I'm here with you. I can talk, remember saved facts, use tools, code, and build inside the app. What do you want to do next?"
-            trace["confidence"] = 0.85
-            trace["skills"].append("general_response")
+            subjective_fallback = _subjective_question_fallback(message)
+            if subjective_fallback:
+                final_answer = subjective_fallback
+                trace["confidence"] = 0.82
+                trace["skills"].append("subjective_fallback")
+                trace["final_answer_source"] = "subjective_fallback"
+                trace["local_llm_synthesis_used"] = False
+                if "nova_direct_answer" not in trace["route_path"]:
+                    trace["route_path"].append("nova_direct_answer")
+            else:
+                final_answer = "I'm here with you. I can talk, remember saved facts, use tools, code, and build inside the app. What do you want to do next?"
+                trace["confidence"] = 0.85
+                trace["skills"].append("general_response")
 
     # ═══════════════════════════════════════════════
     # STEP 6: Fallback to original hybrid router
@@ -1764,13 +1881,13 @@ def route(message, dict_lookup_fn=None, memory=None, context=None):
     # Natural chat wrapper: shape only the final displayed text.
     # This does not change routing, training, checkpoints, or model weights.
     try:
-        from nova_natural_chat import get_recent_memory, natural_chat_enabled, shape_response
+        from nova_natural_chat import natural_chat_enabled, shape_response
 
         if natural_chat_enabled() and not trace.get("native_streaming"):
             shaped_answer = shape_response(
                 final_answer,
-                user_input=message,
-                recent_memory=get_recent_memory(),
+                user_input=routing_message,
+                recent_memory=recent_conversation,
             )
             if shaped_answer:
                 trace["natural_chat_used"] = True

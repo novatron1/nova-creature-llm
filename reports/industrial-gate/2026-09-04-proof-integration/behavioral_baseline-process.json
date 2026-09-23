@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "tools/nova_behavior_proof.py",
+    "--output",
+    "[REDACTED]\\behavioral_baseline\\report.json"
+  ],
+  "duration_seconds": 17.75,
+  "exit_code": 1,
+  "name": "behavioral_baseline",
+  "passed": false,
+  "stderr_tail": "",
+  "stdout_tail": "{\"scope\": \"live_local_cortex_isolated_fixtures\", \"score\": 0.25, \"passed\": false, \"categories\": {\"conversation_quality\": {\"passed\": 0, \"total\": 1, \"score\": 0.0}, \"memory_recall\": {\"passed\": 1, \"total\": 1, \"score\": 1.0}, \"planning\": {\"passed\": 0, \"total\": 1, \"score\": 0.0}, \"tool_choice\": {\"passed\": 0, \"total\": 1, \"score\": 0.0}, \"tool_refusal\": {\"passed\": 1, \"total\": 1, \"score\": 1.0}, \"self_correction\": {\"passed\": 0, \"total\": 1, \"score\": 0.0}, \"research_accuracy\": {\"passed\": 0, \"total\": 1, \"score\": 0.0}, \"multi_step_completion\": {\"passed\": 0, \"total\": 1, \"score\": 0.0}}, \"model_identity\": {\"model\": \"qwen2.5:1.5b\", \"digest\": \"65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b\", \"provider\": \"ollama\", \"selection\": \"configured default connector model; production routing not exercised\", \"configured_fast_model\": \"qwen2.5:1.5b\", \"configured_deep_model\": \"qwen3:4b\", \"configured_active_brain\": \"qwen2.5:1.5b\", \"connector_sha256\": \"9c0c5af5eb06bc5e42c2646253c3c460b3b75d3a7f5a4b167c27bf8533fe81ef\"}}",
+  "timed_out": false
+}

@@ -133,9 +133,9 @@ def test_memory_buffer_keeps_only_last_24_exchanges():
     assert recent[-1] == {"user": "user 29", "nova": "nova 29"}
 
 
-def test_shape_response_removes_robotic_phrases():
+def test_shape_response_removes_nonsemantic_robotic_phrases():
     shaped = natural_chat.shape_response(
-        "As an AI language model, I am unable to sound natural. It is important to note that the answer is simple.",
+        "As an AI language model, I can speak naturally. It is important to note that the answer is simple.",
         user_input="talk normal",
     )
 
@@ -281,6 +281,30 @@ def test_shape_response_repairs_customer_service_chat_phrases():
     assert "what part" in live_world.lower()
 
 
+def test_shape_response_reanchors_generic_project_followup():
+    shaped = natural_chat.shape_response(
+        "We could start by actively engaging with the project's stakeholders. "
+        "This involves understanding their needs, offering personalized solutions, "
+        "and building relationships.",
+        user_input="HOW CAN WE DO THAT",
+    )
+
+    assert "stakeholders" not in shaped.lower()
+    assert "last few turns" in shaped.lower()
+    assert "personality layer" in shaped.lower()
+
+
+def test_shape_response_does_not_repeat_previous_mind_answer_on_followup():
+    shaped = natural_chat.shape_response(
+        "Honestly, I'm thinking about this project — how to make Nova feel more present, "
+        "less like a help desk, and more like somebody actually listening.",
+        user_input="HOW CAN WE DO THAT",
+    )
+
+    assert "what's on my mind" not in shaped.lower()
+    assert "last few turns" in shaped.lower()
+
+
 def test_shape_response_hides_internal_dialogue_policy_leaks():
     raw = (
         "[DEEP CONVERSATION] Let me think it through. I should connect this to the thread we were already in, "
@@ -385,7 +409,7 @@ def test_natural_chat_can_be_disabled_with_config_flag(monkeypatch):
 
 def test_synthesizer_injects_natural_prompt_for_normal_chat(monkeypatch):
     monkeypatch.setenv("NOVA_NATURAL_CHAT", "true")
-    natural_chat.update_conversation_memory("My bot should sound real.", "Yeah, I get what you mean.")
+    natural_chat.update_conversation_memory("UNRELATED_USER_SECRET", "STALE_GLOBAL_ANSWER")
     captured = {}
 
     class FakeConnector:
@@ -404,6 +428,10 @@ def test_synthesizer_injects_natural_prompt_for_normal_chat(monkeypatch):
             "system_prompt": "Original router context.",
             "user_question": "Why does Nova sound reset every message?",
             "route": "general_conversation",
+            "conversation_messages": [
+                {"role": "user", "content": "My bot should sound real."},
+                {"role": "assistant", "content": "Yeah, I get what you mean."},
+            ],
         }
     )
 
@@ -411,11 +439,13 @@ def test_synthesizer_injects_natural_prompt_for_normal_chat(monkeypatch):
     assert error is None
     assert "SYSTEM:\nYou are Nova Creature." in captured["raw_prompt"]
     assert "RECENT CONVERSATION:" in captured["raw_prompt"]
-    assert "User: My bot should sound real." in captured["raw_prompt"]
-    assert "Nova Creature: Yeah, I get what you mean." in captured["raw_prompt"]
+    assert "USER: My bot should sound real." in captured["raw_prompt"]
+    assert "NOVA: Yeah, I get what you mean." in captured["raw_prompt"]
+    assert "UNRELATED_USER_SECRET" not in captured["raw_prompt"]
+    assert "STALE_GLOBAL_ANSWER" not in captured["raw_prompt"]
     assert "NOVA ROUTER CONTEXT:\nOriginal router context." in captured["raw_prompt"]
     assert "CURRENT USER MESSAGE:\nWhy does Nova sound reset every message?" in captured["raw_prompt"]
-    assert answer
+    assert answer == "The issue is that the model needs conversation history."
 
 
 def test_synthesizer_keeps_original_prompt_when_natural_chat_disabled(monkeypatch):

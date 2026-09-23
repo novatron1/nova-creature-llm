@@ -17,6 +17,15 @@ def _protected(user_message: str, answer: str, plan: SocialPlan, trace: dict[str
         return True
     if isinstance(trace.get("verification_v2"), dict) and trace["verification_v2"].get("status") not in {None, "skipped"}:
         return True
+    if isinstance(trace.get("verification_v2"), dict) and trace["verification_v2"].get("passed") is False:
+        return True
+    selection = trace.get("candidate_selection")
+    selection = selection if isinstance(selection, dict) else {}
+    for decision in (trace.get("answer_consistency"), selection.get("alternate_consistency")):
+        if isinstance(decision, dict) and (decision.get("accepted") is False or decision.get("status") == "blocked"):
+            return True
+    if selection.get("retry_result") == "consistency_check_failed":
+        return True
     stripped = str(answer or "").strip()
     if (stripped.startswith("{") and stripped.endswith("}")) or (stripped.startswith("[") and stripped.endswith("]")):
         try:
@@ -38,6 +47,10 @@ def compose_response(user_message: str, answer: str, plan: SocialPlan, *, trace:
     if not original:
         return original
     metadata = trace if isinstance(trace, dict) else {}
+    # Rejected evidence and constrained answers remain protected even when the
+    # social intent classifier mistakes a technical request for casual chat.
+    if _protected(user_message, original, plan, metadata):
+        return original
     source = str(metadata.get("source") or metadata.get("final_answer_source") or "").lower()
     if (
         source == "answer_firewall_recovery"
@@ -67,8 +80,6 @@ def compose_response(user_message: str, answer: str, plan: SocialPlan, *, trace:
         if "project" in user_value:
             return "I'm with you on the project. What part are you still thinking through?"
         return "I'm with you. Let's stay with that—what part feels most important right now?"
-    if _protected(user_message, original, plan, metadata):
-        return original
     lowered = original.lower()
     if plan.primary_mode in {"casual_chat", "companionship"}:
         filler_patterns = (

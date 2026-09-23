@@ -1,0 +1,41 @@
+{
+  "browser_proof": {
+    "passed": true,
+    "backend": "real_playwright",
+    "screenshot_verified": true,
+    "screenshot_sha256": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+    "dom_sha256": "01f03d7d49bb493c841fc36f7cad3c19a31f3a7ca4d6b78e7a8d66fb5eed9d8d",
+    "report": "proof-artifacts/success-report.json"
+  },
+  "rollback_proof": {
+    "passed": true,
+    "exact_original_bytes_restored": true,
+    "no_failed_success_memory": true,
+    "report": "proof-artifacts/failure-report.json"
+  },
+  "isolation": {
+    "os_sandbox": false,
+    "method": "copied_workspace"
+  },
+  "artifacts": {
+    "proof-artifacts\\failure-report.json": "724a14f2296a864773256f163fccabc7c6368be39e85fedca22f3f0739b6802b",
+    "proof-artifacts\\success-report.json": "3031a6bb454aa35c1697e0f011122d0c5a8983166fff4b97bb8b2477a7fc17ea",
+    "proof-artifacts\\failure-source\\app.py": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+    "proof-artifacts\\failure-source\\test_app.py": "12ee137afdb7a6d060d3a6caa59252ec58e7d8a31e68d3deae69e86d62e8d683",
+    "proof-artifacts\\failure-work\\agent_report.json": "478bce2614c20ceed291a1cfa8e11556d36d0b9aa219f989f3caf8808e4d57e3",
+    "proof-artifacts\\failure-work\\app.py": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+    "proof-artifacts\\failure-work\\proof.html": "15d3da6bfd186d64368719d9da6cda27de4d90d247444954c1cc2798b3f38e30",
+    "proof-artifacts\\failure-work\\test_app.py": "12ee137afdb7a6d060d3a6caa59252ec58e7d8a31e68d3deae69e86d62e8d683",
+    "proof-artifacts\\success-source\\app.py": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+    "proof-artifacts\\success-source\\test_app.py": "79429bb8bf36909100e8784784bb6f4a8a999bcef1bebea675a2a0e8eaf9ceaf",
+    "proof-artifacts\\success-work\\agent_report.json": "14124f54a3f25f02c0435c2cef53f73584eb724b75042fe54573f1d5a4b084d4",
+    "proof-artifacts\\success-work\\app.py": "02b6e702c2e70858199b4e7b5d27f94dd7b7dd2b5a0e6f42373d40940671ea1e",
+    "proof-artifacts\\success-work\\proof.html": "15d3da6bfd186d64368719d9da6cda27de4d90d247444954c1cc2798b3f38e30",
+    "proof-artifacts\\success-work\\provenance_memory.jsonl": "fa419b19a82408b73fa991fcc37062214e00a4c827cf35bfda38c99716aa2e5b",
+    "proof-artifacts\\success-work\\test_app.py": "79429bb8bf36909100e8784784bb6f4a8a999bcef1bebea675a2a0e8eaf9ceaf",
+    "proof-artifacts\\failure-work\\playwright_evidence\\_C__Users_nova_AppData_Local_Temp_nova-industrial-7pvw0af5_proof-artifacts_failure-work_proof_html-1788567614.png": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+    "proof-artifacts\\failure-work\\rollback\\app.py.original": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+    "proof-artifacts\\success-work\\playwright_evidence\\_C__Users_nova_AppData_Local_Temp_nova-industrial-7pvw0af5_proof-artifacts_success-work_proof_html-1788567611.png": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+    "proof-artifacts\\success-work\\rollback\\app.py.original": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95"
+  }
+}

@@ -31,6 +31,15 @@ def test_surface_navigation_commands_resolve_canonical_pages():
     assert logs.intent.target_surface == "debug_logs"
 
 
+def test_gpu_hub_navigation_is_handled_before_general_chat():
+    result = plan_app_navigation("open the GPU Hub", AppNavigationContext())
+
+    assert result.recognized is True
+    assert result.intent.target_surface == "gpu_hub"
+    assert result.intent.action == "navigate"
+    assert result.intent.safety_level == SafetyLevel.READ_ONLY
+
+
 def test_unknown_chat_is_not_claimed_by_navigation_router():
     context = AppNavigationContext()
 

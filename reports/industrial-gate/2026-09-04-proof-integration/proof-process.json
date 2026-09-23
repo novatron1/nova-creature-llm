@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "tools/nova_industrial_proof.py",
+    "--output",
+    "[REDACTED]\\proof.json"
+  ],
+  "duration_seconds": 13.0,
+  "exit_code": 0,
+  "name": "proof_job",
+  "passed": true,
+  "stderr_tail": "",
+  "stdout_tail": "{\r\n  \"browser_proof\": {\r\n    \"passed\": true,\r\n    \"backend\": \"real_playwright\",\r\n    \"screenshot_verified\": true,\r\n    \"screenshot_sha256\": \"99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d\",\r\n    \"dom_sha256\": \"01f03d7d49bb493c841fc36f7cad3c19a31f3a7ca4d6b78e7a8d66fb5eed9d8d\",\r\n    \"report\": \"proof-artifacts/success-report.json\"\r\n  },\r\n  \"rollback_proof\": {\r\n    \"passed\": true,\r\n    \"exact_original_bytes_restored\": true,\r\n    \"no_failed_success_memory\": true,\r\n    \"report\": \"proof-artifacts/failure-report.json\"\r\n  },\r\n  \"isolation\": {\r\n    \"os_sandbox\": false,\r\n    \"method\": \"copied_workspace\"\r\n  }\r\n}",
+  "timed_out": false
+}

@@ -228,6 +228,8 @@ curl.exe http://127.0.0.1:8765/nova/v1/videos/generations `
 
 Video Lite accepts `slow_zoom_in`, `slow_zoom_out`, `pan_left`, and `pan_right`. It requires FFmpeg. Leave `NOVA_FFMPEG_PATH` empty for automatic discovery, or set it to the exact executable before starting Nova. An explicitly configured missing path is reported as unavailable instead of being silently replaced.
 
+Completed media jobs include `output_sha256`, byte size, and an expiry timestamp. Downloads support HTTP byte ranges and return `X-Nova-Output-SHA256`/`ETag` headers. If Nova restarts after the keyframe stage, a Video Lite job remains resumable: `POST /nova/v1/jobs/{job_id}/resume` continues the local encode without storing the original prompt. AnimateDiff CPU renders remain restart-safe but must be started again because the model worker cannot resume mid-diffusion.
+
 ### Dream Studio in the Nova app
 
 Open **Dream Studio** from the top navigation or **More → Dream Studio** from chat. The panel shows four separate states: ComfyUI reachability, image workflow, video workflow, and this device's media permission.
@@ -240,6 +242,13 @@ Pairing a phone does not automatically allow generation. On Nova's local desktop
 4. Return to Dream Studio on that device and refresh.
 
 This grants only `image.generate` and `video.generate`. Select **Media ON** again to turn both off. Revoking the device still removes all access immediately.
+
+The localhost desktop browser is separate from paired-device permissions. To let
+the local browser queue Dream Studio jobs, set `NOVA_ALLOW_LOCAL_MEDIA=true` in
+`.nova_llm_config` and restart Nova. This is local-only; it does not grant media
+scopes to remote clients. The permission still does not start ComfyUI for you:
+the ComfyUI API must be running on the configured endpoint with an API-format
+image workflow (and a video workflow or Video Lite for video).
 
 Dream Studio keeps a content-free list of that device's job IDs, operations, statuses, and timestamps. Completed files are fetched through Nova with the paired-device authorization token and rendered from temporary browser object URLs. Another paired device cannot list, cancel, or download those jobs.
 

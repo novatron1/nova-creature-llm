@@ -1,0 +1,675 @@
+{
+  "boards": [
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [
+        "friend",
+        "user",
+        "nova"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [
+          "nova",
+          "earth",
+          "friend"
+        ],
+        "active_topic": "science",
+        "commitment_count": 4,
+        "correction_count": 0,
+        "emotional_context": [
+          "sad"
+        ],
+        "unresolved_count": 1
+      },
+      "conversation_id": "webconv_5e02683e159346998f2f293a0cea9c2d",
+      "created_at": "2026-09-02T04:07:15.381869+00:00",
+      "current_topic": "science",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "llm_fallback",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 106984.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 5,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-02T04:13:52.640375+00:00"
+    },
+    {
+      "active_goal": "Answer the user's current question",
+      "active_people": [
+        "friend"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_6fc3d7c124304897b6b106fa3d719be4",
+      "created_at": "2026-09-02T04:29:59.710072+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "llm_fallback",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 101813.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 1,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-02T04:31:41.524307+00:00"
+    },
+    {
+      "active_goal": "Answer the user's current question",
+      "active_people": [
+        "friend",
+        "user",
+        "nova"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_2ec1f8c3f1944c63b0c7be5c4320d8ed",
+      "created_at": "2026-09-02T04:37:56.984862+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "cognitive_os",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 6891.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 3,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-02T04:40:08.141142+00:00"
+    },
+    {
+      "active_goal": "Answer the user's current question",
+      "active_people": [],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_c81cc0e6cc994c8fa87d6049649264bb",
+      "created_at": "2026-09-03T20:58:53.339457+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "deterministic_verifier",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 297.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 1,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-03T20:58:53.629501+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [
+        "nova",
+        "user"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [
+          "nova"
+        ],
+        "active_topic": "general_conversation",
+        "commitment_count": 1,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_0e4d273dd79f4cc0bc65ff1a1bd3839d",
+      "created_at": "2026-09-06T20:16:04.022508+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "needs_followup",
+      "last_error_category": "cancelled",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova-core",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "error",
+      "turn_count": 23,
+      "unresolved_count": 8,
+      "updated_at": "2026-09-06T20:19:44.725006+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [
+        "nova",
+        "user"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_ad0bff967594485c81de435e58b48dfe",
+      "created_at": "2026-09-07T01:40:34.905864+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "local_llm_synthesis",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 2125.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 4,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-07T01:40:41.047071+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [
+        "nova",
+        "user"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [
+          "nova"
+        ],
+        "active_topic": "general_conversation",
+        "commitment_count": 2,
+        "correction_count": 1,
+        "emotional_context": [
+          "sad"
+        ],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_c402a8ae12b5442996515305b490a105",
+      "created_at": "2026-09-07T01:41:46.321713+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "app_navigation",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 563.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 21,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-07T01:42:36.283495+00:00"
+    },
+    {
+      "active_goal": "Build or create the requested result",
+      "active_people": [
+        "user",
+        "nova"
+      ],
+      "client_id": "paired-device:0da380029d774ad3bc1ce11b57639ba1",
+      "continuity": {
+        "active_entities": [
+          "family"
+        ],
+        "active_topic": "general_conversation",
+        "commitment_count": 8,
+        "correction_count": 0,
+        "emotional_context": [
+          "sad",
+          "frustrated",
+          "positive",
+          "affectionate"
+        ],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_536dd4b55b3f4f519bc8d8d11b99d0b1",
+      "created_at": "2026-09-02T20:09:47.719820+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "local_llm_synthesis",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 1656.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 27,
+      "unresolved_count": 3,
+      "updated_at": "2026-09-08T16:20:47.366488+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "live-check",
+      "created_at": "2026-09-08T20:33:52.056653+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "local_llm_synthesis",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 969.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 1,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-08T20:33:53.031150+00:00"
+    },
+    {
+      "active_goal": "Verify the requested behavior",
+      "active_people": [],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "probe",
+      "created_at": "2026-09-21T22:57:56.998085+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "local_llm_synthesis",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 1640.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova-core",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 1,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-21T22:57:58.635267+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "probe_20chats_codex",
+      "created_at": "2026-09-21T22:58:09.420644+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "llm_fallback",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 8797.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova-core",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 7,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-21T22:59:28.040388+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "probe_fast_20_codex",
+      "created_at": "2026-09-21T22:59:37.796774+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "local_llm_synthesis",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 1203.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova-core",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 20,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-21T23:00:04.030999+00:00"
+    },
+    {
+      "active_goal": "Continue the current conversation coherently",
+      "active_people": [
+        "nova",
+        "user"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [
+          "nova"
+        ],
+        "active_topic": "general_conversation",
+        "commitment_count": 2,
+        "correction_count": 1,
+        "emotional_context": [
+          "sad"
+        ],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_3b4f2e9dfc164b549649544ae2280c92",
+      "created_at": "2026-09-21T23:00:47.800381+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "reviewed_conversation_response",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 47.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 20,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-21T23:01:31.806528+00:00"
+    },
+    {
+      "active_goal": "Answer the user's current question",
+      "active_people": [
+        "nova"
+      ],
+      "client_id": "local-client",
+      "continuity": {
+        "active_entities": [],
+        "active_topic": "general_conversation",
+        "commitment_count": 0,
+        "correction_count": 0,
+        "emotional_context": [],
+        "unresolved_count": 0
+      },
+      "conversation_id": "webconv_cd2b910ff7ad4c60859ff5c85ea66388",
+      "created_at": "2026-09-21T23:18:36.078294+00:00",
+      "current_topic": "general_conversation",
+      "device_context": {
+        "available": false,
+        "channels": [],
+        "enabled": false
+      },
+      "goal_status": "completed",
+      "last_error_category": "",
+      "privacy_mode": "local_preferred",
+      "route_state": {
+        "answer_source": "deterministic_verifier",
+        "fallback_path": [
+          "existing-nova"
+        ],
+        "finish_reason": "stop",
+        "latency_ms": 78.0,
+        "model": "nova",
+        "planning_strategy": "direct_nova_core",
+        "provider": "existing-nova",
+        "remains_local": true,
+        "requested_alias": "nova",
+        "selected_model": "nova",
+        "selected_provider": "existing-nova"
+      },
+      "schema_version": "1.2",
+      "status": "idle",
+      "turn_count": 3,
+      "unresolved_count": 0,
+      "updated_at": "2026-09-22T17:27:09.531838+00:00"
+    }
+  ],
+  "interface_version": "1.0",
+  "privacy": {
+    "private_chain_of_thought_stored": false,
+    "prompt_content_stored": false,
+    "response_content_stored": false,
+    "sensor_values_stored": false,
+    "session_id_stored": false,
+    "user_id_stored": false
+  },
+  "saved_at": "2026-09-22T17:27:09.533841+00:00",
+  "schema_version": "1.2"
+}

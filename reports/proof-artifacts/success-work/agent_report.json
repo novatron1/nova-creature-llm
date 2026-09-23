@@ -1,0 +1,87 @@
+{
+  "browser_evidence": {
+    "console_summary": {
+      "count": 0,
+      "errors": [],
+      "messages": []
+    },
+    "dom_hash": "e3a418ccc4c561c940551ab10cbcc5ce58a513facc0950ad2b76739039a2cd8a",
+    "network_summary": {
+      "count": 1,
+      "failures": [],
+      "requests": [
+        "file:///C:/Users/nova/Documents/NOVA%20LLM%20CREATURE%20DESKTOP/reports/proof-artifacts/success-work/proof.html"
+      ]
+    },
+    "page_title": "",
+    "passed": true,
+    "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+    "url": "file:///C:/Users/nova/Documents/NOVA%20LLM%20CREATURE%20DESKTOP/reports/proof-artifacts/success-work/proof.html",
+    "verification_backend": "playwright"
+  },
+  "created_at": "2026-09-04T23:14:52+00:00",
+  "failures_and_retries": [],
+  "files_changed": [
+    "app.py"
+  ],
+  "final_verification": {
+    "app_returncode": 0,
+    "browser_passed": true,
+    "isolation": {
+      "authorization": "caller_invocation_for_trusted_project",
+      "host_filesystem_access_restricted": false,
+      "kind": "copied_workspace",
+      "network_access_restricted": false,
+      "os_sandbox": false,
+      "subprocess_timeout_seconds": {
+        "app": 20,
+        "pytest": 120
+      }
+    },
+    "passed": true,
+    "pytest_returncode": 0
+  },
+  "goal": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+  "plan": [
+    "Read the project.",
+    "Edit one file in a copied workspace (not an OS sandbox).",
+    "Run tests.",
+    "Verify the browser output.",
+    "Write provenance memory and publish a structured report."
+  ],
+  "rollback_information": {
+    "available": true,
+    "original_bytes_sha256": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+    "original_hash": "981e83b18c4e67c650071635504ad31a0c448701d6809c4a741be58a004caa6b",
+    "restored": false,
+    "rollback_point": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\proof-artifacts\\success-work\\rollback\\app.py.original",
+    "scope": "app.py only; arbitrary subprocess side effects are not reverted",
+    "updated_hash": "c55fdf8c5832c3e713ec57d61946fb9991e17c9350a42b5e8be7c93e18a6b392"
+  },
+  "sections": [
+    {
+      "content": "read -> edit -> test -> verify -> report",
+      "metadata": {
+        "goal_hash": "3b78b81b3a1e689907760247019f3528d546eb5e683d6bf4721f762ce443ad14"
+      },
+      "title": "plan"
+    },
+    {
+      "content": "Browser verification completed",
+      "metadata": {
+        "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d"
+      },
+      "title": "verification"
+    }
+  ],
+  "tests_executed": [
+    "python -m pytest -q"
+  ],
+  "tools_used": [
+    "filesystem.read",
+    "filesystem.write",
+    "terminal.run",
+    "playwright.verify"
+  ],
+  "unresolved_blockers": []
+}

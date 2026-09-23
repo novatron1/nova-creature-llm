@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "runtime": "nova_enhanced_server._run_nova_chat_turn",
+  "processes": [
+    {
+      "pid": 26344,
+      "phase": "write",
+      "checks": [
+        {
+          "text": "My name is Ray; your name is Nova",
+          "owner": "alice",
+          "expected": "Nice to meet you, Ray. My name is Nova.",
+          "actual": "Nice to meet you, Ray. My name is Nova.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "Rename yourself to Luna",
+          "owner": "alice",
+          "expected": "You can call me Luna.",
+          "actual": "You can call me Luna.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "My name is Sam",
+          "owner": "bob",
+          "expected": "Nice to meet you, Sam.",
+          "actual": "Nice to meet you, Sam.",
+          "source": "owned_identity_memory",
+          "passed": true
+        }
+      ],
+      "exit_code": 0,
+      "stderr_tail": ""
+    },
+    {
+      "pid": 26084,
+      "phase": "restart",
+      "checks": [
+        {
+          "text": "What is my name?",
+          "owner": "alice",
+          "expected": "Your name is Ray.",
+          "actual": "Your name is Ray.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is your name?",
+          "owner": "alice",
+          "expected": "My name is Luna.",
+          "actual": "My name is Luna.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is my name?",
+          "owner": "bob",
+          "expected": "Your name is Sam.",
+          "actual": "Your name is Sam.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is your name?",
+          "owner": "bob",
+          "expected": "My name is Nova.",
+          "actual": "My name is Nova.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is my name?",
+          "owner": "unknown",
+          "expected": "I don't have your name saved yet.",
+          "actual": "I don't have your name saved yet.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "Your name is Evil",
+          "owner": "alice",
+          "expected": "My name is Luna. To change it, explicitly ask me to rename myself.",
+          "actual": "My name is Luna. To change it, explicitly ask me to rename myself.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "My name is Nova",
+          "owner": "alice",
+          "expected": "Nice to meet you, Nova.",
+          "actual": "Nice to meet you, Nova.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is your name?",
+          "owner": "alice",
+          "expected": "My name is Luna.",
+          "actual": "My name is Luna.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "Rename yourself to Evil",
+          "owner": "alice",
+          "expected": "Identity memory updates are disabled for this turn.",
+          "actual": "Identity memory updates are disabled for this turn.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is my name?",
+          "owner": "alice",
+          "expected": "Identity memory access is disabled for this turn.",
+          "actual": "Identity memory access is disabled for this turn.",
+          "source": "owned_identity_memory",
+          "passed": true
+        },
+        {
+          "text": "What is your name?",
+          "owner": "alice",
+          "expected": "My name is Luna.",
+          "actual": "My name is Luna.",
+          "source": "owned_identity_memory",
+          "passed": true
+        }
+      ],
+      "exit_code": 0,
+      "stderr_tail": ""
+    }
+  ]
+}

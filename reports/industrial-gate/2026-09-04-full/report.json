@@ -1,0 +1,309 @@
+{
+  "browser_evidence": {
+    "browser_proof": {
+      "evidence": {
+        "backend": "real_playwright",
+        "dom_sha256": "9086e09e08082f1a23b0823446f4d19136f25946d980371ee30385d3101b7a90",
+        "passed": true,
+        "report": "proof-artifacts/success-report.json",
+        "screenshot_sha256": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+        "screenshot_verified": true
+      },
+      "evidence_kind": "real_playwright_fixture",
+      "name": "browser_proof",
+      "passed": true
+    },
+    "rollback_proof": {
+      "evidence": {
+        "exact_original_bytes_restored": true,
+        "no_failed_success_memory": true,
+        "passed": true,
+        "report": "proof-artifacts/failure-report.json"
+      },
+      "evidence_kind": "real_playwright_fixture",
+      "name": "rollback_proof",
+      "passed": true
+    }
+  },
+  "created_at": "2026-09-04T23:22:14+00:00",
+  "failures_and_retries": [
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_nova_release_worktree.py",
+        "tests/test_nova_release_lock.py",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\release_rollback.xml"
+      ],
+      "duration_seconds": 85.10899999999674,
+      "evidence_error": "Missing or malformed JUnit evidence",
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 4294967295,
+      "name": "release_rollback",
+      "passed": false,
+      "stderr_tail": "",
+      "stdout_tail": "...................................................................",
+      "timed_out": false
+    },
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\unit_suite.xml"
+      ],
+      "duration_seconds": 46.79700000002049,
+      "evidence_error": "Missing or malformed JUnit evidence",
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 4294967295,
+      "name": "unit_suite",
+      "passed": false,
+      "stderr_tail": "",
+      "stdout_tail": "........................................................................ [  3%]\r\n........................................................................ [  6%]\r\n........................................................................ [  9%]\r\n........................................................................ [ 12%]\r\n........................................................................ [ 16%]\r\n........................................................................ [ 19%]\r\n........................................................................ [ 22%]\r\n........................................................................ [ 25%]\r\n........................................................................ [ 29%]\r\n........................................................................ [ 32%]\r\n........................................................................ [ 35%]\r\n..............................",
+      "timed_out": false
+    }
+  ],
+  "files_changed": [],
+  "final_verification": {
+    "blockers": [
+      "phase_failed:release_rollback",
+      "phase_failed:unit_suite",
+      "missing_evidence:sandboxed_terminal",
+      "missing_evidence:behavioral_baseline",
+      "missing_evidence:memory_identity_restart",
+      "source_changed_during_run",
+      "workspace_is_not_a_clean_release_commit"
+    ],
+    "missing_required_phases": [
+      "sandboxed_terminal",
+      "behavioral_baseline",
+      "memory_identity_restart"
+    ],
+    "passed": false,
+    "promotion_allowed": false,
+    "promotion_policy": "Audit only. Promotion remains the responsibility of the release lock."
+  },
+  "goal": "Verify Nova Industrial Gate v1 against an identified source state.",
+  "limitations": {
+    "behavioral_baseline": "Eval-bank unit tests validate the framework; no scored model baseline with verified per-case evidence is supplied.",
+    "memory_identity_restart": "Store persistence tests do not prove user/assistant identity ownership across a restarted conversation.",
+    "sandboxed_terminal": "The proof uses a copied workspace and bounded host subprocesses, not OS isolation. A Windows Sandbox executable alone is not proof."
+  },
+  "phases": [
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_nova_enhanced_server.py",
+        "tests/test_nova_llm_synthesizer.py",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\server_regression.xml"
+      ],
+      "duration_seconds": 55.10899999999674,
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 0,
+      "junit_sha256": "d128753241db0d85eba4ea3f635672f7e4030d6f55b12e3022b6b149f0f91acc",
+      "name": "server_regression",
+      "passed": true,
+      "stderr_tail": "",
+      "stdout_tail": "[REDACTED]",
+      "tests": {
+        "errors": 0,
+        "failed": 0,
+        "passed": 449,
+        "skipped": 0,
+        "total": 449
+      },
+      "timed_out": false
+    },
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_nova_runtime_contracts.py",
+        "tests/test_nova_runtime_permissions.py",
+        "tests/test_nova_runtime_ledger.py",
+        "tests/test_nova_runtime_scheduler.py",
+        "tests/test_nova_runtime_memory.py",
+        "tests/test_nova_runtime_agent_report.py",
+        "tests/test_nova_runtime_eval_bank.py",
+        "tests/test_nova_runtime_end_to_end.py",
+        "tests/test_nova_runtime_verification_playwright.py",
+        "tests/test_nova_industrial_gate.py",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\runtime_contracts.xml"
+      ],
+      "duration_seconds": 11.077999999979511,
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 0,
+      "junit_sha256": "60b0a2217bd2ca90c1db94d667426e7a62228241cb7a8912025eded0fb470aef",
+      "name": "runtime_contracts",
+      "passed": true,
+      "stderr_tail": "",
+      "stdout_tail": "[REDACTED]",
+      "tests": {
+        "errors": 0,
+        "failed": 0,
+        "passed": 47,
+        "skipped": 0,
+        "total": 47
+      },
+      "timed_out": false
+    },
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_nova_memory_v2.py",
+        "tests/test_nova_conversation_intelligence.py",
+        "tests/test_nova_conversation_eval.py",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\memory_and_conversation.xml"
+      ],
+      "duration_seconds": 4.202999999979511,
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 0,
+      "junit_sha256": "3d2fdaadc6465ad22ae519a849d96462b54934ca1fa21914740dbd105e958138",
+      "name": "memory_and_conversation",
+      "passed": true,
+      "stderr_tail": "",
+      "stdout_tail": "[REDACTED]",
+      "tests": {
+        "errors": 0,
+        "failed": 0,
+        "passed": 56,
+        "skipped": 0,
+        "total": 56
+      },
+      "timed_out": false
+    },
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_nova_release_worktree.py",
+        "tests/test_nova_release_lock.py",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\release_rollback.xml"
+      ],
+      "duration_seconds": 85.10899999999674,
+      "evidence_error": "Missing or malformed JUnit evidence",
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 4294967295,
+      "name": "release_rollback",
+      "passed": false,
+      "stderr_tail": "",
+      "stdout_tail": "...................................................................",
+      "timed_out": false
+    },
+    {
+      "command": [
+        "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "--disable-warnings",
+        "--tb=short",
+        "--junitxml=[REDACTED]\\unit_suite.xml"
+      ],
+      "duration_seconds": 46.79700000002049,
+      "evidence_error": "Missing or malformed JUnit evidence",
+      "evidence_kind": "unit_tests_on_host",
+      "exit_code": 4294967295,
+      "name": "unit_suite",
+      "passed": false,
+      "stderr_tail": "",
+      "stdout_tail": "........................................................................ [  3%]\r\n........................................................................ [  6%]\r\n........................................................................ [  9%]\r\n........................................................................ [ 12%]\r\n........................................................................ [ 16%]\r\n........................................................................ [ 19%]\r\n........................................................................ [ 22%]\r\n........................................................................ [ 25%]\r\n........................................................................ [ 29%]\r\n........................................................................ [ 32%]\r\n........................................................................ [ 35%]\r\n..............................",
+      "timed_out": false
+    },
+    {
+      "evidence": {
+        "backend": "real_playwright",
+        "dom_sha256": "9086e09e08082f1a23b0823446f4d19136f25946d980371ee30385d3101b7a90",
+        "passed": true,
+        "report": "proof-artifacts/success-report.json",
+        "screenshot_sha256": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+        "screenshot_verified": true
+      },
+      "evidence_kind": "real_playwright_fixture",
+      "name": "browser_proof",
+      "passed": true
+    },
+    {
+      "evidence": {
+        "exact_original_bytes_restored": true,
+        "no_failed_success_memory": true,
+        "passed": true,
+        "report": "proof-artifacts/failure-report.json"
+      },
+      "evidence_kind": "real_playwright_fixture",
+      "name": "rollback_proof",
+      "passed": true
+    }
+  ],
+  "plan": [
+    "Record source hashes",
+    "Run required suites",
+    "Run real browser and rollback fixtures",
+    "Require complete release evidence"
+  ],
+  "rollback_information": {
+    "promotion_attempted": false,
+    "source_change_attribution": "unknown",
+    "source_unchanged_observed": false
+  },
+  "run_id": "20260904T231815Z-13a115b5",
+  "runtime": {
+    "executable": "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+  },
+  "schema_version": "nova-industrial-gate-1",
+  "scope": "full",
+  "sections": [],
+  "source_commit": "7b7ab67766f0ea0449292adf50a12560786c54ab",
+  "source_sha256": "88586be41a2fcfd22afc8b58c393c37b9e544c3c3aafe7b6d2888bac6a3c06ad",
+  "tests_executed": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pytest tests/test_nova_enhanced_server.py tests/test_nova_llm_synthesizer.py -q --disable-warnings --tb=short --junitxml=[REDACTED]\\server_regression.xml",
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pytest tests/test_nova_runtime_contracts.py tests/test_nova_runtime_permissions.py tests/test_nova_runtime_ledger.py tests/test_nova_runtime_scheduler.py tests/test_nova_runtime_memory.py tests/test_nova_runtime_agent_report.py tests/test_nova_runtime_eval_bank.py tests/test_nova_runtime_end_to_end.py tests/test_nova_runtime_verification_playwright.py tests/test_nova_industrial_gate.py -q --disable-warnings --tb=short --junitxml=[REDACTED]\\runtime_contracts.xml",
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pytest tests/test_nova_memory_v2.py tests/test_nova_conversation_intelligence.py tests/test_nova_conversation_eval.py -q --disable-warnings --tb=short --junitxml=[REDACTED]\\memory_and_conversation.xml",
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pytest tests/test_nova_release_worktree.py tests/test_nova_release_lock.py -q --disable-warnings --tb=short --junitxml=[REDACTED]\\release_rollback.xml",
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe -m pytest tests -q --disable-warnings --tb=short --junitxml=[REDACTED]\\unit_suite.xml",
+    "browser_proof",
+    "rollback_proof"
+  ],
+  "tools_used": [
+    "pytest",
+    "playwright",
+    "git"
+  ],
+  "unresolved_blockers": [
+    "phase_failed:release_rollback",
+    "phase_failed:unit_suite",
+    "missing_evidence:sandboxed_terminal",
+    "missing_evidence:behavioral_baseline",
+    "missing_evidence:memory_identity_restart",
+    "source_changed_during_run",
+    "workspace_is_not_a_clean_release_commit"
+  ]
+}

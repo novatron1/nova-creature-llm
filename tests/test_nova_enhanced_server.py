@@ -31,6 +31,24 @@ HASH_B = "b" * 64
 
 
 @pytest.fixture(autouse=True)
+def _isolated_runtime_configuration(monkeypatch, tmp_path):
+    """Unit scenarios use code defaults, never the operator's machine settings."""
+    import os
+    import nova_local_llm_connector
+
+    for key in tuple(os.environ):
+        if key.startswith("NOVA_"):
+            monkeypatch.delenv(key)
+    # Config isolation must retain the supervisor's test-only write barriers.
+    monkeypatch.setenv("NOVA_SUPPRESS_RUNTIME_LOGS", "true")
+    monkeypatch.setenv("NOVA_SUPPRESS_CONVERSATION_TRAINING", "true")
+    monkeypatch.setenv("NOVA_IDENTITY_DATABASE", str(tmp_path / "identity.db"))
+    monkeypatch.setattr(nova_local_llm_connector.LocalLLMConfig, "_load_from_file", lambda self: None)
+    monkeypatch.setattr(server, "_runtime_config_values", lambda: {})
+    monkeypatch.setattr(server, "_get_companion_service", lambda: None)
+
+
+@pytest.fixture(autouse=True)
 def _isolated_model_quality_registry(monkeypatch, tmp_path):
     """Keep model-quality tests deterministic and out of live operator state."""
 
@@ -1434,7 +1452,7 @@ def test_brain_route_adapter_only_uses_raw_qwen_without_nova_interception(monkey
     assert response == "Adapter-only raw response."
     assert captured["prompt"] == "tell me a short thought about building Nova"
     assert "qwen" in captured["adapter_id"]
-    assert captured["allow_slow_cpu"] is False
+    assert captured["allow_slow_cpu"] is True
     assert trace["source"] == "raw_adapter_only"
     assert trace["trained_adapter_only"] is True
     assert trace["local_llm_model"] == "Qwen/Qwen2.5-1.5B-Instruct + LoRA"
@@ -1722,6 +1740,8 @@ def test_raw_memory_mode_executes_memory_operation_without_replacing_raw_output(
 
 def test_raw_memory_mode_adds_explicit_recall_result_to_raw_prompt(monkeypatch):
     captured = {}
+    monkeypatch.setattr(server.ltm, "get_all", lambda **kwargs: [])
+    monkeypatch.setattr(server.ltm, "recall_from_question", lambda text: None)
     monkeypatch.setattr(server, "_raw_memory_remote_provider", lambda: None)
 
     def fake_memory_handler(text, trace, **kwargs):
@@ -1733,7 +1753,7 @@ def test_raw_memory_mode_adds_explicit_recall_result_to_raw_prompt(monkeypatch):
 
     def fake_generate(prompt, adapter_id, **kwargs):
         captured["prompt"] = prompt
-        return {"raw_output": "Raw adapter keeps the final word.", "local_llm_used": True}
+        return {"raw_output": "Your name is Alex.", "local_llm_used": True}
 
     monkeypatch.setattr(server, "_handle_adapter_only_memory_route", fake_memory_handler)
     monkeypatch.setattr(server, "_generate_raw_lora_adapter", fake_generate)
@@ -1744,7 +1764,7 @@ def test_raw_memory_mode_adds_explicit_recall_result_to_raw_prompt(monkeypatch):
     )
 
     assert "Your name is Alex. I remember you." in captured["prompt"]
-    assert response == "Raw adapter keeps the final word."
+    assert response == "Your name is Alex."
     assert trace["memory_event"] == "name_recall:Alex"
 
 
@@ -2485,6 +2505,11 @@ def test_run_chat_how_is_your_day_uses_social_route_and_passes_firewall(monkeypa
             "you have a good day too",
             "farewell_day",
         ),
+        (
+            "Do you really have feelings, or is this how you talk?",
+            "I don't have human feelings",
+            "self_experience_boundary",
+        ),
     ),
 )
 def test_run_chat_common_social_turns_use_reviewed_fast_responses(
@@ -2512,6 +2537,8 @@ def test_run_chat_common_social_turns_use_reviewed_fast_responses(
     assert expected in response
     assert trace["source"] == "reviewed_conversation_response"
     assert trace["conversation_decision"]["intent_subtype"] == subtype
+    assert trace.get("local_llm_synthesis_used") is False
+    assert not trace.get("local_llm_model")
 
 
 def test_brain_route_how_u_doing_uses_fast_natural_path(monkeypatch):
@@ -4518,6 +4545,24 @@ def test_managed_private_news_request_preserves_privacy_message(monkeypatch):
     assert trace["answer_firewall"]["accepted"] is True
 
 
+@pytest.mark.parametrize("local_override", [False, True])
+def test_dictionary_loads_shipped_defaults_with_local_priority(monkeypatch, tmp_path, local_override):
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "builtin_word_dictionary.json").write_text(json.dumps({
+        "News": "recent events", "bird": "a feathered vertebrate",
+    }), encoding="utf-8")
+    local_path = data / "approved.json"
+    if local_override:
+        local_path.write_text(json.dumps({"NEWS": "local reviewed definition"}), encoding="utf-8")
+    monkeypatch.setattr(server, "ROOT", str(tmp_path))
+    monkeypatch.setattr(server, "DICT_PATH", str(local_path))
+    monkeypatch.setattr(server, "DICT_INDEX", {})
+    assert server._load_dict() == 2
+    assert server.DICT_INDEX["bird"] == "a feathered vertebrate"
+    assert server.DICT_INDEX["news"] == ("local reviewed definition" if local_override else "recent events")
+
+
 def test_brain_route_defines_news_before_transformer(monkeypatch):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", False)
     monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
@@ -4602,6 +4647,7 @@ def test_brain_route_tell_me_about_ai_uses_topic_explainer_before_generic_cognit
 
 
 def test_brain_route_tell_me_what_topic_is_uses_topic_explainer(monkeypatch):
+    monkeypatch.setitem(server.DICT_INDEX, "space", "Space is the three-dimensional extent in which objects have positions.")
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
     monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
@@ -6219,6 +6265,18 @@ def test_health_endpoint_reports_version_and_uptime():
         httpd.server_close()
 
 
+def test_api_health_alias_reports_version_and_uptime():
+    httpd, base_url = _start_test_server(server.NovaHandler)
+    try:
+        health = _json_get(base_url, "/api/health")
+        assert health["ok"] is True
+        assert health["version"] == server.NOVA_APP_VERSION
+        assert health["uptime_seconds"] >= 0
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
 def test_chat_api_rejects_invalid_and_oversized_json(monkeypatch):
     httpd, base_url = _start_test_server(server.NovaHandler)
     try:
@@ -6513,7 +6571,8 @@ def test_gateway_without_transcript_does_not_borrow_process_wide_followup(monkey
     assert "context_resolution" not in trace
 
 
-def test_normal_chat_forwards_bounded_client_history_into_qwen_context(monkeypatch):
+@pytest.mark.parametrize("earlier_exchanges", [0, 6])
+def test_normal_chat_forwards_bounded_client_history_into_qwen_context(monkeypatch, earlier_exchanges):
     monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
     monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
     monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
@@ -6548,7 +6607,10 @@ def test_normal_chat_forwards_bounded_client_history_into_qwen_context(monkeypat
         }
 
     monkeypatch.setattr(server, "cognitive_route", fake_cognitive, raising=False)
-    history = [
+    history = [message for index in range(earlier_exchanges) for message in (
+        {"role": "user", "content": f"Earlier subject {index}"},
+        {"role": "assistant", "content": f"Earlier answer {index}"},
+    )] + [
         {"role": "user", "content": "What is my name?"},
         {"role": "assistant", "content": "Your name is Mr Novatron. I remember you."},
     ]
@@ -6588,6 +6650,7 @@ def test_normal_chat_forwards_bounded_client_history_into_qwen_context(monkeypat
     assert captured["context"]["gateway_messages"] == history + [
         {"role": "user", "content": "Make a short rhyme using that name."}
     ]
+    assert captured["context"]["conversation_history"] == history
     assert captured["context"]["memory_read_allowed"] is True
     assert captured["context"]["primary_model_override"] == "qwen2.5:3b"
     assert captured["context"]["primary_model_tier"] == "middle"
@@ -6653,12 +6716,7 @@ def test_run_chat_marks_normal_conversation_llm_first_without_hijacking_context(
 
     response, trace = server._run_nova_chat_turn(
         "Why is it so hard to find?",
-        context={
-            "nova_gateway": True,
-            "memory_read_allowed": False,
-            "memory_write_allowed": False,
-            "conversation_memory_allowed": False,
-        },
+        context={},
     )
 
     assert "hard to find" in response
@@ -8030,7 +8088,11 @@ def test_run_chat_replaces_reversed_latency_claim_with_consistent_local_answer(m
     assert "technical_consistency_check" in trace["skills"]
 
 
-def test_run_chat_blocks_inconsistent_larger_local_candidate(monkeypatch):
+def test_run_chat_blocks_inconsistent_larger_local_candidate(monkeypatch, tmp_path):
+    from nova_companion.service import CompanionService
+
+    companion = CompanionService(str(tmp_path / "companion.db"))
+    monkeypatch.setattr(server, "_get_companion_service", lambda: companion)
     prompt = (
         "Compare local SQLite with a remote vector database for latency, offline use, and cost."
     )
@@ -8083,6 +8145,9 @@ def test_run_chat_blocks_inconsistent_larger_local_candidate(monkeypatch):
     assert trace["candidate_selection"]["retry_result"] == "consistency_check_failed"
     assert trace["candidate_selection"]["alternate_consistency"]["status"] == "blocked"
     assert trace["candidate_selection"]["alternate_consistency"]["content_logged"] is False
+    assert trace["source"] == "answer_firewall_recovery"
+    assert trace["answer_firewall"]["accepted"] is False
+    assert trace["conversation_state_committed"] is False
 
 
 def test_difficulty_escalation_can_be_disabled_without_disabling_other_checks(monkeypatch):
@@ -8784,7 +8849,7 @@ def test_run_chat_firewall_never_checks_or_rewrites_raw_adapter_output(monkeypat
 def test_web_ui_sends_context_for_all_modes_and_shows_firewall_state():
     html = server.WEB_HTML
 
-    assert "payload.conversation_history = recentConversationHistory.slice(-8)" in html
+    assert "payload.conversation_history = recentConversationHistory.slice(-20).map(item => ({role:item.role, content:item.content}))" in html
     assert "payload.conversation_summary = conversationSummary" in html
     assert "payload.conversation_summary_write_allowed = conversationPersistenceEnabled && !privateModeEnabled" in html
     assert "summary:conversationSummary" in html
@@ -9462,7 +9527,7 @@ def test_web_ui_has_dolphin_adapter_only_toggle_and_payload_flag():
         "function toggleDolphinAdapterOnlyMode",
         "dolphinAdapterOnlyMode",
         "payload.dolphin_adapter_only = true",
-        "payload.allow_slow_dolphin_cpu = true",
+        "payload.allow_slow_dolphin_cpu = false",
         "nova-dolphin3-llama3-1-8b-full-sft-20260712",
         "function refreshAdapterRuntimeAvailability",
         "CPU SLOW",
@@ -9688,10 +9753,10 @@ def test_web_ui_raw_mode_is_untouched_but_never_implies_tool_execution():
 def test_web_ui_exposes_managed_strong_mode_without_changing_raw_modes():
     html = server.WEB_HTML
 
-    assert '<option value="strong">Nova Strong · Qwen 3 8B</option>' in html
+    assert '<option value="strong">Nova Strong · Qwen 3 4B · GPU</option>' in html
     assert "let managedModelMode = 'nova'" in html
     assert "payload.nova_model_mode = 'strong'" in html
-    assert "Strong · Qwen 3 8B · CPU slow" in html
+    assert "Strong · GPU model route" in html
     assert "Nova Strong keeps identity, memory, tools, and safety" in html
     assert "trainedAdapterOnlyMode = ['qwen','dolphin'].includes(requested)" in html
     assert "Raw Qwen · no tools" in html
@@ -9710,7 +9775,7 @@ def test_web_ui_exposes_raw_memory_mode_selector_and_persisted_state():
 def test_web_ui_raw_memory_mode_sends_only_managed_mode_literal():
     html = server.WEB_HTML
 
-    assert "managedModelMode = ['strong','raw_memory'].includes(requested) ? requested : 'nova';" in html
+    assert "managedModelMode = ['strong','dolphin_deep','raw_memory'].includes(requested) ? requested : 'nova';" in html
     assert "if(managedModelMode === 'raw_memory' && !trainedAdapterOnlyMode && !dolphinAdapterOnlyMode) payload.nova_model_mode = 'raw_memory';" in html
     assert "trainedAdapterOnlyMode = ['qwen','dolphin'].includes(requested);" in html
     assert "dolphinAdapterOnlyMode = requested === 'dolphin';" in html
@@ -9741,10 +9806,11 @@ def test_web_ui_disables_model_selector_when_a_managed_chat_starts():
 def test_web_ui_strong_mode_reports_availability_and_safe_fallback_reason():
     html = server.WEB_HTML
 
-    assert "strong_local_model:'Nova Strong is checking Qwen 3 8B availability'" in html
+    assert "strong_local_model:'Nova is preparing her reply…'" in html
     assert "meta.optional_model_mode?.requested" in html
     assert "actualModel === requestedModel" in html
-    assert "Strong · Qwen 3 8B active" in html
+    assert "Strong · '+escapeHtml(requestedModel)+' active" in html
+    assert "Strong · Nova reviewed response" in html
     assert "meta.model_residency?.reason" in html
     assert "Strong fallback · " in html
     assert "escapeHtml(reason)" in html
@@ -9756,7 +9822,8 @@ def test_web_ui_locks_model_selector_for_every_chat_request():
     assert "let chatRequestInFlight = false;" in html
     assert "select.disabled = !!activeChatController || chatRequestInFlight;" in html
     assert "if(activeChatController || chatRequestInFlight)" in html
-    assert "chatRequestInFlight = true;\n  updateModelControlUi();\n  if(shouldUseActiveVisionContext(text))" in html
+    send_source = html[html.index("async function send(){"):html.index("function addBotChatLine(")]
+    assert send_source.index("chatRequestInFlight = true;") < send_source.index("await handleLocalUiCommand(text)")
     assert "chatRequestInFlight = false;\n      updateModelControlUi();" in html
     assert "chatRequestInFlight = false;" in html
 
@@ -10201,10 +10268,10 @@ def test_chat_api_accepts_message_field_like_text_field(monkeypatch):
 
     httpd, base_url = _start_test_server(server.NovaHandler)
     try:
-        result = _json_post(base_url, "/api/chat", {"message": "WHAT IS YOUR NAME"})
+        result = _json_post(base_url, "/api/chat", {"message": "TRANSPORT FIELD CHECK"})
 
-        assert result["response"] == "received:WHAT IS YOUR NAME"
-        assert result["trace"]["input"] == "WHAT IS YOUR NAME"
+        assert result["response"] == "received:TRANSPORT FIELD CHECK"
+        assert result["trace"]["input"] == "TRANSPORT FIELD CHECK"
     finally:
         httpd.shutdown()
         httpd.server_close()
@@ -10264,6 +10331,32 @@ def test_python_range_question_is_not_misrouted_to_camera_distance_mode():
     assert server._is_distance_awareness_question(
         "What is the camera range to that object?"
     ) is True
+
+
+def test_relationship_distance_questions_are_not_misrouted_to_camera_distance_mode():
+    assert server._is_distance_awareness_question(
+        "What is one common mistake people make in long-distance friendships?"
+    ) is False
+    assert server._is_distance_awareness_question(
+        "How do friends keep trust when they live far apart?"
+    ) is False
+    assert server._is_distance_awareness_question(
+        "Use the camera to measure the distance to that object."
+    ) is True
+
+
+def test_automatic_model_quality_check_honors_runtime_config_when_env_is_unset(monkeypatch):
+    monkeypatch.delenv("NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED", raising=False)
+    monkeypatch.setattr(
+        server,
+        "_runtime_config_values",
+        lambda: {"NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED": False},
+    )
+
+    assert server._automatic_model_quality_check_enabled() is False
+
+    monkeypatch.setenv("NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED", "true")
+    assert server._automatic_model_quality_check_enabled() is True
 
 
 def test_emotional_statement_is_not_parsed_as_a_name_introduction():
@@ -10614,8 +10707,10 @@ def test_chat_api_answers_distance_close_control_complaint(monkeypatch):
 
 def test_tts_api_prefers_neural_voice_payload(monkeypatch):
     old_speaker = server.PERMISSIONS["speaker"]
+    old_engine = server.NOVA_TTS_ENGINE
     try:
         server.PERMISSIONS["speaker"] = True
+        server.NOVA_TTS_ENGINE = "edge_neural"
 
         def fake_neural_tts(text, voice=None):
             assert text == "Hello from Nova."
@@ -10641,12 +10736,78 @@ def test_tts_api_prefers_neural_voice_payload(monkeypatch):
             httpd.server_close()
     finally:
         server.PERMISSIONS["speaker"] = old_speaker
+        server.NOVA_TTS_ENGINE = old_engine
+
+
+def test_tts_api_prefers_local_gpu_neural_voice_when_configured(monkeypatch):
+    old_speaker = server.PERMISSIONS["speaker"]
+    old_engine = server.NOVA_TTS_ENGINE
+    try:
+        server.PERMISSIONS["speaker"] = True
+        server.NOVA_TTS_ENGINE = "kokoro_gpu"
+
+        def fake_kokoro(text, voice=None):
+            assert text == "Hello from Nova."
+            assert voice == server.NOVA_TTS_KOKORO_VOICE
+            return (
+                base64.b64encode(b"RIFFfakeGPUWAVE").decode("ascii"),
+                "Nova Heart",
+                "audio/wav",
+                "cuda",
+            )
+
+        def fail_edge(text, voice=None):
+            raise AssertionError("Edge fallback should not run when Kokoro works")
+
+        monkeypatch.setattr(server, "_generate_kokoro_tts_audio_base64", fake_kokoro, raising=False)
+        monkeypatch.setattr(server, "_generate_edge_neural_tts_audio_base64", fail_edge, raising=False)
+        payload, status = server._tts_response_from_text({"text": "Hello from Nova.", "force": True})
+
+        assert status == 200
+        assert payload["ok"] is True
+        assert payload["voice_engine"] == "kokoro_gpu"
+        assert payload["voice_name"] == "Nova Heart"
+        assert payload["device"] == "cuda"
+    finally:
+        server.PERMISSIONS["speaker"] = old_speaker
+        server.NOVA_TTS_ENGINE = old_engine
+
+
+def test_tts_api_falls_back_from_local_gpu_voice_to_neural_voice(monkeypatch):
+    old_speaker = server.PERMISSIONS["speaker"]
+    old_engine = server.NOVA_TTS_ENGINE
+    try:
+        server.PERMISSIONS["speaker"] = True
+        server.NOVA_TTS_ENGINE = "kokoro_gpu"
+
+        def fail_kokoro(text, voice=None):
+            raise RuntimeError("local voice unavailable")
+
+        def fake_neural(text, voice=None):
+            return (
+                base64.b64encode(b"ID3fallbackMP3").decode("ascii"),
+                "Nova Neural Backup",
+                "audio/mpeg",
+            )
+
+        monkeypatch.setattr(server, "_generate_kokoro_tts_audio_base64", fail_kokoro, raising=False)
+        monkeypatch.setattr(server, "_generate_edge_neural_tts_audio_base64", fake_neural, raising=False)
+        payload, status = server._tts_response_from_text({"text": "Hello.", "force": True})
+
+        assert status == 200
+        assert payload["voice_engine"] == "edge_neural"
+        assert payload["voice_name"] == "Nova Neural Backup"
+    finally:
+        server.PERMISSIONS["speaker"] = old_speaker
+        server.NOVA_TTS_ENGINE = old_engine
 
 
 def test_tts_api_falls_back_to_windows_voice_when_neural_unavailable(monkeypatch):
     old_speaker = server.PERMISSIONS["speaker"]
+    old_engine = server.NOVA_TTS_ENGINE
     try:
         server.PERMISSIONS["speaker"] = True
+        server.NOVA_TTS_ENGINE = "edge_neural"
 
         def fail_neural(text, voice=None):
             raise RuntimeError("edge neural missing")
@@ -10673,6 +10834,7 @@ def test_tts_api_falls_back_to_windows_voice_when_neural_unavailable(monkeypatch
             httpd.server_close()
     finally:
         server.PERMISSIONS["speaker"] = old_speaker
+        server.NOVA_TTS_ENGINE = old_engine
 
 
 def test_tts_api_requires_speaker_or_force(monkeypatch):
@@ -11792,7 +11954,11 @@ def test_web_ui_display_tab_shows_nova_body_and_live_status():
     assert 'allow-same-origin' not in server.WEB_HTML
 
 
-def test_sandbox_project_static_path_resolves_preview_file():
+def test_sandbox_project_static_path_resolves_preview_file(monkeypatch, tmp_path):
+    preview = tmp_path / "app_builder_projects" / "Nova_Pac_Runner" / "index.html"
+    preview.parent.mkdir(parents=True)
+    preview.write_text("<!doctype html><title>Preview fixture</title>", encoding="utf-8")
+    monkeypatch.setattr(server, "SANDBOX_ROOT", tmp_path)
     resolved = server._resolve_sandbox_static_path(
         "/sandbox/app_builder_projects/Nova_Pac_Runner/index.html"
     )
@@ -12038,3 +12204,113 @@ def test_client_history_boundary_does_not_fall_back_to_stale_legacy_context():
     )
 
     assert selected == ("", "")
+
+
+def test_run_chat_preserves_companion_personality_for_cognitive_model(monkeypatch, tmp_path):
+    from nova_companion.service import CompanionService
+
+    companion = CompanionService(str(tmp_path / "companion.db"))
+    monkeypatch.setattr(server, "_get_companion_service", lambda: companion)
+    monkeypatch.setattr(server, "_PIPELINE_AVAIL", True)
+    monkeypatch.setattr(server, "_COGNITIVE_OS_AVAIL", True, raising=False)
+    monkeypatch.setattr(server, "_HYBRID_ROUTER_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE_AVAIL", False)
+    monkeypatch.setattr(server, "_CONV_ENGINE", None)
+    monkeypatch.setattr(
+        server,
+        "pipeline_process",
+        lambda *args, **kwargs: {
+            "fast_path": False,
+            "intent": {"primary_intent": "general_inquiry"},
+            "route": ["memory_transformer", "speech_output_transformer"],
+            "confidence": 0.8,
+            "normalized_text": args[0],
+            "memory_binding": {},
+        },
+    )
+    captured = {}
+
+    def fake_cognitive(prompt, **kwargs):
+        captured["context"] = kwargs.get("context") or {}
+        return "It can be hard to find because several factors overlap, including timing and the choices available to you.", {
+            "source": "cognitive_os",
+            "local_llm_synthesis_used": True,
+            "local_llm_model": "qwen2.5:1.5b",
+            "route_path": ["nova_context", "qwen_synthesis", "speech_output"],
+            "final_answer_source": "local_llm_synthesis",
+        }
+
+    monkeypatch.setattr(server, "cognitive_route", fake_cognitive, raising=False)
+
+    response, trace = server._run_nova_chat_turn(
+        "Why is it so hard to find?",
+        context={"companion_context": {"personality": {"warm": 0.82, "curious": 0.84}, "social_plan": {"tone": "warm"}}},
+    )
+
+    assert "hard to find" in response
+    assert captured["context"]["normal_chat_llm_first"] is True
+    assert trace["normal_chat_policy"] == "llm_first"
+
+    assert captured["context"]["companion_context"]["personality"]["intelligent"] == 0.86
+
+
+def test_live_source_helpers_only_include_successfully_fetched_sources():
+    sources = [
+        {"title": "NASA", "url": "https://nasa.test/earth", "status": 200, "snippet": "Earth is round."},
+        {"title": "Unavailable", "url": "https://unavailable.test", "status": 503, "snippet": "Do not cite."},
+    ]
+    assert server._live_source_lines([]) == []
+    assert server._live_source_evidence_lines([]) == []
+    assert server._live_source_lines(sources) == ["  - NASA [HTTP 200] (https://nasa.test/earth)"]
+    assert server._live_source_evidence_lines(sources) == ["  - NASA: Earth is round."]
+
+
+def test_runtime_configuration_isolation_keeps_test_write_guards():
+    import os
+
+    assert os.environ["NOVA_SUPPRESS_RUNTIME_LOGS"] == "true"
+    assert os.environ["NOVA_SUPPRESS_CONVERSATION_TRAINING"] == "true"
+
+
+@pytest.mark.parametrize("prompt", [
+    "What are you curious about?", "What are you thinking about?",
+    "What are you doing today?", "What features make a good friendship?",
+    "What abilities do dolphins have?",
+])
+def test_social_or_world_question_is_not_a_capabilities_command(prompt):
+    assert server._is_capabilities_question(prompt) is False
+
+
+@pytest.mark.parametrize("prompt", [
+    "What can you do?", "what can u do", "What all can you help me with?",
+    "What are you?", "Tell me about yourself", "Show me your capabilities",
+])
+def test_explicit_capabilities_question_is_recognized(prompt):
+    assert server._is_capabilities_question(prompt) is True
+
+
+@pytest.mark.parametrize("history,expected", [
+    ([], []),
+    ([{"role": "user", "content": "I planted mint."},
+      {"role": "assistant", "content": "A pot will keep the mint contained."}],
+     [{"user": "I planted mint.", "nova": "A pot will keep the mint contained."}]),
+])
+def test_final_personality_uses_only_this_clients_history(monkeypatch, history, expected):
+    import nova_natural_chat
+
+    captured = {}
+    monkeypatch.setattr(nova_natural_chat, "get_recent_memory", lambda: [
+        {"user": "Another person's private project", "nova": "Unrelated secret"},
+    ])
+
+    def shape(answer, **kwargs):
+        captured["recent"] = kwargs["recent_memory"]
+        return answer
+
+    monkeypatch.setattr(nova_natural_chat, "shape_verified_response", shape)
+    monkeypatch.setattr(nova_natural_chat, "natural_chat_enabled", lambda: True)
+    server._run_nova_chat_turn("Hey Nova", context={
+        "conversation_id": "personality-isolation-test",
+        "conversation_history": history,
+    })
+    assert captured["recent"] == expected

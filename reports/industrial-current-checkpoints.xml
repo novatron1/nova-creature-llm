@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="14" time="18.167" timestamp="2026-09-04T20:05:17.494587-04:00" hostname="DESKTOP-L7OIQO8"><testcase classname="tests.test_transformer_inference_fix.TestParameterLoader" name="test_all_required_params_loaded" time="0.092" /><testcase classname="tests.test_transformer_inference_fix.TestParameterLoader" name="test_lm_head_not_zeros" time="0.050" /><testcase classname="tests.test_transformer_inference_fix.TestParameterLoader" name="test_ln_f_present" time="0.038" /><testcase classname="tests.test_transformer_inference_fix.TestParameterLoader" name="test_token_embedding_shape" time="0.041" /><testcase classname="tests.test_transformer_inference_fix.TestForwardPass" name="test_forward_pass_no_crash" time="0.064" /><testcase classname="tests.test_transformer_inference_fix.TestForwardPass" name="test_forward_pass_non_flat_logits" time="0.114" /><testcase classname="tests.test_transformer_inference_fix.TestGeneration" name="test_generation_returns_output" time="2.640" /><testcase classname="tests.test_transformer_inference_fix.TestGeneration" name="test_all_7_roles_generate" time="3.529" /><testcase classname="tests.test_transformer_inference_fix.TestCheckpointUniqueness" name="test_v055_has_unique_weights" time="0.390"><failure message="AssertionError: Only 3/7 unique checkpoints&#10;assert 3 == 7&#10; +  where 3 = len({'03f764ddae21d9cf8e1d524724e09c45', '4a5be1692d41341a8eb676abc6ba4681', '575545e9c98a0bfefc97243c73dfb299'})">self = &lt;test_transformer_inference_fix.TestCheckpointUniqueness object at 0x0000029A110E7C80&gt;
+
+    def test_v055_has_unique_weights(self):
+        """v055_conversation_trained checkpoints must have unique per-role weights."""
+        roles = ROLE_NAMES
+    
+        hashes = set()
+        for role in roles:
+            pt = str(ROOT / 'checkpoints' / 'brain_slots' / role / f'{role}_v055_conversation_trained.pt')
+            if not os.path.exists(pt):
+                pytest.fail(f"Checkpoint not found: {pt}")
+            hashes.add(hashlib.md5(open(pt, 'rb').read()).hexdigest())
+    
+&gt;       assert len(hashes) == 7, f"Only {len(hashes)}/7 unique checkpoints"
+E       AssertionError: Only 3/7 unique checkpoints
+E       assert 3 == 7
+E        +  where 3 = len({'03f764ddae21d9cf8e1d524724e09c45', '4a5be1692d41341a8eb676abc6ba4681', '575545e9c98a0bfefc97243c73dfb299'})
+
+tests\test_transformer_inference_fix.py:198: AssertionError</failure></testcase><testcase classname="tests.test_transformer_inference_fix.TestCheckpointUniqueness" name="test_brain_selects_trained_over_baseline" time="0.624" /><testcase classname="tests.test_transformer_inference_fix.TestCheckpointUniqueness" name="test_brain_reports_unique_hashes" time="1.515" /><testcase classname="tests.test_transformer_inference_fix.TestHybridRouter" name="test_router_does_not_crash" time="6.753" /><testcase classname="tests.test_transformer_inference_fix.TestHybridRouter" name="test_router_transformer_flag" time="0.266" /><testcase classname="tests.test_transformer_inference_fix.TestHybridRouter" name="test_dictionary_still_works" time="0.941" /></testsuite></testsuites>

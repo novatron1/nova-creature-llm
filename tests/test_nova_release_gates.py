@@ -2363,6 +2363,7 @@ def test_default_gate_definitions_cover_required_release_checks(
         "javascript",
         "application_acceptance",
         "python_full",
+        "industrial_gate",
         "conversation_560",
         "clean_start_smoke",
     ]
@@ -2418,7 +2419,10 @@ def test_default_gate_definitions_cover_required_release_checks(
         "-m",
         "pytest",
         "-q",
+        "--junitxml",
+        str(reports / "python-full.xml"),
     )
+    assert by_name["python_full"].artifact_paths == (str(reports / "python-full.xml"),)
     assert by_name["conversation_560"].argv == (
         python,
         "tools/run_conversation_eval.py",

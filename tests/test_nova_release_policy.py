@@ -225,6 +225,52 @@ def test_workspace_scan_prunes_policy_excluded_directories(tmp_path: Path) -> No
     assert report.passed is True
 
 
+def test_pruned_tracked_files_are_removed_but_required_nested_file_is_copied(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from nova_release_worktree import apply_snapshot
+
+    repo = tmp_path / "repo"
+    candidate = tmp_path / "release-temp" / "candidate"
+    required = "data/evals/nova_conversation_variations_v1.json"
+    excluded = {
+        "checkpoints/brain_slots/left_hemisphere/old.pt": b"old tracked weight",
+        "data/private/account.json": b"private inherited record",
+    }
+    repo.mkdir()
+    subprocess.run(["git", "init", "-b", "master", str(repo)], check=True, capture_output=True)
+    for path, content in {**excluded, required: b"old reviewed fixture"}.items():
+        destination = repo / path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(content)
+    subprocess.run(["git", "-C", str(repo), "add", "."], check=True, capture_output=True)
+    subprocess.run([
+        "git", "-C", str(repo), "-c", "user.name=Release Test",
+        "-c", "user.email=release@example.invalid", "commit", "-m", "inherited assets",
+    ], check=True, capture_output=True)
+    subprocess.run(["git", "clone", "--local", str(repo), str(candidate)], check=True, capture_output=True)
+    (repo / required).write_bytes(b"current reviewed fixture")
+    policy = SnapshotPolicy.load(Path("config/nova_release_snapshot_policy.json"))
+    real_scandir = os.scandir
+
+    def guarded_scandir(path):
+        if isinstance(path, (str, os.PathLike)):
+            assert Path(path) not in {repo / "data", repo / "checkpoints"}, "scanner traversed private tree"
+        return real_scandir(path)
+
+    with monkeypatch.context() as context:
+        context.setattr(os, "scandir", guarded_scandir)
+        report = scan_workspace(repo, policy, tracked_paths=set(excluded) | {required}, deleted_paths=set())
+    excluded_decisions = {item.path: item for item in report.excluded}
+    assert set(excluded) <= excluded_decisions.keys()
+    assert all(excluded_decisions[path].tracked for path in excluded)
+    assert required in {item.path for item in report.included}
+    apply_snapshot(repo, candidate, report, tmp_path / "release-temp")
+    assert all(not (candidate / path).exists() for path in excluded)
+    assert (candidate / required).read_bytes() == b"current reviewed fixture"
+    assert all((repo / path).read_bytes() == content for path, content in excluded.items())
+
+
 def test_workspace_scan_records_directory_symlink_without_following(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     assets = repo_root / "assets"

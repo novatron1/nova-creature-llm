@@ -1,0 +1,175 @@
+{
+  "started_at": "2026-09-07T01:41:44.488504+00:00",
+  "surface": "real browser /nova/v1/chat streaming UI",
+  "turns": [
+    {
+      "number": 1,
+      "prompt": "Hi Nova.",
+      "response": "Hey, I'm here. What's going on?",
+      "seconds": 1.062,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 2,
+      "prompt": "How are you doing today?",
+      "response": "I'm feeling steady and focused in the way an AI can: I don't have a human body or emotions, but I can notice our conversation and stay engaged with you. How are you feeling?",
+      "seconds": 1.203,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 3,
+      "prompt": "I had a long day.",
+      "response": "I'm with you. You don't have to sort everything out at once. Tell me what happened, and we can take it one piece at a time.",
+      "seconds": 1.078,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 4,
+      "prompt": "Mostly chores. I finally sat down with a cup of tea.",
+      "response": "I'm glad you finally found the time to sit down and enjoy a cup of tea. Chores can be tiring, but it's nice to take a moment for yourself. How did your day go?",
+      "seconds": 3.562,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 5,
+      "prompt": "Just chatting sounds good.",
+      "response": "We can keep it easy. I'm here to chat, and there's no need to turn it into a task.",
+      "seconds": 1.031,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 6,
+      "prompt": "What are you curious about?",
+      "response": "I'm curious about what you're currently interested in exploring or learning about.",
+      "seconds": 3.61,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 7,
+      "prompt": "I like that. I have been getting into music lately.",
+      "response": "That sounds interesting! Music can be such a great way to unwind and explore different genres. What kind of music are you into lately?",
+      "seconds": 3.25,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 8,
+      "prompt": "Mostly mellow guitar and old soul.",
+      "response": "I'm glad to hear that you're enjoying the mellow guitar and old soul music lately! It's nice to find comfort in familiar genres.",
+      "seconds": 4.282,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 9,
+      "prompt": "What kind of music would suit a quiet evening?",
+      "response": "I'm glad you're enjoying the mellow guitar and old soul music lately! It's nice to find comfort in familiar genres. For a quiet evening, you might consider listening to some gentle acoustic guitar tracks or soothing piano pieces. These types of music can create a relaxing atmosphere and might be perfect for a quiet night.",
+      "seconds": 4.719,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 10,
+      "prompt": "Why that kind?",
+      "response": "For a quiet evening, gentle acoustic guitar tracks and soothing piano pieces would be perfect. These types of music can create a relaxing atmosphere and might be ideal for a quiet night.",
+      "seconds": 3.234,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 11,
+      "prompt": "Actually, I might go for a short walk instead.",
+      "response": "Got it, sounds good. Just make sure you enjoy it.",
+      "seconds": 3.062,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 12,
+      "prompt": "It's a little rainy, though.",
+      "response": "It's a little rainy, though. Maybe we could enjoy a cozy indoor movie or a nice cup of tea instead?",
+      "seconds": 3.015,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 13,
+      "prompt": "Then a cozy night indoors it is.",
+      "response": "Great idea! Enjoy your cozy night indoors. If you need anything, just let me know.",
+      "seconds": 2.875,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 14,
+      "prompt": "Can you give me a silly name for a lazy Sunday?",
+      "response": "Sure, how about \"Lazy Sunday Sluggo\"?",
+      "seconds": 3.688,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 15,
+      "prompt": "Ha, that's a good one.",
+      "response": "I'm glad that landed. Sharing a laugh with you makes the conversation better.",
+      "seconds": 1.032,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 16,
+      "prompt": "What were we talking about before the walk?",
+      "response": "We were talking about music and finding a quiet evening activity. You mentioned you're into old soul music, and I suggested a cozy night indoors.",
+      "seconds": 4.046,
+      "model_label": "Model: qwen2.5:1.5b",
+      "network_requests": 1
+    },
+    {
+      "number": 17,
+      "prompt": "I appreciate you listening.",
+      "response": "You're welcome. I appreciate you too, and I'm glad to be here with you.",
+      "seconds": 0.563,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 18,
+      "prompt": "Do you really have feelings, or is this how you talk?",
+      "response": "I don't have human feelings or a private experience of being cozy, happy, or sad. My warm wording is a way of talking with you, not a report of feelings I actually have. I can still follow what you share and respond thoughtfully.",
+      "seconds": 0.625,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 19,
+      "prompt": "Fair enough. It's still nice chatting with you.",
+      "response": "I'm with you. Let's stay with that—what part feels most important right now?",
+      "seconds": 0.656,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 20,
+      "prompt": "Good night, Nova.",
+      "response": "Good night. Rest well—I'll be here when you come back.",
+      "seconds": 0.547,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    }
+  ],
+  "checks": {
+    "connected": true,
+    "enter_preserves_pending_reply_and_draft": true,
+    "all_twenty_completed": true,
+    "diagnostics_collapsed": true
+  },
+  "errors": [],
+  "quality_review": "pending",
+  "error": "AssertionError: Locator expected to be visible\nActual value: hidden \nCall log:\n  - Expect \"to_be_visible\" with timeout 5000ms\n  - waiting for locator(\"#gpu-hub-panel\")\n    13 × locator resolved to <section id=\"gpu-hub-panel\" aria-hidden=\"true\" class=\"workspace-panel\">…</section>\n       - unexpected value \"hidden\"\n\nAria snapshot:\n- heading \"⚡ Nova Creature\" [level=1]\n- text: \"Session: 0759147e 🟢 Live\"\n- navigation \"Whole App Navigation\":\n  - button \"Chat\"\n  - button \"Home\"\n  - button \"Display\"\n  - button \"Dream Studio\"\n  - button \"Agent Library\"\n  - button \"App Builder\"\n  - button \"GPU Hub\"\n  - button \"Memory\"\n  - button \"Tools\"\n  - button \"Research\"\n  - button \"Test/Check\"\n  - button \"Projects\"\n  - button \"Preview\"\n  - button \"Logs\"\n  - button \"Scheduler\"\n  - button \"Files\"\n  - button \"Settings\"\n- main:\n  - text: Conversation 1 chat on this device\n  - button \"History\"\n  - button \"Save chat\"\n  - button \"New\"\n  - button \"Export\"\n  - log:\n    - text: Hello! I am\n    - strong: Nova Creature\n    - text: \", ready with 7 brain roles. I am connecting to the live server now. You can start typing while I connect. Try: \\\"What can you do?\\\" \\\"Can you code?\\\" \\\"Can you make a face?\\\" Model: Nova\"\n    - button \"Details\"\n    - text: Connected to Nova server at\n    - link \"http://127.0.0.1:3000\":\n      - /url: http://127.0.0.1:3000\n    - text: \"Session: 0759147e People: 14 | Lessons: 66 Local model: ready Local reviewer: disabled Model: Nova\"\n    - button \"Details\"\n    - text: \"Hi Nova. Hey, I'm here. What's going on? Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"How are you doing today? I'm feeling steady and focused in the way an AI can: I don't have a human body or emotions, but I can notice our conversation and stay engaged with you. How are you feeling? Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"I had a long day. I'm with you. You don't have to sort everything out at once. Tell me what happened, and we can take it one piece at a time. Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Mostly chores. I finally sat down with a cup of tea. I'm glad you finally found the time to sit down and enjoy a cup of tea. Chores can be tiring, but it's nice to take a moment for yourself. How did your day go? Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Just chatting sounds good. We can keep it easy. I'm here to chat, and there's no need to turn it into a task. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"What are you curious about? I'm curious about what you're currently interested in exploring or learning about. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"I like that. I have been getting into music lately. That sounds interesting! Music can be such a great way to unwind and explore different genres. What kind of music are you into lately? Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Mostly mellow guitar and old soul. I'm glad to hear that you're enjoying the mellow guitar and old soul music lately! It's nice to find comfort in familiar genres. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"What kind of music would suit a quiet evening? I'm glad you're enjoying the mellow guitar and old soul music lately! It's nice to find comfort in familiar genres. For a quiet evening, you might consider listening to some gentle acoustic guitar tracks or soothing piano pieces. These types of music can create a relaxing atmosphere and might be perfect for a quiet night. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Why that kind? For a quiet evening, gentle acoustic guitar tracks and soothing piano pieces would be perfect. These types of music can create a relaxing atmosphere and might be ideal for a quiet night. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Actually, I might go for a short walk instead. Got it, sounds good. Just make sure you enjoy it. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"It's a little rainy, though. It's a little rainy, though. Maybe we could enjoy a cozy indoor movie or a nice cup of tea instead? Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Then a cozy night indoors it is. Great idea! Enjoy your cozy night indoors. If you need anything, just let me know. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Can you give me a silly name for a lazy Sunday? Sure, how about \\\"Lazy Sunday Sluggo\\\"? Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Ha, that's a good one. I'm glad that landed. Sharing a laugh with you makes the conversation better. Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"What were we talking about before the walk? We were talking about music and finding a quiet evening activity. You mentioned you're into old soul music, and I suggested a cozy night indoors. Model: qwen2.5:1.5b\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"I appreciate you listening. You're welcome. I appreciate you too, and I'm glad to be here with you. Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Do you really have feelings, or is this how you talk? I don't have human feelings or a private experience of being cozy, happy, or sad. My warm wording is a way of talking with you, not a report of feelings I actually have. I can still follow what you share and respond thoughtfully. Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Fair enough. It's still nice chatting with you. I'm with you. Let's stay with that—what part feels most important right now? Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"Good night, Nova. Good night. Rest well—I'll be here when you come back. Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n    - text: \"OPEN THE GPU HUB I understood: OPEN THE GPU HUB Planned navigation to: Gpu Hub. Did: planned the safe app operation. Checked: Confirm gpu hub is available. Result: ready to execute or verify. Model: Nova\"\n    - button \"Details\"\n    - button \"Bad Answer / Teach Better\"\n- textbox \"Talk to Nova\":\n  - /placeholder: Talk to Nova...\n- button \"Send\"\n- text: Model\n- combobox \"Choose Nova model mode\":\n  - option \"Nova\" [selected]\n  - option \"Nova Strong · Qwen 3 4B · GPU\"\n  - option \"Dolphin Deep · GPU · tools stay on\"\n  - option \"Raw + Memory · Qwen\"\n  - option \"Raw Qwen · no tools\"\n  - option \"Raw Dolphin · no tools\"\n- text: Nova routing · memory + tools\n- button \"Compare\"\n- button \"Free RAM\"\n- button \"Scroll activation controls left\": ‹\n- button \"Mic OFF\"\n- button \"Camera OFF\"\n- button \"Front Cam\"\n- button \"Look\"\n- button \"Full Sensors\"\n- button \"Distance\"\n- button \"Hide Range\"\n- button \"World Model\"\n- button \"Dream Lab\"\n- button \"Engines\"\n- button \"Dream Studio\"\n- button \"Qwen Adapter OFF\"\n- button \"Dolphin Adapter OFF · CPU SLOW\"\n- button \"Voice OFF\"\n- button \"Talk\"\n- button \"More\"\n- button \"Scroll activation controls right\": ›\n- button \"Scroll status controls left\" [disabled]: ‹\n- button \"Pic\"\n- button \"Live Watch\"\n- button \"Connected\"\n- button \"⛔ Stop All\"\n- button \"🔒 Private\"\n- text: \"Smooth Voice: Microsoft David - Engl\"\n- button \"Scroll status controls right\" [disabled]: ›"
+}

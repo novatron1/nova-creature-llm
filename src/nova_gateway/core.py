@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import sys
 from pathlib import Path
 from threading import RLock
 import time
@@ -22,6 +23,7 @@ from .comfyui import ComfyUIEngine
 from .conversations import ConversationArchive
 from .dream_lab import DREAM_LAB_SCHEMA_VERSION, NovaDreamLab
 from .animatediff_cpu import NovaAnimateDiffCpuEngine
+from .animatediff_cpu import NovaAnimateDiffGpuEngine
 from .engines import NovaEngineRegistry
 from .errors import (
     ModelUnavailableError,
@@ -187,6 +189,25 @@ class NovaGatewayCore:
                 self.engines.get(self.animatediff_cpu.engine_id)
             except ProviderUnavailableError:
                 self.engines.register_optional(self.animatediff_cpu)
+        self.animatediff_gpu = NovaAnimateDiffGpuEngine(
+            enabled=self.config.animatediff_cpu_enabled,
+            # The API server may run under a CPU-only Python, while the
+            # configured media environment on F: contains CUDA PyTorch.
+            # Reuse that environment for the GPU worker instead of probing
+            # the server interpreter.
+            python_path=self.config.animatediff_cpu_python_path or Path(sys.executable),
+            worker_script=self.config.animatediff_cpu_worker_path,
+            model_path=self.config.animatediff_cpu_model_path,
+            motion_adapter_path=self.config.animatediff_cpu_motion_adapter_path,
+            output_dir=self.config.animatediff_cpu_output_dir.with_name("nova_animatediff_gpu"),
+            job_store_path=self.config.animatediff_cpu_job_store_path.with_name("nova_animatediff_gpu_jobs.json"),
+            encode_timeout_seconds=self.config.animatediff_cpu_timeout_seconds,
+        )
+        if self.config.animatediff_cpu_enabled:
+            try:
+                self.engines.get(self.animatediff_gpu.engine_id)
+            except ProviderUnavailableError:
+                self.engines.register_optional(self.animatediff_gpu)
         if self.config.comfyui_enabled:
             self._register_comfyui_tools()
         self._active_requests: dict[str, tuple[str, str]] = {}
@@ -917,6 +938,7 @@ class NovaGatewayCore:
         if requested_engine:
             candidates = {
                 self.comfyui.engine_id: self.comfyui,
+                self.animatediff_gpu.engine_id: self.animatediff_gpu,
                 self.video_lite.engine_id: self.video_lite,
                 self.animatediff_cpu.engine_id: self.animatediff_cpu,
             }
@@ -938,6 +960,9 @@ class NovaGatewayCore:
             and comfy_health.get("video_workflow_configured")
         ):
             return self.comfyui
+        animatediff_gpu_health = self.animatediff_gpu.health_check()
+        if animatediff_gpu_health.get("ok"):
+            return self.animatediff_gpu
         animatediff_health = self.animatediff_cpu.health_check()
         if animatediff_health.get("ok"):
             return self.animatediff_cpu
@@ -950,6 +975,8 @@ class NovaGatewayCore:
         )
 
     def _media_engine_for_job(self, job_id: str):
+        if str(job_id).startswith("nag_"):
+            return self.animatediff_gpu
         if str(job_id).startswith("nad_"):
             return self.animatediff_cpu
         if str(job_id).startswith("nvl_"):
@@ -972,11 +999,20 @@ class NovaGatewayCore:
             owner_id=client_id,
             limit=safe_limit,
         )
+        gpu_jobs = self.animatediff_gpu.list_jobs(
+            owner_id=client_id,
+            limit=safe_limit,
+        )
         animatediff_jobs = self.animatediff_cpu.list_jobs(
             owner_id=client_id,
             limit=safe_limit,
         )
-        media_jobs = [*comfy_jobs["data"], *video_jobs["data"], *animatediff_jobs["data"]]
+        media_jobs = [
+            *comfy_jobs["data"],
+            *gpu_jobs["data"],
+            *video_jobs["data"],
+            *animatediff_jobs["data"],
+        ]
         if not media_jobs:
             return comfy_jobs
         combined = sorted(

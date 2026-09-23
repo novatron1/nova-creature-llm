@@ -94,3 +94,45 @@ def test_wrap_existing_tool_registry_converts_public_metadata():
     assert wrapped["filesystem.read"].required_scopes == ("files.read",)
     assert wrapped["filesystem.read"].resource_dependencies == ("filesystem://workspace",)
 
+
+
+def _gateway(tmp_path):
+    from nova_runtime.contracts import build_run_contract
+    from nova_runtime.permissions import PermissionGateway
+    return PermissionGateway(contract=build_run_contract(
+        run_id="test", goal="test", owner_id="test", project_id="test",
+        workspace_root=str(tmp_path), allowed_roots=[str(tmp_path)],
+        allowed_tools=["filesystem.write"], allowed_resources=["filesystem://workspace"],
+        time_budget_seconds=10, tool_budget=2, cost_budget=0, memory_budget=0))
+
+
+def _decision(gateway, arguments, signed=None):
+    from nova_runtime.permissions import ActionSignature
+    signature = ActionSignature.from_tool_call(tool_id="filesystem.write",
+        arguments=arguments if signed is None else signed,
+        resource_uri="filesystem://workspace", contract_hash=gateway.contract.contract_hash)
+    return gateway.authorize_tool(tool_id="filesystem.write", arguments=arguments,
+                                  action_signature=signature)
+
+
+def test_modified_arguments_invalidate_signature(tmp_path):
+    assert not _decision(_gateway(tmp_path), {"path": str(tmp_path / "a"), "content": "new"},
+                         {"path": str(tmp_path / "a"), "content": "old"}).can_continue
+
+
+def test_every_supplied_path_is_checked(tmp_path):
+    assert not _decision(_gateway(tmp_path), {"source": str(tmp_path / "a"),
+        "destination": str(tmp_path / "b"), "target": str(tmp_path.parent / "escape")}).can_continue
+
+
+def test_nested_paths_are_checked(tmp_path):
+    assert not _decision(_gateway(tmp_path), {"operations": [{"path": str(tmp_path.parent / "escape")}]}).can_continue
+
+
+def test_relative_path_uses_contract_workspace(tmp_path):
+    assert _decision(_gateway(tmp_path), {"path": "inside.txt"}).can_continue
+
+
+def test_relative_escape_uses_contract_workspace(tmp_path):
+    decision = _decision(_gateway(tmp_path), {"path": "../outside.txt"})
+    assert decision.rule_id == "WORKSPACE_ESCAPE"

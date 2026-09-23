@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 import shutil
@@ -101,7 +102,7 @@ def test_preflight_writes_report_and_blocks_ambiguous_file(tmp_path: Path) -> No
     assert not result.paths.candidate_worktree.exists()
 
 
-def test_build_stops_before_commit_when_gate_fails(tmp_path: Path) -> None:
+def test_build_leaves_no_verified_commit_when_gate_fails(tmp_path: Path) -> None:
     repo = make_repo(tmp_path / "repo")
     master_before = git_head(repo, "master")
     lock = NovaReleaseLock(
@@ -192,6 +193,184 @@ def test_build_fails_when_master_changes_after_preflight(tmp_path: Path) -> None
     assert not result.paths.candidate_worktree.exists()
 
 
+def add_runtime_asset(repo: Path) -> tuple[str, bytes]:
+    relative = "checkpoints/brain_slots/left_hemisphere/left_hemisphere_v055_conversation_trained.pt"
+    content = b"approved fixture checkpoint"
+    asset = repo / relative
+    asset.parent.mkdir(parents=True)
+    asset.write_bytes(content)
+    (repo / ".gitignore").write_text("*.pt\n", encoding="utf-8")
+    (repo / "NOVA_RUNTIME_ASSETS.json").write_text(json.dumps({
+        "schema_version": "1.0",
+        "files": [{"path": relative, "size_bytes": len(content),
+                   "sha256": hashlib.sha256(content).hexdigest()}],
+    }), encoding="utf-8")
+    policy = repo / "config" / POLICY_SOURCE.name
+    payload = json.loads(policy.read_text())
+    payload["required_files"].append("NOVA_RUNTIME_ASSETS.json")
+    policy.write_text(json.dumps(payload))
+    return relative, content
+
+
+def test_runtime_assets_are_bound_hydrated_and_never_committed(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path / "repo")
+    relative, content = add_runtime_asset(repo)
+    gate = GateDefinition(
+        name="hydrated_asset",
+        argv=(sys.executable, "-c", "from pathlib import Path; import subprocess; "
+              f"assert Path({relative!r}).read_bytes() == {content!r}; "
+              "assert not subprocess.check_output(['git','status','--porcelain']).strip(); "
+              f"assert not subprocess.check_output(['git','ls-files','--',{relative!r}]).strip()"),
+        timeout_seconds=15,
+    )
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp", gate_definitions=[gate])
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.VERIFIED
+    assert not (result.paths.candidate_worktree / relative).exists()
+    assert (repo / relative).read_bytes() == content
+    manifest = json.loads((result.paths.candidate_worktree / "NOVA_RELEASE_MANIFEST.json").read_text())
+    assert relative not in {item["path"] for item in manifest["files"]}
+    report = json.loads(result.paths.gate_report.read_text())
+    assert report["runtime_assets"]["files"][0]["sha256"] == hashlib.sha256(content).hexdigest()
+
+
+@pytest.mark.parametrize("mutation", ["source", "gate"])
+def test_runtime_asset_mismatch_fails_closed(tmp_path: Path, mutation: str) -> None:
+    repo = make_repo(tmp_path / "repo")
+    relative, content = add_runtime_asset(repo)
+    if mutation == "source":
+        (repo / relative).write_bytes(b"wrong")
+    gate = GateDefinition(
+        name="asset_mutation",
+        argv=(sys.executable, "-c", "from pathlib import Path; "
+              f"Path({relative!r}).write_bytes(b'changed')"),
+        timeout_seconds=15,
+    )
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp", gate_definitions=[gate])
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.FAILED
+    assert result.failure_gate == "runtime_assets"
+    assert result.candidate_commit is None
+    assert not (result.paths.candidate_worktree / relative).exists()
+    if mutation == "gate":
+        assert (repo / relative).read_bytes() == content
+
+
+@pytest.mark.parametrize("commit_weight", [False, True])
+def test_runtime_asset_cannot_contaminate_verified_git_history(
+    tmp_path: Path, commit_weight: bool,
+) -> None:
+    repo = make_repo(tmp_path / "repo")
+    relative, _ = add_runtime_asset(repo)
+    script = (
+        "import subprocess; from pathlib import Path\n"
+        "if not Path('NOVA_RELEASE_MANIFEST.json').exists():\n"
+        f"    subprocess.run(['git','add','-f','--',{relative!r}],check=True)\n"
+    )
+    if commit_weight:
+        script += "    subprocess.run(['git','commit','-m','gate injected model'],check=True)\n"
+    gate = GateDefinition(
+        name="git_contamination", argv=(sys.executable, "-c", script),
+        timeout_seconds=15,
+    )
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp", gate_definitions=[gate])
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.FAILED
+    assert result.failure_gate == "gate_modified_candidate"
+    assert result.candidate_commit is None
+    assert not (result.paths.candidate_worktree / "NOVA_RELEASE_MANIFEST.json").exists()
+    with pytest.raises(ValueError, match="verified"):
+        lock.promote(result.run_id)
+
+
+def test_default_gate_passes_use_disjoint_artifact_directories(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = make_repo(tmp_path / "repo")
+    report_roots: list[Path] = []
+
+    def definitions(candidate_root, run_report_dir):
+        reports = Path(run_report_dir)
+        report_roots.append(reports)
+        artifact = reports / "industrial-gate"
+        return [GateDefinition(
+            name="fresh_artifact",
+            argv=(sys.executable, "-c", "from pathlib import Path; "
+                  f"Path({str(artifact)!r}).mkdir()"),
+            timeout_seconds=15,
+        )]
+
+    monkeypatch.setattr("nova_release_lock.default_gate_definitions", definitions)
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp")
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.VERIFIED
+    assert report_roots == [result.paths.run_dir, result.paths.run_dir / "final"]
+    assert all((root / "industrial-gate").is_dir() for root in report_roots)
+    report = json.loads(result.paths.gate_report.read_text())
+    assert report["tested_commit"] == result.candidate_commit
+
+
+def test_gates_verify_clean_final_commit_without_moving_source(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path / "repo")
+    source_head = git_head(repo)
+    evidence = tmp_path / "tested-heads.txt"
+    gate = GateDefinition(
+        name="clean_commit",
+        argv=(sys.executable, "-c",
+              "import subprocess; from pathlib import Path; "
+              "assert not subprocess.check_output(['git','status','--porcelain']).strip(); "
+              f"p=Path({str(evidence)!r}); "
+              "head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip(); "
+              "p.open('a').write(head+'\\n')"),
+        timeout_seconds=10,
+    )
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp", gate_definitions=[gate])
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.VERIFIED
+    tested = evidence.read_text().splitlines()
+    assert len(tested) == 2
+    assert tested[-1] == result.candidate_commit
+    assert tested[0] != tested[-1]
+    assert git_head(repo) == source_head
+    report = json.loads(result.paths.gate_report.read_text())
+    assert report["tested_commit"] == result.candidate_commit
+    assert report["phase"] == "final"
+
+
+def test_final_commit_gate_failure_is_not_promotable(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path / "repo")
+    gate = GateDefinition(
+        name="final_failure",
+        argv=(sys.executable, "-c", "from pathlib import Path; "
+              "raise SystemExit(9 if Path('NOVA_RELEASE_MANIFEST.json').exists() else 0)"),
+        timeout_seconds=10,
+    )
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp", gate_definitions=[gate])
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.FAILED
+    assert result.failure_gate == "final_failure"
+    assert result.candidate_commit is None
+    with pytest.raises(ValueError, match="verified"):
+        lock.promote(result.run_id)
+
+
+@pytest.mark.parametrize("changed_path", ["src/nova.py", "NOVA_RELEASE_MANIFEST.json"])
+def test_final_gate_cannot_mutate_committed_content(tmp_path: Path, changed_path: str) -> None:
+    repo = make_repo(tmp_path / "repo")
+    gate = GateDefinition(
+        name="final_mutation",
+        argv=(sys.executable, "-c", "from pathlib import Path; "
+              f"Path({changed_path!r}).write_text('changed') "
+              "if Path('NOVA_RELEASE_MANIFEST.json').exists() else None"),
+        timeout_seconds=10,
+    )
+    lock = NovaReleaseLock(repo, tmp_path / "release-temp", gate_definitions=[gate])
+    result = lock.build(lock.preflight())
+    assert result.status is ReleaseStatus.FAILED
+    assert result.failure_gate == "gate_modified_candidate"
+    assert result.candidate_commit is None
+
+
 def test_build_fails_security_scan_before_running_gates(tmp_path: Path) -> None:
     repo = make_repo(tmp_path / "repo")
     marker = tmp_path / "gate-ran.txt"
@@ -209,6 +388,7 @@ def test_build_fails_security_scan_before_running_gates(tmp_path: Path) -> None:
         temp_root=tmp_path / "release-temp",
         gate_definitions=[gate],
     )
+
     planned = lock.preflight()
     fake_secret = 'api_key = "' + "sk-" + 'abcdefghijklmnopqrstuvwxyz012345"\n'
     (repo / "src" / "nova.py").write_text(

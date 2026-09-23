@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "feature": "nova_tailscale_remote_access",
+  "status": "LIMITED",
+  "checks": [
+    {
+      "name": "focused_tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 25.56
+    },
+    {
+      "name": "server_regression",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 32.49
+    },
+    {
+      "name": "live_smoke_check",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.4
+    },
+    {
+      "name": "full_repository_tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 157.09
+    },
+    {
+      "name": "dependency_lock",
+      "status": "PASS",
+      "exit_code": 0,
+      "reason": "runtime_lock_verified"
+    },
+    {
+      "name": "private_route",
+      "status": "PASS",
+      "reason": "paired_remote_round_trip_verified"
+    },
+    {
+      "name": "remote_classification",
+      "status": "PASS",
+      "reason": "private_proxy_request_did_not_inherit_local_trust"
+    },
+    {
+      "name": "port_443_preserved",
+      "status": "PASS",
+      "reason": "preexisting_mapping_unchanged"
+    },
+    {
+      "name": "private_8443_mapping",
+      "status": "PASS",
+      "reason": "owned_loopback_mapping_without_public_access"
+    },
+    {
+      "name": "revocation",
+      "status": "PASS",
+      "reason": "revoked_token_rejected_before_and_after_restart"
+    },
+    {
+      "name": "restart_persistence",
+      "status": "PASS",
+      "reason": "private_origin_unchanged_after_launcher_restart"
+    },
+    {
+      "name": "responsive_pwa",
+      "status": "PASS",
+      "reason": "desktop_and_phone_viewports_verified"
+    },
+    {
+      "name": "physical_phone_outside_wifi",
+      "status": "LIMITED",
+      "reason": "requires_user_phone_to_be_online_on_private_network"
+    }
+  ]
+}

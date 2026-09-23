@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 import ipaddress
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 import secrets
 from threading import RLock
@@ -103,17 +105,24 @@ class ComfyUIEngine(NovaImageGenerationEngine, NovaVideoGenerationEngine):
         video_workflow_path: str | Path | None = None,
         job_store_path: str | Path | None = None,
         timeout_seconds: int = 15,
+        launch_python_path: str | Path | None = None,
+        launch_root_path: str | Path | None = None,
     ) -> None:
         self.enabled = bool(enabled)
         self.timeout_seconds = _bounded_int(timeout_seconds, 15, 1, 120)
         self.image_workflow_path = Path(image_workflow_path).resolve() if image_workflow_path else None
         self.video_workflow_path = Path(video_workflow_path).resolve() if video_workflow_path else None
         self.job_store_path = Path(job_store_path).resolve() if job_store_path else None
+        self.launch_python_path = Path(launch_python_path).resolve() if launch_python_path else None
+        self.launch_root_path = Path(launch_root_path).resolve() if launch_root_path else None
         self.client_id = "nova-" + secrets.token_hex(12)
         self._lock = RLock()
         self._job_store_lock = RLock()
         self._jobs: dict[str, dict[str, Any]] = {}
         self._health_cache: tuple[float, dict[str, Any]] | None = None
+        self._launch_process: subprocess.Popen[Any] | None = None
+        self._launch_log_paths: dict[str, Path] = {}
+        self._launch_cpu_only: bool | None = None
         self._configuration_error = ""
         self._job_store_error = ""
         try:
@@ -206,6 +215,161 @@ class ComfyUIEngine(NovaImageGenerationEngine, NovaVideoGenerationEngine):
         with self._lock:
             self._health_cache = (now, dict(result))
         return result
+
+    def _discover_launch_root(self) -> Path | None:
+        if self.launch_root_path and (self.launch_root_path / "main.py").is_file():
+            return self.launch_root_path
+        if self.launch_python_path and self.launch_python_path.is_file():
+            for candidate in (self.launch_python_path.parent, *self.launch_python_path.parents):
+                if (candidate / "main.py").is_file():
+                    return candidate
+        return None
+
+    def _discover_launch_python(self, root: Path) -> Path | None:
+        candidates = []
+        if self.launch_python_path and self.launch_python_path.is_file():
+            candidates.append(self.launch_python_path)
+        candidates.extend(
+            [
+                root / ".venv" / "Scripts" / "python.exe",
+                root / "venv" / "Scripts" / "python.exe",
+                root / "python_embeded" / "python.exe",
+                root / "python.exe",
+                root / ".venv" / "bin" / "python",
+                root / "venv" / "bin" / "python",
+                root / "python",
+                Path(sys.executable),
+            ]
+        )
+        for candidate in candidates:
+            if candidate and Path(candidate).is_file():
+                return Path(candidate)
+        return None
+
+    def _launch_command(self) -> tuple[Path, Path, list[str]]:
+        root = self._discover_launch_root()
+        if root is None:
+            raise ProviderUnavailableError(
+                "ComfyUI launch is not configured. Set a local ComfyUI root or python path."
+            )
+        main_script = root / "main.py"
+        if not main_script.is_file():
+            raise ProviderUnavailableError(f"ComfyUI launch target is missing: {main_script.name}")
+        python = self._discover_launch_python(root)
+        if python is None:
+            raise ProviderUnavailableError("ComfyUI launch requires a local Python executable.")
+        from urllib.parse import urlsplit
+
+        parsed = urlsplit(self.base_url)
+        listen_host = parsed.hostname or "127.0.0.1"
+        listen_port = parsed.port or 8188
+        command = [
+            str(python),
+            str(main_script),
+        ]
+        if self._should_use_cpu_only(python):
+            command.append("--cpu")
+        command.extend([
+            "--listen",
+            listen_host,
+            "--port",
+            str(listen_port),
+        ])
+        return root, python, command
+
+    def _should_use_cpu_only(self, python: Path) -> bool:
+        with self._lock:
+            cached = self._launch_cpu_only
+        if cached is not None:
+            return cached
+        probe = [
+            str(python),
+            "-c",
+            "import torch; print('1' if torch.cuda.is_available() else '0')",
+        ]
+        use_cpu_only = True
+        try:
+            completed = subprocess.run(
+                probe,
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+            output = str(completed.stdout or "").strip().splitlines()
+            use_cpu_only = completed.returncode != 0 or (output[-1:] != ["1"])
+        except Exception:
+            use_cpu_only = True
+        with self._lock:
+            self._launch_cpu_only = use_cpu_only
+        return use_cpu_only
+
+    def launch_local_server(self) -> dict[str, Any]:
+        health = self.health_check()
+        if health.get("ok"):
+            return {
+                "ok": True,
+                "started": False,
+                "launching": False,
+                "running": True,
+                "status": "ready",
+                "engine_id": self.engine_id,
+                "message": "ComfyUI is already running.",
+            }
+        with self._lock:
+            active = self._launch_process
+            if active is not None and active.poll() is None:
+                return {
+                    "ok": True,
+                    "started": False,
+                    "launching": True,
+                    "running": False,
+                    "status": "launching",
+                    "engine_id": self.engine_id,
+                    "process_id": active.pid,
+                    "message": "ComfyUI is already launching.",
+                }
+        root, python, command = self._launch_command()
+        log_dir = (self.job_store_path.parent if self.job_store_path else root) / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        stdout_path = log_dir / "comfyui-launch.out.log"
+        stderr_path = log_dir / "comfyui-launch.err.log"
+        env = os.environ.copy()
+        env.setdefault("PYTHONUNBUFFERED", "1")
+        creationflags = 0
+        if os.name == "nt":
+            creationflags |= getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            # Keep ComfyUI independent of the launching shell without using
+            # DETACHED_PROCESS, which can deliver a console-close event to
+            # native dependencies (and terminate an otherwise healthy server).
+            creationflags |= getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        with stdout_path.open("a", encoding="utf-8") as stdout, stderr_path.open("a", encoding="utf-8") as stderr:
+            try:
+                process = subprocess.Popen(
+                    command,
+                    cwd=str(root),
+                    stdout=stdout,
+                    stderr=stderr,
+                    env=env,
+                    creationflags=creationflags,
+                )
+            except OSError as exc:
+                raise ProviderUnavailableError(f"Nova could not launch ComfyUI: {exc}") from exc
+        with self._lock:
+            self._launch_process = process
+            self._launch_log_paths = {"stdout": stdout_path, "stderr": stderr_path, "root": root}
+        return {
+            "ok": True,
+            "started": True,
+            "launching": True,
+            "running": False,
+            "status": "launching",
+            "engine_id": self.engine_id,
+            "process_id": process.pid,
+            "launch_root": str(root),
+            "stdout_log": str(stdout_path),
+            "stderr_log": str(stderr_path),
+            "message": "Launching local ComfyUI. Refresh Dream Studio after it finishes starting.",
+        }
 
     def capabilities(self) -> dict[str, Any]:
         health = self.health_check()

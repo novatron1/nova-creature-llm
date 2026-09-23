@@ -249,6 +249,12 @@ def test_pairing_and_job_http_endpoints(monkeypatch, tmp_path):
             assert response.headers.get_content_type() == "application/javascript"
             assert b"createNovaConnectionRecovery" in response.read()
         with urllib.request.urlopen(
+            base_url + "/assets/nova_chat_history.js", timeout=10
+        ) as response:
+            assert response.status == 200
+            assert response.headers.get_content_type() == "application/javascript"
+            assert b"NovaChatHistory" in response.read()
+        with urllib.request.urlopen(
             base_url + "/assets/nova_dream_studio.css", timeout=10
         ) as response:
             assert response.status == 200
@@ -429,7 +435,7 @@ def test_foundation_controls_are_present_in_ui():
     assert 'src="assets/nova_foundation_ui.js"' in html
     assert 'href="assets/nova_dream_studio.css"' in html
     assert 'src="assets/nova_dream_studio.js"' in html
-    assert 'id="dreamStudioSteps" type="number" min="1" max="200" value="8"' in html
+    assert 'id="dreamStudioSteps" type="number" min="1" max="200" value="24"' in html
     assert "NOVA_DEVICE_TOKEN_KEY" in ui_script
     assert "authHeaders" in ui_script
     assert "/api/jobs/start" in ui_script

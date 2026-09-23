@@ -1,0 +1,20 @@
+{
+  "name": "identity_server_regression",
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "-m",
+    "pytest",
+    "tests/test_nova_enhanced_server.py",
+    "tests/test_nova_identity_memory.py",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--tb=short"
+  ],
+  "passed": false,
+  "exit_code": 1,
+  "duration_seconds": 74.76500000001397,
+  "timed_out": false,
+  "stdout_tail": "........................................................................ [ 16%]\r\n........................................................................ [ 33%]\r\n........................................................................ [ 50%]\r\n........................................................................ [ 67%]\r\n......................................................................F. [ 84%]\r\n.................................................................        [100%]\r\n================================== FAILURES ===================================\r\n_____________ test_chat_api_accepts_message_field_like_text_field _____________\r\ntests\\test_nova_enhanced_server.py:10227: in test_chat_api_accepts_message_field_like_text_field\r\n    assert result[\"response\"] == \"received:WHAT IS YOUR NAME\"\r\nE   AssertionError: assert 'My name is Nova.' == 'received:WHAT IS YOUR NAME'\r\nE     \r\nE     - received:WHAT IS YOUR NAME\r\nE     + My name is Nova.\r\n=========================== short test summary info ===========================\r\nFAILED tests/test_nova_enhanced_server.py::test_chat_api_accepts_message_field_like_text_field\r\n1 failed, 424 passed in 69.79s (0:01:09)",
+  "stderr_tail": ""
+}

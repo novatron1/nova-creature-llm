@@ -1,0 +1,23 @@
+{
+  "version": "nova-conversation-eval-1.0",
+  "total": 560,
+  "passed": 560,
+  "failed": 0,
+  "category_scores": {
+    "current_fact": 1.0,
+    "followup": 1.0,
+    "recovery": 1.0,
+    "relationship": 1.0,
+    "social": 1.0,
+    "stable_reasoning": 1.0
+  },
+  "failures": [],
+  "latency_ms": 78.0,
+  "training_writes": 0,
+  "content_logged": false,
+  "mode": "decision_only",
+  "evaluation_only": true,
+  "training_allowed": false,
+  "memory_writes_allowed": false,
+  "pack": "nova_conversation_variations_v1.json"
+}

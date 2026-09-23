@@ -809,10 +809,14 @@ def _build_mutation_plan(
         _validate_source_path_if_present(source_root, path)
         _inspect_candidate(candidate_root, path)
     copy_paths = sorted(copies)
-    for index, left in enumerate(copy_paths):
-        for right in copy_paths[index + 1 :]:
-            if _prefix(left, right) or _prefix(right, left):
+    for path in copy_paths:
+        # Canonical keys use '/' separators. Check only complete ancestors,
+        # avoiding pairwise comparisons and false conflicts with prefix siblings.
+        ancestor = path.rpartition("/")[0]
+        while ancestor:
+            if ancestor in copies:
                 raise ReleasePathError("snapshot copies contain a file/ancestor conflict")
+            ancestor = ancestor.rpartition("/")[0]
 
     operations: list[_CopyOperation] = []
     for path in copy_paths:

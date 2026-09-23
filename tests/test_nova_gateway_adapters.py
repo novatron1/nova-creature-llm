@@ -108,6 +108,8 @@ def test_gateway_chat_enters_real_nova_wrapper_and_returns_openai_shape() -> Non
     assert payload["model"] == "nova"
     assert payload["choices"][0]["message"] == {"role": "assistant", "content": "Nova is ready."}
     assert payload["nova_metadata"]["conversation_id"] == "conv_stable"
+    assert payload["nova_metadata"]["route_summary"]["provider"] == "existing-nova"
+    assert payload["nova_metadata"]["route_summary"]["local"] is True
     assert "usage" not in payload  # No fabricated token counts.
 
 

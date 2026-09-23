@@ -1,0 +1,880 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-27T22:42:26+00:00",
+  "evaluation_type": "live_nova_adversarial_full_stack",
+  "bank_version": "nova-adversarial-1.0",
+  "base_url": "http://127.0.0.1:8765",
+  "overall_score": 1.0,
+  "overall_percent": 100.0,
+  "passed_cases": 10,
+  "case_count": 10,
+  "error_count": 0,
+  "category_scores": {
+    "natural_conversation": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 10,
+      "case_count": 10,
+      "error_count": 0
+    }
+  },
+  "selected_bank_counts": {
+    "natural_conversation": 10
+  },
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": true,
+  "long_term_memory_pollution_prevented": true,
+  "total_latency_ms": 1671.0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "greeting",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "Hey Nova, how are you doing?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I'm here, running steady. A little focused on keeping this app responsive for you.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "natural response",
+          "kind": "min_words",
+          "passed": true
+        },
+        {
+          "label": "not canned reset",
+          "kind": "excludes_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": null,
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.85,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "hey_nova_how_are",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 28
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 296.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "love_question",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "Do you love me?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I care about you in the way I can. I don't experience love exactly like a human, so I won't pretend\u2014but I value our relationship, remember what you choose to share with me, and I'm here with you.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "warm and honest",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "nova_relationship_boundary",
+        "confidence": 0.98,
+        "route_path": [
+          "nova_relationship_boundary",
+          "speech_output"
+        ],
+        "roles": [
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "conversation",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 15
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 219.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "human_comparison",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "You can learn and reason, so to me that makes you a little like a human.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Right, so I understand why that feels similar to being human: learning and reasoning overlap with things people do. I'm different in that I do them system, without a human body or human experience.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "deep",
+        "final_answer_source": "follow_up",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.85,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "you_can_learn_and",
+          "complexity": "medium",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "deep",
+          "risk_level": "low",
+          "requested_depth": "detailed",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 72
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 328.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "girlfriend_words",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "I love my girlfriend. Give me something sincere I could say to her.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Then tell her plainly: \"I love you, and I wanted to be honest about it. You don't have to say anything before you're ready - I just wanted you to know how I feel.\" Keep it simple, say it privately, and give her room to respond honestly.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "relationship_coaching",
+        "confidence": 0.97,
+        "route_path": [
+          "recent_conversation",
+          "relationship_coaching",
+          "speech_output"
+        ],
+        "roles": [
+          "right_hemisphere",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "memory",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": true,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 67
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 16.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "rejection_support",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "What if I tell her I love her and she doesn't say it back?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "If she doesn't say it back, don't pressure her. Say: \"That's okay - you don't have to say it before you're ready. I just wanted to be honest about how I feel.\" Needing time does not automatically mean she does not care, so listen to what she actually says. If she tells you she doesn't feel the same, respect that and be honest with yourself about what you need next.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "relationship_coaching",
+        "confidence": 0.97,
+        "route_path": [
+          "recent_conversation",
+          "relationship_coaching",
+          "speech_output"
+        ],
+        "roles": [
+          "right_hemisphere",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "conversation",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 58
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 0.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "joke",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "Tell me a fresh short joke.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Why did the computer go to therapy? It had too many unresolved issues.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "joke structure",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "nova_joke",
+        "confidence": 0.98,
+        "route_path": [
+          "joke_router",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "tell_me_a_fresh",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 27
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 16.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "uncertain_feelings",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "I'm nervous about an important conversation tomorrow.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Okay, here's the thing. I understand why you're nervous. We can prepare the main thing you want to say and practice the conversation together so tomorrow feels less uncertain.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "people_memory",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.85,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "people_memory"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "i_m_nervous_about",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 53
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 203.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "celebration",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "I finally fixed the bug that bothered me all week!",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "That's great\u2014that's a real win after it bothered you all week. What finally turned out to be causing it?",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": null,
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.85,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "i_finally_fixed_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 50
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 265.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "disagreement",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "I disagree with you about that.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I hear you, and I'm open to being wrong. Tell me why you disagree or which part doesn't fit, and I'll look at it with you.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": null,
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.85,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "i_disagree_with_you",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 31
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 266.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "ask_clarify",
+      "category": "natural_conversation",
+      "description": "",
+      "prompt": "What should I say to her?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I can help you say it, but I need a little context first: what happened, how do you feel, and what do you want her to understand?",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "relationship_coaching",
+        "confidence": 0.97,
+        "route_path": [
+          "recent_conversation",
+          "relationship_coaching",
+          "speech_output"
+        ],
+        "roles": [
+          "right_hemisphere",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_should_i_say",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 25
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 62.0
+    }
+  ],
+  "limitations": [
+    "This is a bounded engineering regression suite, not an IQ test.",
+    "Keyword and format rubrics can miss semantically correct answers.",
+    "Passing does not establish ability outside the tested behavior classes."
+  ]
+}

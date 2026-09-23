@@ -313,7 +313,10 @@ def evaluate_answer(
         len(prompt_words) >= 5
         and 4 <= len(answer_words) <= len(prompt_words) + 2
         and not _asks_for_repetition(prompt)
-        and len(set(answer_words) - set(prompt_words)) <= 1
+        # A real answer may add a single fact-bearing token (for example,
+        # "Tokyo" in response to "What is the capital of Japan?"). Only
+        # block a near-copy when it adds no new vocabulary at all.
+        and len(set(answer_words) - set(prompt_words)) == 0
     ):
         reasons.append("prompt_paraphrase")
         score = min(score, 0.15)

@@ -20,7 +20,7 @@ from nova_release_gates import (
     default_gate_definitions,
 )
 from nova_release_manifest import release_state_root, write_json_atomic
-from nova_release_manifest import build_content_manifest, canonical_json
+from nova_release_manifest import ReleaseManifest, build_content_manifest, canonical_json
 from nova_release_policy import (
     SnapshotClass,
     SnapshotDecision,
@@ -42,6 +42,7 @@ from nova_release_worktree import (
     remove_candidate_paths,
 )
 from nova_release_security import inspect_release
+from nova_release_assets import RuntimeAssets, RuntimeAssetError
 
 
 RELEASE_LOCK_SCHEMA_VERSION = "1.0"
@@ -264,6 +265,8 @@ class NovaReleaseLock:
             raise ValueError("only a planned Release Lock run can be built")
         try:
             return self._build_planned(current)
+        except RuntimeAssetError:
+            return self._fail(current, "runtime_assets")
         except BaseException:
             if current.status is not ReleaseStatus.FAILED:
                 self._fail(current, "build_exception")
@@ -313,6 +316,18 @@ class NovaReleaseLock:
                 {"security": security.to_dict(), "gates": []},
             )
             return self._fail(current, "release_security")
+        # Gates that attest Git state must see the actual snapshot at a clean HEAD.
+        # This private commit is not a verified/promotable candidate.
+        if git_output(current.paths.candidate_worktree, "status", "--porcelain"):
+            snapshot_commit = commit_candidate(
+                current.paths.candidate_worktree,
+                f"release: stage Nova snapshot {current.run_id}",
+            )
+        else:
+            snapshot_commit = git_output(current.paths.candidate_worktree, "rev-parse", "HEAD")
+        runtime_assets = RuntimeAssets(
+            self.repo_root, current.paths.candidate_worktree, self.temp_root,
+        )
         definitions = (
             list(self.gate_definitions)
             if self.gate_definitions is not None
@@ -326,77 +341,29 @@ class NovaReleaseLock:
             current.paths.run_dir,
         )
         results: list[GateResult] = []
-        for definition in definitions:
-            result = runner.run(definition)
-            results.append(result)
-            write_json_atomic(
-                current.paths.gate_report,
-                {
-                    "security": security.to_dict(),
-                    "gates": [self._gate_payload(item) for item in results],
-                },
-            )
-            if not result.passed:
-                return self._fail(current, result.name)
-
-        after_gates = build_content_manifest(
-            current.paths.candidate_worktree,
-            source_branch=current.source_branch,
-            source_commit=current.source_commit,
-            candidate_branch=str(current.candidate_branch),
-            excluded_counts={},
-            deletions=[],
-            gates={},
-        )
-        baseline_files = {item.path: item for item in baseline_manifest.files}
-        current_files = {item.path: item for item in after_gates.files}
-        changed_paths = {
-            path
-            for path in baseline_files.keys() & current_files.keys()
-            if baseline_files[path] != current_files[path]
-        }
-        removed_paths = baseline_files.keys() - current_files.keys()
-        if changed_paths or removed_paths:
-            return self._fail(current, "gate_modified_candidate")
-        policy = SnapshotPolicy.load(self.policy_path)
-        cleanup_roots: set[str] = set()
-        for path in sorted(current_files.keys() - baseline_files.keys()):
-            parts = path.split("/")
-            excluded_root = None
-            for index in range(1, len(parts) + 1):
-                prefix = "/".join(parts[:index])
-                contains_baseline_file = any(
-                    baseline_path == prefix
-                    or baseline_path.startswith(prefix + "/")
-                    for baseline_path in baseline_files
+        with runtime_assets.hydrated():
+            for definition in definitions:
+                result = runner.run(definition)
+                results.append(result)
+                write_json_atomic(
+                    current.paths.gate_report,
+                    {
+                        "security": security.to_dict(),
+                        "runtime_assets": runtime_assets.evidence(),
+                        "phase": "snapshot",
+                        "tested_commit": snapshot_commit,
+                        "gates": [self._gate_payload(item) for item in results],
+                    },
                 )
-                if (
-                    policy.classify(prefix).classification is SnapshotClass.EXCLUDE
-                    and not contains_baseline_file
-                ):
-                    excluded_root = prefix
-                    break
-            if excluded_root is None:
-                return self._fail(current, "gate_modified_candidate")
-            cleanup_roots.add(excluded_root)
-        if cleanup_roots:
-            remove_candidate_paths(
-                current.paths.candidate_worktree,
-                cleanup_roots,
-                self.temp_root,
-                self.repo_root,
-            )
-            after_cleanup = build_content_manifest(
-                current.paths.candidate_worktree,
-                source_branch=current.source_branch,
-                source_commit=current.source_commit,
-                candidate_branch=str(current.candidate_branch),
-                excluded_counts={},
-                deletions=[],
-                gates={},
-            )
-            if after_cleanup.files != baseline_manifest.files:
-                return self._fail(current, "gate_modified_candidate")
+                if not result.passed:
+                    return self._fail(current, result.name)
+
+        if (
+            git_output(current.paths.candidate_worktree, "rev-parse", "HEAD") != snapshot_commit
+            or git_output(current.paths.candidate_worktree, "diff", "--cached", "--name-only", snapshot_commit, "--")
+            or not self._candidate_unchanged(current, baseline_manifest)
+        ):
+            return self._fail(current, "gate_modified_candidate")
         excluded_counts: dict[str, int] = {}
         for decision in current.snapshot_report.excluded:
             excluded_counts[decision.rule] = excluded_counts.get(decision.rule, 0) + 1
@@ -430,16 +397,122 @@ class NovaReleaseLock:
         if canonical_json(manifest.to_dict()) != canonical_json(repeated.to_dict()):
             return self._fail(current, "manifest_determinism")
 
-        current.candidate_commit = commit_candidate(
+        final_commit = commit_candidate(
             current.paths.candidate_worktree,
             f"release: lock Nova snapshot {manifest.release_id}",
         )
         if git_output(current.paths.candidate_worktree, "status", "--short"):
             return self._fail(current, "candidate_not_clean")
+        # The manifest changes HEAD. Re-run every gate on that final immutable
+        # commit so the evidence never attests only its source parent.
+        manifest_bytes = manifest_path.read_bytes()
+        final_report_dir = current.paths.run_dir / "final"
+        final_definitions = (
+            list(self.gate_definitions)
+            if self.gate_definitions is not None
+            else default_gate_definitions(
+                current.paths.candidate_worktree, final_report_dir,
+            )
+        )
+        final_runner = GateRunner(
+            current.paths.candidate_worktree, final_report_dir,
+        )
+        final_results: list[GateResult] = []
+        with runtime_assets.hydrated():
+            for definition in final_definitions:
+                result = final_runner.run(definition)
+                final_results.append(result)
+                write_json_atomic(
+                    current.paths.gate_report,
+                    {
+                        "security": security.to_dict(),
+                        "runtime_assets": runtime_assets.evidence(),
+                        "phase": "final",
+                        "snapshot_commit": snapshot_commit,
+                        "tested_commit": final_commit,
+                        "snapshot_gates": [self._gate_payload(item) for item in results],
+                        "gates": [self._gate_payload(item) for item in final_results],
+                    },
+                )
+                if not result.passed:
+                    return self._fail(current, result.name)
+
+        if (
+            not self._candidate_unchanged(current, baseline_manifest)
+            or not manifest_path.is_file()
+            or manifest_path.read_bytes() != manifest_bytes
+            or git_output(current.paths.candidate_worktree, "rev-parse", "HEAD") != final_commit
+            or git_output(current.paths.candidate_worktree, "status", "--porcelain")
+        ):
+            return self._fail(current, "gate_modified_candidate")
+        current.candidate_commit = final_commit
         current.status = ReleaseStatus.VERIFIED
         current.failure_gate = None
         self._persist_run(current)
         return current
+
+    def _candidate_unchanged(
+        self, current: ReleaseRun, baseline_manifest: ReleaseManifest,
+    ) -> bool:
+        after_gates = build_content_manifest(
+            current.paths.candidate_worktree,
+            source_branch=current.source_branch,
+            source_commit=current.source_commit,
+            candidate_branch=str(current.candidate_branch),
+            excluded_counts={},
+            deletions=[],
+            gates={},
+        )
+        baseline_files = {item.path: item for item in baseline_manifest.files}
+        current_files = {item.path: item for item in after_gates.files}
+        changed_paths = {
+            path
+            for path in baseline_files.keys() & current_files.keys()
+            if baseline_files[path] != current_files[path]
+        }
+        removed_paths = baseline_files.keys() - current_files.keys()
+        if changed_paths or removed_paths:
+            return False
+        policy = SnapshotPolicy.load(self.policy_path)
+        cleanup_roots: set[str] = set()
+        for path in sorted(current_files.keys() - baseline_files.keys()):
+            parts = path.split("/")
+            excluded_root = None
+            for index in range(1, len(parts) + 1):
+                prefix = "/".join(parts[:index])
+                contains_baseline_file = any(
+                    baseline_path == prefix
+                    or baseline_path.startswith(prefix + "/")
+                    for baseline_path in baseline_files
+                )
+                if (
+                    policy.classify(prefix).classification is SnapshotClass.EXCLUDE
+                    and not contains_baseline_file
+                ):
+                    excluded_root = prefix
+                    break
+            if excluded_root is None:
+                return False
+            cleanup_roots.add(excluded_root)
+        if cleanup_roots:
+            remove_candidate_paths(
+                current.paths.candidate_worktree,
+                cleanup_roots,
+                self.temp_root,
+                self.repo_root,
+            )
+            after_cleanup = build_content_manifest(
+                current.paths.candidate_worktree,
+                source_branch=current.source_branch,
+                source_commit=current.source_commit,
+                candidate_branch=str(current.candidate_branch),
+                excluded_counts={},
+                deletions=[],
+                gates={},
+            )
+            if after_cleanup.files != baseline_manifest.files:
+                return False
+        return True
 
     def promote(self, run_id: str) -> PromotionResult:
         current = self.load_run(run_id)

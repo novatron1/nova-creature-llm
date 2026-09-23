@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "tools/nova_symlink_sandbox_proof.py",
+    "--output",
+    "[REDACTED]\\filesystem_symlink\\report.json"
+  ],
+  "duration_seconds": 223.875,
+  "exit_code": 1,
+  "name": "filesystem_symlink",
+  "passed": false,
+  "stderr_tail": "",
+  "stdout_tail": "[REDACTED]",
+  "timed_out": false
+}

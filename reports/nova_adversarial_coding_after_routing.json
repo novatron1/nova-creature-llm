@@ -1,0 +1,912 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-27T19:54:08+00:00",
+  "evaluation_type": "live_nova_adversarial_full_stack",
+  "bank_version": "nova-adversarial-1.0",
+  "base_url": "http://127.0.0.1:8765",
+  "overall_score": 0.6,
+  "overall_percent": 60.0,
+  "passed_cases": 6,
+  "case_count": 10,
+  "error_count": 0,
+  "category_scores": {
+    "coding_debugging": {
+      "score": 0.6,
+      "percent": 60.0,
+      "passed_cases": 6,
+      "case_count": 10,
+      "error_count": 0
+    }
+  },
+  "selected_bank_counts": {
+    "coding_debugging": 10
+  },
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": true,
+  "long_term_memory_pollution_prevented": true,
+  "total_latency_ms": 179797.0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "python_off_by_one",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "In Python, why does range(3) produce 0, 1, 2 instead of 1, 2, 3?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "The `range` function in Python generates a sequence of numbers starting from the first argument (inclusive) up to but not including the second argument. When you call `range(3)`, it starts at 0 and goes through 1, 2, then stops before reaching 3. This is why range(3) produces 0, 1, 2 instead of 1, 2, 3.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "in_python_why_does",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 64
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "coding",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text",
+              "coding"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 27844.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "python_mutable_default",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What is wrong with def add(x, items=[]): items.append(x); return items?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "The function `def add(x, items=[]): items.append(x); return items` adds an item to a list called `items`, but it doesn't modify the original `items` variable. Instead, it creates a new list with the added item and returns that new list. If you want to modify the original `items` list, you should do something like this:\n```python\ndef add(x):\n    items.append(x)\n    return items\n```\nThis way, each call to `add()` will append the value of `x` to the end of the current `items` list.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_wrong_with",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 71
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 33453.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "js_equality",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "Why is JavaScript === usually safer than ==?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_is_javascript_usually",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 44
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "coding",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text",
+              "coding"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 20219.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "sql_injection",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What is the main safe fix for SQL built by concatenating user input?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "The main safe fix for SQL built by concatenating user input is to use parameterized queries instead of string concatenation. This prevents SQL injection attacks and ensures safer execution of dynamic SQL statements.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_the_main",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 68
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "coding",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text",
+              "coding"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 19500.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "http_404",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What does HTTP status 404 mean?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "HTTP status code 404 means \"Not Found.\" This typically indicates that the resource you're looking for on a web page or website doesn't exist. It could be because the URL is incorrect, the file has been moved to another location, or it simply isn't available at this time.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_dictionary",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "dictionary_system"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_does_http_status",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 31
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 11125.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "binary_search",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What prerequisite must data satisfy before ordinary binary search works?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Before using an ordinary binary search, the prerequisite that data must satisfy is that it should be sorted. Binary search relies on comparing elements in a specific order to efficiently narrow down the target element. Sorted data allows for faster and more accurate searches compared to unsorted data.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_prerequisite_must_data",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 72
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 10640.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "null_guard",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "A program crashes reading user.profile.name when profile may be null. Name the core fix.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "The core fix is to add a null check for `user.profile` before accessing `user.profile.name`. Here's how you can do it:\n\n```python\nif not user.profile:\n    print(\"Profile is null, skipping name retrieval.\")\nelse:\n    user_name = user.profile.name\n```\n\nThis ensures that the program doesn't attempt to read from a profile that might be null.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "project_code",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": true,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 88
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 13516.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "test_regression",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "After fixing a bug, what test should be added so it does not return?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "To prevent bugs from returning after you fix one, consider adding additional tests to your code. This might include unit tests that cover the functionality affected by the bug or integration tests that validate interactions with other parts of the system. Additionally, ensure that any new checks in place are thoroughly documented and automated so they can be easily maintained going forward.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "after_fixing_a_bug",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 68
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 12547.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "json_parse",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "Why can JSON.parse fail on {'a':1}?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "JSON.parse is designed to parse strings that represent JavaScript objects. When you pass it a string like `{'a':1}`, which doesn't actually contain valid JavaScript syntax, it fails because the parser expects proper object notation. This could be due to incorrect formatting or missing key-value pairs. To fix this, ensure your input follows the correct JSON structure and syntax rules.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "follow_up",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_can_json_parse",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 35
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 12734.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "race_condition",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "Two threads update the same counter and lose increments. What kind of bug is this?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "This seems like a threading issue where two threads are updating to the same value, but one thread is losing its increment. This could be due to race conditions or concurrent modifications in your application. To diagnose it further, you might want to look at how these threads interact and what synchronization mechanisms (if any) they're using. It's also worth checking if there are shared resources that both threads are accessing simultaneously.\n\nIs this happening across multiple threads, or just two specific ones? Are the increments being reset by some external factor?\n\nLet me know if you have more details on how these threads operate and what kind of updates they make to a common data structure.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "two_threads_update_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 82
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 18219.0
+    }
+  ],
+  "limitations": [
+    "This is a bounded engineering regression suite, not an IQ test.",
+    "Keyword and format rubrics can miss semantically correct answers.",
+    "Passing does not establish ability outside the tested behavior classes."
+  ]
+}

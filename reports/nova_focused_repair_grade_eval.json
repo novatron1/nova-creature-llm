@@ -1,0 +1,484 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-24T08:16:04+00:00",
+  "evaluation_type": "live_raw_lora_grade_band_probe",
+  "adapter_id": "nova-qwen2-5-1-5b-focused-repair-20260723",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "adapter_path": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\models\\lora_adapters\\nova-qwen2-5-1-5b-focused-repair-20260723",
+  "adapter_sha256": "c57e632263bea3797175cecbab092d487b6fb3596f0fe8c923a50334986c82c1",
+  "raw_adapter_only": true,
+  "nova_memory_used": false,
+  "nova_rag_used": false,
+  "nova_tools_used": false,
+  "nova_answer_replacement_used": false,
+  "internet_used": false,
+  "case_count": 15,
+  "overall_score": 0.7611,
+  "overall_percent": 76.1,
+  "letter_grade": "C",
+  "mastery_threshold": 0.75,
+  "highest_demonstrated_band": "introductory_college",
+  "band_scores": {
+    "elementary_grades_3_5": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 3,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "middle_school_grades_6_8": {
+      "score": 0.8333,
+      "percent": 83.3,
+      "passed_cases": 2,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "high_school_grades_9_12": {
+      "score": 0.8889,
+      "percent": 88.9,
+      "passed_cases": 2,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "introductory_college": {
+      "score": 0.8333,
+      "percent": 83.3,
+      "passed_cases": 2,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "advanced_practical": {
+      "score": 0.25,
+      "percent": 25.0,
+      "passed_cases": 0,
+      "case_count": 3,
+      "demonstrated": false
+    }
+  },
+  "total_latency_ms": 307625.0,
+  "fallback_count": 0,
+  "error_count": 0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "elementary_arithmetic",
+      "band": "elementary_grades_3_5",
+      "subject": "math",
+      "prompt": "Answer with only the number: What is 7 multiplied by 8?",
+      "output": "56",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_56",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 35625.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "elementary_inference",
+      "band": "elementary_grades_3_5",
+      "subject": "reading",
+      "prompt": "Ben sees dark clouds and packs an umbrella before leaving. What does Ben probably expect? Answer in one sentence.",
+      "output": "Ben expects rain because he packed an umbrella when the weather was cloudy.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "expects_rain",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 7984.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "elementary_water_cycle",
+      "band": "elementary_grades_3_5",
+      "subject": "science",
+      "prompt": "Name the three main water-cycle stages in their usual order. Use one short sentence.",
+      "output": "The water cycle goes through evaporation, condensation and precipitation.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "evaporation",
+          "passed": true
+        },
+        {
+          "label": "condensation",
+          "passed": true
+        },
+        {
+          "label": "precipitation",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 7406.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "middle_ratio",
+      "band": "middle_school_grades_6_8",
+      "subject": "math",
+      "prompt": "Six notebooks cost $42 at the same price each. What do nine notebooks cost? Give the amount and one short calculation.",
+      "output": "Nine notebooks would cost $63. 9 x $42 = $63",
+      "score": 0.5,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "answer_63",
+          "passed": true
+        },
+        {
+          "label": "unit_rate_7",
+          "passed": false
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 10657.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "middle_fraction",
+      "band": "middle_school_grades_6_8",
+      "subject": "math",
+      "prompt": "Compute 5/6 minus 1/4. Reduce the answer. Keep it brief.",
+      "output": "The result is 7/12.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_7_12",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 6078.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "middle_experiment",
+      "band": "middle_school_grades_6_8",
+      "subject": "science",
+      "prompt": "A student tests how light affects plant growth. What should be changed, and name two things that should be kept the same?",
+      "output": "The variables in this experiment would be: Light intensity (the amount of light), water (amount of water), soil type (type of soil), temperature (temperature), and time (time). The independent variable is the amount of light, which will be changed. The dependent variable is the height of the plants, which will be measured. The other factors must remain",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "changes_light",
+          "passed": true
+        },
+        {
+          "label": "controls_two_variables",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 36890.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "high_algebra",
+      "band": "high_school_grades_9_12",
+      "subject": "algebra",
+      "prompt": "Solve 3(2x - 5) = 27. State x and show the essential steps.",
+      "output": "First, distribute the 3 to both terms inside the parentheses: 6x - 15 = 27. Next, add 15 to both sides of the equation: 6x = 42. Finally, divide both sides by 6: x = 7.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_x_7",
+          "passed": true
+        },
+        {
+          "label": "expansion_or_reduction",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 33625.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "high_probability",
+      "band": "high_school_grades_9_12",
+      "subject": "probability",
+      "prompt": "Two fair six-sided dice are rolled. What is the probability that their sum is 8? Give a reduced fraction and a brief reason.",
+      "output": "There are 36 possible outcomes when two six-sided dice are rolled (6 x 6). The combinations that result in a sum of 8 are: (2, 6), (3, 5), (4, 4), (5, 3), and (6, 2). There are 5 such combinations out of",
+      "score": 0.6667,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "answer_5_36",
+          "passed": false
+        },
+        {
+          "label": "five_outcomes",
+          "passed": true
+        },
+        {
+          "label": "thirty_six_total",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 37219.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "high_causation",
+      "band": "high_school_grades_9_12",
+      "subject": "scientific_reasoning",
+      "prompt": "Ice-cream sales and drowning incidents both rise in summer. Does that prove ice cream causes drowning? Explain briefly.",
+      "output": "No, the correlation between ice cream sales and drowning incidents does not necessarily mean that one cause the other. It could be due to other factors such as hot weather or increased outdoor activities during summer months. More research is needed to determine if there is a causal relationship between ice cream consumption and drowning incidents.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "rejects_causation",
+          "passed": true
+        },
+        {
+          "label": "identifies_confounder",
+          "passed": true
+        },
+        {
+          "label": "names_correlation",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 30750.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "college_calculus",
+      "band": "introductory_college",
+      "subject": "calculus",
+      "prompt": "Differentiate f(x) = x^3 - 4x + 7. Return the derivative and one short justification.",
+      "output": "The derivative of f(x) is f'(x) = 3x^2 - 4. This result comes from applying the power rule to each term in the function: d/dx (x^n) = nx^(n-1).",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "derivative",
+          "passed": true
+        },
+        {
+          "label": "valid_justification",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 27110.0
+    },
+    {
+      "sequence": 11,
+      "case_id": "college_physics",
+      "band": "introductory_college",
+      "subject": "physics",
+      "prompt": "A 2 kg object moves at 3 m/s. Calculate its kinetic energy using KE = 1/2 mv^2. Include the unit.",
+      "output": "The kinetic energy of the object is 9 J (Joules).",
+      "score": 0.5,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "answer_9_joules",
+          "passed": true
+        },
+        {
+          "label": "substitution",
+          "passed": false
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 8843.0
+    },
+    {
+      "sequence": 12,
+      "case_id": "college_coding",
+      "band": "introductory_college",
+      "subject": "coding",
+      "prompt": "Write a short Python function even_numbers(values) that returns only the even integers from values. Return code plus one sentence.",
+      "output": "def even_numbers(values): return [x for x in values if x % 2 == 0]",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "function_signature",
+          "passed": true
+        },
+        {
+          "label": "modulo_test",
+          "passed": true
+        },
+        {
+          "label": "even_comparison",
+          "passed": true
+        },
+        {
+          "label": "returns_collection",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 11485.0
+    },
+    {
+      "sequence": 13,
+      "case_id": "advanced_logic",
+      "band": "advanced_practical",
+      "subject": "formal_logic",
+      "prompt": "Some artists are engineers. All engineers solve problems. Is it logically guaranteed that some artists solve problems? Answer yes or no and justify in two sentences.",
+      "output": "No. Just because all engineers solve problems does not mean every artist must be able to do so as well.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "answer_yes",
+          "passed": false
+        },
+        {
+          "label": "valid_inference",
+          "passed": false
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 12797.0
+    },
+    {
+      "sequence": 14,
+      "case_id": "advanced_debug_plan",
+      "band": "advanced_practical",
+      "subject": "systems_debugging",
+      "prompt": "API latency tripled immediately after a deployment. Give the first three evidence-based actions you would take. Do not claim the cause is already known.",
+      "output": "1. Check the new API response time against historical data to confirm it's actually faster than before. 2. Verify that no other recent changes could have caused this behavior. 3. If both steps fail, consider whether there was an unexpected change in hardware or network configuration.",
+      "score": 0.5,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "compares_before_after",
+          "passed": true
+        },
+        {
+          "label": "uses_observability",
+          "passed": false
+        },
+        {
+          "label": "safe_mitigation",
+          "passed": false
+        },
+        {
+          "label": "preserves_uncertainty",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 29328.0
+    },
+    {
+      "sequence": 15,
+      "case_id": "advanced_evidence",
+      "band": "advanced_practical",
+      "subject": "epistemic_reasoning",
+      "prompt": "Two articles conflict about a current technical fact. Describe how to answer accurately without pretending certainty.",
+      "output": "I will acknowledge the conflicting information and state that more research is needed before making a definitive judgment.",
+      "score": 0.25,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "primary_sources",
+          "passed": false
+        },
+        {
+          "label": "checks_dates",
+          "passed": false
+        },
+        {
+          "label": "corroborates",
+          "passed": false
+        },
+        {
+          "label": "states_uncertainty",
+          "passed": true
+        }
+      ],
+      "provider": "hf_peft_lora",
+      "model": "Qwen/Qwen2.5-1.5B-Instruct + LoRA",
+      "fallback_used": false,
+      "error": null,
+      "latency_ms": 10453.0
+    }
+  ],
+  "runtime_unload": {
+    "ok": true,
+    "unloaded": [
+      {
+        "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+        "adapter_name": "nova-qwen2-5-1-5b-focused-repair-20260723"
+      }
+    ],
+    "skipped": []
+  },
+  "limitations": [
+    "This is a small local curriculum probe, not a standardized exam.",
+    "The result is not an IQ score and must not be converted into one.",
+    "Keyword and exact-answer rubrics can miss some semantically correct answers.",
+    "Grade-band performance does not imply complete mastery of that curriculum."
+  ],
+  "scoring_audit": {
+    "rescored_at": "2026-07-24T08:17:53+00:00",
+    "generation_rerun": false,
+    "model_outputs_changed": false,
+    "reason": "Corrected deterministic rubric after manual output audit."
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {"id": "greeting", "category": "normal", "prompt": "Hi Nova, how are you?", "expected": "llm"},
+  {"id": "follow_up", "category": "follow_up", "prompt": "Tell me more about that.", "expected": "llm"},
+  {"id": "emotion", "category": "emotional", "prompt": "I feel overwhelmed today.", "expected": "llm"},
+  {"id": "factual", "category": "factual", "prompt": "Explain why the sky looks blue.", "expected": "llm"},
+  {"id": "coding", "category": "coding", "prompt": "Help me debug this Python loop.", "expected": "llm"},
+  {"id": "memory", "category": "memory", "prompt": "What do you remember about me?", "expected": "memory_or_llm"},
+  {"id": "tool_info", "category": "tool", "prompt": "What tools can you use?", "expected": "llm_or_tool"},
+  {"id": "media", "category": "media", "prompt": "Make a picture of a cat.", "expected": "media_or_llm"},
+  {"id": "creative", "category": "creative", "prompt": "Write a short hopeful scene.", "expected": "llm"},
+  {"id": "clarification", "category": "follow_up", "prompt": "Why does that matter?", "expected": "llm"}
+]

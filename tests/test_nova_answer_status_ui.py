@@ -49,6 +49,30 @@ def test_answer_status_reports_vision_counts_without_content() -> None:
     assert "PRIVATE" not in repr(status)
 
 
+def test_answer_status_preserves_verified_bypass_state() -> None:
+    status = server._answer_status_from_trace(
+        {"answer_firewall": {"status": "bypassed_verified"}}
+    )
+
+    assert status["safety"] == "bypassed_verified"
+
+
+def test_answer_status_never_claims_a_missing_firewall_was_checked() -> None:
+    status = server._answer_status_from_trace({"source": "legacy_route"})
+
+    assert status["safety"] == "not_checked"
+
+
+def test_september_weather_followup_is_grounded_in_cincinnati_normals() -> None:
+    answer = server._weather_seasonal_explanation(
+        "why is it so hot this time of the year in Cincinnati"
+    )
+    assert answer is not None
+    assert "well above normal" in answer
+    assert "83°F" in answer
+    assert "unusual for September" in answer
+
+
 def test_mobile_status_row_is_fixed_height_and_details_are_collapsible() -> None:
     html = server.WEB_HTML
 
@@ -62,13 +86,18 @@ def test_mobile_status_row_is_fixed_height_and_details_are_collapsible() -> None
     assert ".answer-status-details[hidden]" in html
     assert "chip.textContent" in html
     assert "function buildAnswerStatus(status)" in html
+    assert "function formatSafetyStatus(value)" in html
+    assert "verified route" in html
+    assert "not checked" in html
 
 
-def test_legacy_metadata_and_bottom_controls_remain_horizontally_scrollable() -> None:
+def test_personality_metadata_is_visible_without_mobile_horizontal_scrolling() -> None:
     html = server.WEB_HTML
 
     assert ".msg .meta" in html
-    assert "flex-wrap:nowrap" in html
+    assert "flex-wrap:wrap" in html
+    assert "max-height:none" in html
+    assert "overflow:visible" in html
     assert 'id="activationDock"' in html
     assert 'id="permissionsDock"' in html
     assert "function scrollBottomRow(targetId, direction)" in html

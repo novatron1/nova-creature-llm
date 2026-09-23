@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "ok": true,
+  "total": 100,
+  "passed": 100,
+  "failed": 0,
+  "route_counts": {
+    "existing-nova": 100
+  },
+  "failures": [],
+  "privacy": {
+    "prompt_content_stored": false,
+    "answer_content_stored": false,
+    "private_reasoning_stored": false
+  }
+}

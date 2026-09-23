@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "backend": "windows_sandbox",
+  "os_sandbox": false,
+  "run_id": "e266587ad7e2635d75c9da693360bce1",
+  "artifact_dir": "C:\\Users\\nova\\Documents\\NOVA LLM CREATURE DESKTOP\\reports\\sandbox-artifacts\\e266587ad7e2635d75c9da693360bce1",
+  "input_sha256": {
+    "bootstrap.ps1": "76c274568719ea6edd74c4d96d506df6b97a08a19a47301fd5d8cde952b351c8",
+    "candidate.ps1": "c3ecfa7b5e1fe7d603970c77db79c8b7c6ff652ca11189d1ee47831c7918875c",
+    "plan.json": "ae8f8669c3b214e0c4478a89b176ba2d2ea001294d6e36ebcafc00cfe7b0f31e"
+  },
+  "reason": "Windows Sandbox timed out without guest evidence"
+}

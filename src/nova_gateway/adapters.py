@@ -191,6 +191,7 @@ def nova_to_openai_chat(response: NovaResponse) -> dict[str, Any]:
             "request_id": response.request_id, "conversation_id": response.conversation_id,
             "provider": response.provider, "usage_estimated": bool(response.usage.get("estimated", True)),
             "routing": response.metadata.get("routing"),
+            "route_summary": response.metadata.get("route_summary"),
         },
     }
     exact_keys = {"prompt_tokens", "completion_tokens", "total_tokens"}

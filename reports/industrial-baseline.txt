@@ -1,0 +1,138 @@
+..F.F................................................................... [ 16%]
+F........F.............................................................. [ 32%]
+....................................F......F....F....................... [ 48%]
+..................................................................FF.FF. [ 64%]
+..FF.................F...............F....F.................F........F.F [ 80%]
+.............................F.......................................... [ 96%]
+..........F.....                                                         [100%]
+================================== FAILURES ===================================
+______________ test_synthesizer_sends_built_prompt_to_local_llm _______________
+tests\test_nova_llm_synthesizer.py:85: in test_synthesizer_sends_built_prompt_to_local_llm
+    assert 30 <= captured["local_llm_timeout"] <= 120
+E   assert 240 <= 120
+___________ test_synthesizer_honors_direct_middle_primary_override ____________
+tests\test_nova_llm_synthesizer.py:161: in test_synthesizer_honors_direct_middle_primary_override
+    assert captured["local_llm_timeout"] == 175
+E   assert 240 == 175
+____ test_brain_route_adapter_only_uses_raw_qwen_without_nova_interception ____
+tests\test_nova_enhanced_server.py:1437: in test_brain_route_adapter_only_uses_raw_qwen_without_nova_interception
+    assert captured["allow_slow_cpu"] is False
+E   assert True is False
+_______ test_raw_memory_mode_adds_explicit_recall_result_to_raw_prompt ________
+tests\test_nova_enhanced_server.py:1747: in test_raw_memory_mode_adds_explicit_recall_result_to_raw_prompt
+    assert response == "Raw adapter keeps the final word."
+E   AssertionError: assert 'Your name is NovaTest.' == 'Raw adapter ...e final word.'
+E     
+E     - Raw adapter keeps the final word.
+E     + Your name is NovaTest.
+______ test_brain_route_researches_flat_earth_debate_before_cognitive_os ______
+tests\test_nova_enhanced_server.py:3941: in test_brain_route_researches_flat_earth_debate_before_cognitive_os
+    assert "https://nasa.test/earth" in response
+E   AssertionError: assert 'https://nasa.test/earth' in '[LIVE WEB] Live web checked at 2026-07-04T12:00:00.\nSources checked live:\nUse the recent conversation to answer the...d geodesy.\nSources: NASA - 90 Years of Our Changing Views of Earth; NOAA National Ocean Service - Is the Earth round?'
+_____________ test_brain_route_live_research_fetches_source_pages _____________
+tests\test_nova_enhanced_server.py:4204: in test_brain_route_live_research_fetches_source_pages
+    assert "https://nasa.test/earth" in response
+E   AssertionError: assert 'https://nasa.test/earth' in '[LIVE WEB] Live web checked at 2026-07-04T12:00:00.\nSources checked live:\nUse the recent conversation to answer the...d geodesy.\nSources: NASA - 90 Years of Our Changing Views of Earth; NOAA National Ocean Service - Is the Earth round?'
+_ test_regular_chat_routing_status_reports_ollama_qwen_first_and_local_escalation _
+tests\test_nova_enhanced_server.py:4393: in test_regular_chat_routing_status_reports_ollama_qwen_first_and_local_escalation
+    assert status["direct_middle_threshold"] == 0.84
+E   assert 0.98 == 0.84
+_ test_direct_middle_route_selects_installed_local_3b_only_for_hard_requests __
+tests\test_nova_enhanced_server.py:6880: in test_direct_middle_route_selects_installed_local_3b_only_for_hard_requests
+    assert hard["selected"] is True
+E   assert False is True
+______ test_optional_strong_mode_selects_only_configured_installed_model ______
+tests\test_nova_enhanced_server.py:6906: in test_optional_strong_mode_selects_only_configured_installed_model
+    assert decision["selected"] is True
+E   assert False is True
+______ test_optional_strong_mode_rejects_malformed_installed_model_size _______
+tests\test_nova_enhanced_server.py:6944: in test_optional_strong_mode_rejects_malformed_installed_model_size
+    assert decision["reason"] == "model_validation_failed"
+E   AssertionError: assert 'model_unavailable' == 'model_validation_failed'
+E     
+E     - model_validation_failed
+E     + model_unavailable
+_________ test_optional_strong_mode_handles_quarantine_registry_error _________
+tests\test_nova_enhanced_server.py:6968: in test_optional_strong_mode_handles_quarantine_registry_error
+    assert decision["reason"] == "model_validation_failed"
+E   AssertionError: assert 'model_unavailable' == 'model_validation_failed'
+E     
+E     - model_validation_failed
+E     + model_unavailable
+______________ test_direct_middle_route_skips_quarantined_model _______________
+tests\test_nova_enhanced_server.py:7142: in test_direct_middle_route_skips_quarantined_model
+    assert decision["reason"] == "middle_model_quarantined"
+E   AssertionError: assert 'middle_model_unavailable' == 'middle_model_quarantined'
+E     
+E     - middle_model_quarantined
+E     ?              -  ^ -- ^ -
+E     + middle_model_unavailable
+E     ?               + ^  ^^^^
+____ test_direct_middle_route_rejects_model_that_failed_full_qualification ____
+tests\test_nova_enhanced_server.py:7196: in test_direct_middle_route_rejects_model_that_failed_full_qualification
+    assert decision["reason"] == "middle_model_not_qualified"
+E   AssertionError: assert 'middle_model_unavailable' == 'middle_model_not_qualified'
+E     
+E     - middle_model_not_qualified
+E     + middle_model_unavailable
+__________ test_run_chat_blocks_inconsistent_larger_local_candidate ___________
+tests\test_nova_enhanced_server.py:8076: in test_run_chat_blocks_inconsistent_larger_local_candidate
+    assert "stopped it instead of pretending" in response
+E   assert 'stopped it instead of pretending' in "I'm with you. Let's stay with that�what part feels most important right now?"
+_ test_alternate_candidate_uses_registered_local_provider_and_protocol_request _
+tests\test_nova_enhanced_server.py:8580: in test_alternate_candidate_uses_registered_local_provider_and_protocol_request
+    assert request.metadata["provider_timeout_seconds"] == 180
+E   assert 45 == 180
+______ test_web_ui_sends_context_for_all_modes_and_shows_firewall_state _______
+tests\test_nova_enhanced_server.py:8782: in test_web_ui_sends_context_for_all_modes_and_shows_firewall_state
+    assert "payload.conversation_history = recentConversationHistory.slice(-8)" in html
+E   assert 'payload.conversation_history = recentConversationHistory.slice(-8)' in '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,... src="assets/nova_foundation_ui.js"></script>\n<script src="assets/nova_dream_studio.js"></script>\n</body>\n</html>\n'
+________ test_web_ui_has_dolphin_adapter_only_toggle_and_payload_flag _________
+tests\test_nova_enhanced_server.py:9470: in test_web_ui_has_dolphin_adapter_only_toggle_and_payload_flag
+    assert marker in html
+E   assert 'payload.allow_slow_dolphin_cpu = true' in '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,... src="assets/nova_foundation_ui.js"></script>\n<script src="assets/nova_dream_studio.js"></script>\n</body>\n</html>\n'
+_____ test_web_ui_exposes_managed_strong_mode_without_changing_raw_modes ______
+tests\test_nova_enhanced_server.py:9686: in test_web_ui_exposes_managed_strong_mode_without_changing_raw_modes
+    assert '<option value="strong">Nova Strong � Qwen 3 8B</option>' in html
+E   assert '<option value="strong">Nova Strong � Qwen 3 8B</option>' in '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,... src="assets/nova_foundation_ui.js"></script>\n<script src="assets/nova_dream_studio.js"></script>\n</body>\n</html>\n'
+_________ test_web_ui_raw_memory_mode_sends_only_managed_mode_literal _________
+tests\test_nova_enhanced_server.py:9708: in test_web_ui_raw_memory_mode_sends_only_managed_mode_literal
+    assert "managedModelMode = ['strong','raw_memory'].includes(requested) ? requested : 'nova';" in html
+E   assert "managedModelMode = ['strong','raw_memory'].includes(requested) ? requested : 'nova';" in '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,... src="assets/nova_foundation_ui.js"></script>\n<script src="assets/nova_dream_studio.js"></script>\n</body>\n</html>\n'
+_ test_automatic_model_quality_check_honors_runtime_config_when_env_is_unset __
+tests\test_nova_enhanced_server.py:10284: in test_automatic_model_quality_check_honors_runtime_config_when_env_is_unset
+    assert server._automatic_model_quality_check_enabled() is False
+E   assert True is False
+E    +  where True = <function _automatic_model_quality_check_enabled at 0x0000020819A3FF60>()
+E    +    where <function _automatic_model_quality_check_enabled at 0x0000020819A3FF60> = server._automatic_model_quality_check_enabled
+_______ test_new_flags_default_safe_and_raw_adapters_remain_independent _______
+tests\test_nova_enhanced_server.py:12033: in test_new_flags_default_safe_and_raw_adapters_remain_independent
+    assert config["model_routing"]["middle_model"] == "qwen2.5:3b"
+E   AssertionError: assert 'qwen3:4b' == 'qwen2.5:3b'
+E     
+E     - qwen2.5:3b
+E     + qwen3:4b
+- generated xml file: C:\Users\nova\Documents\NOVA LLM CREATURE DESKTOP\reports\industrial-baseline.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_nova_llm_synthesizer.py::test_synthesizer_sends_built_prompt_to_local_llm
+FAILED tests/test_nova_llm_synthesizer.py::test_synthesizer_honors_direct_middle_primary_override
+FAILED tests/test_nova_enhanced_server.py::test_brain_route_adapter_only_uses_raw_qwen_without_nova_interception
+FAILED tests/test_nova_enhanced_server.py::test_raw_memory_mode_adds_explicit_recall_result_to_raw_prompt
+FAILED tests/test_nova_enhanced_server.py::test_brain_route_researches_flat_earth_debate_before_cognitive_os
+FAILED tests/test_nova_enhanced_server.py::test_brain_route_live_research_fetches_source_pages
+FAILED tests/test_nova_enhanced_server.py::test_regular_chat_routing_status_reports_ollama_qwen_first_and_local_escalation
+FAILED tests/test_nova_enhanced_server.py::test_direct_middle_route_selects_installed_local_3b_only_for_hard_requests
+FAILED tests/test_nova_enhanced_server.py::test_optional_strong_mode_selects_only_configured_installed_model
+FAILED tests/test_nova_enhanced_server.py::test_optional_strong_mode_rejects_malformed_installed_model_size
+FAILED tests/test_nova_enhanced_server.py::test_optional_strong_mode_handles_quarantine_registry_error
+FAILED tests/test_nova_enhanced_server.py::test_direct_middle_route_skips_quarantined_model
+FAILED tests/test_nova_enhanced_server.py::test_direct_middle_route_rejects_model_that_failed_full_qualification
+FAILED tests/test_nova_enhanced_server.py::test_run_chat_blocks_inconsistent_larger_local_candidate
+FAILED tests/test_nova_enhanced_server.py::test_alternate_candidate_uses_registered_local_provider_and_protocol_request
+FAILED tests/test_nova_enhanced_server.py::test_web_ui_sends_context_for_all_modes_and_shows_firewall_state
+FAILED tests/test_nova_enhanced_server.py::test_web_ui_has_dolphin_adapter_only_toggle_and_payload_flag
+FAILED tests/test_nova_enhanced_server.py::test_web_ui_exposes_managed_strong_mode_without_changing_raw_modes
+FAILED tests/test_nova_enhanced_server.py::test_web_ui_raw_memory_mode_sends_only_managed_mode_literal
+FAILED tests/test_nova_enhanced_server.py::test_automatic_model_quality_check_honors_runtime_config_when_env_is_unset
+FAILED tests/test_nova_enhanced_server.py::test_new_flags_default_safe_and_raw_adapters_remain_independent
+21 failed, 427 passed, 2 warnings in 50.29s

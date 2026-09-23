@@ -1,6 +1,11 @@
 {
   "schema_version": "1.0",
   "required_files": [
+    "NOVA_RUNTIME_ASSETS.json",
+    "data/evals/nova_conversation_variations_v1.json",
+    "data/knowledge/anatomy_of_ai_field_guide_2026.json",
+    "data/targeted_transformer_answer_curriculum.jsonl",
+    "tokenizer/tokenizer.json",
     "data/builtin_word_dictionary.json",
     "data/reviewed_conversation_training.json",
     "nova_llm_config.json"

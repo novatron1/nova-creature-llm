@@ -955,9 +955,12 @@ def test_server_evaluation_blocks_learning_and_full_training_before_mutation(mon
 def test_direct_evaluation_blocks_every_structured_entity_slot_save_without_mutation(
     monkeypatch,
     prompt,
+    tmp_path,
 ):
     memory_snapshot = deepcopy(server.MEMORY)
-    memory_path = Path(server.MEMORY_FILE)
+    memory_path = tmp_path / "nova_memory.json"
+    memory_path.write_text('{"fixture": "evaluation must not write"}', encoding="utf-8")
+    monkeypatch.setattr(server, "MEMORY_FILE", str(memory_path))
     disk_before = hashlib.sha256(memory_path.read_bytes()).hexdigest()
     save_calls = []
     monkeypatch.setattr(server, "_save_memory", lambda: save_calls.append(prompt))
@@ -999,9 +1002,12 @@ def test_direct_evaluation_blocks_every_structured_entity_slot_save_without_muta
 def test_direct_evaluation_blocks_contextual_relationship_saves_without_mutation(
     monkeypatch,
     prompt,
+    tmp_path,
 ):
     memory_snapshot = deepcopy(server.MEMORY)
-    memory_path = Path(server.MEMORY_FILE)
+    memory_path = tmp_path / "nova_memory.json"
+    memory_path.write_text('{"fixture": "evaluation must not write"}', encoding="utf-8")
+    monkeypatch.setattr(server, "MEMORY_FILE", str(memory_path))
     disk_before = hashlib.sha256(memory_path.read_bytes()).hexdigest()
     previous_user = server._LAST_USER_TEXT
     previous_response = server._LAST_NOVA_RESPONSE

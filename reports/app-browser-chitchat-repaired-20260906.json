@@ -1,0 +1,36 @@
+{
+  "started_at": "2026-09-07T01:40:29.821470+00:00",
+  "surface": "real browser /nova/v1/chat streaming UI",
+  "turns": [
+    {
+      "number": 1,
+      "prompt": "Hi Nova.",
+      "response": "Hey, I'm here. What's going on?",
+      "seconds": 1.453,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 2,
+      "prompt": "How are you doing today?",
+      "response": "I'm feeling steady and focused in the way an AI can: I don't have a human body or emotions, but I can notice our conversation and stay engaged with you. How are you feeling?",
+      "seconds": 1.125,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    },
+    {
+      "number": 3,
+      "prompt": "I had a long day.",
+      "response": "I'm with you. You don't have to sort everything out at once. Tell me what happened, and we can take it one piece at a time.",
+      "seconds": 0.578,
+      "model_label": "Model: Nova",
+      "network_requests": 1
+    }
+  ],
+  "checks": {
+    "connected": true
+  },
+  "errors": [],
+  "quality_review": "pending",
+  "error": "Error: Route.continue_: Route is already handled!"
+}

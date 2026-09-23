@@ -318,8 +318,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .msg.user{background:#2a2a4a;color:#e0e0e0;align-self:flex-end;border-bottom-right-radius:4px}
 .msg.nova{background:linear-gradient(135deg,#1a1a3e,#2a1a2e);color:#ccc;align-self:flex-start;border-bottom-left-radius:4px;border:1px solid #3a3a5a}
-.msg .meta{font-size:10px;color:#666;margin-top:6px;padding-top:6px;border-top:1px solid #2a2a3a;display:flex;flex-wrap:nowrap;gap:4px;min-height:22px;max-height:22px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;overscroll-behavior-x:contain}
+.msg .meta{font-size:10px;color:#666;margin-top:6px;padding-top:6px;border-top:1px solid #2a2a3a;display:flex;flex-wrap:wrap;gap:4px;min-height:22px;max-height:none;overflow:visible;scrollbar-width:thin;overscroll-behavior-x:contain}
 .msg .meta .tag{flex:0 0 auto;white-space:nowrap}
+.msg .meta[hidden]{display:none}
 .msg .meta .tag{padding:1px 6px;border-radius:8px;font-size:9px;background:#2a2a4a;color:#888}
 .msg .meta .tag.route{background:#2a3a2a;color:#6a6;border:1px solid #3a5a3a}
 .msg .meta .tag.conf{background:#3a2a2a;color:#a66;border:1px solid #5a3a3a}
@@ -975,19 +976,19 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 </section>
 <section class="workspace-panel" id="agent-library-panel">
 <h2 class="panel-title">Agent Library</h2>
-<p class="panel-note">Create, edit, and review custom agents from here. Current shell exposes the place; deeper agent CRUD can be wired next.</p>
+<p class="panel-note">Create, edit, and review local agents. Changes are saved to Nova's private workspace.</p>
 <div class="surface-grid">
-<div class="surface-card"><h3>Create custom agent</h3><p>Use chat commands like "make an agent..." and Nova will plan the steps.</p><button class="panel-action" onclick="quickCmd('what can you do')">Ask capabilities</button></div>
+<div class="surface-card"><h3>Create custom agent</h3><div class="foundation-form"><input id="agentNameInput" maxlength="120" placeholder="Agent name" aria-label="Agent name"><textarea id="agentPurposeInput" maxlength="1000" placeholder="What should this agent do?" aria-label="Agent purpose"></textarea><input id="agentTriggersInput" maxlength="500" placeholder="Triggers, comma separated" aria-label="Agent triggers"><button class="panel-action" onclick="saveWorkspaceAgent()">Save Agent</button><button class="panel-action" onclick="quickCmd('what can you do')">Ask capabilities</button></div></div>
 <div class="surface-card" id="website-builder-agent-card"><h3>Website Builder Agent</h3><p>Active. Plans page count, builds every page, links the site map, then audits Core Web Vitals, WCAG 2.2, responsive design, and compatibility checks.</p><button class="panel-action" onclick="quickCmd('Website Builder Agent: build a 5 page website for Nova Creature')">Build Site</button></div>
 <div class="surface-card" id="game-superpowers-card"><h3>Game Superpowers Check</h3><p>Checks the latest saved game for a working canvas, controls, runtime loop, mobile layout, and obvious errors.</p><button class="panel-action" type="button" onclick="runGameSupercheck()">Run Game Check</button></div>
-<div class="surface-card"><h3>Saved agents</h3><p>Persisted agents load from autonomous_skills.</p></div>
+<div class="surface-card"><h3>Saved agents</h3><div class="project-status" id="agentLibraryStatus">Loading agents...</div><div class="memory-list" id="agentLibraryList" aria-live="polite"></div></div>
 </div>
 </section>
 <section class="workspace-panel" id="app-builder-panel">
 <h2 class="panel-title">App Builder</h2>
-<p class="panel-note">Build sandbox apps and games. Pac Runner lives in the preview/projects area.</p>
+<p class="panel-note">Build sandbox apps and games, then open the saved project in Preview or Files.</p>
 <div class="surface-grid">
-<div class="surface-card"><h3>Build from command</h3><p>Tell Nova what app to make. It can create and test browser projects.</p></div>
+<div class="surface-card"><h3>Build from command</h3><p>Tell Nova what app to make. It can create and test browser projects.</p><div class="file-mod-row"><input id="appBuilderCommandInput" placeholder="Build a small browser app..." aria-label="App builder command"><button class="panel-action" onclick="runAppBuilderCommand()">Build</button></div></div>
 <div class="surface-card"><h3>Open preview</h3><p>Jump to the preview area for generated apps.</p><button class="panel-action" onclick="openPanel('preview-panel')">Open Preview</button></div>
 </div>
 </section>
@@ -1166,7 +1167,9 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 </section>
 <section class="workspace-panel" id="scheduler-panel">
 <h2 class="panel-title">Scheduler</h2>
-<p class="panel-note">Reserved for scheduled agents and recurring checks. Nova can plan schedules from commands.</p>
+<p class="panel-note">Save recurring local checks and prompts. Schedules remain disabled until you enable them.</p>
+<div class="surface-card"><div class="foundation-form"><input id="scheduleNameInput" maxlength="120" placeholder="Schedule name" aria-label="Schedule name"><input id="schedulePromptInput" maxlength="2000" placeholder="Prompt to run" aria-label="Schedule prompt"><select id="scheduleCadenceInput" aria-label="Schedule cadence"><option value="daily">Daily</option><option value="weekly" selected>Weekly</option><option value="monthly">Monthly</option><option value="once">Once</option></select><button class="panel-action" onclick="saveWorkspaceSchedule()">Save Schedule</button></div></div>
+<div class="surface-card"><div class="project-status" id="schedulerStatus">Loading schedules...</div><div class="memory-list" id="schedulerList" aria-live="polite"></div></div>
 </section>
 <section class="workspace-panel" id="file-manager-panel">
 <h2 class="panel-title">File Manager</h2>
@@ -1890,6 +1893,8 @@ function openPanel(panelId){
   if(panelId === 'saved-projects-panel') setTimeout(loadProjects, 0);
   if(panelId === 'file-manager-panel') setTimeout(() => loadProjects(true), 0);
   if(panelId === 'memory-panel') setTimeout(loadMemoryControl, 0);
+  if(panelId === 'agent-library-panel') setTimeout(loadWorkspaceAgents, 0);
+  if(panelId === 'scheduler-panel') setTimeout(loadWorkspaceSchedules, 0);
   if(panelId === 'research-panel') setTimeout(loadResearchHistory, 0);
   if(panelId === 'dream-studio-panel') setTimeout(loadDreamStudio, 0);
   if(panelId === 'gpu-hub-panel') setTimeout(loadGpuHubStatus, 0);
@@ -3860,15 +3865,17 @@ function applyAppNavigationTrace(meta){
 // Voice-safe controls for Nova's own UI. External desktop apps remain behind
 // the typed tool registry and explicit approval.
 async function handleLocalUiCommand(rawText){
-  const text = String(rawText || '').trim().toLowerCase();
-  const panelsByName = {chat:'chat-panel', settings:'settings-panel', memory:'memory-panel', logs:'debug-logs-panel', research:'research-panel', 'dream studio':'dream-studio-panel', 'gpu hub':'gpu-hub-panel', projects:'saved-projects-panel', files:'file-manager-panel', preview:'preview-panel', 'agent library':'agent-library-panel'};
-  const openMatch = text.match(/^(?:open|show|go to|navigate to)\s+(.+)$/);
+  const text = String(rawText || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]+$/, '');
+  const panelsByName = {chat:'chat-panel', home:'home-panel', display:'display-panel', settings:'settings-panel', memory:'memory-panel', logs:'debug-logs-panel', research:'research-panel', 'dream studio':'dream-studio-panel', 'gpu hub':'gpu-hub-panel', projects:'saved-projects-panel', files:'file-manager-panel', preview:'preview-panel', 'agent library':'agent-library-panel', 'app builder':'app-builder-panel', tools:'tools-panel', 'test/check':'test-check-panel', scheduler:'scheduler-panel'};
+  const aliases = {gpu:'gpu hub', 'saved projects':'projects', 'file manager':'files', 'debug logs':'logs', 'test check':'test/check'};
+  const openMatch = text.match(/^(?:please\s+)?(?:open|show|go to|navigate to|take me to)\s+(?:the\s+)?(.+?)(?:\s+please)?$/);
   if(openMatch){
-    const key = openMatch[1].replace(/\s+(tab|panel|page)$/, '').trim();
+    const requested = openMatch[1].replace(/\s+(tab|panel|page)$/, '').trim();
+    const key = aliases[requested] || requested;
     const panel = panelsByName[key];
     if(!panel) return false;
     openPanel(panel);
-    const label = key.replace(/\b\w/g, c => c.toUpperCase());
+    const label = key === 'gpu hub' ? 'GPU Hub' : key.replace(/\b\w/g, c => c.toUpperCase());
     addMsg('nova', `Opened ${label}.`, {source:'voice_command', action:'open_panel', panel});
     speakNova(`Opened ${label}.`);
     return true;
@@ -6023,28 +6030,27 @@ function buildAnswerStatus(status){
   container.className = "answer-status";
   const row = document.createElement("div");
   row.className = "answer-status-row";
-  const labels = [
-    ["Brain", status.model || "Nova"],
-    ["Intent", status.intent || "conversation"],
-    ["Memory", status.memory || "not used"],
-    ["Safety", formatSafetyStatus(status.safety)],
-    ["Vision", status.vision || "not used"]
-  ];
-  labels.forEach(([name, value]) => {
-    const chip = document.createElement("span");
-    chip.className = "answer-status-chip";
-    chip.textContent = `${name}: ${String(value)}`;
-    row.appendChild(chip);
-  });
+  const chip = document.createElement("span");
+  chip.className = "answer-status-chip";
+  chip.textContent = `Model: ${String(status.model || "Nova")}`;
+  row.appendChild(chip);
   const details = document.createElement("div");
   details.className = "answer-status-details";
   details.hidden = true;
-  [["Repair", status.repair || "not needed"], ["Safety", formatSafetyStatus(status.safety)]]
-    .forEach(([name, value]) => {
-      const line = document.createElement("div");
-      line.textContent = `${name}: ${String(value)}`;
-      details.appendChild(line);
-    });
+  const labels = [
+    ["Brain", status.model || "Nova"],
+    ["Personality", status.personality || "adaptive"],
+    ["Intent", status.intent || "conversation"],
+    ["Memory", status.memory || "not used"],
+    ["Safety", formatSafetyStatus(status.safety)],
+    ["Vision", status.vision || "not used"],
+    ["Repair", status.repair || "not needed"]
+  ];
+  labels.forEach(([name, value]) => {
+    const line = document.createElement("div");
+    line.textContent = `${name}: ${String(value)}`;
+    details.appendChild(line);
+  });
   const toggle = document.createElement("button");
   toggle.type = "button";
   toggle.className = "answer-status-toggle";
@@ -6060,15 +6066,24 @@ function buildAnswerStatus(status){
   return container;
 }
 
-function attachAnswerStatus(container, status){
-  const statusNode = buildAnswerStatus(status);
-  if(statusNode) container.appendChild(statusNode);
+function attachAnswerStatus(container, status, meta){
+  const diagnostics = container.querySelector('.meta');
+  if(!status && !diagnostics) return;
+  const statusNode = buildAnswerStatus(status || {
+    model: meta?.local_llm_model || meta?.route_summary?.model || 'Nova'
+  });
+  if(!statusNode) return;
+  if(diagnostics){
+    statusNode.querySelector('.answer-status-details').appendChild(diagnostics);
+    diagnostics.hidden = false;
+  }
+  container.appendChild(statusNode);
 }
 
 function messageHtml(text, meta){
   let html = linkifyMessageText(text).replace(/\n/g, '<br>');
   if(meta){
-    html += '<div class="meta">';
+    html += '<div class="meta" hidden>';
     if(meta.roles) html += '<span class="tag route">🧠 '+meta.roles.join(' → ')+'</span>';
     if(meta.confidence!==undefined) html += '<span class="tag conf">⚡ '+Math.round(meta.confidence*100)+'%</span>';
     if(meta.memory_event) html += '<span class="tag mem">💾 '+meta.memory_event+'</span>';
@@ -6091,7 +6106,9 @@ function messageHtml(text, meta){
       const requestedModel = String(meta.optional_model_mode.model || '').trim().toLowerCase();
       const actualModel = String(meta.local_llm_model || '').trim().toLowerCase();
       if(actualModel && requestedModel && actualModel === requestedModel){
-        html += '<span class="tag route">Strong · Qwen 3 8B active</span>';
+        html += '<span class="tag route">Strong · '+escapeHtml(requestedModel)+' active</span>';
+      }else if(meta.optional_model_mode.selected === true && !actualModel){
+        html += '<span class="tag route">Strong · Nova reviewed response</span>';
       }else{
         const reason = String(meta.model_residency?.reason || 'requested model unavailable').trim() || 'requested model unavailable';
         html += '<span class="tag fallback">Strong fallback · '+escapeHtml(reason)+'</span>';
@@ -6208,7 +6225,7 @@ function addMsg(role, text, meta){
   const followTail = !meta?.no_scroll && (role === 'user' || chatIsNearBottom());
   const div=document.createElement('div'); div.className='msg '+role;
   div.innerHTML = messageHtml(text, meta); chat.appendChild(div);
-  if(role === 'nova') attachAnswerStatus(div, meta?.answer_status);
+  if(role === 'nova') attachAnswerStatus(div, meta?.answer_status, meta);
   if(followTail) scheduleChatScrollToBottom();
   if(role === 'user') lastUserTrainingMessage = String(text || '');
   if(role === 'nova' && !meta?.no_feedback){
@@ -6232,17 +6249,17 @@ function beginStreamingMsg(){
 
 function streamProgressLabel(metadata={}){
   const stages = {
-    nova_core:'Nova is applying memory, context, and local routing',
-    strong_local_model:'Nova Strong is checking Qwen 3 8B availability',
-    direct_middle_route:'Hard request routed directly to the faster middle model',
-    raw_adapter:'The selected raw adapter is loading or generating locally',
-    answer_review:'Nova is checking the small-model answer',
-    larger_local_review:'A larger free local model is loading or reviewing',
-    middle_local_review:'The faster middle local reviewer is working',
-    deep_local_review:'The deeper local reviewer is working',
-    answer_validation:'Nova is validating the larger local answer',
-    answer_selection:'Nova is selecting the strongest safe answer',
-    working:'Nova is working locally'
+    nova_core:'Nova is thinking…',
+    strong_local_model:'Nova is preparing her reply…',
+    direct_middle_route:'Nova is thinking it through…',
+    raw_adapter:'The selected model is preparing a reply…',
+    answer_review:'Nova is checking her answer…',
+    larger_local_review:'Nova is taking a closer look…',
+    middle_local_review:'Nova is taking a closer look…',
+    deep_local_review:'Nova is thinking it through…',
+    answer_validation:'Nova is checking her answer…',
+    answer_selection:'Nova is finishing her reply…',
+    working:'Nova is working on it…'
   };
   const stage = String(metadata.stage || 'working');
   const label = stages[stage] || stages.working;
@@ -6276,7 +6293,7 @@ function finishStreamingMsg(state, meta){
   delete state.div.dataset.streaming;
   state.div.removeAttribute('aria-busy');
   state.div.innerHTML = messageHtml(text, meta || {});
-  attachAnswerStatus(state.div, meta?.answer_status);
+  attachAnswerStatus(state.div, meta?.answer_status, meta);
   if(!meta?.no_feedback) attachCorrectionControls(state.div, lastUserTrainingMessage, text, meta || {});
   if(meta) updateDisplayTelemetry(meta, text);
   if(state.followTail) scheduleChatScrollToBottom();
@@ -6539,7 +6556,7 @@ async function callAPIStream(text, onDelta, signal, onProgress){
 }
 
 async function cancelActiveChat(){
-  if(!activeChatController || !activeChatRequestId) return;
+  if(!activeChatController) return;
   activeChatStopping = true;
   sendBtn.disabled = true;
   sendBtn.textContent = 'Stopping…';
@@ -6547,7 +6564,7 @@ async function cancelActiveChat(){
   clearTimeout(activeChatAbortTimer);
   activeChatAbortTimer = null;
   try {
-    fetch(SERVER_BASE + '/nova/v1/cancel/' + encodeURIComponent(activeChatRequestId), {
+    if(activeChatRequestId) fetch(SERVER_BASE + '/nova/v1/cancel/' + encodeURIComponent(activeChatRequestId), {
       method:'POST',
       headers:authHeaders({'Content-Type':'application/json'}),
       body:'{}'
@@ -8349,16 +8366,23 @@ function localRoute(text){
 }
 
 async function send(){
-  if(activeChatController){
-    await cancelActiveChat();
-    return;
-  }
-  if(chatRequestInFlight) return;
+  if(chatRequestInFlight || activeChatController) return;
   const text=input.value.trim(); if(!text) return;
   openPanel('chat-panel');
-  if(typeof handleLocalUiCommand === 'function' && await handleLocalUiCommand(text)) return;
   chatRequestInFlight = true;
   updateModelControlUi();
+  try {
+    if(typeof handleLocalUiCommand === 'function' && await handleLocalUiCommand(text)){
+      if(input.value.trim() === text) input.value = '';
+      chatRequestInFlight = false;
+      updateModelControlUi();
+      return;
+    }
+  } catch(error) {
+    chatRequestInFlight = false;
+    updateModelControlUi();
+    throw error;
+  }
   if(shouldUseActiveVisionContext(text)){
     input.value='';
     sendBtn.disabled=true;
@@ -8856,8 +8880,13 @@ function updatePerms(p){
   updateConversationContextUi();
 }
 
-input.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.isComposing) send(); });
-sendBtn.onclick = send;
+input.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.isComposing){
+    e.preventDefault();
+    return send();
+  }
+});
+sendBtn.onclick = () => activeChatController ? cancelActiveChat() : send();
 if(botChatInput) botChatInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendBotChat(); });
 const fileEditorEl = document.getElementById('fileEditor');
 if(fileEditorEl) fileEditorEl.addEventListener('input', () => scheduleLivePreview());
@@ -8886,6 +8915,68 @@ const micButton = document.getElementById('btnMic');
 if(micButton) micButton.onclick = () => toggleSensoryPermission('mic');
 const camButton = document.getElementById('btnCam');
 if(camButton) camButton.onclick = () => toggleSensoryPermission('camera');
+
+async function loadWorkspaceAgents(){
+  const status = document.getElementById('agentLibraryStatus');
+  const list = document.getElementById('agentLibraryList');
+  if(!status || !list) return;
+  try{
+    const result = await fetch('/api/agents').then(r => r.json());
+    list.innerHTML = (result.agents || []).map(agent => `<div class="status-row"><span><strong>${escapeHtml(agent.name)}</strong><br><small>${escapeHtml(agent.purpose || '')}</small></span><button class="panel-action" onclick="deleteWorkspaceAgent('${escapeHtml(agent.agent_id)}')" ${agent.agent_id === 'website_builder_agent' ? 'disabled title="Built-in agent"' : ''}>Delete</button></div>`).join('') || '<p>No custom agents saved yet.</p>';
+    status.textContent = `${result.count || 0} agent(s) loaded.`;
+  }catch(error){ status.textContent = `Agent load failed: ${error.message}`; }
+}
+async function saveWorkspaceAgent(){
+  const name = document.getElementById('agentNameInput')?.value.trim();
+  const purpose = document.getElementById('agentPurposeInput')?.value.trim();
+  const triggers = (document.getElementById('agentTriggersInput')?.value || '').split(',').map(item => item.trim()).filter(Boolean);
+  if(!name || !purpose){ alert('Agent name and purpose are required.'); return; }
+  const result = await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,purpose,triggers})}).then(r=>r.json());
+  const status = document.getElementById('agentLibraryStatus');
+  if(!result.ok){ if(status) status.textContent = result.error || 'Agent save failed.'; return; }
+  document.getElementById('agentNameInput').value = ''; document.getElementById('agentPurposeInput').value = ''; document.getElementById('agentTriggersInput').value = '';
+  await loadWorkspaceAgents();
+}
+async function deleteWorkspaceAgent(agentId){
+  if(!confirm('Delete this local agent?')) return;
+  const result = await fetch(`/api/agents?agent_id=${encodeURIComponent(agentId)}`,{method:'DELETE'}).then(r=>r.json());
+  if(!result.ok){ const status = document.getElementById('agentLibraryStatus'); if(status) status.textContent = result.error || 'Agent delete failed.'; return; }
+  await loadWorkspaceAgents();
+}
+async function loadWorkspaceSchedules(){
+  const status = document.getElementById('schedulerStatus');
+  const list = document.getElementById('schedulerList');
+  if(!status || !list) return;
+  try{
+    const result = await fetch('/api/schedules').then(r => r.json());
+    list.innerHTML = (result.schedules || []).map(item => `<div class="status-row"><span><strong>${escapeHtml(item.name)}</strong><br><small>${escapeHtml(item.cadence)} · ${escapeHtml(item.prompt)}</small></span><button class="panel-action" onclick="deleteWorkspaceSchedule('${escapeHtml(item.schedule_id)}')">Delete</button></div>`).join('') || '<p>No schedules saved yet.</p>';
+    status.textContent = `${result.count || 0} schedule(s) saved locally.`;
+  }catch(error){ status.textContent = `Schedule load failed: ${error.message}`; }
+}
+async function saveWorkspaceSchedule(){
+  const name = document.getElementById('scheduleNameInput')?.value.trim();
+  const prompt = document.getElementById('schedulePromptInput')?.value.trim();
+  const cadence = document.getElementById('scheduleCadenceInput')?.value || 'weekly';
+  if(!name || !prompt){ alert('Schedule name and prompt are required.'); return; }
+  const result = await fetch('/api/schedules',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,prompt,cadence})}).then(r=>r.json());
+  const status = document.getElementById('schedulerStatus');
+  if(!result.ok){ if(status) status.textContent = result.error || 'Schedule save failed.'; return; }
+  document.getElementById('scheduleNameInput').value = ''; document.getElementById('schedulePromptInput').value = '';
+  await loadWorkspaceSchedules();
+}
+async function deleteWorkspaceSchedule(scheduleId){
+  if(!confirm('Delete this saved schedule?')) return;
+  const result = await fetch(`/api/schedules?schedule_id=${encodeURIComponent(scheduleId)}`,{method:'DELETE'}).then(r=>r.json());
+  if(!result.ok){ const status = document.getElementById('schedulerStatus'); if(status) status.textContent = result.error || 'Schedule delete failed.'; return; }
+  await loadWorkspaceSchedules();
+}
+function runAppBuilderCommand(){
+  const input = document.getElementById('appBuilderCommandInput');
+  const command = input?.value.trim();
+  if(!command) return;
+  input.value = '';
+  quickCmd(command);
+}
 
 // Auto-connect on load
 if('speechSynthesis' in window){

@@ -26,7 +26,7 @@ _EMOTION_CUES = (
     ("hurt", ("hurt", "heartbroken", "rejected", "betrayed")),
     ("sad", ("sad", "down", "depressed", "unhappy", "crying")),
     ("frustrated", ("angry", "mad", "frustrated", "annoyed", "pissed")),
-    ("strained", ("tired", "stressed", "overwhelmed", "exhausted", "rough day")),
+    ("strained", ("tired", "stressed", "overwhelmed", "exhausted", "rough day", "long day")),
     ("positive", ("happy", "excited", "glad", "proud", "hopeful")),
     ("affectionate", ("i love", "i care about", "means a lot to me")),
 )
@@ -143,7 +143,7 @@ def _emotion_from_texts(values: Sequence[str]) -> str:
     for text in reversed(values):
         value = _canonical(text)
         for label, cues in _EMOTION_CUES:
-            if any(cue in value for cue in cues):
+            if any(re.search(r"\b" + re.escape(cue) + r"\b", value) for cue in cues):
                 return label
     return ""
 
@@ -349,20 +349,84 @@ def resolve_conversation_declaration(text: str) -> ConversationRecall | None:
     return None
 
 
+def _resolve_temporal_conversation_recall(
+    text: str,
+    history: Sequence[Mapping[str, str]],
+) -> ConversationRecall | None:
+    match = re.fullmatch(
+        r"what\s+(?:(?:were|are)\s+we\s+(?:talking\s+about|discussing)|"
+        r"did\s+(?P<speaker>i|you|we)\s+(?:say|discuss|talk\s+about))\s+"
+        r"(?P<direction>before|after)\s+(?:the\s+)?(?P<anchor>[a-z0-9][a-z0-9 ]{0,70})",
+        _canonical(text),
+    )
+    if not match:
+        return None
+    anchor = match.group("anchor").strip()
+    direction = match.group("direction")
+    turns = [
+        (str(item.get("role") or "").lower(), str(item.get("content") or "").strip())
+        for item in history[-40:]
+        if isinstance(item, Mapping)
+        and str(item.get("role") or "").lower() in _ALLOWED_ROLES
+        and str(item.get("content") or "").strip()
+        and _canonical(str(item.get("content") or "")) != _canonical(text)
+    ]
+    anchors = [
+        index for index, (role, content) in enumerate(turns)
+        if role == "user" and re.search(r"\b" + re.escape(anchor) + r"\b", _canonical(content))
+        and not re.match(r"^what\s+(?:were|did)\s+", _canonical(content))
+    ]
+    if len(anchors) != 1:
+        response = (
+            f'Which mention of "{anchor}" do you mean? It appears more than once in the recent chat.'
+            if anchors else
+            f'I can\'t locate a clear mention of "{anchor}" in the available recent chat, so I can\'t reliably say what came {direction} it.'
+        )
+        return ConversationRecall(response, "temporal_unavailable", "", confidence=0.0)
+    boundary = anchors[0]
+    if direction == "before":
+        selected = list(reversed(turns[:boundary]))
+    else:
+        # The assistant's immediate response still belongs to the anchor turn.
+        start = next((index for index in range(boundary + 1, len(turns)) if turns[index][0] == "user"), len(turns))
+        selected = turns[start:]
+    requested_role = {"i": "user", "you": "assistant"}.get(match.group("speaker"))
+    for role, content in selected:
+        if requested_role and role != requested_role:
+            continue
+        if role == "assistant" and not is_contextworthy_assistant_text(content):
+            continue
+        if is_bridge_turn(content):
+            continue
+        # Quote the actual turn and its speaker; do not probabilistically merge
+        # a later suggestion into a recap of an earlier interval.
+        excerpt = content if len(content) <= 700 else content[:697].rstrip() + "..."
+        who = "you said" if role == "user" else "I said"
+        response = f'In the recent chat, {direction} you mentioned "{anchor}", {who}: “{excerpt}”'
+        return ConversationRecall(response, "temporal_conversation", content, confidence=0.99)
+    return ConversationRecall(
+        f'I can\'t see a relevant turn {direction} "{anchor}" in the available recent chat.',
+        "temporal_unavailable", "", confidence=0.0,
+    )
+
+
 def resolve_conversation_recall(
     text: str,
     history: Sequence[Mapping[str, str]],
 ) -> ConversationRecall | None:
     """Resolve explicit recent facts without a model call or persistent memory.
 
-    This deliberately uses only user-authored turns supplied by the current
-    client. Rules are narrow and relation-based so unrelated chat text cannot
-    become an answer merely because it appeared nearby.
+    Fact slots use only user-authored turns. Temporal recaps may quote either
+    speaker with explicit attribution. All evidence comes from the transcript
+    supplied by the current client.
     """
 
     query = _canonical(text).strip(" .!?")
     if not query:
         return None
+    temporal = _resolve_temporal_conversation_recall(text, history)
+    if temporal is not None:
+        return temporal
     sentences = _user_history_sentences(history)
     if not sentences:
         return None
@@ -692,6 +756,40 @@ def resolve_followup(
     explicit_referential = bool(
         re.search(r"\b(?:which|what)\s+of\s+(?:those|these)\b", current)
     )
+    pronoun_referential = (
+        len(current.split()) <= 24
+        and bool(re.search(r"\b(?:it|that|this|those|these|they|them)\b", current))
+        and (
+            current.startswith(
+                (
+                    "how can ",
+                    "how do ",
+                    "how does ",
+                    "how would ",
+                    "how should ",
+                    "what can ",
+                    "what do ",
+                    "what does ",
+                    "what would ",
+                    "what should ",
+                    "why ",
+                    "is ",
+                    "does ",
+                    "would ",
+                    "could ",
+                )
+            )
+            or current.endswith(
+                (
+                    " about it",
+                    " about that",
+                    " because of it",
+                    " from that",
+                    " with it",
+                )
+            )
+        )
+    )
     explicit_transform = bool(
         re.search(
             r"\b(?:can|could|would)\s+you\s+(?:do|make|write|answer|"
@@ -975,7 +1073,7 @@ def resolve_followup(
             ),
             confidence=0.96,
         )
-    if explicit_referential or current in referential or referential_question:
+    if explicit_referential or current in referential or referential_question or pronoun_referential:
         return ContextResolution(
             "referential",
             previous_user,
@@ -993,6 +1091,26 @@ def resolve_followup(
             ),
             fallback_response=f"Which part of \"{topic}\" are you asking about?",
             confidence=0.90,
+        )
+    if (
+        previous_answer.rstrip().endswith("?")
+        and len(current.split()) <= 24
+        and re.match(r"^(?:mostly|mainly|usually|a bit of|a little of)\b", current)
+        and "?" not in text
+    ):
+        return ContextResolution(
+            "answer_to_question",
+            previous_user,
+            previous_answer,
+            generation_prompt=_generation_instruction(
+                "The user is answering the question you just asked. Use their new detail to "
+                "continue that subject. Do not ask the same question again, restart with a "
+                "greeting, or reuse an older answer from another subject.",
+                text,
+                previous_user,
+                previous_answer,
+            ),
+            confidence=0.92,
         )
     return ContextResolution("", previous_user, previous_answer)
 

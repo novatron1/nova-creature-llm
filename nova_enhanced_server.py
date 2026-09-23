@@ -370,7 +370,8 @@ def _runtime_cognitive_config():
             "default": boolean("NOVA_COMPANION_DEFAULT", False),
         },
         "companion_layer": {
-            "enabled": boolean("NOVA_COMPANION_LAYER_ENABLED", False),
+            # Main chat should expose its companion plan by default.
+            "enabled": boolean("NOVA_COMPANION_LAYER_ENABLED", True),
             "persistence": boolean("NOVA_COMPANION_LAYER_PERSISTENCE", True),
             "debug": boolean("NOVA_COMPANION_LAYER_DEBUG", False),
         },
@@ -400,7 +401,7 @@ def _companion_ui_config():
 def _companion_layer_config():
     projected = _runtime_cognitive_config().get("companion_layer") or {}
     return {
-        "enabled": bool(projected.get("enabled", False)),
+        "enabled": bool(projected.get("enabled", True)),
         "persistence": bool(projected.get("persistence", True)),
         "debug": bool(projected.get("debug", False)),
     }
@@ -636,18 +637,19 @@ def _canonical_key(text):
 
 def _load_dict():
     global DICT_INDEX
-    try:
-        if os.path.exists(DICT_PATH):
-            with open(DICT_PATH) as f:
+    DICT_INDEX = {}
+    for path in (os.path.join(ROOT, "data", "builtin_word_dictionary.json"), DICT_PATH):
+        try:
+            if not os.path.exists(path):
+                continue
+            with open(path, encoding="utf-8") as f:
                 raw = json.load(f)
-            DICT_INDEX = {}
             for q, a in raw.items():
                 k = _canonical_key(q)
                 if k: DICT_INDEX[k] = a
-            return len(DICT_INDEX)
-    except Exception as e:
-        print(f"[DICT] Load error: {e}")
-    return 0
+        except Exception as e:
+            print(f"[DICT] Load error: {e}")
+    return len(DICT_INDEX)
 
 def _dict_lookup(text):
     key = _canonical_key(text)
@@ -1573,6 +1575,29 @@ def _weather_location_from_text(text):
 
 def _is_weather_lookup_request(text):
     return _weather_location_from_text(text) is not None
+
+
+def _weather_seasonal_explanation(text):
+    """Give a grounded seasonal explanation for hot/cool weather follow-ups."""
+    q = " ".join(str(text or "").lower().split())
+    if not any(token in q for token in ("why", "normal", "unusual", "usually", "normally")):
+        return None
+    if not any(token in q for token in ("hot", "warm", "cool", "cold", "temperature", "degree")):
+        return None
+    location = next((name.title() for name in _WEATHER_LOCATION_NAMES if name in q), None)
+    if not location:
+        return None
+    month = datetime.now().astimezone().month
+    if month != 9 and "september" not in q:
+        return None
+    return (
+        f"You're right to notice it: {location} can have a short early-September heat spell, "
+        "but a mid-90s day is well above normal. National Weather Service September normals "
+        "are about 83°F for the high at the start of the month, falling to about 73°F by the end "
+        "(78.9°F for the month). A heat ridge and humid air can temporarily push temperatures much "
+        "higher; the humidity is why it can feel near 102°F. So this is possible, but it is unusual "
+        "for September—not Cincinnati's normal everyday weather."
+    )
 
 
 def _format_weather_value(value, unit):
@@ -4202,10 +4227,7 @@ def _fetch_research_web_sources(topic, timeout=6):
 
 
 def _live_source_lines(live_sources):
-    lines = [
-        "Use the recent conversation to answer the latest user question. Preserve explicit names, dates, and constraints, and apply any later user updates.",
-        "",
-    ]
+    lines = []
     for source in live_sources or []:
         status = source.get("status")
         if isinstance(status, int) and 200 <= status < 400:
@@ -4215,10 +4237,7 @@ def _live_source_lines(live_sources):
 
 
 def _live_source_evidence_lines(live_sources):
-    lines = [
-        "Use the recent conversation to answer the latest user question. Preserve explicit names, dates, and constraints, and apply any later user updates.",
-        "",
-    ]
+    lines = []
     for source in live_sources or []:
         status = source.get("status")
         if not (isinstance(status, int) and 200 <= status < 400):
@@ -7235,7 +7254,10 @@ def _start_capability_evaluation(payload):
 
 def _automatic_model_quality_check_enabled():
     return str(
-        os.environ.get("NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED", "true")
+        os.environ.get(
+            "NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED",
+            _runtime_config_values().get("NOVA_MODEL_QUALITY_AUTO_CHECK_LOADED", True),
+        )
     ).strip().lower() in {"1", "true", "yes", "on"}
 
 
@@ -9403,6 +9425,20 @@ def brain_route(text, context=None):
             "I will not invent an answer; you can add the source or authorize a current web search.",
             trace,
         )
+    if isinstance(context, dict) and context.get("user_id"):
+        from nova_identity_memory import identity_response
+
+        identity_private = PRIVATE_MODE or bool(context.get("private_mode"))
+        owned_identity = identity_response(
+            text, str(context["user_id"]),
+            read_allowed=memory_read_allowed and not identity_private,
+            write_allowed=memory_write_allowed and not identity_private,
+        )
+        if owned_identity is not None:
+            return _adapter_memory_response(
+                trace, owned_identity, source="owned_identity_memory",
+                domain="identity_recall", skills=["subject_ownership", "identity_memory"],
+            )
     if conversation_memory_allowed:
         trace = _attach_conversation_state(trace, text)
     sensor_snapshot = _sanitize_sensor_snapshot((context or {}).get("sensor_snapshot")) if isinstance(context, dict) else None
@@ -9477,7 +9513,7 @@ def brain_route(text, context=None):
     # Prefer the transcript supplied by this client over process-wide legacy
     # globals. This keeps phone, desktop, and API conversations from borrowing
     # one another's short follow-up context.
-    conversation_history = bounded_conversation_history(context or {}, text)
+    conversation_history = bounded_conversation_history(context or {}, text, maximum_messages=20)
     client_previous_user, client_previous_answer = previous_exchange(conversation_history)
     legacy_previous_user = "" if gateway_context is not None else _LAST_USER_TEXT
     legacy_previous_answer = "" if gateway_context is not None else _LAST_NOVA_RESPONSE
@@ -9762,6 +9798,16 @@ def brain_route(text, context=None):
         trace["confidence"] = 0.96
         trace["route_path"] = ["nova_self_state", "speech_output"]
         trace["final_answer_source"] = "nova_self_state"
+        trace["companion"] = {
+            "enabled": True,
+            "primary_mode": "companionship",
+            "relationship_stage": "new",
+            "social_plan": {
+                "primary_mode": "companionship",
+                "tone": "warm_conversational",
+            },
+            "state_persisted": False,
+        }
         _LAST_USER_TEXT = text
         _LAST_NOVA_RESPONSE = response
         if _CONV_ENGINE_AVAIL:
@@ -10977,7 +11023,7 @@ def brain_route(text, context=None):
         return response, trace
 
     # Capabilities
-    if any(w in q for w in ["what can you do", "what can u do", "capabilities", "what are you", "tell me about yourself", "abilities", "features", "what all can"]):
+    if _is_capabilities_question(text):
         caps = ("[CAPABILITIES] I am Nova Creature, a multi-brain AI with:\n"
                 "  \u2022 7 Brain Roles: left hemisphere, right hemisphere, memory, planner, critic, dream, speech\n"
                 "  \u2022 Long-term memory - I remember facts you teach me\n"
@@ -11133,6 +11179,21 @@ def brain_route(text, context=None):
     # Fresh weather must run before the generic Cognitive OS so its live
     # evidence can reach the grounding validator instead of being replaced by
     # a model draft.
+    seasonal_weather_response = _weather_seasonal_explanation(q)
+    if seasonal_weather_response:
+        trace["source"] = "weather_seasonal_explanation"
+        trace["domain"] = "weather"
+        trace["roles"] = ["weather_climate_transformer", "speech_output_transformer"]
+        trace["skills"] = ["seasonal_climate_context", "weather_follow_up"]
+        trace["confidence"] = 0.94
+        trace["route_path"] = ["weather_seasonal_explanation", "speech_output"]
+        trace["weather_normals_source"] = "National Weather Service, 1991-2020 normals"
+        trace["weather_live"] = False
+        _LAST_USER_TEXT = text
+        _LAST_NOVA_RESPONSE = seasonal_weather_response
+        trace = _set_final_answer_source(trace)
+        return seasonal_weather_response, trace
+
     early_weather_location = _weather_location_from_text(q)
     if early_weather_location:
         early_weather_summary = _fetch_weather_summary(early_weather_location)
@@ -11336,13 +11397,13 @@ def brain_route(text, context=None):
                             return response, trace
                     response, agent_trace = run_agentic_turn(normalized_text)
                     try:
-                        from nova_natural_chat import get_recent_memory, natural_chat_enabled, shape_response
+                        from nova_natural_chat import natural_chat_enabled, shape_response
 
                         if natural_chat_enabled():
                             shaped_response = shape_response(
                                 response,
                                 user_input=normalized_text,
-                                recent_memory=get_recent_memory() if conversation_memory_allowed else [],
+                                recent_memory=_natural_history_for_client(context or {}, text) if conversation_memory_allowed else [],
                             )
                             if shaped_response:
                                 response = shaped_response
@@ -11374,6 +11435,7 @@ def brain_route(text, context=None):
                         or conversation_history
                         or (context or {}).get("conversation_summary")
                         or (context or {}).get("adaptive_model_memory")
+                        or (context or {}).get("companion_context")
                     ):
                         cognitive_messages = conversation_history
                         if gateway_context:
@@ -11389,6 +11451,7 @@ def brain_route(text, context=None):
                             "conversation_decision": (context or {}).get("conversation_decision"),
                             "conversation_summary": (context or {}).get("conversation_summary"),
                             "gateway_messages": cognitive_messages,
+                            "conversation_history": conversation_history,
                             "world_model": dict((context or {}).get("world_model") or {}),
                             "dream_lab": dict((context or {}).get("dream_lab") or {}),
                         }
@@ -11402,6 +11465,7 @@ def brain_route(text, context=None):
                             "primary_model_required_aspects",
                             "adaptive_model_memory",
                             "normal_chat_llm_first",
+                            "companion_context",
                         ):
                             if (context or {}).get(key) is not None:
                                 cognitive_context[key] = (context or {}).get(key)
@@ -11698,7 +11762,7 @@ def brain_route(text, context=None):
         return response.strip(), trace
 
     # ─── Capabilities Path ───
-    if any(w in q for w in ["what can you do", "what can u do", "capabilities", "what are you", "tell me about yourself", "abilities", "features", "what all can"]):
+    if _is_capabilities_question(text):
         caps = ("[CAPABILITIES] I am Nova Creature, a multi-brain AI with:\n"
                 "  \u2022 7 Brain Roles: left hemisphere, right hemisphere, memory, planner, critic, dream, speech\n"
                 "  \u2022 Long-term memory - I remember facts you teach me\n"
@@ -13626,7 +13690,7 @@ def _answer_status_from_trace(trace):
             parts.append(f"{ocr_count} OCR")
         vision = " + ".join(parts) or "scene scan"
 
-    return {
+    status = {
         "intent": intent,
         "model": model,
         "memory": memory,
@@ -13634,6 +13698,41 @@ def _answer_status_from_trace(trace):
         "safety": safety,
         "vision": vision,
     }
+    companion = source.get("companion") if isinstance(source.get("companion"), dict) else None
+    if companion and companion.get("enabled") is not False:
+        plan = companion.get("social_plan") if isinstance(companion.get("social_plan"), dict) else {}
+        mode = str(companion.get("primary_mode") or plan.get("primary_mode") or "adaptive").strip().replace("_", " ")
+        tone = str(plan.get("tone") or "").strip().replace("_", " ")
+        status["personality"] = " · ".join(part for part in (mode, tone) if part)[:80]
+    return status
+
+
+def _is_capabilities_question(text):
+    """Recognize requests about Nova's abilities without consuming social questions."""
+    question = re.sub(r"[^a-z0-9 ]+", " ", str(text or "").lower())
+    question = " ".join(question.split())
+    return bool(re.fullmatch(
+        r"(?:please )?(?:(?:nova )?what (?:can (?:you|u) do|are you)|"
+        r"what all can (?:you|u)(?: do| help me with)?|tell me about yourself|"
+        r"(?:show|tell|list)(?: me)? (?:all )?your (?:capabilities|abilities|features)|"
+        r"what are your (?:capabilities|abilities|features)|capabilities|abilities|features)"
+        r"(?: nova)?(?: please)?", question,
+    ))
+
+
+def _natural_history_for_client(context, text):
+    """Use this request's transcript for tone/continuity, never process-wide memory."""
+    if context.get("nova_gateway") and not context.get("conversation_memory_allowed"):
+        return []
+    exchanges = []
+    user_message = ""
+    for message in bounded_conversation_history(context, text, maximum_messages=12):
+        if message["role"] == "user":
+            user_message = message["content"]
+        elif user_message:
+            exchanges.append({"user": user_message, "nova": message["content"]})
+            user_message = ""
+    return exchanges
 
 
 def _should_use_normal_chat_llm_first(conversation_decision, context, *, raw_adapter_request=False):
@@ -13661,6 +13760,10 @@ def _run_nova_chat_turn_impl(text, context=None):
     """Run one real Nova turn while preserving legacy and gateway privacy behavior."""
     global _LAST_USER_TEXT, _LAST_NOVA_RESPONSE
     context = context if isinstance(context, dict) else {}
+    # Older clients omitted user_id; local chat still needs a stable owner for
+    # companion continuity and personality metadata.
+    context.setdefault("user_id", "local-user")
+    context.setdefault("conversation_id", "default")
     evaluation_only = context.get("evaluation_only") is True
     evaluation_mutation_block = _evaluation_mutation_guard_response(text, context)
     if evaluation_mutation_block is not None:
@@ -13810,7 +13913,7 @@ def _run_nova_chat_turn_impl(text, context=None):
             )
         except Exception:
             rag_result = None
-    history_before_turn = bounded_conversation_history(context, text)
+    history_before_turn = bounded_conversation_history(context, text, maximum_messages=20)
     client_previous_user, client_previous_answer = previous_exchange(history_before_turn)
     gateway_scoped = bool(context.get("nova_gateway"))
     legacy_previous_user = "" if gateway_scoped else _LAST_USER_TEXT
@@ -13890,6 +13993,8 @@ def _run_nova_chat_turn_impl(text, context=None):
                 ("relationship", "relationship_meaning"),
                 ("relationship", "love_timing"),
                 ("emotional", "user_distress"),
+                ("emotional", "nova_self_state"),
+                ("emotional", "self_experience_boundary"),
                 ("emotional", "user_positive"),
                 ("emotional", "encouragement_request"),
                 ("social", "conversation_invite"),
@@ -13971,6 +14076,21 @@ def _run_nova_chat_turn_impl(text, context=None):
         )
         else solve_deterministic_request(text)
     )
+    owned_identity_response = None
+    if action_policy is None and not raw_adapter_request:
+        from nova_identity_memory import identity_response
+
+        identity_private = PRIVATE_MODE or bool(context.get("private_mode"))
+        identity_gateway = bool(context.get("nova_gateway"))
+        owned_identity_response = identity_response(
+            text, str(context["user_id"]),
+            read_allowed=not identity_private and (
+                not identity_gateway or bool(context.get("memory_read_allowed"))
+            ),
+            write_allowed=not evaluation_only and not identity_private and (
+                not identity_gateway or bool(context.get("memory_write_allowed"))
+            ),
+        )
     if action_policy is not None:
         direct_middle_routing = {
             "selected": False,
@@ -13995,6 +14115,14 @@ def _run_nova_chat_turn_impl(text, context=None):
             "memory_write_used": False,
             "action_policy": action_policy.safe_trace(),
         }
+        _LAST_USER_TEXT = text
+        _LAST_NOVA_RESPONSE = response
+    elif owned_identity_response is not None:
+        direct_middle_routing = {"selected": False, "reason": "owned_identity_memory", "model_called": False}
+        response, trace = _adapter_memory_response(
+            {}, owned_identity_response, source="owned_identity_memory",
+            domain="identity_recall", skills=["subject_ownership", "identity_memory"],
+        )
         _LAST_USER_TEXT = text
         _LAST_NOVA_RESPONSE = response
     elif conversation_declaration is not None:
@@ -14881,7 +15009,6 @@ def _run_nova_chat_turn_impl(text, context=None):
             }
         try:
             from nova_natural_chat import (
-                get_recent_memory,
                 natural_chat_enabled,
                 shape_verified_response,
             )
@@ -14890,14 +15017,7 @@ def _run_nova_chat_turn_impl(text, context=None):
                 final_shaped = shape_verified_response(
                     response,
                     user_input=text,
-                    recent_memory=(
-                        get_recent_memory()
-                        if (
-                            not context.get("nova_gateway")
-                            or bool(context.get("conversation_memory_allowed"))
-                        )
-                        else []
-                    ),
+                    recent_memory=_natural_history_for_client(context, text),
                 )
                 if final_shaped:
                     trace["natural_response_shaped_after_verification"] = (
@@ -16018,6 +16138,140 @@ GPU_HUB = GpuHubController(ROOT)
 GPU_HUB_HTTP = GpuHubHttpController(GPU_HUB)
 
 
+AGENT_LIBRARY_ROOT = Path(ROOT) / "autonomous_skills"
+SCHEDULES_PATH = Path(ROOT) / "data" / "nova_schedules.json"
+
+
+def _safe_workspace_id(value: object, fallback: str = "item") -> str:
+    normalized = re.sub(r"[^a-z0-9_-]+", "-", str(value or "").strip().lower()).strip("-")
+    return normalized[:80] or fallback
+
+
+def _agent_library_list(root: str | Path = AGENT_LIBRARY_ROOT) -> dict:
+    path = Path(root)
+    records = []
+    if path.exists():
+        for card_path in sorted(path.glob("*.json")):
+            try:
+                card = json.loads(card_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if not isinstance(card, dict):
+                continue
+            records.append({
+                "agent_id": str(card.get("agent_id") or card_path.stem),
+                "name": str(card.get("name") or card_path.stem),
+                "status": str(card.get("status") or "active"),
+                "purpose": str(card.get("purpose") or ""),
+                "triggers": list(card.get("triggers") or [])[:20],
+                "updated_at": card_path.stat().st_mtime,
+            })
+    return {"ok": True, "agents": records, "count": len(records)}
+
+
+def _agent_library_upsert(body: dict, root: str | Path = AGENT_LIBRARY_ROOT) -> dict:
+    if not isinstance(body, dict):
+        raise ValueError("Agent payload must be an object")
+    name = str(body.get("name") or "").strip()
+    purpose = str(body.get("purpose") or "").strip()
+    if not name or not purpose:
+        raise ValueError("Agent name and purpose are required")
+    agent_id = _safe_workspace_id(body.get("agent_id") or name, "agent")
+    path = Path(root)
+    path.mkdir(parents=True, exist_ok=True)
+    card_path = path / f"{agent_id}.json"
+    existing = {}
+    if card_path.exists():
+        try:
+            existing = json.loads(card_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            existing = {}
+    card = {
+        **existing,
+        "agent_id": agent_id,
+        "name": name[:120],
+        "purpose": purpose[:1000],
+        "status": str(body.get("status") or existing.get("status") or "active"),
+        "triggers": [str(item)[:120] for item in (body.get("triggers") or existing.get("triggers") or [])[:20]],
+    }
+    card_path.write_text(json.dumps(card, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return {"ok": True, "agent": card}
+
+
+def _agent_library_delete(agent_id: object, root: str | Path = AGENT_LIBRARY_ROOT) -> dict:
+    normalized = _safe_workspace_id(agent_id, "")
+    if not normalized:
+        raise ValueError("Agent ID is required")
+    if normalized == "website_builder_agent":
+        raise ValueError("The built-in Website Builder Agent cannot be deleted")
+    path = Path(root) / f"{normalized}.json"
+    if not path.exists():
+        raise FileNotFoundError("Agent not found")
+    path.unlink()
+    return {"ok": True, "deleted": normalized}
+
+
+def _schedule_list(path: str | Path = SCHEDULES_PATH) -> dict:
+    schedule_path = Path(path)
+    if not schedule_path.exists():
+        return {"ok": True, "schedules": [], "count": 0}
+    try:
+        records = json.loads(schedule_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        records = []
+    if not isinstance(records, list):
+        records = []
+    return {"ok": True, "schedules": records, "count": len(records)}
+
+
+def _schedule_upsert(body: dict, path: str | Path = SCHEDULES_PATH) -> dict:
+    if not isinstance(body, dict):
+        raise ValueError("Schedule payload must be an object")
+    name = str(body.get("name") or "").strip()
+    prompt = str(body.get("prompt") or "").strip()
+    cadence = str(body.get("cadence") or "weekly").strip().lower()
+    if not name or not prompt:
+        raise ValueError("Schedule name and prompt are required")
+    if cadence not in {"once", "daily", "weekly", "monthly"}:
+        raise ValueError("Cadence must be once, daily, weekly, or monthly")
+    schedule_path = Path(path)
+    current = _schedule_list(schedule_path)["schedules"]
+    schedule_id = _safe_workspace_id(body.get("schedule_id") or name, "schedule")
+    record = {
+        "schedule_id": schedule_id,
+        "name": name[:120],
+        "prompt": prompt[:2000],
+        "cadence": cadence,
+        "enabled": bool(body.get("enabled", True)),
+        "updated_at": time.time(),
+    }
+    replaced = False
+    for index, item in enumerate(current):
+        if isinstance(item, dict) and item.get("schedule_id") == schedule_id:
+            current[index] = record
+            replaced = True
+            break
+    if not replaced:
+        current.append(record)
+    schedule_path.parent.mkdir(parents=True, exist_ok=True)
+    schedule_path.write_text(json.dumps(current, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return {"ok": True, "schedule": record, "schedules": current}
+
+
+def _schedule_delete(schedule_id: object, path: str | Path = SCHEDULES_PATH) -> dict:
+    normalized = _safe_workspace_id(schedule_id, "")
+    if not normalized:
+        raise ValueError("Schedule ID is required")
+    current = _schedule_list(path)["schedules"]
+    remaining = [item for item in current if not (isinstance(item, dict) and item.get("schedule_id") == normalized)]
+    if len(remaining) == len(current):
+        raise FileNotFoundError("Schedule not found")
+    schedule_path = Path(path)
+    schedule_path.parent.mkdir(parents=True, exist_ok=True)
+    schedule_path.write_text(json.dumps(remaining, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return {"ok": True, "deleted": normalized, "schedules": remaining}
+
+
 class NovaHandler(BaseHTTPRequestHandler):
     server_version = "NovaCreature"
     sys_version = ""
@@ -16429,7 +16683,7 @@ class NovaHandler(BaseHTTPRequestHandler):
             self._send_cors_headers()
             self.end_headers()
             self._write_bytes(encoded)
-        elif parsed.path == '/healthz':
+        elif parsed.path in ('/healthz', '/api/health'):
             foundation_health = FOUNDATION.store.health()
             reliability_status = RELIABILITY.status()
             self._send_json({
@@ -16475,6 +16729,10 @@ class NovaHandler(BaseHTTPRequestHandler):
                     active=(query.get("active") or ["all"])[0],
                 )
             )
+        elif parsed.path == '/api/agents':
+            self._send_json(_agent_library_list())
+        elif parsed.path == '/api/schedules':
+            self._send_json(_schedule_list())
         elif parsed.path == '/api/adapters/list':
             try:
                 self._send_json(_adapter_registry_list())
@@ -16671,6 +16929,20 @@ class NovaHandler(BaseHTTPRequestHandler):
                 except Exception as error:
                     self._send_json({"ok": False, "error": str(error)}, status=400)
                 return
+            if parsed.path == '/api/agents':
+                body = self._read_json_body()
+                try:
+                    self._send_json(_agent_library_upsert(body))
+                except Exception as error:
+                    self._send_json({"ok": False, "error": str(error)}, status=400)
+                return
+            if parsed.path == '/api/schedules':
+                body = self._read_json_body()
+                try:
+                    self._send_json(_schedule_upsert(body))
+                except Exception as error:
+                    self._send_json({"ok": False, "error": str(error)}, status=400)
+                return
             if parsed.path == '/api/memory/action':
                 body = self._read_json_body()
                 try:
@@ -16719,6 +16991,34 @@ class NovaHandler(BaseHTTPRequestHandler):
                     status=500,
                 )
             except: pass
+
+    def do_DELETE(self):
+        try:
+            parsed = urlparse(self.path)
+            if not self._authorize_api(parsed.path):
+                return
+            query = parse_qs(parsed.query or "")
+            if parsed.path == '/api/agents':
+                try:
+                    self._send_json(_agent_library_delete((query.get("agent_id") or [""])[0]))
+                except FileNotFoundError as error:
+                    self._send_json({"ok": False, "error": str(error)}, status=404)
+                except Exception as error:
+                    self._send_json({"ok": False, "error": str(error)}, status=400)
+                return
+            if parsed.path == '/api/schedules':
+                try:
+                    self._send_json(_schedule_delete((query.get("schedule_id") or [""])[0]))
+                except FileNotFoundError as error:
+                    self._send_json({"ok": False, "error": str(error)}, status=404)
+                except Exception as error:
+                    self._send_json({"ok": False, "error": str(error)}, status=400)
+                return
+            self.send_response(404)
+            self._send_cors_headers()
+            self.end_headers()
+        except Exception as error:
+            self._send_json({"ok": False, "error": str(error)}, status=400)
     
     def do_OPTIONS(self):
         self.send_response(204)

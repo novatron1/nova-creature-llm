@@ -86,8 +86,14 @@ class PermissionGateway:
                 rollback_available=False,
             )
 
-        path_candidate = self._extract_path(arguments)
-        if path_candidate is not None and not self._is_within_allowed_roots(path_candidate):
+        if action_signature.arguments_hash != sha256_json(arguments):
+            return PermissionDecision(
+                disposition="BLOCK", rule_id="APPROVAL_SIGNATURE_CHANGED",
+                message="The arguments do not match the approved action signature.",
+                can_continue=False, rollback_available=False,
+            )
+
+        if any(not self._is_within_allowed_roots(path) for path in self._extract_paths(arguments)):
             return PermissionDecision(
                 disposition="BLOCK",
                 rule_id="WORKSPACE_ESCAPE",
@@ -104,15 +110,30 @@ class PermissionGateway:
             rollback_available=False,
         )
 
-    def _extract_path(self, arguments: dict[str, Any]) -> str | None:
-        for key in ("path", "file_path", "destination", "target", "source", "root"):
-            value = arguments.get(key)
-            if isinstance(value, str) and value.strip():
-                return value
-        return None
+    def _extract_paths(self, arguments: dict[str, Any]) -> list[str]:
+        """Inspect all recognized path fields, including batched/nested operations."""
+        paths: list[str] = []
+        path_keys = {"path", "file_path", "destination", "target", "source", "root",
+                     "paths", "file_paths", "destinations", "targets", "sources", "roots", "cwd"}
+
+        def visit(value: Any, is_path: bool = False) -> None:
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    visit(child, key in path_keys)
+            elif isinstance(value, (list, tuple)):
+                for child in value:
+                    visit(child, is_path)
+            elif is_path and isinstance(value, str) and value.strip():
+                paths.append(value)
+
+        visit(arguments)
+        return paths
 
     def _is_within_allowed_roots(self, candidate: str) -> bool:
-        candidate_path = self._safe_path(candidate)
+        candidate_value = Path(candidate).expanduser()
+        if not candidate_value.is_absolute():
+            candidate_value = Path(self.contract.workspace_root) / candidate_value
+        candidate_path = self._safe_path(str(candidate_value))
         if candidate_path is None:
             return False
         allowed_roots = [self._safe_path(root) for root in self.contract.allowed_roots]

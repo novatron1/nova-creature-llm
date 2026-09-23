@@ -51,6 +51,9 @@ class GatewayConfig:
     port: int = 8765
     enable_remote_access: bool = False
     allow_local_no_auth: bool = True
+    # Media generation is a separate capability from local chat. Keep it
+    # opt-in so a localhost chat client cannot silently start paid/heavy jobs.
+    allow_local_media: bool = False
     allowed_origins: tuple[str, ...] = ()
     trust_proxy_headers: bool = False
     trust_tailscale_serve: bool = False
@@ -72,6 +75,7 @@ class GatewayConfig:
     require_confirmation_over: float = 0.0
     memory_mode: str = "automatic_safe_write"
     client_registry_path: Path = field(default_factory=lambda: Path("data") / "nova_gateway_clients.json")
+    conversation_store_path: Path = field(default_factory=lambda: Path("data") / "nova_conversations.json")
     world_model_persistence: str = "session"
     world_model_checkpoint_path: Path = field(default_factory=lambda: Path("data") / "nova_world_model.json")
     world_model_max_age_days: int = 30
@@ -91,6 +95,18 @@ class GatewayConfig:
         default_factory=lambda: Path("data") / "nova_video_lite_jobs.json"
     )
     video_lite_encode_timeout_seconds: int = 180
+    animatediff_cpu_enabled: bool = False
+    animatediff_cpu_python_path: Path | None = None
+    animatediff_cpu_worker_path: Path | None = None
+    animatediff_cpu_model_path: Path | None = None
+    animatediff_cpu_motion_adapter_path: Path | None = None
+    animatediff_cpu_output_dir: Path = field(
+        default_factory=lambda: Path("data") / "nova_animatediff_cpu"
+    )
+    animatediff_cpu_job_store_path: Path = field(
+        default_factory=lambda: Path("data") / "nova_animatediff_cpu_jobs.json"
+    )
+    animatediff_cpu_timeout_seconds: int = 3600
     config_version: str = CONFIG_VERSION
 
     @classmethod
@@ -113,6 +129,12 @@ class GatewayConfig:
         world_model_path = Path(world_model_value)
         if not world_model_path.is_absolute():
             world_model_path = root_path / world_model_path
+        conversations_value = str(
+            source.get("NOVA_CONVERSATIONS_PATH") or "data/nova_conversations.json"
+        ).strip()
+        conversations_path = Path(conversations_value)
+        if not conversations_path.is_absolute():
+            conversations_path = root_path / conversations_path
         configured_image_value = str(source.get("NOVA_COMFYUI_IMAGE_WORKFLOW") or "").strip()
         local_image_workflow = root_path / "config" / "comfyui_text_to_image_workflow.local.json"
         comfyui_image_value = configured_image_value or (
@@ -153,12 +175,47 @@ class GatewayConfig:
         video_lite_jobs_path = Path(video_lite_jobs_value)
         if not video_lite_jobs_path.is_absolute():
             video_lite_jobs_path = root_path / video_lite_jobs_path
+        animatediff_python_value = str(source.get("NOVA_ANIMATEDIFF_CPU_PYTHON") or "").strip()
+        animatediff_python_path = Path(animatediff_python_value) if animatediff_python_value else None
+        if animatediff_python_path is not None and not animatediff_python_path.is_absolute():
+            animatediff_python_path = root_path / animatediff_python_path
+        animatediff_worker_value = str(
+            source.get("NOVA_ANIMATEDIFF_CPU_WORKER")
+            or (root_path / "scripts" / "nova_animatediff_cpu_worker.py")
+        ).strip()
+        animatediff_worker_path = Path(animatediff_worker_value)
+        if not animatediff_worker_path.is_absolute():
+            animatediff_worker_path = root_path / animatediff_worker_path
+        animatediff_model_value = str(source.get("NOVA_ANIMATEDIFF_CPU_MODEL") or "").strip()
+        animatediff_model_path = Path(animatediff_model_value) if animatediff_model_value else None
+        if animatediff_model_path is not None and not animatediff_model_path.is_absolute():
+            animatediff_model_path = root_path / animatediff_model_path
+        animatediff_adapter_value = str(
+            source.get("NOVA_ANIMATEDIFF_CPU_MOTION_ADAPTER") or ""
+        ).strip()
+        animatediff_adapter_path = Path(animatediff_adapter_value) if animatediff_adapter_value else None
+        if animatediff_adapter_path is not None and not animatediff_adapter_path.is_absolute():
+            animatediff_adapter_path = root_path / animatediff_adapter_path
+        animatediff_output_value = str(
+            source.get("NOVA_ANIMATEDIFF_CPU_OUTPUT_DIR") or "data/nova_animatediff_cpu"
+        ).strip()
+        animatediff_output_path = Path(animatediff_output_value)
+        if not animatediff_output_path.is_absolute():
+            animatediff_output_path = root_path / animatediff_output_path
+        animatediff_jobs_value = str(
+            source.get("NOVA_ANIMATEDIFF_CPU_JOB_STORE")
+            or "data/nova_animatediff_cpu_jobs.json"
+        ).strip()
+        animatediff_jobs_path = Path(animatediff_jobs_value)
+        if not animatediff_jobs_path.is_absolute():
+            animatediff_jobs_path = root_path / animatediff_jobs_path
         return cls(
             enabled=_bool(source, "NOVA_API_ENABLED", True),
             host=host,
             port=port,
             enable_remote_access=_bool(source, "NOVA_ENABLE_REMOTE_ACCESS", False),
             allow_local_no_auth=_bool(source, "NOVA_ALLOW_LOCAL_NO_AUTH", True),
+            allow_local_media=_bool(source, "NOVA_ALLOW_LOCAL_MEDIA", False),
             allowed_origins=_csv(source, "NOVA_ALLOWED_ORIGINS"),
             trust_proxy_headers=_bool(source, "NOVA_TRUST_PROXY_HEADERS", False),
             trust_tailscale_serve=_bool(
@@ -182,6 +239,7 @@ class GatewayConfig:
             require_confirmation_over=_float(source, "NOVA_REQUIRE_CONFIRMATION_OVER", 0.0),
             memory_mode=str(source.get("NOVA_MEMORY_MODE") or "automatic_safe_write").strip(),
             client_registry_path=registry_path,
+            conversation_store_path=conversations_path,
             world_model_persistence=_choice(
                 source,
                 "NOVA_WORLD_MODEL_PERSISTENCE",
@@ -210,6 +268,20 @@ class GatewayConfig:
                 30,
                 1800,
             ),
+            animatediff_cpu_enabled=_bool(source, "NOVA_ANIMATEDIFF_CPU_ENABLED", False),
+            animatediff_cpu_python_path=animatediff_python_path,
+            animatediff_cpu_worker_path=animatediff_worker_path,
+            animatediff_cpu_model_path=animatediff_model_path,
+            animatediff_cpu_motion_adapter_path=animatediff_adapter_path,
+            animatediff_cpu_output_dir=animatediff_output_path,
+            animatediff_cpu_job_store_path=animatediff_jobs_path,
+            animatediff_cpu_timeout_seconds=_int(
+                source,
+                "NOVA_ANIMATEDIFF_CPU_TIMEOUT",
+                3600,
+                60,
+                7200,
+            ),
         )
 
     def public_dict(self) -> dict[str, object]:
@@ -220,6 +292,7 @@ class GatewayConfig:
             "port": self.port,
             "remote_access": self.enable_remote_access,
             "allow_local_no_auth": self.allow_local_no_auth,
+            "allow_local_media": self.allow_local_media,
             "trust_tailscale_serve": self.trust_tailscale_serve,
             "rate_limit_enabled": self.rate_limit_enabled,
             "rate_limit_per_minute": self.rate_limit_per_minute,
@@ -228,6 +301,7 @@ class GatewayConfig:
             "expose_provider_models": self.expose_provider_models,
             "execution_policy": self.execution_policy,
             "memory_mode": self.memory_mode,
+            "conversation_archive_configured": bool(self.conversation_store_path),
             "world_model_persistence": self.world_model_persistence,
             "world_model_max_age_days": self.world_model_max_age_days,
             "dream_lab_enabled": self.dream_lab_enabled,
@@ -239,5 +313,12 @@ class GatewayConfig:
             "video_lite_enabled": self.video_lite_enabled,
             "video_lite_ffmpeg_configured": self.video_lite_ffmpeg_path is not None,
             "video_lite_encode_timeout_seconds": self.video_lite_encode_timeout_seconds,
+            "animatediff_cpu_enabled": self.animatediff_cpu_enabled,
+            "animatediff_cpu_configured": bool(
+                self.animatediff_cpu_python_path
+                and self.animatediff_cpu_model_path
+                and self.animatediff_cpu_motion_adapter_path
+            ),
+            "animatediff_cpu_timeout_seconds": self.animatediff_cpu_timeout_seconds,
             "config_version": self.config_version,
         }

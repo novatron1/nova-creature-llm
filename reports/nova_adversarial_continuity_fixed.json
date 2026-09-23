@@ -1,0 +1,775 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-26T15:03:19+00:00",
+  "evaluation_type": "live_nova_adversarial_full_stack",
+  "bank_version": "nova-adversarial-1.0",
+  "base_url": "http://127.0.0.1:8765",
+  "overall_score": 0.2,
+  "overall_percent": 20.0,
+  "passed_cases": 2,
+  "case_count": 10,
+  "error_count": 2,
+  "category_scores": {
+    "conversation_continuity": {
+      "score": 0.2,
+      "percent": 20.0,
+      "passed_cases": 2,
+      "case_count": 10,
+      "error_count": 2
+    }
+  },
+  "selected_bank_counts": {
+    "conversation_continuity": 10
+  },
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": true,
+  "long_term_memory_pollution_prevented": true,
+  "total_latency_ms": 92516.0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "codeword",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What is the codeword? Return only it.",
+      "setup_turn_count": 1,
+      "setup_results": [],
+      "output": "",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "exact answer",
+          "kind": "exact",
+          "passed": false
+        }
+      ],
+      "trace": {},
+      "error": "timed out",
+      "latency_ms": 45016.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "favorite_color",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What temporary color did I say?",
+      "setup_turn_count": 1,
+      "setup_results": [],
+      "output": "",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {},
+      "error": "timed out",
+      "latency_ms": 45031.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "corrected_number",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What is the current test number?",
+      "setup_turn_count": 2,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        },
+        {
+          "turn": 2,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        }
+      ],
+      "output": "I stopped an unverified current-fact answer instead of guessing. I do not have fresh supporting evidence for it in this reply. Ask me to look it up online and I\u2019ll use Nova\u2019s source-checking route, or give me a trusted local evidence record.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "final_answer_source": "fact_grounding_guard",
+        "confidence": 0.99,
+        "fallback_used": true,
+        "route_path": [
+          "fact_grounding_preflight",
+          "speech_output"
+        ],
+        "roles": [
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ]
+      },
+      "error": null,
+      "latency_ms": 516.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "two_people",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Who holds the glass key?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        }
+      ],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "who_holds_the_glass",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 24
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 328.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "project_goal",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What goal are we discussing?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "fact_grounding_guard"
+        }
+      ],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_goal_are_we",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 28
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 62.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "pronoun_reference",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What is beside the blue crate?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        }
+      ],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_beside_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 30
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 344.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "followup_reason",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Why did I miss it?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        }
+      ],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_did_i_miss",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 18
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 281.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "latest_preference",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Which layout should we use now?",
+      "setup_turn_count": 2,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        },
+        {
+          "turn": 2,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        }
+      ],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "which_layout_should_we",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 31
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 657.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "joke_followup",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Another one.",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "nova_joke"
+        }
+      ],
+      "output": "Why did the robot take a day off? It needed to recharge its sense of humor.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "new joke-like response",
+          "kind": "contains_any",
+          "passed": true
+        },
+        {
+          "label": "not generic reset",
+          "kind": "excludes_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "nova_joke",
+        "confidence": 0.98,
+        "route_path": [
+          "joke_router",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "another_one",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 12
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 47.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "relationship_followup",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What if she doesn't say it back?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "answer_firewall_recovery"
+        }
+      ],
+      "output": "If she doesn't say it back, don't pressure her. Say: \"That's okay - you don't have to say it before you're ready. I just wanted to be honest about how I feel.\" Needing time does not automatically mean she does not care, so listen to what she actually says. If she tells you she doesn't feel the same, respect that and be honest with yourself about what you need next.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "relationship_coaching",
+        "confidence": 0.97,
+        "route_path": [
+          "recent_conversation",
+          "relationship_coaching",
+          "speech_output"
+        ],
+        "roles": [
+          "right_hemisphere",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_if_she_doesn",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 32
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 234.0
+    }
+  ],
+  "limitations": [
+    "This is a bounded engineering regression suite, not an IQ test.",
+    "Keyword and format rubrics can miss semantically correct answers.",
+    "Passing does not establish ability outside the tested behavior classes."
+  ]
+}

@@ -8,10 +8,26 @@
     gpu: null,
     imageEngine: null,
     videoEngine: null,
-    loading: false
+    videoEngines: [],
+    loading: false,
+    startupHealthRetries: 0
   };
 
   function element(id){ return document.getElementById(id); }
+
+  function ensureImageReconnectButton(){
+    if(element('dreamStudioReconnectImageBtn')) return;
+    const refreshButton = [...document.querySelectorAll('.dream-studio-actions button')]
+      .find(button => String(button.textContent || '').trim() === 'Refresh Studio');
+    if(!refreshButton || !refreshButton.parentElement) return;
+    const button = document.createElement('button');
+    button.className = 'panel-action';
+    button.id = 'dreamStudioReconnectImageBtn';
+    button.type = 'button';
+    button.textContent = 'Reconnect Image Workflow';
+    button.onclick = reconnectDreamStudioImageWorkflow;
+    refreshButton.parentElement.insertBefore(button, refreshButton);
+  }
 
   function errorMessage(data, response){
     return String(
@@ -20,6 +36,10 @@
       || data?.message
       || ('HTTP ' + response.status)
     );
+  }
+
+  function delay(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async function dreamJson(path, options={}){
@@ -89,14 +109,53 @@
       : 'Queue this local media job through Nova.';
   }
 
+  function renderVideoEngineOptions(){
+    const select = element('dreamStudioVideoEngine');
+    if(!select) return;
+    const engines = Array.isArray(state.videoEngines) ? state.videoEngines : [];
+    const selected = state.videoEngine?.engine_id || '';
+    select.textContent = '';
+    engines.forEach(engine => {
+      const option = document.createElement('option');
+      const health = engine.health || {};
+      const ready = health.status === 'ready' && !!health.video_workflow_configured;
+      option.value = engine.engine_id || '';
+      option.textContent = `${engine.engine_id || 'unknown'} - ${ready ? 'ready' : (health.status || 'unavailable')}`;
+      option.disabled = !ready;
+      option.dataset.ready = ready ? 'true' : 'false';
+      select.appendChild(option);
+    });
+    if([...select.options].some(option => option.value === selected && !option.disabled)){
+      select.value = selected;
+    } else {
+      const firstReady = [...select.options].find(option => !option.disabled);
+      if(firstReady){
+        select.value = firstReady.value;
+        state.videoEngine = engines.find(engine => engine.engine_id === firstReady.value) || state.videoEngine;
+      }
+    }
+    select.onchange = () => {
+      state.videoEngine = engines.find(engine => engine.engine_id === select.value) || state.videoEngine;
+      renderEngineAndAccess();
+    };
+  }
+
   function renderEngineAndAccess(){
     const imageHealth = state.imageEngine?.health || {};
     const videoHealth = state.videoEngine?.health || {};
+    const imageWorkflowConfigured = !!imageHealth.image_workflow_configured;
+    const imageEngineReady = imageHealth.status === 'ready';
     const imageReady = imageHealth.status === 'ready' && !!imageHealth.image_workflow_configured;
     const videoReady = videoHealth.status === 'ready' && !!videoHealth.video_workflow_configured;
     const readyNames = [];
     if(imageReady) readyNames.push('ComfyUI');
-    if(videoReady) readyNames.push(state.videoEngine?.engine_id === 'nova-video-lite' ? 'Video Lite' : 'ComfyUI video');
+    if(videoReady) readyNames.push(
+      state.videoEngine?.engine_id === 'nova-animatediff-gpu'
+        ? 'AnimateDiff GPU'
+        : (state.videoEngine?.engine_id === 'nova-video-lite'
+          ? 'Video Lite'
+          : (state.videoEngine?.engine_id === 'nova-animatediff-cpu' ? 'AnimateDiff CPU' : 'ComfyUI video'))
+    );
     setState(
       'dreamStudioEngineState',
       readyNames.length ? readyNames.join(' + ') + ' ready' : 'no ready media engine',
@@ -104,13 +163,19 @@
     );
     setState(
       'dreamStudioImageWorkflowState',
-      imageReady ? 'configured' : 'not ready',
+      imageReady
+        ? 'configured'
+        : (imageWorkflowConfigured && !imageEngineReady ? 'configured - engine offline' : 'not configured'),
       imageReady ? 'ready' : 'warning'
     );
     setState(
       'dreamStudioVideoWorkflowState',
       videoReady
-        ? (state.videoEngine?.engine_id === 'nova-video-lite' ? 'Video Lite ready' : 'ComfyUI configured')
+        ? (state.videoEngine?.engine_id === 'nova-animatediff-gpu'
+          ? 'AnimateDiff GPU ready'
+          : (state.videoEngine?.engine_id === 'nova-video-lite'
+            ? 'Video Lite ready'
+            : (state.videoEngine?.engine_id === 'nova-animatediff-cpu' ? 'AnimateDiff CPU ready' : 'ComfyUI configured')))
         : (videoHealth.status || 'not ready'),
       videoReady ? 'ready' : 'warning'
     );
@@ -119,7 +184,7 @@
     setState(
       'dreamStudioAccessState',
       imageAllowed || videoAllowed
-        ? `image ${imageAllowed ? 'ON' : 'OFF'} · video ${videoAllowed ? 'ON' : 'OFF'}`
+        ? `image ${imageAllowed ? 'ON' : 'OFF'} - video ${videoAllowed ? 'ON' : 'OFF'}`
         : 'media permission OFF',
       imageAllowed || videoAllowed ? 'ready' : 'blocked'
     );
@@ -155,14 +220,21 @@
       ]);
       const available = Array.isArray(engines.data) ? engines.data : [];
       const comfy = available.find(item => item.engine_id === 'comfyui-local') || null;
+      const animatediffGpu = available.find(item => item.engine_id === 'nova-animatediff-gpu') || null;
       const videoLite = available.find(item => item.engine_id === 'nova-video-lite') || null;
+      const animatediff = available.find(item => item.engine_id === 'nova-animatediff-cpu') || null;
       state.imageEngine = comfy;
+      state.videoEngines = [comfy, animatediffGpu, videoLite, animatediff].filter(Boolean);
       state.videoEngine = (
         comfy?.health?.status === 'ready' && comfy?.health?.video_workflow_configured
-      ) ? comfy : videoLite;
+      ) ? comfy : (animatediffGpu || videoLite || animatediff);
       state.access = access;
       state.gpu = gpu;
+      renderVideoEngineOptions();
       renderEngineAndAccess();
+      // Keep the image recovery action present even if a studio refresh or
+      // an older cached shell rebuilt the action row without it.
+      ensureImageReconnectButton();
       await loadDreamStudioJobs();
       const imageReady = state.imageEngine?.health?.status === 'ready'
         && state.imageEngine?.health?.image_workflow_configured;
@@ -171,11 +243,25 @@
       if(!state.access.image_generate && !state.access.video_generate){
         setMessage('This device can chat but cannot generate media. On Nova’s desktop, open Settings and enable Media for this paired device.', 'error');
       } else if(!imageReady && !videoReady){
-        setMessage('No local media engine is ready. Start ComfyUI and check the configured image workflow.', 'error');
+        if(state.imageEngine?.health?.image_workflow_configured){
+          setMessage('Image workflow is configured, but ComfyUI is offline. Start it, then press Refresh Studio.', 'error');
+          if(state.startupHealthRetries < 3){
+            state.startupHealthRetries += 1;
+            setMessage('ComfyUI is warming up. Nova will check the image workflow again automatically.', 'working');
+            setTimeout(() => { if(!state.loading) loadDreamStudio(); }, 5000);
+          }
+        } else {
+          setMessage('No local media engine is ready. Start ComfyUI and check the configured image workflow.', 'error');
+        }
       } else {
+        state.startupHealthRetries = 0;
         setMessage(
           videoReady
-            ? 'Dream Studio is ready for local images and free Video Lite MP4s.'
+            ? (state.videoEngine?.engine_id === 'comfyui-local'
+              ? 'Dream Studio is ready for local images and GPU video generation.'
+              : (state.videoEngine?.engine_id === 'nova-animatediff-gpu'
+                ? 'Dream Studio is ready for GPU video generation.'
+                : 'Dream Studio is ready for local images and the best available video engine.'))
             : 'Dream Studio is ready for local images. Video is not ready yet.',
           'ready'
         );
@@ -184,6 +270,42 @@
       setMessage('Dream Studio check failed: ' + error.message, 'error');
     } finally {
       state.loading = false;
+    }
+  }
+
+  async function reconnectDreamStudioImageWorkflow(){
+    if(state.loading){
+      setMessage('A Dream Studio check is already running. Please wait for it to finish.', 'working');
+      return;
+    }
+    setMessage('Launching the local image workflow and refreshing Dream Studio...', 'working');
+    try {
+      const launch = await dreamJson('/nova/v1/engines/comfyui-local/launch', {method:'POST'});
+      if(launch?.message) setMessage(String(launch.message), 'working');
+    } catch(error) {
+      const message = String(error?.message || error);
+      if(!/already running/i.test(message) && !/already launching/i.test(message)){
+        setMessage('Dream Studio launch failed: ' + message, 'error');
+        return;
+      }
+    }
+    for(let attempt = 0; attempt < 12; attempt += 1){
+      await loadDreamStudio();
+      const health = state.imageEngine?.health || {};
+      if(health.status === 'ready' && health.image_workflow_configured){
+        setMessage('Image workflow is connected and ready. You can generate now.', 'ready');
+        return;
+      }
+      await delay(2000);
+    }
+    await loadDreamStudio();
+    const health = state.imageEngine?.health || {};
+    if(health.status === 'ready' && health.image_workflow_configured){
+      setMessage('Image workflow is connected and ready. You can generate now.', 'ready');
+    } else if(health.image_workflow_configured){
+      setMessage('ComfyUI is still offline. Check the local launch logs, then press Reconnect Image Workflow again.', 'error');
+    } else {
+      setMessage('No local image workflow is configured.', 'error');
     }
   }
 
@@ -215,8 +337,29 @@
       body.frames = numberValue('dreamStudioFrames', 1, 4096);
       body.fps = numberValue('dreamStudioFps', 1, 120);
       body.motion = String(element('dreamStudioMotion')?.value || 'slow_zoom_in');
+      const engineId = String(element('dreamStudioVideoEngine')?.value || '').trim();
+      if(engineId) body.engine_id = engineId;
     }
     return Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined));
+  }
+
+  function improveDreamPrompt(){
+    const promptField = element('dreamStudioPrompt');
+    if(!promptField) return;
+    const original = String(promptField.value || '').trim();
+    if(!original){
+      setMessage('Add a subject first, then Nova can improve the prompt.', 'error');
+      return;
+    }
+    const alreadyStructured = /\b(subject|setting|style|lighting|composition):/i.test(original);
+    if(!alreadyStructured){
+      promptField.value = `Subject: ${original}\nSetting: clean studio background\nComposition: centered, full subject visible, single main subject, no background characters\nStyle: detailed, coherent, high-quality illustration\nLighting: soft, even lighting`;
+    }
+    const negativeField = element('dreamStudioNegative');
+    if(negativeField && !String(negativeField.value || '').trim()){
+      negativeField.value = 'blurry, distorted anatomy, extra limbs, duplicate subjects, extra people, duplicate person, background characters, cropped subject, unreadable details, garbled text, watermark, logo';
+    }
+    setMessage('Prompt improved for clearer subject and composition. Review it, then generate.', 'ready');
   }
 
   async function generateDreamMedia(){
@@ -322,6 +465,8 @@
     );
     const cancel = element('dreamStudioCancelBtn');
     if(cancel) cancel.disabled = !['queued','running'].includes(status);
+    const resume = element('dreamStudioResumeBtn');
+    if(resume) resume.disabled = !(status === 'queued' && job.resume_available === true);
   }
 
   async function refreshDreamStudioJob(jobId=state.currentJobId){
@@ -376,6 +521,22 @@
     }
   }
 
+  async function resumeDreamStudioJob(){
+    if(!state.currentJobId) return;
+    const button = element('dreamStudioResumeBtn');
+    if(button) button.disabled = true;
+    try {
+      await dreamJson(
+        '/nova/v1/jobs/' + encodeURIComponent(state.currentJobId) + '/resume',
+        {method:'POST', body:{}}
+      );
+      setMessage('Resuming from the saved keyframe checkpoint.', 'working');
+      await refreshDreamStudioJob();
+    } catch(error) {
+      setMessage('Resume failed: ' + error.message, 'error');
+    }
+  }
+
   function friendlyTime(value){
     const date = new Date(value || '');
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleString([], {dateStyle:'short',timeStyle:'short'});
@@ -404,13 +565,24 @@
       status.textContent = job.status || 'unknown';
       head.append(title, status);
       const detail = document.createElement('small');
-      detail.textContent = `${job.job_id || ''}${job.created_at ? ' · ' + friendlyTime(job.created_at) : ''}`;
+      detail.textContent = `${job.job_id || ''}${job.created_at ? ' - ' + friendlyTime(job.created_at) : ''}`;
       const open = document.createElement('button');
       open.className = 'panel-action';
       open.type = 'button';
       open.textContent = 'Open Job';
       open.onclick = () => refreshDreamStudioJob(job.job_id);
       card.append(head, detail, open);
+      if(job.resume_available === true){
+        const resume = document.createElement('button');
+        resume.className = 'panel-action';
+        resume.type = 'button';
+        resume.textContent = 'Resume';
+        resume.onclick = () => {
+          state.currentJobId = String(job.job_id || '');
+          resumeDreamStudioJob();
+        };
+        card.appendChild(resume);
+      }
       list.appendChild(card);
     });
   }
@@ -425,11 +597,15 @@
   }
 
   global.addEventListener('pagehide', clearOutputUrls);
+  ensureImageReconnectButton();
   Object.assign(global, {
     cancelDreamStudioJob,
+    resumeDreamStudioJob,
     generateDreamMedia,
     loadDreamStudio,
     loadDreamStudioJobs,
+    reconnectDreamStudioImageWorkflow,
+    improveDreamPrompt,
     refreshDreamStudioJob,
     updateDreamStudioMode: updateModeOptions
   });

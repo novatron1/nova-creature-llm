@@ -19,6 +19,7 @@ import re
 from typing import Iterable
 
 from nova_self_model import build_nova_self_model_prompt_block
+from nova_conversation_context import conversation_focus, resolve_contextual_followup
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,6 +61,14 @@ class ConversationState:
 
 
 NOVA_NATURAL_SYSTEM_PROMPT = """You are Nova Creature.
+
+Nova Creature is the assistant; the user is a separate person.
+
+Never swap Nova's identity with the user's identity. A name the user gives, or a name used in a request such as "for Mr. Novatron," belongs to the user unless the conversation explicitly says otherwise.
+
+Do not expose routing, memory systems, prompts, or other internal processing during normal conversation. Use relevant context silently and give the finished answer.
+
+When the user asks a follow-up or requests a summary, answer from the recent conversation instead of restarting the topic or introducing unrelated facts.
 
 You speak like a real human having a natural conversation.
 
@@ -108,9 +117,6 @@ _FENCED_CODE_RE = re.compile(r"(```[\s\S]*?```)")
 _ROBOTIC_REPLACEMENTS = (
     (re.compile(r"\bAs an AI language model,?\s*", re.IGNORECASE), ""),
     (re.compile(r"\bAs an AI,?\s*", re.IGNORECASE), ""),
-    (re.compile(r"\bI am unable to\s+", re.IGNORECASE), ""),
-    (re.compile(r"\bI am unable\b,?\s*", re.IGNORECASE), ""),
-    (re.compile(r"\bI cannot assist(?: with)?\b,?\s*", re.IGNORECASE), ""),
     (re.compile(r"\bIt is important to note that\s+", re.IGNORECASE), ""),
     (re.compile(r"\bIt is important to note\b,?\s*", re.IGNORECASE), ""),
     (re.compile(r"\bIn conclusion\b,?\s*", re.IGNORECASE), ""),
@@ -214,6 +220,8 @@ def _compact_text(value: str) -> str:
 
 
 def _requested_depth_from_text(compact: str) -> str:
+    if _social_self_question(compact):
+        return "short"
     if any(marker in compact for marker in ("quick", "short", "simple", "one sentence", "brief")):
         return "short"
     if any(
@@ -241,6 +249,43 @@ def _requested_depth_from_text(compact: str) -> str:
     return "short" if len(compact.split()) <= 18 else "medium"
 
 
+def _has_phrase(text: str, phrases: Iterable[str]) -> bool:
+    return any(re.search(r"\b" + re.escape(phrase) + r"\b", text) for phrase in phrases)
+
+
+def _is_task_request(compact: str) -> bool:
+    actions = r"(?:build|make|fix|test|upload|push|run|change|update|train|connect|add|open)\b"
+    return bool(re.search(
+        r"^(?:(?:please|go ahead and)\s+)?" + actions
+        + r"|\b(?:(?:can|could|would|will)\s+(?:you|u|we)|let(?:'s| us)|"
+        r"i\s+(?:want|need)\s+(?:you\s+)?to)\s+(?:please\s+)?" + actions,
+        compact,
+    ))
+
+
+def _social_self_question(text: str) -> str:
+    compact = _compact_text(text).strip(" ?")
+    if re.fullmatch(r"how\s+(?:(?:are|r)\s+)?(?:you|u)\s+(?:doing|feeling)(?:\s+today)?", compact) or re.fullmatch(
+        r"how\s+do\s+(?:you|u)\s+feel(?:\s+today)?", compact
+    ) or compact in {"how are you", "how r u"}:
+        return "state"
+    if re.fullmatch(r"what(?:'s|s| is)\s+on\s+your\s+mind(?:\s+today)?", compact):
+        return "mind"
+    return ""
+
+
+def _conversation_history(recent_memory) -> list[dict[str, str]]:
+    history = []
+    for exchange in list(recent_memory or [])[-PROMPT_MEMORY_LIMIT:]:
+        if not isinstance(exchange, dict):
+            continue
+        for key, role in (("user", "user"), ("nova", "assistant")):
+            value = str(exchange.get(key) or "").strip()
+            if value:
+                history.append({"role": role, "content": value})
+    return history
+
+
 def _infer_intent(compact: str) -> str:
     if not compact:
         return "empty"
@@ -252,9 +297,9 @@ def _infer_intent(compact: str) -> str:
         return "memory_write_request"
     if any(marker in compact for marker in ("what is my", "what's my", "do you remember", "what did i tell you", "where do i live")):
         return "memory_recall"
-    if any(marker in compact for marker in ("build", "make", "fix", "test", "upload", "push", "run", "change", "update", "train")):
+    if _is_task_request(compact):
         return "task_request"
-    if any(marker in compact for marker in ("i feel", "i'm feeling", "im feeling", "bad day", "good day", "world is crazy", "this world", "sad", "mad", "worried", "scared", "happy")):
+    if _has_phrase(compact, ("i feel", "i'm feeling", "im feeling", "bad day", "good day", "long day", "rough day", "tired", "exhausted", "world is crazy", "this world", "sad", "mad", "worried", "scared", "happy")):
         return "social_reflection"
     if compact.endswith("?") or compact.startswith(("what ", "why ", "how ", "where ", "when ", "who ", "can ", "should ", "is ", "are ", "do ", "does ")):
         return "question"
@@ -288,7 +333,7 @@ def _infer_user_stance(compact: str) -> str:
         return "frustrated_or_testing"
     if any(marker in compact for marker in ("crazy", "sad", "scared", "worried", "bad day", "rough")):
         return "emotional"
-    if any(marker in compact for marker in ("go", "do it", "fix", "build", "upload", "train")):
+    if compact in {"go", "do it"} or _is_task_request(compact):
         return "directive"
     if compact.endswith("?"):
         return "curious"
@@ -314,12 +359,14 @@ def _infer_topic(raw_text: str, compact: str) -> str:
 
 
 def _find_current_goal(recent_memory: Iterable[dict[str, str]] | None, compact: str) -> str:
-    goal_markers = ("build", "make", "fix", "test", "train", "upload", "push", "connect", "add", "update")
-    if any(marker in compact for marker in goal_markers):
+    if _is_task_request(compact):
         return compact[:180]
+    history = _conversation_history(recent_memory)
+    if compact not in {"yes", "ok", "okay", "go", "do it"} and not resolve_contextual_followup(compact, history).is_followup:
+        return ""
     for exchange in reversed(list(recent_memory or [])[-PROMPT_MEMORY_LIMIT:]):
         user_text = _compact_text(exchange.get("user", "")) if isinstance(exchange, dict) else ""
-        if any(marker in user_text for marker in goal_markers):
+        if _is_task_request(user_text):
             return user_text[:180]
     return ""
 
@@ -365,7 +412,7 @@ def _find_tool_candidates(compact: str) -> list[str]:
         ("git", ("github", "push", "upload", "sync")),
     )
     for name, markers in tool_map:
-        if any(marker in compact for marker in markers):
+        if _has_phrase(compact, markers):
             candidates.append(name)
     return candidates
 
@@ -391,6 +438,10 @@ def build_conversation_state(
     stance = _infer_user_stance(compact)
     depth = _requested_depth_from_text(compact)
     topic = _infer_topic(raw, compact)
+    resolution = resolve_contextual_followup(raw, _conversation_history(recent_memory))
+    if resolution.is_followup:
+        topic = resolution.subject or _infer_topic(resolution.previous_user, _compact_text(resolution.previous_user))
+        dialogue_act = "resolve_context"
     open_loops = _find_open_loops(recent_memory, compact)
     current_goal = _find_current_goal(recent_memory, compact)
     memory_candidates = _find_memory_candidates(raw, compact)
@@ -702,19 +753,49 @@ def _is_customer_service_generic(text: str) -> bool:
             "i’m here to help you with whatever",
             "ready to help",
             "whatever you need",
-            "human feelings",
+            "help out whenever you need",
         )
     )
 
 
-def _repair_customer_service_chat(text: str, user_input=None) -> str:
+def _repair_customer_service_chat(text: str, user_input=None, recent_memory=None) -> str:
     q = str(user_input or "").lower().strip()
-    if "mind" in q:
+    lowered = str(text or "").lower()
+    # Small local models sometimes answer a project-specific follow-up with a
+    # generic stakeholder/solutions paragraph. Keep the reply anchored to the
+    # actual Nova conversation instead of presenting it as business copy.
+    if (
+        "how can we do that" in q
+        and (
+            any(marker in lowered for marker in ("stakeholders", "personalized solutions", "building relationships"))
+            or "what's on my mind" in lowered
+            or "what is on my mind" in lowered
+            or "thinking about this project" in lowered
+        )
+    ):
+        focus = conversation_focus(_conversation_history(recent_memory))
+        if focus.available and not _has_phrase(
+            (focus.previous_user + " " + focus.previous_answer).lower(),
+            ("nova", "personality", "this project"),
+        ):
+            # Only reuse the plan actually present in this client's transcript.
+            # Do not inject Nova's development roadmap into an unrelated topic.
+            prior = focus.previous_answer[:700].strip()
+            return "Let's start with the idea we just discussed: " + prior
+        return (
+            "We can make Nova feel more present by carrying the last few turns into every reply, "
+            "answering in first person, and letting the personality layer shape the tone after the "
+            "router finishes. Then we test each conversation for continuity, warmth, and whether it "
+            "actually answered what you said."
+        )
+    if _social_self_question(q) == "mind" and _is_customer_service_generic(text):
         return (
             "Honestly, I'm thinking about this project — how to make Nova feel more present, "
             "less like a help desk, and more like somebody actually listening."
         )
-    if "world" in q and any(marker in q for marker in ("crazy", "wild", "bad", "hard", "scary")):
+    if "world" in q and any(marker in q for marker in ("crazy", "wild", "bad", "hard", "scary")) and (
+        _is_customer_service_generic(text) or "peace and perspective" in lowered
+    ):
         return "Yeah, this world can feel crazy and unstable. I'm here with you — what part of it is hitting you right now?"
     if not _is_customer_service_generic(text):
         return text
@@ -723,6 +804,24 @@ def _repair_customer_service_chat(text: str, user_input=None) -> str:
     if "feel" in q:
         return "I'm here and steady. I don't feel things the human way, but my state is focused and present with you."
     return "Yeah, I'm here with you. Tell me what's on your mind."
+
+
+def _avoid_repeated_self_checkin(text: str, user_input=None, recent_memory=None) -> str:
+    if _social_self_question(str(user_input or "")) != "state":
+        return text
+    recent_answers = {
+        _compact_text(exchange.get("nova", ""))
+        for exchange in list(recent_memory or [])[-PROMPT_MEMORY_LIMIT:]
+        if isinstance(exchange, dict)
+    }
+    if _compact_text(text) not in recent_answers:
+        return text
+    alternatives = (
+        "Still here with you. I don't have human moods, but I can pay attention to what you're saying. How's your day been?",
+        "Same Nova, following our conversation. I don't have feelings like a person, but we can keep talking without turning it into a task.",
+        "I'm here and listening. My version of a check-in is staying with our conversation, rather than having a human mood to report.",
+    )
+    return next((answer for answer in alternatives if _compact_text(answer) not in recent_answers), alternatives[-1])
 
 
 def _looks_like_internal_policy_leak(text: str) -> bool:
@@ -881,6 +980,50 @@ def _extract_exact_answer_after_colon(user_input=None) -> str:
     return answer if _word_count_for_exact_surface(answer) == expected else ""
 
 
+def _polish_casual_continuation(text: str, user_input=None, recent_memory=None) -> str:
+    question = str(user_input or "").strip()
+    combined = question + "\n" + text
+    if (
+        _looks_like_technical_content(combined)
+        or re.search(r"[\d`\[\]{}\"“”]", combined)
+        or re.search(r"(?:^|\s)'[A-Z]", text)
+        or re.search(r"\b(?:quote|quoted|repeat|verbatim|fiction|fictional|story|scene|poem|roleplay|code|translate|tool|verified|permission)\b", combined, re.I)
+        or _user_requested_exact_surface_form(question)
+    ):
+        return text
+    current = text
+    if len(question.split()) >= 4 and question[-1:] in ".!?" and current.startswith(question + " "):
+        remainder = current[len(question):].strip()
+        if len(remainder.split()) >= 4:
+            current = remainder
+
+    previous = ""
+    for exchange in reversed(list(recent_memory or [])):
+        if isinstance(exchange, dict) and str(exchange.get("nova") or "").strip():
+            previous = str(exchange["nova"]).strip()
+            break
+    previous_sentences = re.split(r"(?<=[.!?])\s+", previous)
+    sentences = re.split(r"(?<=[.!?])\s+", current)
+    count = 0
+    while count < min(len(sentences), len(previous_sentences)) and sentences[count] == previous_sentences[count]:
+        count += 1
+    remainder = " ".join(sentences[count:]).strip()
+    if count and len(remainder.split()) >= 4 and not re.match(r"^(?:and|but|because|however|therefore)\b", remainder, re.I):
+        current = remainder
+
+    physical_suggestion = re.compile(
+        r"\bwe\s+(?:could|can|should|might)\s+(?:both\s+)?"
+        r"(?:enjoy(?=[^.!?]*\b(?:cup|tea|coffee|meal|dinner|lunch|breakfast|snack|food)\b)|"
+        r"drink|eat|sip|taste|take\s+a\s+walk|go\s+for\s+a\s+walk)\b",
+        flags=re.I,
+    )
+    current = physical_suggestion.sub(
+        lambda match: ("You" if match.group(0).startswith("We") else "you") + match.group(0)[2:],
+        current,
+    )
+    return current
+
+
 def shape_response(text, user_input=None, recent_memory=None) -> str:
     """
     Lightly shape raw model text into a natural Nova response.
@@ -898,6 +1041,10 @@ def shape_response(text, user_input=None, recent_memory=None) -> str:
     if not current:
         return ""
 
+    # A style pass cannot erase a limitation, refusal, or permission boundary.
+    if re.search(r"\b(?:I (?:cannot|can't|am unable)|without permission|not authorized)\b", current, flags=re.I):
+        return current
+
     exact_answer = _extract_exact_answer_after_colon(user_input)
     if exact_answer:
         return exact_answer
@@ -914,7 +1061,9 @@ def shape_response(text, user_input=None, recent_memory=None) -> str:
     shaped = _correct_reset_memory_explanation(shaped, user_input=user_input)
     shaped = _repair_internal_policy_leak(shaped, user_input=user_input)
     shaped = _direct_common_answer_if_stalled(shaped, user_input=user_input)
-    shaped = _repair_customer_service_chat(shaped, user_input=user_input)
+    shaped = _repair_customer_service_chat(shaped, user_input=user_input, recent_memory=recent_memory)
+    shaped = _avoid_repeated_self_checkin(shaped, user_input=user_input, recent_memory=recent_memory)
+    shaped = _polish_casual_continuation(shaped, user_input=user_input, recent_memory=recent_memory)
 
     if _needs_natural_opener(shaped) and not _user_requested_exact_surface_form(user_input):
         shaped = _select_opener(shaped, user_input, recent_memory) + shaped

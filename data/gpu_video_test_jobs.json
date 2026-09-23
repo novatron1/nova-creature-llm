@@ -1,0 +1,30 @@
+{
+  "jobs": [
+    {
+      "checkpoint_path": "",
+      "child_job_id": "",
+      "client_id": "local",
+      "created_at": "2026-09-03T04:34:31.386890+00:00",
+      "error": "AnimateDiff GPU could not encode a video output.",
+      "fps": 8,
+      "frames": 12,
+      "height": 384,
+      "job_id": "nag_c359847c282cc340f38c7e94",
+      "motion": "slow_zoom_in",
+      "operation": "text_to_video_nag",
+      "output_filename": "",
+      "resume_available": false,
+      "seed": 1234,
+      "stage": "failed",
+      "status": "failed",
+      "updated_at": "2026-09-03T04:34:35.443603+00:00",
+      "width": 384
+    }
+  ],
+  "privacy": {
+    "keyframe_content_stored": false,
+    "negative_prompt_content_stored": false,
+    "prompt_content_stored": false
+  },
+  "schema_version": "1.0"
+}

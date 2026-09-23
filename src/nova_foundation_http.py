@@ -92,6 +92,11 @@ class FoundationHttpController:
             "application/javascript; charset=utf-8",
             {},
         ),
+        "/assets/nova_chat_history.js": (
+            "assets/nova_chat_history.js",
+            "application/javascript; charset=utf-8",
+            {},
+        ),
         "/assets/nova_companion/companion-app.js": (
             "assets/nova_companion/companion-app.js",
             "application/javascript; charset=utf-8",

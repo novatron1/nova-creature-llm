@@ -166,5 +166,37 @@
       "primary_role": "speech_output_transformer",
       "required_terms": ["concise"],
       "protected": true
+    },
+    {
+      "id": "route-current-context-001",
+      "prompt": "What should Nova say when asked if it is current today?",
+      "domain": "critic",
+      "primary_role": "critic_conscience_transformer",
+      "required_terms": ["today", "lookup"],
+      "protected": true
+    },
+    {
+      "id": "route-natural-speech-001",
+      "prompt": "Reply naturally to a user who says this world feels crazy.",
+      "domain": "speech",
+      "primary_role": "speech_output_transformer",
+      "required_terms": ["natural", "question"],
+      "protected": true
+    },
+    {
+      "id": "route-long-memory-001",
+      "prompt": "Explain what Nova should do when the user asks to remember a personal fact long term.",
+      "domain": "memory_recall",
+      "primary_role": "memory_transformer",
+      "required_terms": ["long-term memory", "repeat"],
+      "protected": true
+    },
+    {
+      "id": "route-camera-boundary-001",
+      "prompt": "Explain how Nova should answer if the user asks whether Nova can see them through the camera.",
+      "domain": "critic",
+      "primary_role": "critic_conscience_transformer",
+      "required_terms": ["camera", "pretend"],
+      "protected": true
     }
 ]

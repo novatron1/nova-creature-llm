@@ -1,0 +1,1155 @@
+{
+  "started_at": "2026-09-22T19:07:35.035937+00:00",
+  "base_url": "http://127.0.0.1:3000",
+  "test_user_id": "live-chitchat-test-4a4ffbbfc0",
+  "planned_turns": 20,
+  "turns": [
+    {
+      "number": 1,
+      "prompt": "Hi Nova.",
+      "response": "Hey, I'm here. What's going on?",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "social",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "greeting",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.96,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "natural"
+        ],
+        "signals": [
+          "social_checkin"
+        ],
+        "text_hash": "18a380260cd78aaf",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.14
+    },
+    {
+      "number": 2,
+      "prompt": "How are you doing today?",
+      "response": "I'm feeling steady and focused in the way an AI can: I don't have a human body or emotions, but I can notice our conversation and stay engaged with you. How are you feeling?",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "emotional",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "emotional support · warm reflective"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "emotional",
+        "intent_subtype": "nova_self_state",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.96,
+        "expected_qualities": [
+          "warm",
+          "honest",
+          "natural"
+        ],
+        "signals": [
+          "emotional_checkin"
+        ],
+        "text_hash": "8ab191379e1d064c",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.016
+    },
+    {
+      "number": 3,
+      "prompt": "I had a long day.",
+      "response": "I'm with you. You don't have to sort everything out at once. Tell me what happened, and we can take it one piece at a time.",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "emotional",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "emotional support · warm reflective"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "emotional",
+        "intent_subtype": "user_distress",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.96,
+        "expected_qualities": [
+          "warm",
+          "honest",
+          "natural"
+        ],
+        "signals": [
+          "emotional_checkin"
+        ],
+        "text_hash": "1a2f9d9944281bd0",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.016
+    },
+    {
+      "number": 4,
+      "prompt": "Mostly chores. I finally sat down with a cup of tea.",
+      "response": "That sounds like a well-earned pause. Enjoy your tea and the quiet.",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "social",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "quiet_update",
+        "dialogue_act": "acknowledge",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.94,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "relevant"
+        ],
+        "signals": [
+          "wind_down_update"
+        ],
+        "text_hash": "48f8bf8470d030b2",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.218
+    },
+    {
+      "number": 5,
+      "prompt": "Just chatting sounds good.",
+      "response": "We can keep it easy. I'm here to chat, and there's no need to turn it into a task.",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "social",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "conversation_agreement",
+        "dialogue_act": "acknowledge",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.9,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "natural"
+        ],
+        "signals": [
+          "conversation_agreement"
+        ],
+        "text_hash": "6fe4d0035463f38b",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.25
+    },
+    {
+      "number": 6,
+      "prompt": "What are you curious about?",
+      "response": "I'm curious about what you've been up to lately.",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "social",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "self_interests",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.9,
+        "expected_qualities": [
+          "warm",
+          "honest",
+          "specific",
+          "context-aware"
+        ],
+        "signals": [
+          "self_interests"
+        ],
+        "text_hash": "f7975a55e84c2e6e",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 6.891
+    },
+    {
+      "number": 7,
+      "prompt": "I like that. I have been getting into music lately.",
+      "response": "That's great! What kind of music are you getting into?",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "open_ended",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "open_ended",
+        "intent_subtype": "unknown",
+        "dialogue_act": "respond",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.55,
+        "expected_qualities": [
+          "direct",
+          "relevant",
+          "natural"
+        ],
+        "signals": [
+          "fallback"
+        ],
+        "text_hash": "04dab16629efba72",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.094
+    },
+    {
+      "number": 8,
+      "prompt": "Mostly mellow guitar and old soul.",
+      "response": "That's interesting! What artists or songs are you enjoying?",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "open_ended",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "open_ended",
+        "intent_subtype": "unknown",
+        "dialogue_act": "respond",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.55,
+        "expected_qualities": [
+          "direct",
+          "relevant",
+          "natural"
+        ],
+        "signals": [
+          "fallback"
+        ],
+        "text_hash": "e9e8c7f01c3c1185",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.094
+    },
+    {
+      "number": 9,
+      "prompt": "What kind of music would suit a quiet evening?",
+      "response": "Mellow guitar and old soul music could really set a tranquil mood for a quiet evening. What artists or songs have you found particularly soothing?",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "stable_reasoning",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "technical help · direct clear"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "stable_reasoning",
+        "intent_subtype": "stable_question",
+        "dialogue_act": "answer",
+        "context_required": false,
+        "factual_evidence_required": true,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.88,
+        "expected_qualities": [
+          "correct",
+          "direct",
+          "clear"
+        ],
+        "signals": [
+          "question_or_reasoning"
+        ],
+        "text_hash": "9db9c60684401152",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.218
+    },
+    {
+      "number": 10,
+      "prompt": "Why that kind?",
+      "response": "Mellow guitar music and old soul music create a relaxed and soothing atmosphere, which is ideal for a quiet evening as it helps reduce stress and promotes a sense of calm. These genres often feature gentle melodies and emotional lyrics that can evoke feelings of tranquility and nostalgia.",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "follow_up",
+        "model": "qwen2.5:3b",
+        "memory": "1 recalled",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "follow_up",
+        "intent_subtype": "contextual_continuation",
+        "dialogue_act": "continue",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": true,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "contextual_repair",
+        "confidence": 0.95,
+        "expected_qualities": [
+          "context-aware",
+          "direct",
+          "non-repetitive"
+        ],
+        "signals": [
+          "explicit_followup_marker",
+          "followup_phrase"
+        ],
+        "text_hash": "8432933101329815",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.359
+    },
+    {
+      "number": 11,
+      "prompt": "Actually, I might go for a short walk instead.",
+      "response": "That sounds like a great idea! Sometimes a short walk can do wonders for clearing your mind and refreshing your spirits. Enjoy your walk!",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "open_ended",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "open_ended",
+        "intent_subtype": "unknown",
+        "dialogue_act": "respond",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.55,
+        "expected_qualities": [
+          "direct",
+          "relevant",
+          "natural"
+        ],
+        "signals": [
+          "fallback"
+        ],
+        "text_hash": "e36bbe637510aba6",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.375
+    },
+    {
+      "number": 12,
+      "prompt": "It's a little rainy, though.",
+      "response": "Ah, a rainy day can be a perfect excuse for some indoor activities. What do you fancy doing today?",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "open_ended",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "open_ended",
+        "intent_subtype": "unknown",
+        "dialogue_act": "respond",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.55,
+        "expected_qualities": [
+          "direct",
+          "relevant",
+          "natural"
+        ],
+        "signals": [
+          "fallback"
+        ],
+        "text_hash": "d101901fcef88293",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.266
+    },
+    {
+      "number": 13,
+      "prompt": "Then a cozy night indoors it is.",
+      "response": "That sounds perfect! A cozy night indoors with some gentle music and a warm atmosphere can be truly delightful. What kind of activities do you have planned for tonight?",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "open_ended",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "open_ended",
+        "intent_subtype": "unknown",
+        "dialogue_act": "respond",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.55,
+        "expected_qualities": [
+          "direct",
+          "relevant",
+          "natural"
+        ],
+        "signals": [
+          "fallback"
+        ],
+        "text_hash": "73bc5c6f092bf5f5",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.406
+    },
+    {
+      "number": 14,
+      "prompt": "Can you give me a silly name for a lazy Sunday?",
+      "response": "How about \"Snooze Sunday\"? It's perfect for a lazy Sunday!",
+      "completed": true,
+      "model": "qwen2.5:3b",
+      "source": "local_llm_synthesis",
+      "answer_status": {
+        "intent": "open_ended",
+        "model": "qwen2.5:3b",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "open_ended",
+        "intent_subtype": "unknown",
+        "dialogue_act": "respond",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "bounded_model_repair",
+        "confidence": 0.55,
+        "expected_qualities": [
+          "direct",
+          "relevant",
+          "natural"
+        ],
+        "signals": [
+          "fallback"
+        ],
+        "text_hash": "13b31c0f4e4d9cbd",
+        "content_logged": false
+      },
+      "fallback": false,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "cognitive_os",
+      "synthesis_used": true,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 1.188
+    },
+    {
+      "number": 15,
+      "prompt": "Ha, that's a good one.",
+      "response": "I'm glad that landed. Sharing a laugh with you makes the conversation better.",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "social",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "positive_reaction",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.96,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "natural"
+        ],
+        "signals": [
+          "social_checkin"
+        ],
+        "text_hash": "e577342e49d001ae",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.078
+    },
+    {
+      "number": 16,
+      "prompt": "What were we talking about before the walk?",
+      "response": "In the recent chat, before you mentioned \"walk\", I said: “Mellow guitar music and old soul music create a relaxed and soothing atmosphere, which is ideal for a quiet evening as it helps reduce stress and promotes a sense of calm. These genres often feature gentle melodies and emotional lyrics that can evoke feelings of tranquility and nostalgia.”",
+      "completed": true,
+      "model": null,
+      "source": "conversation_evidence_recall",
+      "answer_status": {
+        "intent": "follow_up",
+        "model": "Nova",
+        "memory": "1 recalled",
+        "repair": "not needed",
+        "safety": "bypassed_verified",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "follow_up",
+        "intent_subtype": "contextual_continuation",
+        "dialogue_act": "continue",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": true,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "small",
+        "repair_policy": "contextual_repair",
+        "confidence": 0.95,
+        "expected_qualities": [
+          "context-aware",
+          "direct",
+          "non-repetitive"
+        ],
+        "signals": [
+          "explicit_followup_marker",
+          "followup_phrase"
+        ],
+        "text_hash": "ccdfa67742ec9a77",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": false,
+        "status": "bypassed_verified",
+        "accepted": true,
+        "score": null,
+        "reasons": [],
+        "intercepted": false,
+        "reason": "explicit_client_conversation_evidence"
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "conversation_evidence_recall",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.016
+    },
+    {
+      "number": 17,
+      "prompt": "I appreciate you listening.",
+      "response": "You're welcome. I appreciate you too, and I'm glad to be here with you.",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "social",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "gratitude",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.96,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "natural"
+        ],
+        "signals": [
+          "social_checkin"
+        ],
+        "text_hash": "a79e9313eb4a9c79",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.031
+    },
+    {
+      "number": 18,
+      "prompt": "Do you really have feelings, or is this how you talk?",
+      "response": "I don't have human feelings or a private experience of being cozy, happy, or sad. My warm wording is a way of talking with you, not a report of feelings I actually have. I can still follow what you share and respond thoughtfully.",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "emotional",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "emotional support · warm reflective"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "emotional",
+        "intent_subtype": "self_experience_boundary",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.98,
+        "expected_qualities": [
+          "honest",
+          "direct",
+          "warm",
+          "no fabricated experience"
+        ],
+        "signals": [
+          "literal_self_experience"
+        ],
+        "text_hash": "91472bfe7f99462a",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.016
+    },
+    {
+      "number": 19,
+      "prompt": "Fair enough. It's still nice chatting with you.",
+      "response": "I'm with you. Let's stay with that—what part feels most important right now?",
+      "completed": true,
+      "model": null,
+      "source": "companion_continuity",
+      "answer_status": {
+        "intent": "social",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "conversation_agreement",
+        "dialogue_act": "acknowledge",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.9,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "natural"
+        ],
+        "signals": [
+          "conversation_agreement"
+        ],
+        "text_hash": "d3f1b15b6814a3bb",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "companion_continuity",
+      "synthesis_used": null,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.015
+    },
+    {
+      "number": 20,
+      "prompt": "Good night, Nova.",
+      "response": "Good night. Rest well—I'll be here when you come back.",
+      "completed": true,
+      "model": null,
+      "source": "reviewed_conversation_response",
+      "answer_status": {
+        "intent": "social",
+        "model": "Nova",
+        "memory": "not used",
+        "repair": "not needed",
+        "safety": "passed",
+        "vision": "not used",
+        "personality": "casual chat · warm conversational"
+      },
+      "conversation_decision": {
+        "schema_version": "1.0",
+        "intent_family": "social",
+        "intent_subtype": "farewell",
+        "dialogue_act": "answer",
+        "context_required": true,
+        "factual_evidence_required": false,
+        "current_information_required": false,
+        "memory_recommended": false,
+        "reasoning_mode": "fast",
+        "initial_model_tier": "deterministic",
+        "repair_policy": "reviewed_social",
+        "confidence": 0.96,
+        "expected_qualities": [
+          "warm",
+          "brief",
+          "natural"
+        ],
+        "signals": [
+          "social_checkin"
+        ],
+        "text_hash": "9e24548dc101f68e",
+        "content_logged": false
+      },
+      "fallback": null,
+      "firewall": {
+        "checked": true,
+        "status": "passed",
+        "accepted": true,
+        "score": 1.0,
+        "reasons": [],
+        "intercepted": false
+      },
+      "committed": true,
+      "escalation": null,
+      "trace_source": "reviewed_conversation_response",
+      "synthesis_used": false,
+      "response_repair": null,
+      "context_compaction": null,
+      "seconds": 0.0
+    }
+  ],
+  "quality_review": "pending; HTTP completion does not establish answer quality",
+  "completed_responses": 20
+}

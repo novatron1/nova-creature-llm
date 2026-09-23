@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -28,6 +29,7 @@ VIDEO_LITE_MOTIONS = frozenset(
     {"slow_zoom_in", "slow_zoom_out", "pan_left", "pan_right"}
 )
 _MAX_OUTPUT_BYTES = 1024 * 1024 * 1024
+_MIN_VALID_OUTPUT_BYTES = 4
 
 
 def _now() -> str:
@@ -110,6 +112,7 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
     engine_type = "video_generation"
     local_or_remote = "local"
     cost_type = "free"
+    job_prefix = "nvl_"
 
     def __init__(
         self,
@@ -120,6 +123,7 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
         output_dir: str | Path = "data/nova_video_lite",
         job_store_path: str | Path | None = "data/nova_video_lite_jobs.json",
         encode_timeout_seconds: int = 180,
+        output_ttl_seconds: int = 7 * 24 * 60 * 60,
     ) -> None:
         self.enabled = bool(enabled)
         self.image_engine = image_engine
@@ -129,6 +133,7 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
             Path(job_store_path).resolve() if job_store_path else None
         )
         self.encode_timeout_seconds = max(30, min(int(encode_timeout_seconds), 1800))
+        self.output_ttl_seconds = max(0, min(int(output_ttl_seconds), 365 * 24 * 60 * 60))
         self._lock = RLock()
         self._store_lock = RLock()
         self._jobs: dict[str, dict[str, Any]] = {}
@@ -289,7 +294,7 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
                 param="motion",
             )
         owner_id = str(options.get("owner_id") or "local")[:160]
-        job_id = "nvl_" + secrets.token_hex(12)
+        job_id = self.job_prefix + secrets.token_hex(12)
         created_at = _now()
         record = {
             "job_id": job_id,
@@ -303,7 +308,10 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
             "height": height,
             "frames": frames,
             "fps": fps,
+            "seed": seed,
             "motion": motion,
+            "resume_available": False,
+            "checkpoint_path": "",
             "output_filename": "",
             "child_job_id": "",
             "error": None,
@@ -324,7 +332,7 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
         }
         Thread(
             target=self._run_job,
-            args=(job_id, clean_prompt, worker_options, cancellation),
+            args=(job_id, clean_prompt, worker_options, cancellation, False),
             name=f"nova-video-lite-{job_id[-8:]}",
             daemon=True,
         ).start()
@@ -348,6 +356,7 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
         prompt: str,
         options: dict[str, Any],
         cancellation: Event,
+        resume_from_checkpoint: bool = False,
     ) -> None:
         job_dir = self.output_dir / job_id
         keyframe_path = job_dir / "keyframe.image"
@@ -355,73 +364,84 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
         internal_owner = "video-lite:" + job_id
         try:
             job_dir.mkdir(parents=True, exist_ok=True)
-            self._update_job(job_id, status="running", stage="generating_keyframe")
-            image_job = self.image_engine.generate_image(
-                prompt,
-                negative_prompt=options["negative_prompt"],
-                seed=options["seed"],
-                width=options["width"],
-                height=options["height"],
-                steps=options["steps"],
-                owner_id=internal_owner,
-            )
-            child_job_id = str(image_job.get("job_id") or "")
-            if not child_job_id:
-                raise ProviderUnavailableError(
-                    "The image engine did not return a keyframe job ID."
-                )
-            self._update_job(job_id, child_job_id=child_job_id)
-            while True:
-                if cancellation.wait(1.0):
-                    try:
-                        self.image_engine.cancel_job(
-                            child_job_id,
-                            owner_id=internal_owner,
-                        )
-                    except Exception:
-                        pass
-                    self._mark_cancelled(job_id)
-                    return
-                child = self.image_engine.job_status(
-                    child_job_id,
+            checkpoint = Path(str(self._job_record(job_id).get("checkpoint_path") or ""))
+            resume = bool(resume_from_checkpoint and checkpoint.is_file())
+            if resume:
+                keyframe_path = checkpoint
+                self._update_job(job_id, status="running", stage="encoding_motion")
+            else:
+                self._update_job(job_id, status="running", stage="generating_keyframe")
+                image_job = self.image_engine.generate_image(
+                    prompt,
+                    negative_prompt=options["negative_prompt"],
+                    seed=options["seed"],
+                    width=options["width"],
+                    height=options["height"],
+                    steps=options["steps"],
                     owner_id=internal_owner,
                 )
-                child_status = str(child.get("status") or "")
-                if child_status == "completed":
-                    break
-                if child_status in {"failed", "cancelled"}:
+                child_job_id = str(image_job.get("job_id") or "")
+                if not child_job_id:
                     raise ProviderUnavailableError(
-                        "The keyframe generation did not complete successfully."
+                        "The image engine did not return a keyframe job ID."
                     )
-
-            opened = self.image_engine.open_job_output(
-                child_job_id,
-                0,
-                owner_id=internal_owner,
-            )
-            response = opened["response"]
-            copied = 0
-            try:
-                with keyframe_path.open("wb") as target:
-                    while True:
-                        chunk = response.read(64 * 1024)
-                        if not chunk:
-                            break
-                        copied += len(chunk)
-                        if copied > _MAX_OUTPUT_BYTES:
-                            raise InvalidRequestError(
-                                "Generated keyframe exceeds Nova's output limit."
+                self._update_job(job_id, child_job_id=child_job_id)
+                while True:
+                    if cancellation.wait(1.0):
+                        try:
+                            self.image_engine.cancel_job(
+                                child_job_id,
+                                owner_id=internal_owner,
                             )
-                        target.write(chunk)
-            finally:
-                response.close()
-            if not copied:
-                raise ProviderUnavailableError(
-                    "The image engine returned an empty keyframe."
+                        except Exception:
+                            pass
+                        self._mark_cancelled(job_id)
+                        return
+                    child = self.image_engine.job_status(
+                        child_job_id,
+                        owner_id=internal_owner,
+                    )
+                    child_status = str(child.get("status") or "")
+                    if child_status == "completed":
+                        break
+                    if child_status in {"failed", "cancelled"}:
+                        raise ProviderUnavailableError(
+                            "The keyframe generation did not complete successfully."
+                        )
+
+                opened = self.image_engine.open_job_output(
+                    child_job_id,
+                    0,
+                    owner_id=internal_owner,
                 )
-            if cancellation.is_set():
-                self._mark_cancelled(job_id)
-                return
+                response = opened["response"]
+                copied = 0
+                try:
+                    with keyframe_path.open("wb") as target:
+                        while True:
+                            chunk = response.read(64 * 1024)
+                            if not chunk:
+                                break
+                            copied += len(chunk)
+                            if copied > _MAX_OUTPUT_BYTES:
+                                raise InvalidRequestError(
+                                    "Generated keyframe exceeds Nova's output limit."
+                                )
+                            target.write(chunk)
+                finally:
+                    response.close()
+                if not copied:
+                    raise ProviderUnavailableError(
+                        "The image engine returned an empty keyframe."
+                    )
+                self._update_job(
+                    job_id,
+                    checkpoint_path=str(keyframe_path),
+                    resume_available=True,
+                )
+                if cancellation.is_set():
+                    self._mark_cancelled(job_id)
+                    return
 
             self._update_job(job_id, stage="encoding_motion")
             command = self._ffmpeg_command(keyframe_path, output_path, options)
@@ -468,11 +488,17 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
                 output_path.unlink(missing_ok=True)
                 self._mark_cancelled(job_id)
                 return
+            integrity = self._output_integrity(output_path)
             self._update_job(
                 job_id,
                 status="completed",
                 stage="completed",
                 output_filename=output_path.name,
+                output_sha256=integrity["sha256"],
+                output_bytes=integrity["bytes"],
+                output_expires_at=integrity["expires_at"],
+                checkpoint_path="",
+                resume_available=False,
                 error=None,
             )
         except Exception as exc:
@@ -485,9 +511,46 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
                     error=self._safe_error(exc),
                 )
         finally:
-            keyframe_path.unlink(missing_ok=True)
+            try:
+                current = self._job_record(job_id)
+            except Exception:
+                current = {}
+            if current.get("status") == "completed" or not current.get("resume_available"):
+                keyframe_path.unlink(missing_ok=True)
             with self._lock:
                 self._runtime.pop(job_id, None)
+
+    def _output_integrity(self, output_path: Path) -> dict[str, Any]:
+        if not output_path.is_file():
+            raise ProviderUnavailableError("Nova produced no video output.")
+        size = output_path.stat().st_size
+        if size < _MIN_VALID_OUTPUT_BYTES:
+            raise ProviderUnavailableError("Nova produced an empty or invalid video output.")
+        if size >= 1024:
+            with output_path.open("rb") as probe:
+                header = probe.read(12)
+            if len(header) < 8 or header[4:8] != b"ftyp":
+                raise ProviderUnavailableError("Nova produced an invalid MP4 output.")
+        digest = hashlib.sha256()
+        with output_path.open("rb") as source:
+            for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(chunk)
+        expires_at = ""
+        if self.output_ttl_seconds:
+            expires_at = datetime.fromtimestamp(
+                time.time() + self.output_ttl_seconds,
+                timezone.utc,
+            ).isoformat()
+        return {"sha256": digest.hexdigest(), "bytes": size, "expires_at": expires_at}
+
+    @staticmethod
+    def _expired(value: Any) -> bool:
+        if not value:
+            return False
+        try:
+            return datetime.fromisoformat(str(value)).timestamp() <= time.time()
+        except (TypeError, ValueError, OverflowError):
+            return True
 
     def _ffmpeg_command(
         self,
@@ -610,14 +673,35 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
         output_path = self.output_dir / str(job_id) / "output.mp4"
         if record.get("status") == "completed":
             if output_path.is_file():
-                outputs.append(
-                    {
-                        "output_index": 0,
-                        "media_kind": "video",
-                        "filename": f"NovaVideoLite_{job_id}.mp4",
-                        "download_path": f"/nova/v1/jobs/{job_id}/outputs/0",
-                    }
-                )
+                try:
+                    integrity = self._output_integrity(output_path)
+                    expected = str(record.get("output_sha256") or "")
+                    if self._expired(record.get("output_expires_at")):
+                        raise ProviderUnavailableError("The media output has expired.")
+                    if expected and expected != integrity["sha256"]:
+                        raise ProviderUnavailableError("The media output checksum no longer matches.")
+                    if not expected:
+                        record.update(
+                            output_sha256=integrity["sha256"],
+                            output_bytes=integrity["bytes"],
+                            output_expires_at=integrity["expires_at"],
+                        )
+                        self._remember_job(record)
+                    outputs.append(
+                        {
+                            "output_index": 0,
+                            "media_kind": "video",
+                            "filename": self._output_filename(job_id),
+                            "download_path": f"/nova/v1/jobs/{job_id}/outputs/0",
+                            "bytes": integrity["bytes"],
+                            "sha256": integrity["sha256"],
+                        }
+                    )
+                except ProviderUnavailableError as exc:
+                    record["status"] = "failed"
+                    record["stage"] = "failed"
+                    record["error"] = str(exc)[:500]
+                    self._remember_job(record)
             else:
                 record["status"] = "failed"
                 record["stage"] = "failed"
@@ -639,6 +723,13 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
             "motion": record.get("motion"),
             "frames": record.get("frames"),
             "fps": record.get("fps"),
+            "output_sha256": record.get("output_sha256"),
+            "output_bytes": record.get("output_bytes"),
+            "output_expires_at": record.get("output_expires_at"),
+            "resume_available": bool(
+                record.get("resume_available")
+                and Path(str(record.get("checkpoint_path") or "")).is_file()
+            ),
         }
 
     def list_jobs(
@@ -671,6 +762,12 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
                     "poll_path": f"/nova/v1/jobs/{record.get('job_id')}",
                     "local": True,
                     "estimated_cost": 0.0,
+                    "resume_available": bool(
+                        record.get("resume_available")
+                        and Path(str(record.get("checkpoint_path") or "")).is_file()
+                    ),
+                    "output_sha256": record.get("output_sha256"),
+                    "output_bytes": record.get("output_bytes"),
                 }
                 for record in records
             ],
@@ -701,7 +798,16 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
         output_path = self.output_dir / str(job_id) / "output.mp4"
         if not output_path.is_file():
             raise InvalidRequestError("The encoded Nova Video Lite output is missing.")
-        size = output_path.stat().st_size
+        try:
+            integrity = self._output_integrity(output_path)
+        except ProviderUnavailableError as exc:
+            raise InvalidRequestError(str(exc)) from exc
+        if self._expired(record.get("output_expires_at")):
+            raise InvalidRequestError("The Nova Video Lite output has expired.")
+        expected = str(record.get("output_sha256") or "")
+        if expected and expected != integrity["sha256"]:
+            raise InvalidRequestError("The Nova Video Lite output checksum no longer matches.")
+        size = integrity["bytes"]
         if size > _MAX_OUTPUT_BYTES:
             raise InvalidRequestError(
                 "Nova Video Lite output exceeds the 1 GB streaming limit."
@@ -710,8 +816,52 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
             "response": output_path.open("rb"),
             "content_type": "video/mp4",
             "content_length": size,
-            "filename": f"NovaVideoLite_{job_id}.mp4",
+            "filename": self._output_filename(job_id),
+            "sha256": integrity["sha256"],
             "max_bytes": _MAX_OUTPUT_BYTES,
+        }
+
+    def _output_filename(self, job_id: str) -> str:
+        return f"NovaVideoLite_{job_id}.mp4"
+
+    def resume_job(
+        self,
+        job_id: str,
+        *,
+        owner_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Resume an interrupted encode from its private keyframe checkpoint."""
+        record = self._job_record(job_id, owner_id)
+        checkpoint = Path(str(record.get("checkpoint_path") or ""))
+        if record.get("status") not in {"queued", "running"} or not checkpoint.is_file():
+            raise InvalidRequestError("This media job has no resumable checkpoint.", param="job_id")
+        options = {
+            "negative_prompt": "",
+            "width": int(record.get("width") or 512),
+            "height": int(record.get("height") or 512),
+            "frames": int(record.get("frames") or 48),
+            "fps": int(record.get("fps") or 12),
+            "steps": 8,
+            "seed": int(record.get("seed") or 0),
+            "motion": str(record.get("motion") or "slow_zoom_in"),
+        }
+        cancellation = Event()
+        with self._lock:
+            self._runtime[str(job_id)] = {"cancel": cancellation, "process": None}
+        Thread(
+            target=self._run_job,
+            args=(str(job_id), "", options, cancellation, True),
+            name=f"nova-video-lite-resume-{str(job_id)[-8:]}",
+            daemon=True,
+        ).start()
+        return {
+            "object": "nova.media_job",
+            "job_id": str(job_id),
+            "engine_id": self.engine_id,
+            "status": "queued",
+            "stage": "resume_pending",
+            "resume": True,
+            "poll_path": f"/nova/v1/jobs/{job_id}",
         }
 
     def cancel_job(
@@ -779,9 +929,17 @@ class NovaVideoLiteEngine(NovaVideoGenerationEngine):
                     continue
                 record = dict(item)
                 if record.get("status") in {"queued", "running"}:
-                    record["status"] = "failed"
-                    record["stage"] = "failed"
-                    record["error"] = "Video Lite was interrupted by a Nova restart."
+                    checkpoint = Path(str(record.get("checkpoint_path") or ""))
+                    if checkpoint.is_file() and str(record.get("stage") or "") == "encoding_motion":
+                        record["status"] = "queued"
+                        record["stage"] = "resume_pending"
+                        record["resume_available"] = True
+                        record["error"] = None
+                    else:
+                        record["status"] = "failed"
+                        record["stage"] = "failed"
+                        record["resume_available"] = False
+                        record["error"] = "Video Lite was interrupted before a resumable checkpoint."
                     record["updated_at"] = _now()
                 loaded[job_id] = record
             with self._lock:

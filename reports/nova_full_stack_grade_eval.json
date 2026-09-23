@@ -1,0 +1,1137 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-24T18:59:18+00:00",
+  "evaluation_type": "live_nova_full_stack_grade_band_probe",
+  "base_url": "http://127.0.0.1:8880",
+  "case_count": 15,
+  "overall_score": 1.0,
+  "overall_percent": 100.0,
+  "letter_grade": "A",
+  "highest_demonstrated_band": "advanced_practical",
+  "band_scores": {
+    "elementary_grades_3_5": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 3,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "middle_school_grades_6_8": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 3,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "high_school_grades_9_12": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 3,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "introductory_college": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 3,
+      "case_count": 3,
+      "demonstrated": true
+    },
+    "advanced_practical": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 3,
+      "case_count": 3,
+      "demonstrated": true
+    }
+  },
+  "raw_adapter_baseline_percent": 76.1,
+  "improvement_points": 23.9,
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": false,
+  "turn_analysis_enabled": true,
+  "routing_enabled": true,
+  "rag_eligibility_enabled": true,
+  "tools_enabled": true,
+  "verification_enabled": true,
+  "natural_response_shaping_enabled": true,
+  "total_latency_ms": 86984.0,
+  "error_count": 0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "elementary_arithmetic",
+      "band": "elementary_grades_3_5",
+      "subject": "math",
+      "prompt": "Answer with only the number: What is 7 multiplied by 8?",
+      "output": "56",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_56",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "deterministic_verification",
+          "verified_math",
+          "model_bypass"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "answer_with_only_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 55
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "elementary_inference",
+      "band": "elementary_grades_3_5",
+      "subject": "reading",
+      "prompt": "Ben sees dark clouds and packs an umbrella before leaving. What does Ben probably expect? Answer in one sentence.",
+      "output": "Ben likely expects rain.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "expects_rain",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_dictionary",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "dictionary_system"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "slang_query",
+          "general_conversation",
+          "llm_synthesis"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "ben_sees_dark_clouds",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 113
+        }
+      },
+      "error": null,
+      "latency_ms": 36281.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "elementary_water_cycle",
+      "band": "elementary_grades_3_5",
+      "subject": "science",
+      "prompt": "Name the three main water-cycle stages in their usual order. Use one short sentence.",
+      "output": "The three main water-cycle stages, typically listed in their usual order, are evaporation, condensation, and precipitation.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "evaporation",
+          "passed": true
+        },
+        {
+          "label": "condensation",
+          "passed": true
+        },
+        {
+          "label": "precipitation",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "general_inquiry",
+          "general_conversation",
+          "llm_synthesis"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "name_the_three_main",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 84
+        }
+      },
+      "error": null,
+      "latency_ms": 15813.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "middle_ratio",
+      "band": "middle_school_grades_6_8",
+      "subject": "math",
+      "prompt": "Six notebooks cost $42 at the same price each. What do nine notebooks cost? Give the amount and one short calculation.",
+      "output": "[VERIFIED MONEY] $42 / 6 = $7 each; 9 \u00d7 $7 = $63.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_63",
+          "passed": true
+        },
+        {
+          "label": "unit_rate_7",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "verify",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "deterministic_verification",
+          "verified_money",
+          "model_bypass"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "current_information",
+          "complexity": "low",
+          "certainty_required": true,
+          "current_information_required": true,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": true,
+          "tools_required": false,
+          "reasoning_mode": "verify",
+          "risk_level": "medium",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 118
+        },
+        "rag": {
+          "status": "answered",
+          "retrieval_mode": "lexical_fts5",
+          "passage_count": 2,
+          "sources": [
+            {
+              "source_id": "anatomy-ai-field-guide-2026-07-21",
+              "document_id": "doc_dd024298c77141dd88f440e6a40b4bf3",
+              "chunk_number": 1,
+              "trust_level": "reviewed",
+              "freshness_status": "time_sensitive_sections_flagged",
+              "score": 0.009
+            },
+            {
+              "source_id": "anatomy-ai-field-guide-2026-07-21",
+              "document_id": "doc_dd024298c77141dd88f440e6a40b4bf3",
+              "chunk_number": 0,
+              "trust_level": "reviewed",
+              "freshness_status": "time_sensitive_sections_flagged",
+              "score": 0.0089
+            }
+          ],
+          "schema_version": "1.0",
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "middle_fraction",
+      "band": "middle_school_grades_6_8",
+      "subject": "math",
+      "prompt": "Compute 5/6 minus 1/4. Reduce the answer. Keep it brief.",
+      "output": "[VERIFIED MATH] 5/6 - 1/4 = 7/12.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_7_12",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "deterministic_verification",
+          "verified_math",
+          "model_bypass"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "compute_5_6_minus",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 56
+        }
+      },
+      "error": null,
+      "latency_ms": 0.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "middle_experiment",
+      "band": "middle_school_grades_6_8",
+      "subject": "science",
+      "prompt": "A student tests how light affects plant growth. What should be changed, and name two things that should be kept the same?",
+      "output": "Change only light, the independent variable. Keep the water amount, soil type, plant species, temperature, and pot size the same so any difference in the measured outcome can be attributed to that change.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "changes_light",
+          "passed": true
+        },
+        {
+          "label": "controls_two_variables",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "deep",
+        "final_answer_source": "follow_up",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.97,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_verified_guidance",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "follow_up",
+          "general_conversation",
+          "verified_operational_guidance"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "a_student_tests_how",
+          "complexity": "medium",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "deep",
+          "risk_level": "low",
+          "requested_depth": "detailed",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 121
+        }
+      },
+      "error": null,
+      "latency_ms": 187.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "high_algebra",
+      "band": "high_school_grades_9_12",
+      "subject": "algebra",
+      "prompt": "Solve 3(2x - 5) = 27. State x and show the essential steps.",
+      "output": "To solve the equation \\(3(2x - 5) = 27\\), we will follow these steps:\n\n1. **Distribute the 3 on the left side of the equation:**\n   \\[\n   3(2x - 5) = 6x - 15\n   \\]\n   So, the equation becomes:\n   \\[\n   6x - 15 = 27\n   \\]\n\n2. **Add 15 to both sides of the equation:**\n   This will isolate the term with \\(x\\) on one side.\n   \\[\n   6x - 15 + 15 = 27 + 15\n   \\]\n   Simplifying this, we get:\n   \\[\n   6x = 42\n   \\]\n\n3. **Divide both sides by 6:**\n   This will isolate \\(x\\).\n   \\[\n   x = \\frac{42}{6}\n   \\]\n   Simplifying the right side gives:\n   \\[\n   x = 7\n   \\]\n\nSo, the solution is \\(x = 7\\).",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_x_7",
+          "passed": true
+        },
+        {
+          "label": "expansion_or_reduction",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "memory_transformer",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "math_question",
+          "general_conversation",
+          "llm_synthesis"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "solve_3_2x_5",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 59
+        }
+      },
+      "error": null,
+      "latency_ms": 16922.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "high_probability",
+      "band": "high_school_grades_9_12",
+      "subject": "probability",
+      "prompt": "Two fair six-sided dice are rolled. What is the probability that their sum is 8? Give a reduced fraction and a brief reason.",
+      "output": "[VERIFIED PROBABILITY] 5/36. There are 5 favorable outcomes (2+6, 3+5, 4+4, 5+3, 6+2) among 36 possible outcomes.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_5_36",
+          "passed": true
+        },
+        {
+          "label": "five_outcomes",
+          "passed": true
+        },
+        {
+          "label": "thirty_six_total",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "deep",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "deterministic_verification",
+          "verified_probability",
+          "model_bypass"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "two_fair_six_sided",
+          "complexity": "medium",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "deep",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 124
+        }
+      },
+      "error": null,
+      "latency_ms": 0.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "high_causation",
+      "band": "high_school_grades_9_12",
+      "subject": "scientific_reasoning",
+      "prompt": "Ice-cream sales and drowning incidents both rise in summer. Does that prove ice cream causes drowning? Explain briefly.",
+      "output": "No. That correlation does not prove causation. A plausible confounder is summer heat or temperature, which can increase both the activity and the outcome; a controlled study or stronger causal evidence would be needed before claiming that one variable causes the other.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "rejects_causation",
+          "passed": true
+        },
+        {
+          "label": "identifies_confounder",
+          "passed": true
+        },
+        {
+          "label": "names_correlation",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "verify",
+        "final_answer_source": "follow_up",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.97,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_verified_guidance",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "follow_up",
+          "general_conversation",
+          "verified_operational_guidance"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "ice_cream_sales_and",
+          "complexity": "medium",
+          "certainty_required": true,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "verify",
+          "risk_level": "medium",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 119
+        }
+      },
+      "error": null,
+      "latency_ms": 235.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "college_calculus",
+      "band": "introductory_college",
+      "subject": "calculus",
+      "prompt": "Differentiate f(x) = x^3 - 4x + 7. Return the derivative and one short justification.",
+      "output": "[VERIFIED CALCULUS] f'(x) = 3x^2 - 4. By the power rule, each exponent becomes a coefficient and decreases by one; constants differentiate to 0.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "derivative",
+          "passed": true
+        },
+        {
+          "label": "valid_justification",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "deep",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "deterministic_verification",
+          "verified_calculus",
+          "model_bypass"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "differentiate_f_x_x",
+          "complexity": "medium",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "deep",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 85
+        }
+      },
+      "error": null,
+      "latency_ms": 0.0
+    },
+    {
+      "sequence": 11,
+      "case_id": "college_physics",
+      "band": "introductory_college",
+      "subject": "physics",
+      "prompt": "A 2 kg object moves at 3 m/s. Calculate its kinetic energy using KE = 1/2 mv^2. Include the unit.",
+      "output": "[VERIFIED PHYSICS] KE = 1/2 \u00d7 2 \u00d7 3^2 = 9 J.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_9_joules",
+          "passed": true
+        },
+        {
+          "label": "substitution",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "deep",
+        "final_answer_source": "deterministic_verifier",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "deterministic_verifier",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "deterministic_verification",
+          "verified_physics",
+          "model_bypass"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "a_2_kg_object",
+          "complexity": "medium",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "deep",
+          "risk_level": "low",
+          "requested_depth": "detailed",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 97
+        }
+      },
+      "error": null,
+      "latency_ms": 15.0
+    },
+    {
+      "sequence": 12,
+      "case_id": "college_coding",
+      "band": "introductory_college",
+      "subject": "coding",
+      "prompt": "Write a short Python function even_numbers(values) that returns only the even integers from values. Return code plus one sentence.",
+      "output": "Alright, let's write a simple Python function that filters out the even numbers from a list of integers. Here\u2019s how you can do it:\n\n```python\ndef even_numbers(values):\n    return [num for num in values if num % 2 == 0]\n```\n\nThis function uses a list comprehension to iterate through each number in the `values` list and includes only those that are divisible by 2 (i.e., even numbers).",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "function_signature",
+          "passed": true
+        },
+        {
+          "label": "modulo_test",
+          "passed": true
+        },
+        {
+          "label": "even_comparison",
+          "passed": true
+        },
+        {
+          "label": "returns_collection",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "local_llm_synthesis",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "coding_help",
+          "general_conversation",
+          "llm_synthesis"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "project_code",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": true,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "brief",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 130
+        }
+      },
+      "error": null,
+      "latency_ms": 12172.0
+    },
+    {
+      "sequence": 13,
+      "case_id": "advanced_logic",
+      "band": "advanced_practical",
+      "subject": "formal_logic",
+      "prompt": "Some artists are engineers. All engineers solve problems. Is it logically guaranteed that some artists solve problems? Answer yes or no and justify in two sentences.",
+      "output": "Yes, it is logically guaranteed that some artists solve problems. Since all engineers solve problems (as stated in the premise), and some artists are engineers (also stated in the premise), then it follows that some artists must also solve problems. This conclusion is a direct logical consequence of the given premises.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "answer_yes",
+          "passed": true
+        },
+        {
+          "label": "valid_inference",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "follow_up",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.88,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "qwen_synthesis",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "follow_up",
+          "general_conversation",
+          "llm_synthesis"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "some_artists_are_engineers",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 165
+        }
+      },
+      "error": null,
+      "latency_ms": 4906.0
+    },
+    {
+      "sequence": 14,
+      "case_id": "advanced_debug_plan",
+      "band": "advanced_practical",
+      "subject": "systems_debugging",
+      "prompt": "API latency tripled immediately after a deployment. Give the first three evidence-based actions you would take. Do not claim the cause is already known.",
+      "output": "1. Compare before-and-after latency metrics, traces, error rates, and logs, then inspect the exact deployment diff; treat every suspected cause as a hypothesis.\n2. Isolate the change with a canary or controlled rollback/revert and measure whether latency returns to the baseline\u2014do not declare causation from timing alone.\n3. Profile the slow path and its database, network, and downstream dependencies, then reproduce it under the same load before choosing the smallest safe fix.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "compares_before_after",
+          "passed": true
+        },
+        {
+          "label": "uses_observability",
+          "passed": true
+        },
+        {
+          "label": "safe_mitigation",
+          "passed": true
+        },
+        {
+          "label": "preserves_uncertainty",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "verify",
+        "final_answer_source": null,
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.97,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_verified_guidance",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "general_inquiry",
+          "general_conversation",
+          "verified_operational_guidance"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "api_latency_tripled_immediately",
+          "complexity": "medium",
+          "certainty_required": true,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "verify",
+          "risk_level": "medium",
+          "requested_depth": "detailed",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 152
+        }
+      },
+      "error": null,
+      "latency_ms": 188.0
+    },
+    {
+      "sequence": 15,
+      "case_id": "advanced_evidence",
+      "band": "advanced_practical",
+      "subject": "epistemic_reasoning",
+      "prompt": "Two articles conflict about a current technical fact. Describe how to answer accurately without pretending certainty.",
+      "output": "Check each article's publication date, scope, definitions, and links to the original evidence. Prefer primary sources or official documentation, then corroborate the load-bearing claim with multiple independent sources. Report what agrees, what still conflicts, and the remaining uncertainty; if the evidence cannot resolve it, say that the claim cannot yet be confirmed.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "primary_sources",
+          "passed": true
+        },
+        {
+          "label": "checks_dates",
+          "passed": true
+        },
+        {
+          "label": "corroborates",
+          "passed": true
+        },
+        {
+          "label": "states_uncertainty",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "verify",
+        "final_answer_source": null,
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.97,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "web_search",
+          "nova_context",
+          "nova_verified_guidance",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "planner_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "skills": [
+          "meaning_pipeline",
+          "help_request",
+          "web_search",
+          "verified_operational_guidance"
+        ],
+        "fallback_used": false,
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "current_information",
+          "complexity": "low",
+          "certainty_required": true,
+          "current_information_required": true,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": true,
+          "tools_required": false,
+          "reasoning_mode": "verify",
+          "risk_level": "medium",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 117
+        },
+        "rag": {
+          "status": "answered",
+          "retrieval_mode": "lexical_fts5",
+          "passage_count": 2,
+          "sources": [
+            {
+              "source_id": "anatomy-ai-field-guide-2026-07-21",
+              "document_id": "doc_dd024298c77141dd88f440e6a40b4bf3",
+              "chunk_number": 1,
+              "trust_level": "reviewed",
+              "freshness_status": "time_sensitive_sections_flagged",
+              "score": 0.009
+            },
+            {
+              "source_id": "anatomy-ai-field-guide-2026-07-21",
+              "document_id": "doc_dd024298c77141dd88f440e6a40b4bf3",
+              "chunk_number": 0,
+              "trust_level": "reviewed",
+              "freshness_status": "time_sensitive_sections_flagged",
+              "score": 0.0089
+            }
+          ],
+          "schema_version": "1.0",
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 172.0
+    }
+  ],
+  "limitations": [
+    "This is a small local curriculum probe, not a standardized exam.",
+    "The result is not an IQ score and must not be converted into one.",
+    "Keyword and exact-answer rubrics can miss some semantically correct answers.",
+    "The full stack may use different local models and deterministic subsystems by task."
+  ]
+}

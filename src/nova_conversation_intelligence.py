@@ -61,7 +61,9 @@ class ConversationDecision:
 
 
 def _canonicalize(value: str) -> str:
-    return re.sub(r"[^a-z0-9']+", " ", str(value or "").lower()).strip()
+    text = str(value or "").lower().replace("’", "'")
+    text = re.sub(r"\bi'm\b", "i am", text)
+    return re.sub(r"[^a-z0-9']+", " ", text).strip()
 
 
 def _hash_text(value: str) -> str:
@@ -362,12 +364,76 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         r"\bhow\s+(?:fast|quickly)\s+do\s+you\s+fall\s+in\s+love\b",
         r"\bwhen\s+do\s+you\s+know\s+you(?:'re|\s+are)\s+in\s+love\b",
     )
+    self_experience_question = re.search(
+        r"\b(?:do|can|could)\s+(?:you|u)\s+(?:(?:really|actually|genuinely)\s+)?"
+        r"(?:(?:have|experience)\s+(?:real\s+|human\s+)?(?:feelings|emotions)|"
+        r"feel\s+(?:happy|sad|emotions|anything))\b"
+        r"|\bare\s+your\s+(?:feelings|emotions)\s+(?:really\s+)?real\b",
+        canonical,
+    )
+    if self_experience_question:
+        return _decision(
+            canonical,
+            "emotional",
+            "self_experience_boundary",
+            "answer",
+            context_required=True,
+            initial_model_tier="deterministic",
+            repair_policy="reviewed_social",
+            expected_qualities=("honest", "direct", "warm", "no fabricated experience"),
+            signals=("literal_self_experience",),
+            confidence=0.98,
+        )
+    positive_reaction = bool(re.fullmatch(
+        r"(?:(?:ha|haha|lol)\s+)?that(?:'s| is| was)\s+"
+        r"(?:a\s+good\s+one|funny|hilarious|a\s+good\s+joke)",
+        canonical,
+    ))
+    conversation_agreement = bool(re.search(
+        r"\b(?:chatting|talking)(?:\s+for\s+a\s+(?:bit|while|minute))?\s+sounds\s+(?:good|nice)\b"
+        r"|\b(?:nice|good|fun)\s+(?:chatting|talking)\s+with\s+(?:you|u)\b",
+        canonical,
+    ))
+    if conversation_agreement:
+        return _decision(
+            canonical,
+            "social",
+            "conversation_agreement",
+            "acknowledge",
+            context_required=True,
+            initial_model_tier="deterministic",
+            repair_policy="reviewed_social",
+            expected_qualities=("warm", "brief", "natural"),
+            signals=("conversation_agreement",),
+        )
+    quiet_update = bool(
+        re.search(
+            r"\b(?:chores?|cup\s+of\s+tea|tea|coffee|sat\s+down|"
+            r"winding\s+down|settled\s+in|quiet\s+(?:evening|night))\b",
+            canonical,
+        )
+        and not re.search(r"\b(?:what|why|how|can|could|would)\b", canonical)
+    )
+    if quiet_update:
+        return _decision(
+            canonical,
+            "social",
+            "quiet_update",
+            "acknowledge",
+            context_required=True,
+            initial_model_tier="deterministic",
+            repair_policy="reviewed_social",
+            expected_qualities=("warm", "brief", "relevant"),
+            signals=("wind_down_update",),
+            confidence=0.94,
+        )
     emotional_patterns = (
         r"\bhow\s+(?:(?:are|r|do)\s+)?(?:you|u)\s+feel(?:ing)?\b",
+        r"^how\s+(?:are|r)\s+(?:you|u)(?:\s+doing)?(?:\s+today)?$",
         r"\b(?:are|r)\s+(?:you|u)\s+(?:happy|sad|lonely|excited|okay|ok)\b",
         r"\bi\s+(?:am|m|feel|feeling|felt|had)\b.{0,28}\b"
         r"(?:nervous|anxious|worried|scared|sad|lonely|upset|rough|bad|"
-        r"overwhelmed|stressed)\b",
+        r"overwhelmed|stressed|tired|exhausted|long day)\b",
         r"\bi\s+(?:am|m|feel|feeling)\b.{0,24}\b"
         r"(?:proud|better|happy|good|excited|relieved)\b",
         r"\bi\s+need\b.{0,16}\b(?:encouragement|support|motivation)\b",
@@ -376,7 +442,7 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         r"\b(?:how\s+(?:is|has|was)|how'?s)\s+(?:your|ur)\s+day\b",
         r"\bwhat\s+(?:(?:are|r)\s+)?(?:you|u)\s+doing\b",
         r"\b(?:what'?s|what\s+is)\s+on\s+(?:your|ur)\s+mind\b",
-        r"\bcan\s+we\s+talk\b",
+        r"\bcan\s+we\s+(?:just\s+)?(?:talk|chat|hang out)\b",
         r"\b(?:thanks?|thank\s+you|i\s+appreciate\s+you)\b",
         r"\b(?:you|u)\s+(?:are|r)\s+(?:funny|helpful|kind|great|awesome)\b",
         r"\b(?:that|you)\b.{0,16}\bmade\s+me\s+(?:laugh|smile)\b",
@@ -423,6 +489,23 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             signals=("relationship_phrase",),
             confidence=0.97,
         )
+    if re.fullmatch(
+        r"what\s+(?:(?:are|r)\s+(?:you|u)\s+curious\s+about|"
+        r"do\s+(?:you|u)\s+(?:enjoy|like)\s+talking\s+about|"
+        r"interests\s+(?:you|u))(?:\s+today)?",
+        canonical,
+    ):
+        return _decision(
+            canonical,
+            "social",
+            "self_interests",
+            "answer",
+            context_required=True,
+            initial_model_tier="small",
+            repair_policy="bounded_model_repair",
+            expected_qualities=("warm", "honest", "specific", "context-aware"),
+            signals=("self_interests",),
+        )
     if any(re.search(pattern, canonical) for pattern in emotional_patterns):
         emotional_subtype = (
             "encouragement_request"
@@ -435,7 +518,7 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             if re.search(
                 r"\bi\s+(?:am|m|feel|feeling|felt|had)\b.{0,28}\b"
                 r"(?:nervous|anxious|worried|scared|sad|lonely|upset|"
-                r"rough|bad|overwhelmed|stressed)\b",
+                r"rough|bad|overwhelmed|stressed|tired|exhausted|long day)\b",
                 canonical,
             )
             else "user_positive"
@@ -458,8 +541,11 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             signals=("emotional_checkin",),
             confidence=0.96,
         )
-    if any(re.search(pattern, canonical) for pattern in social_patterns):
+    if positive_reaction or any(re.search(pattern, canonical) for pattern in social_patterns):
         social_subtype = (
+            "positive_reaction"
+            if positive_reaction
+            else
             "day_checkin"
             if re.search(r"\b(?:your|ur)\s+day\b", canonical)
             else "activity_checkin"
@@ -467,7 +553,7 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
             else "mind_checkin"
             if re.search(r"\bon\s+(?:your|ur)\s+mind\b", canonical)
             else "conversation_invite"
-            if re.search(r"\bcan\s+we\s+talk\b", canonical)
+            if re.search(r"\bcan\s+we\s+(?:just\s+)?(?:talk|chat|hang out)\b", canonical)
             else "gratitude"
             if re.search(
                 r"\b(?:thanks?|thank\s+you|i\s+appreciate\s+you)\b",
@@ -515,6 +601,10 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
     # open-ended routing.  Keep this list narrow so standalone requests such
     # as "Can you write an introduction?" still reach normal task reasoning.
     contextual_followup_patterns = (
+        r"^why\s+(?:that|this|those|these)(?:\s+(?:kind|one|ones|choice))?$",
+        r"^what\s+(?:were|have)\s+we\s+(?:been\s+)?(?:talking|discussing)\b",
+        r"^(?:how|what)\s+(?:can|could|should|do|would)\s+(?:we|i|you)\s+"
+        r"(?:do|try|start|make|use)\s+(?:that|this|it|those|these)(?:\s+work)?$",
         r"\b(?:can|could|would)\s+you\s+(?:please\s+)?"
         r"(?:clarify|elaborate|expand|tell\s+me\s+more)\b",
         r"\b(?:can|could|would)\s+you\s+give\s+me\s+more\s+"
@@ -600,6 +690,7 @@ def understand_conversation_turn(text: str) -> ConversationDecision:
         "open_ended",
         "unknown",
         "respond",
+        context_required=True,
         reasoning_mode="fast",
         initial_model_tier="small",
         repair_policy="bounded_model_repair",

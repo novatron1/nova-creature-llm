@@ -99,9 +99,9 @@ def plan_social_response(
         directness=0.65,
         humor=0.18 if mode in {"casual_chat", "companionship"} else 0.0,
         affection=0.2 if mode == "companionship" else 0.0,
-        ask_follow_up=mode == "companionship" and state.interaction_count > 1,
+        ask_follow_up=mode in {"casual_chat", "companionship"} and state.interaction_count > 0,
         reference_memory=bool(memory_list),
         response_length="short" if mode in {"casual_chat", "companionship"} else "normal",
-        intensity=0.42,
-        reason_codes=("natural_conversation",),
+        intensity=0.52,
+        reason_codes=("natural_conversation", "curiosity", "animated_energy"),
     )

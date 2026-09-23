@@ -17,14 +17,14 @@ ROLE_NAMES = ['left_hemisphere', 'right_hemisphere', 'memory_transformer',
               'planner_transformer', 'critic_conscience_transformer',
               'dream_simulation_transformer', 'speech_output_transformer']
 
-def require_v055_finetuned_checkpoints():
+def require_v055_conversation_trained_checkpoints():
     missing = [
         role for role in ROLE_NAMES
-        if not (ROOT / 'checkpoints' / 'brain_slots' / role / f'{role}_v055_finetuned.pt').exists()
+        if not (ROOT / 'checkpoints' / 'brain_slots' / role / f'{role}_v055_conversation_trained.pt').exists()
     ]
     if missing:
-        pytest.skip(
-            "v055_finetuned checkpoint assets are not present in this checkout "
+        pytest.fail(
+            "v055_conversation_trained checkpoint assets are not present in this checkout "
             f"(missing {len(missing)}/7 roles)"
         )
 
@@ -37,10 +37,10 @@ class TestParameterLoader:
         """Verify ALL required transformer parameters load correctly."""
         from nova_transformer_engine import NovaParameterLoader
         
-        for ver in ['v055_finetuned', 'v054_specialized']:
+        for ver in ['v055_conversation_trained']:
             pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / f'left_hemisphere_{ver}.pt')
             if not os.path.exists(pt):
-                pytest.skip(f"Checkpoint not found: {pt}")
+                pytest.fail(f"Checkpoint not found: {pt}")
             
             params = NovaParameterLoader.load(pt)
             
@@ -66,9 +66,9 @@ class TestParameterLoader:
         """lm_head.weight must have real trained values, not zeros."""
         from nova_transformer_engine import NovaParameterLoader
         
-        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_finetuned.pt')
+        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_conversation_trained.pt')
         if not os.path.exists(pt):
-            pytest.skip("Checkpoint not found")
+            pytest.fail("Checkpoint not found")
         
         params = NovaParameterLoader.load(pt)
         lh = params['lm_head.weight']
@@ -82,9 +82,9 @@ class TestParameterLoader:
         """Final layer norm must be present."""
         from nova_transformer_engine import NovaParameterLoader
         
-        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_finetuned.pt')
+        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_conversation_trained.pt')
         if not os.path.exists(pt):
-            pytest.skip("Checkpoint not found")
+            pytest.fail("Checkpoint not found")
         
         params = NovaParameterLoader.load(pt)
         assert 'ln_f.weight' in params
@@ -96,9 +96,9 @@ class TestParameterLoader:
         """Token embedding must have correct shape."""
         from nova_transformer_engine import NovaParameterLoader
         
-        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_finetuned.pt')
+        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_conversation_trained.pt')
         if not os.path.exists(pt):
-            pytest.skip("Checkpoint not found")
+            pytest.fail("Checkpoint not found")
         
         params = NovaParameterLoader.load(pt)
         assert params['token_embedding.weight'].shape == (8000, 96)
@@ -114,9 +114,9 @@ class TestForwardPass:
         """Forward pass should not raise any exception."""
         from nova_transformer_engine import NovaTransformer, NovaParameterLoader
         
-        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_finetuned.pt')
+        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_conversation_trained.pt')
         if not os.path.exists(pt):
-            pytest.skip("Checkpoint not found")
+            pytest.fail("Checkpoint not found")
         
         params = NovaParameterLoader.load(pt)
         model = NovaTransformer(params)
@@ -131,9 +131,9 @@ class TestForwardPass:
         """Logits must vary (not all identical) showing model has learned patterns."""
         from nova_transformer_engine import NovaTransformer, NovaParameterLoader
         
-        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_finetuned.pt')
+        pt = str(ROOT / 'checkpoints' / 'brain_slots' / 'left_hemisphere' / 'left_hemisphere_v055_conversation_trained.pt')
         if not os.path.exists(pt):
-            pytest.skip("Checkpoint not found")
+            pytest.fail("Checkpoint not found")
         
         params = NovaParameterLoader.load(pt)
         model = NovaTransformer(params)
@@ -153,7 +153,7 @@ class TestGeneration:
     
     def test_generation_returns_output(self):
         """Generation must produce text output (not None/empty)."""
-        require_v055_finetuned_checkpoints()
+        require_v055_conversation_trained_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()
@@ -173,6 +173,7 @@ class TestGeneration:
         brain = NovaBrain()
         brain.load_all()
         
+        assert set(brain.models) == set(ROLE_NAMES)
         for role in brain.models:
             output, stats = brain.infer(role, "Test", max_new_tokens=3, temperature=0.0)
             assert output is not None, f"{role} failed to generate"
@@ -183,22 +184,37 @@ class TestGeneration:
 # ============================================================
 class TestCheckpointUniqueness:
     
-    def test_v055_has_unique_weights(self):
-        """v055_finetuned checkpoints must have unique per-role weights."""
-        roles = ROLE_NAMES
-        
-        hashes = set()
-        for role in roles:
-            pt = str(ROOT / 'checkpoints' / 'brain_slots' / role / f'{role}_v055_finetuned.pt')
-            if not os.path.exists(pt):
-                pytest.skip(f"Checkpoint not found: {pt}")
-            hashes.add(hashlib.md5(open(pt, 'rb').read()).hexdigest())
-        
-        assert len(hashes) == 7, f"Only {len(hashes)}/7 unique checkpoints"
+    def test_conversation_checkpoints_load_independent_role_parameters(self):
+        """Each role loads its own checkpoint correctly, without mutable aliasing."""
+        from nova_transformer_engine import NovaBrain, NovaParameterLoader
+
+        # train_all_roles uses the same conversations for each role. Unlike the
+        # historical v055_finetuned assets, this version does not promise seven
+        # distinct weight sets. Equal values must still be independently loaded.
+        require_v055_conversation_trained_checkpoints()
+        brain = NovaBrain()
+        assert brain.load_all(checkpoint_version='v055_conversation_trained')
+        assert set(brain.models) == set(ROLE_NAMES)
+        assert set(brain.hashes) == set(ROLE_NAMES)
+        assert len({id(model) for model in brain.models.values()}) == len(ROLE_NAMES)
+
+        loaded = []
+        for role in ROLE_NAMES:
+            path = ROOT / 'checkpoints' / 'brain_slots' / role / f'{role}_v055_conversation_trained.pt'
+            assert brain.hashes[role] == hashlib.sha256(path.read_bytes()).hexdigest()
+            expected = NovaParameterLoader.load(str(path))
+            actual = brain.models[role].params
+            assert actual and set(actual) == set(expected), role
+            for name, values in actual.items():
+                assert np.isfinite(values).all(), f'{role}: non-finite {name}'
+                np.testing.assert_array_equal(values, expected[name], err_msg=f'{role}: wrong {name}')
+                for other_role, other in loaded:
+                    assert not np.shares_memory(values, other[name]), f'{role} aliases {other_role}: {name}'
+            loaded.append((role, actual))
     
     def test_brain_selects_trained_over_baseline(self):
         """Auto-select should prefer a trained version over v054_specialized."""
-        require_v055_finetuned_checkpoints()
+        require_v055_conversation_trained_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()
@@ -209,7 +225,7 @@ class TestCheckpointUniqueness:
     
     def test_brain_reports_unique_hashes(self):
         """Brain load should report unique hash detection."""
-        require_v055_finetuned_checkpoints()
+        require_v055_conversation_trained_checkpoints()
         from nova_transformer_engine import NovaBrain
         
         brain = NovaBrain()
@@ -257,3 +273,4 @@ class TestHybridRouter:
         response, trace = route_and_respond("hello")
         # Should match dictionary or fallback - either is OK as long as it doesn't crash
         assert response is not None and len(response) > 0
+

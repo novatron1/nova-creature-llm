@@ -1,0 +1,141 @@
+[
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_enhanced_server.py",
+      "tests/test_nova_llm_synthesizer.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "--junitxml=[REDACTED]\\server_regression.xml"
+    ],
+    "duration_seconds": 55.10899999999674,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "d128753241db0d85eba4ea3f635672f7e4030d6f55b12e3022b6b149f0f91acc",
+    "name": "server_regression",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 449,
+      "skipped": 0,
+      "total": 449
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_runtime_contracts.py",
+      "tests/test_nova_runtime_permissions.py",
+      "tests/test_nova_runtime_ledger.py",
+      "tests/test_nova_runtime_scheduler.py",
+      "tests/test_nova_runtime_memory.py",
+      "tests/test_nova_runtime_agent_report.py",
+      "tests/test_nova_runtime_eval_bank.py",
+      "tests/test_nova_runtime_end_to_end.py",
+      "tests/test_nova_runtime_verification_playwright.py",
+      "tests/test_nova_industrial_gate.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "--junitxml=[REDACTED]\\runtime_contracts.xml"
+    ],
+    "duration_seconds": 11.077999999979511,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "60b0a2217bd2ca90c1db94d667426e7a62228241cb7a8912025eded0fb470aef",
+    "name": "runtime_contracts",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 47,
+      "skipped": 0,
+      "total": 47
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_memory_v2.py",
+      "tests/test_nova_conversation_intelligence.py",
+      "tests/test_nova_conversation_eval.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "--junitxml=[REDACTED]\\memory_and_conversation.xml"
+    ],
+    "duration_seconds": 4.202999999979511,
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 0,
+    "junit_sha256": "3d2fdaadc6465ad22ae519a849d96462b54934ca1fa21914740dbd105e958138",
+    "name": "memory_and_conversation",
+    "passed": true,
+    "stderr_tail": "",
+    "stdout_tail": "[REDACTED]",
+    "tests": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 56,
+      "skipped": 0,
+      "total": 56
+    },
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests/test_nova_release_worktree.py",
+      "tests/test_nova_release_lock.py",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "--junitxml=[REDACTED]\\release_rollback.xml"
+    ],
+    "duration_seconds": 85.10899999999674,
+    "evidence_error": "Missing or malformed JUnit evidence",
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 4294967295,
+    "name": "release_rollback",
+    "passed": false,
+    "stderr_tail": "",
+    "stdout_tail": "...................................................................",
+    "timed_out": false
+  },
+  {
+    "command": [
+      "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--disable-warnings",
+      "--tb=short",
+      "--junitxml=[REDACTED]\\unit_suite.xml"
+    ],
+    "duration_seconds": 46.79700000002049,
+    "evidence_error": "Missing or malformed JUnit evidence",
+    "evidence_kind": "unit_tests_on_host",
+    "exit_code": 4294967295,
+    "name": "unit_suite",
+    "passed": false,
+    "stderr_tail": "",
+    "stdout_tail": "........................................................................ [  3%]\r\n........................................................................ [  6%]\r\n........................................................................ [  9%]\r\n........................................................................ [ 12%]\r\n........................................................................ [ 16%]\r\n........................................................................ [ 19%]\r\n........................................................................ [ 22%]\r\n........................................................................ [ 25%]\r\n........................................................................ [ 29%]\r\n........................................................................ [ 32%]\r\n........................................................................ [ 35%]\r\n..............................",
+    "timed_out": false
+  }
+]

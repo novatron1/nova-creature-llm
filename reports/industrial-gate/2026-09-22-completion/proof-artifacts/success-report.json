@@ -1,0 +1,220 @@
+{
+  "run": {
+    "state": "completed",
+    "history": [
+      {
+        "state": "planned",
+        "reason": "run created",
+        "timestamp": "2026-09-22T17:37:38.468923+00:00",
+        "contract_hash": "6766821e2de1df5c0ee81fd75dceb31d7e705481206b16f5b1cb55fe730a1d1b"
+      },
+      {
+        "state": "authorized",
+        "reason": "proof job authorized",
+        "timestamp": "2026-09-22T17:37:38.468923+00:00",
+        "contract_hash": "6766821e2de1df5c0ee81fd75dceb31d7e705481206b16f5b1cb55fe730a1d1b"
+      },
+      {
+        "state": "executing",
+        "reason": "proof job executing",
+        "timestamp": "2026-09-22T17:37:38.468923+00:00",
+        "contract_hash": "6766821e2de1df5c0ee81fd75dceb31d7e705481206b16f5b1cb55fe730a1d1b"
+      },
+      {
+        "state": "verifying",
+        "reason": "browser verification",
+        "timestamp": "2026-09-22T17:37:39.532956+00:00",
+        "contract_hash": "6766821e2de1df5c0ee81fd75dceb31d7e705481206b16f5b1cb55fe730a1d1b"
+      },
+      {
+        "state": "completed",
+        "reason": "proof job completed",
+        "timestamp": "2026-09-22T17:37:45.541391+00:00",
+        "contract_hash": "6766821e2de1df5c0ee81fd75dceb31d7e705481206b16f5b1cb55fe730a1d1b"
+      }
+    ],
+    "contract": {
+      "run_id": "proof_ab21841009d6",
+      "goal": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+      "goal_hash": "3b78b81b3a1e689907760247019f3528d546eb5e683d6bf4721f762ce443ad14",
+      "goal_summary": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+      "owner_id": "nova",
+      "project_id": "success-source",
+      "workspace_root": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work",
+      "allowed_roots": [
+        "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work"
+      ],
+      "allowed_tools": [
+        "filesystem.read",
+        "filesystem.write",
+        "terminal.run",
+        "playwright.verify"
+      ],
+      "allowed_resources": [
+        "filesystem://workspace",
+        "terminal://workspace",
+        "browser://workspace"
+      ],
+      "time_budget_seconds": 300,
+      "tool_budget": 12,
+      "cost_budget": 0.0,
+      "memory_budget": 8,
+      "created_at": "2026-09-22T17:37:38.468923+00:00",
+      "contract_hash": "6766821e2de1df5c0ee81fd75dceb31d7e705481206b16f5b1cb55fe730a1d1b",
+      "metadata": {
+        "proof_job": true,
+        "isolation": {
+          "kind": "copied_workspace",
+          "os_sandbox": false,
+          "host_filesystem_access_restricted": false,
+          "network_access_restricted": false,
+          "subprocess_timeout_seconds": {
+            "app": 20,
+            "pytest": 120
+          },
+          "authorization": "caller_invocation_for_trusted_project"
+        }
+      }
+    }
+  },
+  "report": {
+    "goal": "Read a project, edit one file, run tests, verify with Playwright, and preserve rollback evidence.",
+    "plan": [
+      "Read the project.",
+      "Edit one file in a copied workspace (not an OS sandbox).",
+      "Run tests.",
+      "Verify the browser output.",
+      "Write provenance memory and publish a structured report."
+    ],
+    "tools_used": [
+      "filesystem.read",
+      "filesystem.write",
+      "terminal.run",
+      "playwright.verify"
+    ],
+    "files_changed": [
+      "app.py"
+    ],
+    "tests_executed": [
+      "python -m pytest -q"
+    ],
+    "browser_evidence": {
+      "url": "file:///C:/Users/nova/AppData/Local/Temp/nova-industrial-mpwpju_n/proof-artifacts/success-work/proof.html",
+      "verification_backend": "playwright",
+      "passed": true,
+      "page_title": "",
+      "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+      "dom_hash": "b4e6b3ab7d41b0cd3b2674c78573120ce7911ae42e576e9ba5389cdcfc425a39",
+      "console_summary": {
+        "count": 0,
+        "messages": [],
+        "errors": []
+      },
+      "network_summary": {
+        "count": 1,
+        "requests": [
+          "file:///C:/Users/nova/AppData/Local/Temp/nova-industrial-mpwpju_n/proof-artifacts/success-work/proof.html"
+        ],
+        "failures": []
+      }
+    },
+    "failures_and_retries": [],
+    "final_verification": {
+      "passed": true,
+      "pytest_returncode": 0,
+      "browser_passed": true,
+      "app_returncode": 0,
+      "isolation": {
+        "kind": "copied_workspace",
+        "os_sandbox": false,
+        "host_filesystem_access_restricted": false,
+        "network_access_restricted": false,
+        "subprocess_timeout_seconds": {
+          "app": 20,
+          "pytest": 120
+        },
+        "authorization": "caller_invocation_for_trusted_project"
+      }
+    },
+    "unresolved_blockers": [],
+    "rollback_information": {
+      "available": true,
+      "original_hash": "981e83b18c4e67c650071635504ad31a0c448701d6809c4a741be58a004caa6b",
+      "updated_hash": "c55fdf8c5832c3e713ec57d61946fb9991e17c9350a42b5e8be7c93e18a6b392",
+      "rollback_point": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work\\rollback\\app.py.original",
+      "original_bytes_sha256": "2a9c6cf25ca4731ec39f2b4cd52c85a8e34d2c11ba24c10ba52f9ef0edabee95",
+      "restored": false,
+      "scope": "app.py only; arbitrary subprocess side effects are not reverted"
+    },
+    "sections": [
+      {
+        "title": "plan",
+        "content": "read -> edit -> test -> verify -> report",
+        "metadata": {
+          "goal_hash": "3b78b81b3a1e689907760247019f3528d546eb5e683d6bf4721f762ce443ad14"
+        }
+      },
+      {
+        "title": "verification",
+        "content": "Browser verification completed",
+        "metadata": {
+          "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d"
+        }
+      }
+    ],
+    "created_at": "2026-09-22T17:37:45+00:00"
+  },
+  "workspace_root": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work",
+  "report_path": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work\\agent_report.json",
+  "proof_artifacts": {
+    "pytest_stdout": ".                                                                        [100%]\n1 passed in 0.03s\n",
+    "pytest_stderr": "",
+    "verification": {
+      "url": "file:///C:/Users/nova/AppData/Local/Temp/nova-industrial-mpwpju_n/proof-artifacts/success-work/proof.html",
+      "passed": true,
+      "page_title": "",
+      "screenshot_path": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work\\playwright_evidence\\_C__Users_nova_AppData_Local_Temp_nova-industrial-mpwpju_n_proof-artifacts_success-work_proof_html-1790098665.png",
+      "screenshot_hash": "99d3bc7cfce3a1a352464d41140a8370a0c081bf30ab36221445b3a5c083561d",
+      "dom_hash": "b4e6b3ab7d41b0cd3b2674c78573120ce7911ae42e576e9ba5389cdcfc425a39",
+      "console_summary": {
+        "count": 0,
+        "messages": [],
+        "errors": []
+      },
+      "network_summary": {
+        "count": 1,
+        "requests": [
+          "file:///C:/Users/nova/AppData/Local/Temp/nova-industrial-mpwpju_n/proof-artifacts/success-work/proof.html"
+        ],
+        "failures": []
+      },
+      "failure_trace": {
+        "passed": true,
+        "error": null,
+        "failed_assertions": [],
+        "screenshot_path": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work\\playwright_evidence\\_C__Users_nova_AppData_Local_Temp_nova-industrial-mpwpju_n_proof-artifacts_success-work_proof_html-1790098665.png",
+        "dom_hash": "b4e6b3ab7d41b0cd3b2674c78573120ce7911ae42e576e9ba5389cdcfc425a39",
+        "console_errors": [],
+        "network_failures": []
+      },
+      "assertions": [
+        {
+          "assertion": {
+            "type": "contains",
+            "contains": "hello, nova"
+          },
+          "passed": true,
+          "detail": "text contained 'hello, nova'"
+        }
+      ],
+      "elapsed_ms": 6003.919,
+      "verified_at": "2026-09-22T17:37:45+00:00",
+      "evidence": {
+        "error": null,
+        "output_dir": "C:\\Users\\nova\\AppData\\Local\\Temp\\nova-industrial-mpwpju_n\\proof-artifacts\\success-work\\playwright_evidence",
+        "page_path": "_C__Users_nova_AppData_Local_Temp_nova-industrial-mpwpju_n_proof-artifacts_success-work_proof_html",
+        "screenshot_size": 7043
+      }
+    }
+  }
+}

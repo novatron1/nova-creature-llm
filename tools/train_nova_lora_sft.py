@@ -150,6 +150,12 @@ def train_lora_sft(args) -> dict[str, Any]:
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    if not torch.cuda.is_available() and not args.allow_cpu_training:
+        raise RuntimeError(
+            "CUDA is required for Nova LoRA training. Re-run on a local GPU machine, "
+            "or pass --allow-cpu-training for an explicit slow fallback."
+        )
+
     records = load_dataset_records(dataset_dir, args.max_train_records)
     validation = validate_records(records)
     if validation["problem_count"]:
@@ -183,7 +189,7 @@ def train_lora_sft(args) -> dict[str, Any]:
     if quant_config is not None:
         model_kwargs["quantization_config"] = quant_config
     else:
-        model_kwargs["torch_dtype"] = torch.float16 if torch.cuda.is_available() else torch.float32
+        model_kwargs["torch_dtype"] = torch.float16
 
     model = AutoModelForCausalLM.from_pretrained(args.base_model, **model_kwargs)
     if args.use_4bit:
@@ -275,6 +281,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--save-steps", type=int, default=int(os.environ.get("NOVA_LORA_SAVE_STEPS", "200")))
     parser.add_argument("--eval-steps", type=int, default=int(os.environ.get("NOVA_LORA_EVAL_STEPS", "100")))
     parser.add_argument("--use-4bit", action=argparse.BooleanOptionalAction, default=os.environ.get("NOVA_LORA_USE_4BIT", "true").lower() != "false")
+    parser.add_argument(
+        "--allow-cpu-training",
+        action="store_true",
+        help="Allow a slow CPU fallback when no CUDA GPU is available.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Validate dataset and print config without importing training libraries.")
     return parser
 

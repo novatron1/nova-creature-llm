@@ -484,6 +484,38 @@ def test_staged_excluded_deletion_is_removed_when_reported_untracked(
     assert not (candidate / "src" / "nova.py").exists()
 
 
+@pytest.mark.parametrize("include_ancestor", [False, True])
+def test_copy_ancestor_conflicts_use_normalized_components(
+    tmp_path: Path, include_ancestor: bool
+) -> None:
+    repo = init_repo(tmp_path / "repo")
+    source = repo.root
+    (source / "a").mkdir()
+    (source / "a" / "child").write_text("child content", encoding="utf-8")
+    (source / "a-b").write_text("sibling content", encoding="utf-8")
+    # a-b sorts between a and a/child, but is not an ancestor of a/child.
+    paths = ["a-b", "a\\child"]
+    if include_ancestor:
+        paths.append("a/./")
+    report = SnapshotReport(
+        "1.0", [SnapshotDecision(path, SnapshotClass.INCLUDE, "include") for path in paths]
+    )
+    temp_root = tmp_path / "release-temp"
+    temp_root.mkdir()
+    candidate = temp_root / "candidate"
+    create_candidate_worktree(repo, "HEAD", "codex/copy-ancestor", candidate, temp_root)
+    before = tree_bytes(candidate)
+
+    if include_ancestor:
+        with pytest.raises(ReleasePathError, match="file/ancestor conflict"):
+            apply_snapshot(source, candidate, report, temp_root)
+        assert tree_bytes(candidate) == before
+    else:
+        apply_snapshot(source, candidate, report, temp_root)
+        assert (candidate / "a-b").read_text(encoding="utf-8") == "sibling content"
+        assert (candidate / "a" / "child").read_text(encoding="utf-8") == "child content"
+
+
 def test_untracked_ancestor_exclusion_removes_baseline_tree(tmp_path: Path) -> None:
     repo = init_repo(tmp_path / "repo")
     source = repo.root

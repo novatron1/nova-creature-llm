@@ -118,6 +118,15 @@
     }
     .metric span { color: var(--muted); line-height: 1.45; }
     .metric b { font-size: clamp(38px, 7vw, 76px); line-height: .9; }
+    .visual-canvas {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      margin: 0 0 24px;
+      border: 1px solid rgba(17,21,33,.16);
+      border-radius: 8px;
+      background: var(--night);
+    }
     .route {
       display: grid;
       gap: 10px;
@@ -185,6 +194,7 @@
         <p class="lead">The system blends planning, memory, design, coding, critique, simulation, and final speech so every build has a route and a review loop.</p>
       </div>
       <aside class="panel" aria-label="Page strategy">
+        <canvas id="siteVisual" class="visual-canvas" width="960" height="540" role="img" aria-label="Nova Creature visual preview"></canvas>
         <div class="metric"><strong>Brain roles</strong><b>7</b><span>Planner, critic, memory, coding, simulation, creative, speech.</span></div>
         <ul class="route">
           <li><a href="index.html"><strong>Home</strong><span>Nova Creature</span></a></li>
@@ -200,9 +210,57 @@
       <article><strong>Quality gate</strong><p>Responsive layout, semantic structure, favicon, titles, and a state hook are present on this page.</p></article>
       <article><strong>Connected site</strong><p>Every planned page links to every other planned page so the generated website is complete.</p></article>
     </section>
-    <footer><span>Built by the Website Builder Agent.</span><span>5 pages generated and audited.</span></footer>
+    <footer><span>Nova Creature Website built by the Website Builder Agent.</span><span>5 pages generated and audited.</span></footer>
   </main>
   <script>
+    function drawNovaWebsiteVisual(){
+      const canvas = document.getElementById("siteVisual");
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      const pageName = "About";
+      const brandName = "Nova Creature";
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, "#101827");
+      gradient.addColorStop(.52, "#123b46");
+      gradient.addColorStop(1, "#0f1724");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = "rgba(255,255,255,.16)";
+      ctx.lineWidth = 2;
+      for (let x = 72; x < width; x += 72) {
+        ctx.beginPath();
+        ctx.moveTo(x, 54);
+        ctx.lineTo(x, height - 54);
+        ctx.stroke();
+      }
+      const colors = ["#6ee7b7", "#60a5fa", "#f472b6", "#fbbf24", "#a78bfa", "#22d3ee"];
+      for (let i = 0; i < 14; i += 1) {
+        const barWidth = 28;
+        const x = 70 + i * 58;
+        const barHeight = 88 + ((i * 47 + pageName.length * 19) % 250);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.globalAlpha = .72;
+        ctx.fillRect(x, height - 72 - barHeight, barWidth, barHeight);
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#f8fafc";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      for (let x = 54; x <= width - 54; x += 10) {
+        const y = height * .48 + Math.sin((x + pageName.length * 32) / 36) * 42 + Math.sin(x / 13) * 15;
+        if (x === 54) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.font = "700 34px system-ui, sans-serif";
+      ctx.fillText(pageName, 56, 68);
+      ctx.font = "500 22px system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.fillText(brandName, 56, 104);
+    }
+    drawNovaWebsiteVisual();
     window.NovaWebsite = {
       getState(){
         return {

@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
 from pathlib import Path
-from shutil import copy2, copytree
-import importlib.util
+from shutil import copytree
+import hashlib
+from html import escape
 import json
-import os
 import subprocess
 import sys
-import tempfile
 from typing import Any, Callable
 
 from .agent_run import AgentRun, AgentRunState
@@ -83,24 +81,34 @@ def _update_app_module(workspace_root: Path) -> tuple[Path, str, str]:
     return app_path, sha256_json(original), sha256_json(updated)
 
 
-def _load_module(module_path: Path, module_name: str) -> Any:
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Unable to load module from {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
+def _run_bounded(command: list[str], workspace_root: Path, timeout_seconds: float) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(command, cwd=workspace_root, text=True,
+                              capture_output=True, check=False, timeout=timeout_seconds)
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode("utf-8", errors="replace")
+        return subprocess.CompletedProcess(command, 124, stdout,
+                                           f"Subprocess timeout after {timeout_seconds} seconds")
 
 
 def _run_pytest(workspace_root: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "pytest", "-q"],
-        cwd=workspace_root,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    return _run_bounded([sys.executable, "-m", "pytest", "-q"], workspace_root, 120)
+
+
+def _run_app(workspace_root: Path) -> subprocess.CompletedProcess[str]:
+    # A child process bounds runtime; it does NOT restrict filesystem/network access.
+    script = """import app
+for name in ('answer', 'greeting', 'main', 'upgraded_message'):
+    fn = getattr(app, name, None)
+    if callable(fn):
+        print(fn())
+        break
+else:
+    raise RuntimeError('No proof entry point found')
+"""
+    return _run_bounded([sys.executable, "-c", script], workspace_root, 20)
 
 
 def run_proof_job(
@@ -132,71 +140,86 @@ def run_proof_job(
         tool_budget=12,
         cost_budget=0.0,
         memory_budget=8,
-        metadata={"proof_job": True},
+        metadata={"proof_job": True, "isolation": {
+            "kind": "copied_workspace", "os_sandbox": False,
+            "host_filesystem_access_restricted": False,
+            "network_access_restricted": False,
+            "subprocess_timeout_seconds": {"app": 20, "pytest": 120},
+            "authorization": "caller_invocation_for_trusted_project",
+        }},
     )
     run = AgentRun.create(contract)
     run.transition(AgentRunState.AUTHORIZED, reason="proof job authorized")
     run.transition(AgentRunState.EXECUTING, reason="proof job executing")
 
     original_app = workspace_root / "app.py"
+    original_bytes = original_app.read_bytes()
+    rollback_path = workspace_root / "rollback" / "app.py.original"
+    rollback_path.parent.mkdir(parents=True, exist_ok=True)
+    rollback_path.write_bytes(original_bytes)
     baseline_hash = sha256_json(original_app.read_text(encoding="utf-8"))
-    modified_app, before_hash, after_hash = _update_app_module(workspace_root)
-    if before_hash != baseline_hash:
-        before_hash = baseline_hash
+    try:
+        modified_app, before_hash, after_hash = _update_app_module(workspace_root)
+        if before_hash != baseline_hash:
+            before_hash = baseline_hash
 
-    module = _load_module(modified_app, f"nova_proof_app_{run_id}")
-    output_value = None
-    for candidate in ("answer", "greeting", "main"):
-        if hasattr(module, candidate):
-            fn = getattr(module, candidate)
-            if callable(fn):
-                output_value = fn()
-                break
-    if output_value is None:
-        output_value = "hello, nova"
+        app_result = _run_app(workspace_root)
+        output_value = app_result.stdout.strip() if app_result.returncode == 0 else "App execution failed"
 
-    pytest_result = _run_pytest(workspace_root)
-    test_passed = pytest_result.returncode == 0
+        pytest_result = _run_pytest(workspace_root)
+        test_passed = pytest_result.returncode == 0 and app_result.returncode == 0
 
-    html_path = workspace_root / "proof.html"
-    html_path.write_text(
-        f"<html><body><main><h1>{output_value}</h1><p>Nova proof job</p></main></body></html>",
-        encoding="utf-8",
-    )
-    run.transition(AgentRunState.VERIFYING, reason="browser verification")
-    verification = verify_playwright_page(
-        html_path.as_uri(),
-        [{"type": "contains", "contains": "hello, nova"}],
-        timeout_seconds=20,
-        output_dir=workspace_root / "playwright_evidence",
-        page_factory=page_factory,
-        browser_factory=browser_factory,
-    )
+        html_path = workspace_root / "proof.html"
+        html_path.write_text(
+            f"<html><body><main><h1>{escape(output_value)}</h1><p>Nova proof job</p></main></body></html>",
+            encoding="utf-8",
+        )
+        run.transition(AgentRunState.VERIFYING, reason="browser verification")
+        verification = verify_playwright_page(
+            html_path.as_uri(),
+            [{"type": "contains", "contains": "hello, nova"}],
+            timeout_seconds=20,
+            output_dir=workspace_root / "playwright_evidence",
+            page_factory=page_factory,
+            browser_factory=browser_factory,
+        )
 
-    memory_store = _WorkspaceMemoryJournal(workspace_root / "provenance_memory.jsonl")
-    provenance = build_provenance_record(
-        memory_id=f"memory-{run_id}",
-        owner_id="nova",
-        source=str(modified_app),
-        timestamp=verification.verified_at,
-        confidence=0.98 if verification.passed and test_passed else 0.5,
-        write_reason="proof_job_success" if verification.passed and test_passed else "proof_job_failure",
-        content=f"Updated {modified_app.name} and verified proof job output.",
-        previous_version_hash=before_hash,
-        rollback_point=f"rollback:{before_hash}",
-        metadata={
-            "report_path": str(workspace_root / "agent_report.json"),
-            "verification_hash": verification.dom_hash,
-        },
-    )
-    write_provenance_memory(memory_store, provenance)
+    except Exception:
+        original_app.write_bytes(original_bytes)
+        run.transition(AgentRunState.ROLLED_BACK, reason="execution error; app.py restored")
+        raise
 
-    rollback_available = modified_app.exists() and original_app.exists()
+    succeeded = test_passed and verification.passed
+    restored = False
+    if not succeeded:
+        modified_app.write_bytes(original_bytes)
+        restored = modified_app.read_bytes() == original_bytes
+    else:
+        memory_store = _WorkspaceMemoryJournal(workspace_root / "provenance_memory.jsonl")
+        provenance = build_provenance_record(
+            memory_id=f"memory-{run_id}",
+            owner_id="nova",
+            source=str(modified_app),
+            timestamp=verification.verified_at,
+            confidence=0.98,
+            write_reason="proof_job_success",
+            content=f"Updated {modified_app.name} and verified proof job output.",
+            previous_version_hash=before_hash,
+            rollback_point=str(rollback_path),
+            metadata={
+                "report_path": str(workspace_root / "agent_report.json"),
+                "verification_hash": verification.dom_hash,
+            },
+        )
+        write_provenance_memory(memory_store, provenance)
+
+
+    rollback_available = rollback_path.is_file() and rollback_path.read_bytes() == original_bytes
     report = StructuredAgentReport(
         goal=contract.goal,
         plan=[
             "Read the project.",
-            "Edit one file in an isolated workspace.",
+            "Edit one file in a copied workspace (not an OS sandbox).",
             "Run tests.",
             "Verify the browser output.",
             "Write provenance memory and publish a structured report.",
@@ -206,6 +229,7 @@ def run_proof_job(
         tests_executed=["python -m pytest -q"],
         browser_evidence={
             "url": verification.url,
+            "verification_backend": "fixture" if page_factory or browser_factory else "playwright",
             "passed": verification.passed,
             "page_title": verification.page_title,
             "screenshot_hash": verification.screenshot_hash,
@@ -215,7 +239,9 @@ def run_proof_job(
         },
         failures_and_retries=[] if test_passed and verification.passed else [
             {
-                "phase": "test" if not test_passed else "verification",
+                "phase": "app" if app_result.returncode else ("test" if not test_passed else "verification"),
+                "app_returncode": app_result.returncode,
+                "app_stderr": app_result.stderr[-2000:],
                 "returncode": pytest_result.returncode,
                 "stdout": pytest_result.stdout[-2000:],
                 "stderr": pytest_result.stderr[-2000:],
@@ -225,13 +251,18 @@ def run_proof_job(
             "passed": bool(test_passed and verification.passed),
             "pytest_returncode": pytest_result.returncode,
             "browser_passed": verification.passed,
+            "app_returncode": app_result.returncode,
+            "isolation": contract.metadata["isolation"],
         },
         unresolved_blockers=[] if test_passed and verification.passed else ["proof job did not fully verify"],
         rollback_information={
             "available": rollback_available,
             "original_hash": before_hash,
             "updated_hash": after_hash,
-            "rollback_point": provenance.rollback_point,
+            "rollback_point": str(rollback_path),
+            "original_bytes_sha256": hashlib.sha256(original_bytes).hexdigest(),
+            "restored": restored,
+            "scope": "app.py only; arbitrary subprocess side effects are not reverted",
         },
         sections=[
             StructuredAgentReportSection(
@@ -252,6 +283,8 @@ def run_proof_job(
 
     if test_passed and verification.passed:
         run.transition(AgentRunState.COMPLETED, reason="proof job completed")
+    elif restored:
+        run.transition(AgentRunState.ROLLED_BACK, reason="proof job failed verification; app.py restored")
     else:
         run.transition(AgentRunState.FAILED, reason="proof job failed")
 

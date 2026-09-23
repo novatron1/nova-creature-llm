@@ -84,6 +84,26 @@ test('model traces visibly identify the active GPU provider and backend', () => 
   assert.match(rendered, /GPU: vllm · vast_gpu/);
 });
 
+test('reviewed Strong conversation is not mislabeled as unavailable', () => {
+  const messageHtmlSource = extractFunction('messageHtml');
+  const render = new Function(
+    'linkifyMessageText', 'escapeHtml', 'evidenceDrawerHtml',
+    `${messageHtmlSource}; return messageHtml;`,
+  )(
+    text => text,
+    text => String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+    () => '',
+  );
+
+  const rendered = render('Reviewed answer', {
+    final_answer_source: 'nova_self_state',
+    optional_model_mode: {requested: true, selected: true, mode: 'strong', model: 'qwen3:4b'},
+  });
+
+  assert.match(rendered, /Strong · Nova reviewed response/);
+  assert.doesNotMatch(rendered, /Strong fallback/);
+});
+
 test('answer traces visibly show measured response time', () => {
   const messageHtmlSource = extractFunction('messageHtml');
   const render = new Function(

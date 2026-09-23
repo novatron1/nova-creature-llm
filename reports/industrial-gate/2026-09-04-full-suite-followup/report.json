@@ -1,0 +1,32 @@
+{
+  "name": "full_suite",
+  "command": [
+    "C:\\Users\\nova\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "-m",
+    "pytest",
+    "tests",
+    "-q",
+    "--disable-warnings",
+    "--tb=short",
+    "-o",
+    "faulthandler_timeout=90",
+    "--junitxml=[REDACTED]\\full.xml"
+  ],
+  "passed": false,
+  "exit_code": 1,
+  "duration_seconds": 280.2029999999795,
+  "timed_out": false,
+  "stdout_tail": "[REDACTED]",
+  "stderr_tail": "",
+  "tests": {
+    "total": 2221,
+    "passed": 2193,
+    "failed": 6,
+    "errors": 0,
+    "skipped": 22
+  },
+  "source_commit": "7b7ab67766f0ea0449292adf50a12560786c54ab",
+  "source_sha256": "abdec2eab5fb7c22d0f5aa936a9a4c54775c0dd59f56f0f811671e1560878beb",
+  "source_unchanged": true,
+  "promotion_allowed": false
+}

@@ -235,7 +235,10 @@ class NovaAuthenticator:
             # Local development is already trusted by explicit configuration.
             # A stale web-app pairing token must not make localhost less usable
             # than the same request with no Authorization header.
-            context = AuthContext("local-client", LOCAL_SAFE_SCOPES, True, False)
+            local_scopes = LOCAL_SAFE_SCOPES
+            if self.config.allow_local_media:
+                local_scopes = local_scopes | frozenset({"image.generate", "video.generate"})
+            context = AuthContext("local-client", local_scopes, True, False)
         else:
             raise AuthenticationError()
         if required_scope and required_scope not in context.scopes:

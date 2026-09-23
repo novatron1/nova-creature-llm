@@ -88,6 +88,7 @@ SURFACE_ALIASES = {
     "memory_panel": ("memory", "memory panel"),
     "settings": ("settings", "preferences"),
     "tools_page": ("tools", "tools page"),
+    "gpu_hub": ("gpu hub", "gpu hub page", "gpu"),
     "research_panel": ("research", "research panel"),
     "test_check_page": ("test", "tests", "check page", "test page", "run the test"),
     "saved_projects": ("saved projects", "projects"),

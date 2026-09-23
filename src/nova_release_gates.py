@@ -399,6 +399,7 @@ def _sanitized_environment(
             "NOVA_SUPPRESS_RUNTIME_LOGS": "true",
             "NOVA_ENABLE_REMOTE_ACCESS": "false",
             "NOVA_ALLOW_REMOTE_MODELS": "false",
+            "NOVA_AGENT_ALLOW_SHELL": "false",
             "NOVA_COMPANION_ENABLED": "true",
             "NOVA_COMPANION_DEFAULT": "false",
         }
@@ -2144,8 +2145,16 @@ def default_gate_definitions(
         ),
         GateDefinition(
             name="python_full",
-            argv=(python_executable, "-m", "pytest", "-q"),
+            argv=(python_executable, "-m", "pytest", "-q",
+                  "--junitxml", str(reports / "python-full.xml")),
             timeout_seconds=3_600,
+            artifact_paths=(str(reports / "python-full.xml"),),
+        ),
+        GateDefinition(
+            name="industrial_gate",
+            argv=(python_executable, "tools/run_nova_industrial_gate.py",
+                  "--output", str(reports / "industrial-gate")),
+            timeout_seconds=7_200,
         ),
         GateDefinition(
             name="conversation_560",

@@ -15,6 +15,16 @@ from nova_model_quality import NovaModelQualityRegistry
 
 
 @pytest.fixture(autouse=True)
+def _isolated_runtime_configuration(monkeypatch, tmp_path):
+    """Exercise real config loading against temporary files, not operator overrides."""
+    for key in llm.LocalLLMConfig.DEFAULT_CONFIG:
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("NOVA_SUPPRESS_RUNTIME_LOGS", "true")
+    monkeypatch.setenv("NOVA_SUPPRESS_CONVERSATION_TRAINING", "true")
+    monkeypatch.setattr(llm, "ROOT", tmp_path)
+
+
+@pytest.fixture(autouse=True)
 def _isolated_model_quality_registry(monkeypatch, tmp_path):
     """Prevent managed connector tests from changing live quality state."""
 
@@ -132,21 +142,23 @@ def test_optional_strong_model_configuration_is_explicit_and_does_not_replace_de
     assert config.optional_strong_model == "qwen3:8b"
     assert config.optional_strong_timeout == 240
     assert config.optional_strong_keep_alive == "5m"
-    assert json_config["NOVA_OPTIONAL_STRONG_MODEL"] == "qwen3:8b"
+    assert json_config["NOVA_OPTIONAL_STRONG_MODEL"] == "qwen3:4b"
     assert json_config["NOVA_OPTIONAL_STRONG_TIMEOUT"] == 240
     assert json_config["NOVA_OPTIONAL_STRONG_KEEP_ALIVE"] == "5m"
     assert config.deep_model != config.optional_strong_model
 
 
-def test_portable_local_llm_config_selects_small_qwen_for_regular_chat():
+def test_shipped_local_llm_config_keeps_small_fast_route_and_bounded_gpu_review():
     json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
 
     assert json_config["NOVA_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
     assert json_config["NOVA_FAST_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
-    assert json_config["NOVA_DEEP_LOCAL_LLM_MODEL"] == "qwen2.5:1.5b"
+    assert json_config["NOVA_DEEP_LOCAL_LLM_MODEL"] == "qwen3:4b"
+    assert json_config["NOVA_ACTIVE_BRAIN"] == json_config["NOVA_FAST_LOCAL_LLM_MODEL"]
+    assert json_config["NOVA_OPTIONAL_STRONG_MODEL"] != json_config["NOVA_FAST_LOCAL_LLM_MODEL"]
     assert json_config["NOVA_DIRECT_DEEPSEEK_MODEL"] == "dolphin3"
     assert json_config["NOVA_DIRECT_DEEPSEEK_TIMEOUT"] == 180
-    assert json_config["NOVA_LOCAL_LLM_CONTEXT"] == 8192
+    assert json_config["NOVA_LOCAL_LLM_CONTEXT"] == 4096
     assert json_config["NOVA_NATURAL_CHAT"] is True
     assert json_config["NOVA_ULTRA_THINK"] is True
     assert json_config["NOVA_AGENT_MODE"] is True
@@ -159,7 +171,7 @@ def test_portable_local_llm_config_selects_small_qwen_for_regular_chat():
     assert json_config["NOVA_LORA_ADAPTER_ENABLED"] is True
     assert json_config["NOVA_LORA_BASE_MODEL"] == "Qwen/Qwen2.5-1.5B-Instruct"
     assert json_config["NOVA_LORA_RUNTIME_ENABLED"] is True
-    assert json_config["NOVA_LORA_DEVICE"] == "auto"
+    assert json_config["NOVA_LORA_DEVICE"] == "cuda"
     assert json_config["NOVA_LORA_MAX_NEW_TOKENS"] == 256
     assert json_config["NOVA_LORA_AUTO_MODE"] == "ollama_qwen_first"
     assert json_config["NOVA_REGULAR_CHAT_ESCALATION_ENABLED"] is True
@@ -167,8 +179,9 @@ def test_portable_local_llm_config_selects_small_qwen_for_regular_chat():
     assert json_config["NOVA_ESCALATION_MAX_MODEL_BYTES"] == 8_000_000_000
     assert (
         json_config["NOVA_ESCALATION_REASONING_MODELS"].split(",", 1)[0]
-        == "qwen2.5-coder:7b"
+        == "qwen3:4b"
     )
+    assert json_config["NOVA_ESCALATION_TIMEOUT_SECONDS"] == 45
 
 
 def test_lora_adapter_config_properties_can_be_read_from_file(tmp_path, monkeypatch):
@@ -212,12 +225,12 @@ def test_portable_json_config_is_loaded_before_machine_local_overrides(tmp_path,
     assert config.context_window == 8192
 
 
-def test_local_llm_timeout_and_context_allow_cpu_qwen_to_finish():
+def test_code_default_and_shipped_timeout_context_budgets_are_explicit():
     json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
 
     assert 30 <= llm.LocalLLMConfig.DEFAULT_CONFIG["NOVA_LOCAL_LLM_TIMEOUT"] <= 120
-    assert 30 <= json_config["NOVA_LOCAL_LLM_TIMEOUT"] <= 120
-    assert json_config["NOVA_LOCAL_LLM_CONTEXT"] == 8192
+    assert json_config["NOVA_LOCAL_LLM_TIMEOUT"] == 240
+    assert json_config["NOVA_LOCAL_LLM_CONTEXT"] == 4096
 
 
 def test_deepseek_thinking_block_is_removed_from_local_llm_output():
@@ -410,6 +423,7 @@ def test_local_llm_connector_accepts_model_and_timeout_overrides(monkeypatch):
 
 
 def test_local_llm_connector_accepts_bounded_keep_alive_override(monkeypatch):
+    monkeypatch.setenv("NOVA_USE_LOCAL_LLM", "true")
     captured = {}
 
     class FakeResponse:
@@ -444,6 +458,7 @@ def test_local_llm_connector_accepts_bounded_keep_alive_override(monkeypatch):
 
 
 def test_local_llm_connector_runs_managed_generation_inside_residency_guard(monkeypatch):
+    monkeypatch.setenv("NOVA_USE_LOCAL_LLM", "true")
     connector = llm.LocalLLMConnector()
     captured = {}
     decision = {
@@ -520,6 +535,7 @@ def test_primary_residency_uses_installed_model_size_instead_of_family_guess(
 
 
 def test_local_llm_connector_does_not_load_model_when_residency_guard_blocks(monkeypatch):
+    monkeypatch.setenv("NOVA_USE_LOCAL_LLM", "true")
     connector = llm.LocalLLMConnector()
     monkeypatch.setattr(
         connector,
@@ -554,6 +570,7 @@ def test_local_llm_connector_does_not_load_model_when_residency_guard_blocks(mon
 
 
 def test_local_llm_connector_skips_quarantined_managed_model(monkeypatch):
+    monkeypatch.setenv("NOVA_USE_LOCAL_LLM", "true")
     import nova_model_quality
 
     registry = nova_model_quality.get_default_model_quality_registry()
@@ -639,3 +656,14 @@ def test_hybrid_router_direct_llm_fallback_uses_configured_model_timeout_and_cle
     assert '"model": _llm_config.deep_model' in source
     assert "timeout=max(120, _llm_config.timeout)" in source
     assert "clean_local_llm_output" in source
+
+
+def test_config_isolation_retains_write_guards_and_real_file_loading(tmp_path):
+    import os
+
+    assert os.environ["NOVA_SUPPRESS_RUNTIME_LOGS"] == "true"
+    assert os.environ["NOVA_SUPPRESS_CONVERSATION_TRAINING"] == "true"
+    (tmp_path / "nova_llm_config.json").write_text(
+        json.dumps({"NOVA_LOCAL_LLM_CONTEXT": 2048}), encoding="utf-8"
+    )
+    assert llm.LocalLLMConfig().context_window == 2048

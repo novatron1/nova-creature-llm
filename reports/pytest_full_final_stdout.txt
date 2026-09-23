@@ -1,0 +1,166 @@
+........................................................................ [  5%]
+........................................................................ [ 11%]
+.........................................F.............................. [ 17%]
+........................................................................ [ 23%]
+........................................................................ [ 29%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 46%]
+........................................................................ [ 52%]
+........................................................................ [ 58%]
+........................................................................ [ 64%]
+..............................................F...........F.F.......F... [ 69%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 87%]
+........................................................................ [ 93%]
+..............................................................sssssss.ss [ 99%]
+s..........                                                              [100%]
+================================== FAILURES ===================================
+______________ test_llm_planner_can_call_connector_without_httpx ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001C136730850>
+
+    def test_llm_planner_can_call_connector_without_httpx(monkeypatch):
+        calls = []
+    
+        class FakeConnector:
+            def __init__(self):
+                self.config = SimpleNamespace(url="http://127.0.0.1:11434/api/generate")
+    
+            def generate(self, context):
+                calls.append(context)
+                return SimpleNamespace(
+                    local_llm_used=True,
+                    raw_output='{"route":"general_conversation","needs_llm_synthesis":true}',
+                )
+    
+        real_import = builtins.__import__
+    
+        def import_without_httpx(name, *args, **kwargs):
+            if name == "httpx":
+                raise ImportError("httpx unavailable in this environment")
+            return real_import(name, *args, **kwargs)
+    
+        monkeypatch.setattr(nova_local_llm_connector, "LocalLLMConnector", FakeConnector)
+        monkeypatch.setattr(builtins, "__import__", import_without_httpx)
+    
+        raw = nova_intent_planner._call_llm_planner("hello")
+    
+        assert raw == '{"route":"general_conversation","needs_llm_synthesis":true}'
+        assert calls
+        assert "raw_prompt" in calls[0]
+        assert calls[0]["local_llm_model"] == "qwen2.5:1.5b"
+        assert calls[0]["local_llm_timeout"] == 2
+        assert calls[0]["ollama_options"]["temperature"] == 0
+>       assert calls[0]["ollama_options"]["num_ctx"] >= 16384
+E       assert 8192 >= 16384
+
+tests\test_nova_cognitive_os.py:163: AssertionError
+_________ test_synthesizer_direct_deepseek_route_uses_compact_prompt __________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001C13631F8D0>
+
+    def test_synthesizer_direct_deepseek_route_uses_compact_prompt(monkeypatch):
+        captured = {}
+    
+        class FakeConnector:
+            def generate(self, context_packet):
+                captured.update(context_packet)
+                return SimpleNamespace(
+                    local_llm_used=True,
+                    raw_output="Dolphin direct answer.",
+                    fallback_reason=None,
+                )
+    
+        monkeypatch.setattr(nova_local_llm_connector, "LocalLLMConnector", FakeConnector)
+    
+        answer, ok, error = synthesizer.generate(
+            {
+                "system_prompt": "Very long system prompt " * 50,
+                "user_question": "Explain gravity in one sentence.",
+                "route": "deepseek_direct",
+            }
+        )
+    
+        assert ok is True
+        assert error is None
+        assert answer == "Dolphin direct answer."
+        assert captured["raw_prompt"].startswith("Answer directly as Nova using the configured local LLM.")
+        assert "Very long system prompt" not in captured["raw_prompt"]
+>       assert captured["ollama_options"]["num_ctx"] >= 16384
+E       assert 8192 >= 16384
+
+tests\test_nova_llm_synthesizer.py:440: AssertionError
+____ test_checked_in_local_llm_configs_select_small_qwen_for_regular_chat _____
+
+    def test_checked_in_local_llm_configs_select_small_qwen_for_regular_chat():
+        env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")
+        json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
+    
+        assert "NOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b" in env_config
+        assert "NOVA_FAST_LOCAL_LLM_MODEL=qwen2.5:1.5b" in env_config
+        assert "NOVA_DEEP_LOCAL_LLM_MODEL=qwen2.5:1.5b" in env_config
+        assert "NOVA_DIRECT_DEEPSEEK_MODEL=dolphin3" in env_config
+        assert "NOVA_DIRECT_DEEPSEEK_TIMEOUT=180" in env_config
+>       assert "NOVA_LOCAL_LLM_CONTEXT=16384" in env_config
+E       AssertionError: assert 'NOVA_LOCAL_LLM_CONTEXT=16384' in 'NOVA_LOCAL_LLM_URL=http://127.0.0.1:11434/api/generate\nNOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b\nNOVA_FAST_LOCAL_LLM_MODEL=...3\nNOVA_ESCALATION_CODING_MODELS=qwen2.5-coder:7b,deepseek-r1:7b,nova-dolphin3-lora,dolphin3\nNOVA_FAST_PLANNER=true\n'
+
+tests\test_nova_local_llm_config.py:137: AssertionError
+_________ test_local_llm_timeout_and_context_allow_cpu_qwen_to_finish _________
+
+    def test_local_llm_timeout_and_context_allow_cpu_qwen_to_finish():
+        env_config = (ROOT / ".nova_llm_config").read_text(encoding="utf-8")
+        json_config = json.loads((ROOT / "nova_llm_config.json").read_text(encoding="utf-8"))
+    
+        assert 30 <= llm.LocalLLMConfig.DEFAULT_CONFIG["NOVA_LOCAL_LLM_TIMEOUT"] <= 120
+        assert "NOVA_LOCAL_LLM_TIMEOUT=60" in env_config
+>       assert "NOVA_LOCAL_LLM_CONTEXT=16384" in env_config
+E       AssertionError: assert 'NOVA_LOCAL_LLM_CONTEXT=16384' in 'NOVA_LOCAL_LLM_URL=http://127.0.0.1:11434/api/generate\nNOVA_LOCAL_LLM_MODEL=qwen2.5:1.5b\nNOVA_FAST_LOCAL_LLM_MODEL=...3\nNOVA_ESCALATION_CODING_MODELS=qwen2.5-coder:7b,deepseek-r1:7b,nova-dolphin3-lora,dolphin3\nNOVA_FAST_PLANNER=true\n'
+
+tests\test_nova_local_llm_config.py:217: AssertionError
+__________ test_local_llm_connector_accepts_ollama_option_overrides ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001C136F63510>
+
+    def test_local_llm_connector_accepts_ollama_option_overrides(monkeypatch):
+        captured = {}
+    
+        class FakeResponse:
+            def __enter__(self):
+                return self
+    
+            def __exit__(self, exc_type, exc, tb):
+                return False
+    
+            def read(self):
+                return b'{"response":"OK"}'
+    
+        def fake_urlopen(request, timeout=None):
+            captured["payload"] = json.loads(request.data.decode())
+            captured["timeout"] = timeout
+            return FakeResponse()
+    
+        monkeypatch.setattr(llm, "HAS_HTTPX", False)
+        monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    
+        connector = llm.LocalLLMConnector()
+        response = connector._call_ollama(
+            "Return JSON.",
+            options_override={"temperature": 0, "num_predict": 700},
+        )
+    
+        assert response.local_llm_used is True
+        assert captured["payload"]["options"]["temperature"] == 0
+        assert captured["payload"]["options"]["num_predict"] == 700
+>       assert captured["payload"]["options"]["num_ctx"] >= 16384
+E       assert 8192 >= 16384
+
+tests\test_nova_local_llm_config.py:372: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_nova_cognitive_os.py::test_llm_planner_can_call_connector_without_httpx
+FAILED tests/test_nova_llm_synthesizer.py::test_synthesizer_direct_deepseek_route_uses_compact_prompt
+FAILED tests/test_nova_local_llm_config.py::test_checked_in_local_llm_configs_select_small_qwen_for_regular_chat
+FAILED tests/test_nova_local_llm_config.py::test_local_llm_timeout_and_context_allow_cpu_qwen_to_finish
+FAILED tests/test_nova_local_llm_config.py::test_local_llm_connector_accepts_ollama_option_overrides
+5 failed, 1220 passed, 10 skipped in 175.08s (0:02:55)

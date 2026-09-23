@@ -272,6 +272,26 @@ def test_contextual_followup_carries_recent_emotion_without_diagnosing():
     assert "do not diagnose" in resolution.generation_prompt.lower()
 
 
+def test_contextual_pronoun_question_keeps_the_previous_subject():
+    history = bounded_conversation_history(
+        {
+            "conversation_history": [
+                {"role": "user", "content": "How do you know if love is real?"},
+                {
+                    "role": "assistant",
+                    "content": "Look for consistent actions, honesty, mutual effort, and trust over time.",
+                },
+            ]
+        }
+    )
+
+    resolution = resolve_contextual_followup("How can you test it?", history)
+
+    assert resolution.kind == "referential"
+    assert "love" in resolution.generation_prompt.lower()
+    assert "how can you test it" in resolution.generation_prompt.lower()
+
+
 def test_contextual_focus_does_not_turn_a_new_topic_into_a_followup():
     history = bounded_conversation_history(
         {
@@ -645,6 +665,16 @@ def test_firewall_rejects_near_prompt_paraphrase_but_allows_requested_repetition
     assert paraphrase.accepted is False
     assert "prompt_paraphrase" in paraphrase.reasons
     assert requested.accepted is True
+
+
+def test_firewall_allows_factual_answer_that_adds_one_fact_token():
+    decision = evaluate_answer(
+        "What is the capital of Japan?",
+        "The capital of Japan is Tokyo.",
+    )
+
+    assert decision.accepted is True
+    assert "prompt_paraphrase" not in decision.reasons
 
 
 def test_firewall_accepts_relevant_answers_and_reports_raw_bypass_honestly():

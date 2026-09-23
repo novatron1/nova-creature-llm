@@ -106,3 +106,69 @@ def test_advice_recovery_has_a_small_actionable_fallback():
     )
     assert "off-topic draft" not in result.lower()
     assert "next step" in result.lower() or "write" in result.lower()
+
+
+def test_social_plan_cannot_hide_a_rejected_technical_candidate():
+    import copy
+    from nova_companion.models import SocialPlan
+    from nova_companion.response_composer import compose_response
+
+    answer = "The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct."
+    trace = {
+        "source": "answer_firewall_recovery",
+        "final_answer_source": "answer_firewall_recovery",
+        "candidate_selection": {
+            "selected": "recovery",
+            "retry_result": "consistency_check_failed",
+            "alternate_consistency": {"status": "blocked", "accepted": False},
+        },
+        "answer_firewall": {"status": "blocked", "accepted": False, "reasons": ["generic_fallback_mismatch"]},
+    }
+    original_trace = copy.deepcopy(trace)
+    result = compose_response(
+        "Compare local SQLite with a remote vector database for latency, offline use, and cost.",
+        answer, SocialPlan.neutral(), trace=trace,
+    )
+    assert result == answer
+    assert trace == original_trace
+
+
+def test_social_recovery_preserves_failed_verification():
+    from nova_companion.models import SocialPlan
+    from nova_companion.response_composer import compose_response
+
+    answer = "I stopped it instead of pretending it was correct."
+    trace = {"source": "answer_firewall_recovery", "verification_v2": {"passed": False}}
+    assert compose_response("Let's talk", answer, SocialPlan.neutral(), trace=trace) == answer
+    assert trace["source"] == "answer_firewall_recovery"
+
+
+def test_casual_companion_expression_is_animated_and_curious():
+    from nova_companion.intent import classify_social_intent
+    from nova_companion.models import CompanionState, MoodState
+    from nova_companion.personality import expression_modifiers
+
+    state = CompanionState.new("user-a")
+    state.nova_current_mood = MoodState(energy=0.8, curiosity=0.85)
+    intent = classify_social_intent("Tell me something interesting")
+
+    modifiers = expression_modifiers(state, intent)
+
+    assert modifiers["animated"] >= 0.75
+    assert modifiers["curious"] >= 0.8
+
+
+def test_casual_chat_invites_curiosity_after_first_interaction():
+    from nova_companion.intent import classify_social_intent
+    from nova_companion.models import CompanionState
+    from nova_companion.social_reasoning import plan_social_response
+
+    state = CompanionState.new("user-a")
+    state.interaction_count = 1
+    intent = classify_social_intent("Tell me something interesting")
+
+    plan = plan_social_response(state, intent, [])
+
+    assert plan.ask_follow_up is True
+    assert plan.intensity >= 0.5
+    assert "curiosity" in plan.reason_codes

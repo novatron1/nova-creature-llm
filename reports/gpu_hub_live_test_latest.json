@@ -1,0 +1,68 @@
+{
+  "checked_at_utc": "2026-08-17T20:11:32.1275959Z",
+  "scope": "GPU Hub live verification (local-only; no paid Vast.ai operation)",
+  "server": {
+    "port": 3000,
+    "health_http_status": 200,
+    "health_ok": true,
+    "active_process": "pythonw.exe nova_enhanced_server.py 3000",
+    "restart": {
+      "identified_original_pid": 14304,
+      "original_command_verified": true,
+      "original_process_stopped": true,
+      "replacement_listener_pid": 10036,
+      "served_build_verified": true
+    }
+  },
+  "gpu_hub": {
+    "status_http_status": 200,
+    "enabled": true,
+    "compute_modes_contract": ["auto", "cpu", "local_gpu", "vast_gpu"],
+    "selected_mode_after_test": "cpu",
+    "effective_backend_after_test": "cpu",
+    "local_gpu": {
+      "available": false,
+      "usable": false,
+      "reason": "nvidia-smi unavailable: FileNotFoundError."
+    }
+  },
+  "chat_cpu_smoke": {
+    "http_status": 200,
+    "bounded_timeout_seconds": 25,
+    "elapsed_ms": 716,
+    "response_present": true,
+    "trace_source": "answer_firewall_recovery",
+    "note": "The bounded CPU route returned safely; the answer firewall declined the test prompt rather than producing a model answer."
+  },
+  "vast": {
+    "api_key_present": false,
+    "test_http_status": 503,
+    "instances_http_status": 503,
+    "create_http_status": 503,
+    "result_code": "vast_unavailable",
+    "message": "Vast.ai is unavailable because NOVA_VAST_API_KEY is not configured.",
+    "create_result_code": "vast_unavailable",
+    "network_or_paid_operation_performed": false,
+    "missing_key_guard_exercised": true,
+    "real_instance_or_remote_model_live_tested": false
+  },
+  "served_page": {
+    "http_status": 200,
+    "gpu_hub_panel": true,
+    "gpu_hub_title": true,
+    "viewport_marker": true,
+    "mobile_gpu_grid_marker": true,
+    "touch_action_marker": true
+  },
+  "installer": {
+    "command": "INSTALL_NOVA_GPU_HUB_WINDOWS.ps1 -CheckOnly",
+    "passed": true
+  },
+  "tests": {
+    "gpu_hub_focused_pytest": "31 passed in 2.63s",
+    "provider_gateway_regression_pytest": "50 passed in 16.08s",
+    "enhanced_server_pytest": "378 passed in 40.29s",
+    "gpu_hub_browser_ui": "7 passed in 235.5651ms"
+  },
+  "secrets": "No API key or credential value was read, returned, or recorded."
+}

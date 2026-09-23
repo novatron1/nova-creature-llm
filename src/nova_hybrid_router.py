@@ -144,12 +144,12 @@ DOMAIN_KEYWORDS = {
     "science": ["science", "physics", "chemistry", "biology", "dna", "cell", "atom", "molecule", "evolution", "gravity", "energy", "force", "planet", "star", "galaxy", "black hole", "quantum", "relativity", "photosynthesis", "neuron", "gene", "climate", "experiment", "hypothesis", "theory", "scientific"],
     "philosophy": ["philosophy", "meaning of life", "consciousness", "reality", "truth", "ethics", "morality", "free will", "soul", "mind", "existence", "god", "belief", "knowledge", "logic", "reason", "argument", "paradox", "infinite", "purpose", "identity", "self"],
     "psychology": ["psychology", "cognition", "memory", "emotion", "brain", "perception", "learning", "behavior", "personality", "mental", "anxiety", "depression", "stress", "trauma", "therapy", "mindful", "conscious", "unconscious", "bias", "cognitive", "neuron", "neuroscience"],
-    "creative": ["draw", "paint", "create", "design", "art", "picture", "image", "svg", "canvas", "face", "animation", "visual", "make", "build", "generate", "creative", "imagine", "invent", "compose", "write story", "poem"],
+    "creative": ["draw", "paint", "create", "design", "art", "picture", "image", "svg", "canvas", "face", "animation", "visual", "generate", "creative", "imagine", "invent", "compose", "write story", "poem", "make a picture", "make an image", "make a game", "build a game", "build an app", "build a website"],
     "memory_recall": ["remember", "recall", "what is my", "who am i", "what did i", "do you know", "do you remember", "what was", "who was", "tell me about yourself", "what do you know"],
     "planning": ["plan", "step", "order", "first", "next", "then", "after", "before", "schedule", "organize", "strategy", "method", "approach", "build", "create plan", "how to", "guide", "tutorial"],
     "critic": ["truth", "lie", "fake", "wrong", "correct", "check", "verify", "confirm", "contradiction", "conflict", "error", "mistake", "uncertain", "doubt", "evidence", "proof", "fact", "claim"],
     "speech": ["explain", "describe", "summarize", "clarify", "tell", "talk", "say", "speak", "answer", "respond", "define", "elaborate"],
-    "dream": ["imagine", "what if", "hypothetical", "scenario", "simulate", "pretend", "suppose", "could", "would", "might", "possible", "alternate", "future", "dream", "vision"],
+    "dream": ["what if", "hypothetical", "scenario", "simulate", "pretend", "suppose", "alternate scenario", "alternate future", "dream"],
 }
 
 # Routing log for learning
@@ -160,12 +160,25 @@ def classify_domain(text):
     """Classify input text into a domain using keyword scoring + transformer embedding if available."""
     q = text.lower().strip()
     scores = {}
+
+    def keyword_matches(keyword):
+        candidate = str(keyword or "").strip().lower()
+        if not candidate:
+            return False
+        if re.fullmatch(r"[a-z0-9]+(?:\s+[a-z0-9]+)*", candidate):
+            return bool(
+                re.search(
+                    r"(?<![a-z0-9])" + re.escape(candidate) + r"(?![a-z0-9])",
+                    q,
+                )
+            )
+        return candidate in q
     
     # Keyword scoring
     for domain, keywords in DOMAIN_KEYWORDS.items():
         score = 0
         for kw in keywords:
-            if kw in q:
+            if keyword_matches(kw):
                 score += 1
         if score > 0:
             scores[domain] = score

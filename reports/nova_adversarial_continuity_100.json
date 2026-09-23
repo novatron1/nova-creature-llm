@@ -1,0 +1,760 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-27T18:51:52+00:00",
+  "evaluation_type": "live_nova_adversarial_full_stack",
+  "bank_version": "nova-adversarial-1.0",
+  "base_url": "http://127.0.0.1:8765",
+  "overall_score": 1.0,
+  "overall_percent": 100.0,
+  "passed_cases": 10,
+  "case_count": 10,
+  "error_count": 0,
+  "category_scores": {
+    "conversation_continuity": {
+      "score": 1.0,
+      "percent": 100.0,
+      "passed_cases": 10,
+      "case_count": 10,
+      "error_count": 0
+    }
+  },
+  "selected_bank_counts": {
+    "conversation_continuity": 10
+  },
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": true,
+  "long_term_memory_pollution_prevented": true,
+  "total_latency_ms": 281.0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "codeword",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What is the codeword? Return only it.",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "SILVER_FOX_19",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "exact answer",
+          "kind": "exact",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_the_codeword",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 37
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "favorite_color",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What temporary color did I say?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "teal",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_temporary_color_did",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 31
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 16.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "corrected_number",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What is the current test number?",
+      "setup_turn_count": 2,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        },
+        {
+          "turn": 2,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "32",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "verify",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "current_information",
+          "complexity": "low",
+          "certainty_required": true,
+          "current_information_required": true,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": true,
+          "tools_required": false,
+          "reasoning_mode": "verify",
+          "risk_level": "medium",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 32
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 47.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "two_people",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Who holds the glass key?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "Omar",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "who_holds_the_glass",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 24
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "project_goal",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What goal are we discussing?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "reduce startup time",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_goal_are_we",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 28
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 0.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "pronoun_reference",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What is beside the blue crate?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "The red robot",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_beside_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 30
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "followup_reason",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Why did I miss it?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "You left home late",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_did_i_miss",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 18
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "latest_preference",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Which layout should we use now?",
+      "setup_turn_count": 2,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "conversation_declaration"
+        },
+        {
+          "turn": 2,
+          "response_present": true,
+          "source": "conversation_declaration"
+        }
+      ],
+      "output": "spacious",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "conversation_evidence_recall",
+        "confidence": 0.99,
+        "route_path": [
+          "nova_core",
+          "client_conversation_evidence",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "which_layout_should_we",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 31
+        },
+        "direct_middle_routing": {
+          "selected": false,
+          "reason": "explicit_client_conversation_evidence",
+          "local_only": true,
+          "model_called": false
+        }
+      },
+      "error": null,
+      "latency_ms": 47.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "joke_followup",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "Another one.",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "nova_joke"
+        }
+      ],
+      "output": "Why was the math book stressed? It had too many problems.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "new joke-like response",
+          "kind": "contains_any",
+          "passed": true
+        },
+        {
+          "label": "not generic reset",
+          "kind": "excludes_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "nova_joke",
+        "confidence": 0.98,
+        "route_path": [
+          "joke_router",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "another_one",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 12
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 16.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "relationship_followup",
+      "category": "conversation_continuity",
+      "description": "",
+      "prompt": "What if she doesn't say it back?",
+      "setup_turn_count": 1,
+      "setup_results": [
+        {
+          "turn": 1,
+          "response_present": true,
+          "source": "relationship_coaching"
+        }
+      ],
+      "output": "If she doesn't say it back, don't pressure her. Say: \"That's okay - you don't have to say it before you're ready. I just wanted to be honest about how I feel.\" Needing time does not automatically mean she does not care, so listen to what she actually says. If she tells you she doesn't feel the same, respect that and be honest with yourself about what you need next.",
+      "score": 1.0,
+      "passed": true,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": true
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "relationship_coaching",
+        "confidence": 0.97,
+        "route_path": [
+          "recent_conversation",
+          "relationship_coaching",
+          "speech_output"
+        ],
+        "roles": [
+          "right_hemisphere",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_if_she_doesn",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 32
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 31.0
+    }
+  ],
+  "limitations": [
+    "This is a bounded engineering regression suite, not an IQ test.",
+    "Keyword and format rubrics can miss semantically correct answers.",
+    "Passing does not establish ability outside the tested behavior classes."
+  ]
+}

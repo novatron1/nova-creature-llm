@@ -113,6 +113,24 @@ def test_gateway_core_updates_world_model_and_attaches_safe_summary() -> None:
     assert core.health()["world_model"]["private_chain_of_thought_stored"] is False
 
 
+def test_gateway_core_exposes_truthful_effective_route_summary() -> None:
+    core = NovaGatewayCore(
+        lambda text, context: ("Nova answer", {"source": "local_llm", "gpu_backend": "cpu"}),
+        config=GatewayConfig(),
+        register_ollama=False,
+    )
+
+    response = core.generate(make_request())
+
+    summary = response.metadata["route_summary"]
+    assert summary["provider"] == "existing-nova"
+    assert summary["model"] == "nova-core"
+    assert summary["local"] is True
+    assert summary["backend"] == "cpu"
+    assert isinstance(summary["latency_ms"], (int, float))
+    assert summary["fallback"] is False
+
+
 def test_gateway_core_stream_completes_world_model_without_buffer_duplication() -> None:
     def runner(text, context):
         assert context["world_model"]["status"] == "working"
@@ -481,6 +499,7 @@ def test_gateway_config_environment_overrides_are_bounded_and_public_view_has_no
             "NOVA_WORLD_MODEL_PATH": "private/world-state.json",
             "NOVA_WORLD_MODEL_MAX_AGE_DAYS": "45",
             "NOVA_DREAM_LAB_ENABLED": "false",
+            "NOVA_ALLOW_LOCAL_MEDIA": "true",
             "NOVA_COMFYUI_ENABLED": "true",
             "NOVA_COMFYUI_BASE_URL": "http://127.0.0.1:8188",
             "NOVA_COMFYUI_IMAGE_WORKFLOW": "private/image-workflow.json",
@@ -500,6 +519,7 @@ def test_gateway_config_environment_overrides_are_bounded_and_public_view_has_no
     assert config.world_model_checkpoint_path == tmp_path / "private" / "world-state.json"
     assert config.world_model_max_age_days == 45
     assert config.dream_lab_enabled is False
+    assert config.allow_local_media is True
     assert config.comfyui_enabled is True
     assert config.comfyui_image_workflow_path == tmp_path / "private" / "image-workflow.json"
     assert config.comfyui_video_workflow_path == tmp_path / "private" / "video-workflow.json"

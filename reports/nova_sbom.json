@@ -1,0 +1,576 @@
+{
+  "bomFormat": "CycloneDX-compatible",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:nova-20260723161345",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-07-23T16:13:45+00:00",
+    "component": {
+      "name": "NOVA LLM CREATURE DESKTOP",
+      "type": "application"
+    },
+    "telemetry_enabled": false
+  },
+  "components": [
+    {
+      "name": "accelerate",
+      "version": "1.14.0"
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1"
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.1"
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0"
+    },
+    {
+      "name": "alembic",
+      "version": "1.18.5"
+    },
+    {
+      "name": "annotated-doc",
+      "version": "0.0.4"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.7.0"
+    },
+    {
+      "name": "anyio",
+      "version": "4.14.1"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0"
+    },
+    {
+      "name": "autobahn",
+      "version": "26.6.2"
+    },
+    {
+      "name": "Automat",
+      "version": "25.4.16"
+    },
+    {
+      "name": "av",
+      "version": "18.0.0"
+    },
+    {
+      "name": "blake3",
+      "version": "1.0.9"
+    },
+    {
+      "name": "bleach",
+      "version": "6.4.0"
+    },
+    {
+      "name": "cbor2",
+      "version": "6.1.2"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.6.17"
+    },
+    {
+      "name": "cffi",
+      "version": "2.0.0"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.4.7"
+    },
+    {
+      "name": "click",
+      "version": "8.4.2"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6"
+    },
+    {
+      "name": "comfy-aimdo",
+      "version": "0.4.10"
+    },
+    {
+      "name": "comfy-angle",
+      "version": "0.1.0"
+    },
+    {
+      "name": "comfy-kitchen",
+      "version": "0.2.22"
+    },
+    {
+      "name": "comfyui-embedded-docs",
+      "version": "0.5.8"
+    },
+    {
+      "name": "comfyui-workflow-templates-core",
+      "version": "0.3.274"
+    },
+    {
+      "name": "comfyui-workflow-templates-json",
+      "version": "0.1.8"
+    },
+    {
+      "name": "comfyui-workflow-templates-media-api",
+      "version": "0.3.84"
+    },
+    {
+      "name": "comfyui-workflow-templates-media-assets-01",
+      "version": "0.1.5"
+    },
+    {
+      "name": "comfyui-workflow-templates-media-image",
+      "version": "0.3.160"
+    },
+    {
+      "name": "comfyui-workflow-templates-media-other",
+      "version": "0.3.229"
+    },
+    {
+      "name": "comfyui-workflow-templates-media-video",
+      "version": "0.3.101"
+    },
+    {
+      "name": "comfyui_frontend_package",
+      "version": "1.45.21"
+    },
+    {
+      "name": "comfyui_workflow_templates",
+      "version": "0.11.11"
+    },
+    {
+      "name": "constantly",
+      "version": "23.10.4"
+    },
+    {
+      "name": "cryptography",
+      "version": "49.0.0"
+    },
+    {
+      "name": "edge-tts",
+      "version": "7.2.8"
+    },
+    {
+      "name": "einops",
+      "version": "0.8.2"
+    },
+    {
+      "name": "fastjsonschema",
+      "version": "2.21.2"
+    },
+    {
+      "name": "filelock",
+      "version": "3.29.4"
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0"
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.6.0"
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.4"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0"
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.5.1"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1"
+    },
+    {
+      "name": "huggingface_hub",
+      "version": "1.23.0"
+    },
+    {
+      "name": "humanize",
+      "version": "4.16.0"
+    },
+    {
+      "name": "hyperlink",
+      "version": "21.0.0"
+    },
+    {
+      "name": "idna",
+      "version": "3.18"
+    },
+    {
+      "name": "Incremental",
+      "version": "24.11.0"
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.0"
+    },
+    {
+      "name": "iterable-io",
+      "version": "1.0.4"
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6"
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0"
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1"
+    },
+    {
+      "name": "jupyter_core",
+      "version": "5.9.1"
+    },
+    {
+      "name": "jupytext",
+      "version": "1.19.4"
+    },
+    {
+      "name": "kaggle",
+      "version": "2.2.3"
+    },
+    {
+      "name": "kagglesdk",
+      "version": "0.1.33"
+    },
+    {
+      "name": "kornia",
+      "version": "0.8.3"
+    },
+    {
+      "name": "kornia_rs",
+      "version": "0.1.14"
+    },
+    {
+      "name": "magic-wormhole",
+      "version": "0.24.0"
+    },
+    {
+      "name": "Mako",
+      "version": "1.3.12"
+    },
+    {
+      "name": "markdown-it-py",
+      "version": "4.2.0"
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.3"
+    },
+    {
+      "name": "mdit-py-plugins",
+      "version": "0.6.1"
+    },
+    {
+      "name": "mdurl",
+      "version": "0.1.2"
+    },
+    {
+      "name": "mpmath",
+      "version": "1.3.0"
+    },
+    {
+      "name": "msgpack",
+      "version": "1.2.1"
+    },
+    {
+      "name": "multidict",
+      "version": "6.7.1"
+    },
+    {
+      "name": "nbformat",
+      "version": "5.10.4"
+    },
+    {
+      "name": "networkx",
+      "version": "3.6.1"
+    },
+    {
+      "name": "numpy",
+      "version": "2.4.6"
+    },
+    {
+      "name": "packaging",
+      "version": "26.2"
+    },
+    {
+      "name": "peft",
+      "version": "0.19.1"
+    },
+    {
+      "name": "pillow",
+      "version": "12.3.0"
+    },
+    {
+      "name": "pip",
+      "version": "22.3.1"
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.10.0"
+    },
+    {
+      "name": "pluggy",
+      "version": "1.6.0"
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.2"
+    },
+    {
+      "name": "protobuf",
+      "version": "7.35.1"
+    },
+    {
+      "name": "psutil",
+      "version": "7.2.2"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.13.4"
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.14.2"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.46.4"
+    },
+    {
+      "name": "Pygments",
+      "version": "2.20.0"
+    },
+    {
+      "name": "PyNaCl",
+      "version": "1.6.2"
+    },
+    {
+      "name": "PyOpenGL",
+      "version": "3.1.10"
+    },
+    {
+      "name": "pyOpenSSL",
+      "version": "26.3.0"
+    },
+    {
+      "name": "pypdf",
+      "version": "6.14.2"
+    },
+    {
+      "name": "pytesseract",
+      "version": "0.3.13"
+    },
+    {
+      "name": "pytest",
+      "version": "8.4.2"
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.2"
+    },
+    {
+      "name": "python-slugify",
+      "version": "8.0.4"
+    },
+    {
+      "name": "pywin32",
+      "version": "312"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3"
+    },
+    {
+      "name": "qrcode",
+      "version": "8.2"
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0"
+    },
+    {
+      "name": "regex",
+      "version": "2026.6.28"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2"
+    },
+    {
+      "name": "rich",
+      "version": "15.0.0"
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.6.3"
+    },
+    {
+      "name": "safetensors",
+      "version": "0.8.0"
+    },
+    {
+      "name": "scipy",
+      "version": "1.17.1"
+    },
+    {
+      "name": "sentencepiece",
+      "version": "0.2.1"
+    },
+    {
+      "name": "service-identity",
+      "version": "26.1.0"
+    },
+    {
+      "name": "setuptools",
+      "version": "81.0.0"
+    },
+    {
+      "name": "shellingham",
+      "version": "1.5.4"
+    },
+    {
+      "name": "simpleeval",
+      "version": "1.0.7"
+    },
+    {
+      "name": "six",
+      "version": "1.17.0"
+    },
+    {
+      "name": "spake2",
+      "version": "0.9"
+    },
+    {
+      "name": "spandrel",
+      "version": "0.4.2"
+    },
+    {
+      "name": "SQLAlchemy",
+      "version": "2.0.51"
+    },
+    {
+      "name": "sympy",
+      "version": "1.14.0"
+    },
+    {
+      "name": "tabulate",
+      "version": "0.10.0"
+    },
+    {
+      "name": "text-unidecode",
+      "version": "1.3"
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.22.2"
+    },
+    {
+      "name": "torch",
+      "version": "2.13.0"
+    },
+    {
+      "name": "torchaudio",
+      "version": "2.11.0"
+    },
+    {
+      "name": "torchsde",
+      "version": "0.2.6"
+    },
+    {
+      "name": "torchvision",
+      "version": "0.28.0"
+    },
+    {
+      "name": "tqdm",
+      "version": "4.68.3"
+    },
+    {
+      "name": "traitlets",
+      "version": "5.15.1"
+    },
+    {
+      "name": "trampoline",
+      "version": "0.1.2"
+    },
+    {
+      "name": "transformers",
+      "version": "5.13.0"
+    },
+    {
+      "name": "Twisted",
+      "version": "26.4.0"
+    },
+    {
+      "name": "txaio",
+      "version": "26.6.1"
+    },
+    {
+      "name": "txtorcon",
+      "version": "26.6.0"
+    },
+    {
+      "name": "typer",
+      "version": "0.26.8"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.2"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.15.0"
+    },
+    {
+      "name": "ujson",
+      "version": "5.13.0"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.7.0"
+    },
+    {
+      "name": "webencodings",
+      "version": "0.5.1"
+    },
+    {
+      "name": "yarl",
+      "version": "1.24.2"
+    },
+    {
+      "name": "zipstream-ng",
+      "version": "1.9.2"
+    },
+    {
+      "name": "zope.interface",
+      "version": "8.5"
+    }
+  ]
+}

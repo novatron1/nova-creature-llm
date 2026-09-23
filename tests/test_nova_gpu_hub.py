@@ -93,6 +93,7 @@ def test_no_gpu_is_truthful_and_cpu_can_be_selected(monkeypatch, tmp_path):
     result = detect_local_gpu(runner=lambda _args: (_ for _ in ()).throw(FileNotFoundError()))
     assert result["available"] is False
     assert result["usable"] is False
+    monkeypatch.setattr("src.nova_gpu_hub.detect_local_gpu", lambda: result)
     controller = GpuHubController(tmp_path, env={})
     controller.set_mode("local_gpu")
     assert controller.local_status()["usable"] is False
@@ -442,6 +443,60 @@ def test_verified_availability_expires_after_bounded_ttl(monkeypatch, tmp_path):
     assert status["verified"] is False
     assert status["verification_expired"] is True
     assert controller.vast_status()["available"] is False
+
+
+def test_expired_loopback_local_worker_renews_verified_lease(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "src.nova_gpu_hub.detect_local_gpu",
+        lambda: {
+            "available": True,
+            "usable": True,
+            "reason": "local CUDA ready",
+        },
+    )
+    controller = GpuHubController(
+        tmp_path,
+        env={"NOVA_GPU_HUB_VERIFICATION_TTL_SECONDS": "60"},
+    )
+    controller.store.save(
+        {
+            "mode": "local_gpu",
+            "verified": True,
+            "verified_backend": "local_gpu",
+            "verified_at": (datetime.now(timezone.utc) - timedelta(seconds=61)).isoformat(),
+            "endpoint": {
+                "url": "http://127.0.0.1:11434",
+                "model": "qwen3.5:2b",
+                "provider": "openai-compatible",
+            },
+        }
+    )
+
+    class Response:
+        def read(self):
+            return json.dumps({"data": [{"id": "qwen3.5:2b"}]}).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    captured = {}
+
+    def opener(request, timeout):
+        captured["url"] = request.full_url
+        captured["timeout"] = timeout
+        return Response()
+
+    monkeypatch.setattr("src.nova_gpu_hub.open_without_redirects", opener)
+
+    status = controller.status()
+
+    assert status["available"] is True
+    assert status["verified"] is True
+    assert status["verification_expired"] is False
+    assert captured == {"url": "http://127.0.0.1:11434/v1/models", "timeout": 3}
 
 
 def test_expired_private_vast_worker_renews_verified_lease(monkeypatch, tmp_path):

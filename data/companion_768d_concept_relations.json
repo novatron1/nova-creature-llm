@@ -1,0 +1,104 @@
+[
+  {
+    "source": "gravity",
+    "relation": "category",
+    "target": "physical phenomenon",
+    "statement": "Gravity is a physical phenomenon that attracts things with mass."
+  },
+  {
+    "source": "gravity",
+    "relation": "depends_on",
+    "target": "mass",
+    "statement": "Surface gravity becomes stronger when mass increases while radius stays fixed."
+  },
+  {
+    "source": "planet",
+    "relation": "related_to",
+    "target": "orbit",
+    "statement": "A planet follows an orbit around a star or another massive body."
+  },
+  {
+    "source": "orbit",
+    "relation": "depends_on",
+    "target": "gravity",
+    "statement": "Gravity helps keep an orbiting body on a curved path."
+  },
+  {
+    "source": "ice",
+    "relation": "opposite_state",
+    "target": "water",
+    "statement": "Ice is water in a solid state, while water commonly means the liquid state."
+  },
+  {
+    "source": "dog",
+    "relation": "category",
+    "target": "mammal",
+    "statement": "A dog is a domesticated mammal."
+  },
+  {
+    "source": "mammal",
+    "relation": "category",
+    "target": "animal",
+    "statement": "A mammal is a type of animal."
+  },
+  {
+    "source": "battery",
+    "relation": "causes",
+    "target": "electricity",
+    "statement": "A battery can provide electrical energy from stored chemical energy."
+  },
+  {
+    "source": "circuit",
+    "relation": "depends_on",
+    "target": "electricity",
+    "statement": "A complete circuit provides a path for electrical current."
+  },
+  {
+    "source": "density",
+    "relation": "depends_on",
+    "target": "mass and volume",
+    "statement": "Density is mass divided by volume."
+  },
+  {
+    "source": "velocity",
+    "relation": "category",
+    "target": "speed with direction",
+    "statement": "Velocity describes speed together with a direction."
+  },
+  {
+    "source": "tree",
+    "relation": "part_of",
+    "target": "forest",
+    "statement": "Trees are common living parts of a forest ecosystem."
+  },
+  {
+    "source": "flower",
+    "relation": "part_of",
+    "target": "plant",
+    "statement": "A flower is a reproductive structure of many plants."
+  },
+  {
+    "source": "sun",
+    "relation": "causes",
+    "target": "light and heat",
+    "statement": "The sun provides light and heat to the solar system."
+  },
+  {
+    "source": "gravity",
+    "relation": "reasoning",
+    "question": "If a planet had twice the mass but the same radius, what would happen to its surface gravity?",
+    "answer": "Its surface gravity would be approximately twice as strong because surface gravity scales with mass when radius stays fixed."
+  },
+  {
+    "source": "density",
+    "relation": "reasoning",
+    "question": "If mass doubles while volume stays the same, what happens to density?",
+    "answer": "Density doubles because density is mass divided by volume."
+  },
+  {
+    "source": "speed",
+    "relation": "reasoning",
+    "question": "If the same distance is covered in half the time, what happens to speed?",
+    "answer": "Speed doubles because speed is distance divided by time."
+  }
+]

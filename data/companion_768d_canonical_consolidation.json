@@ -1,0 +1,50 @@
+[
+  {
+    "id": "canonical:density:definition",
+    "concept": "density",
+    "kind": "question_answer",
+    "text": "Question: What is density? Answer: Density is mass divided by volume."
+  },
+  {
+    "id": "canonical:density:short",
+    "concept": "density",
+    "kind": "question_answer",
+    "text": "Question: Density? Answer: Density is mass divided by volume."
+  },
+  {
+    "id": "canonical:density:reasoning",
+    "concept": "density",
+    "kind": "reasoning",
+    "text": "Question: If mass doubles while volume stays the same, what happens to density? Answer: Density doubles because density is mass divided by volume."
+  },
+  {
+    "id": "canonical:gravity:definition",
+    "concept": "gravity",
+    "kind": "question_answer",
+    "text": "Question: What is gravity? Answer: Gravity is a force that pulls objects with mass."
+  },
+  {
+    "id": "canonical:gravity:reasoning",
+    "concept": "gravity",
+    "kind": "reasoning",
+    "text": "Question: If a planet had twice the mass but the same radius, what would happen to its surface gravity? Answer: Its surface gravity would be approximately twice as strong because surface gravity scales with mass when radius stays fixed."
+  },
+  {
+    "id": "canonical:gravity:paraphrase",
+    "concept": "gravity",
+    "kind": "reasoning",
+    "text": "Question: If mass doubles and radius stays fixed, what happens to surface gravity? Answer: Surface gravity doubles when mass doubles and radius stays fixed."
+  },
+  {
+    "id": "canonical:planet:relation",
+    "concept": "planet",
+    "kind": "question_answer",
+    "text": "Question: What is a planet related to? Answer: A planet is related to an orbit because it follows an orbit around a star."
+  },
+  {
+    "id": "canonical:orbit:definition",
+    "concept": "orbit",
+    "kind": "question_answer",
+    "text": "Question: What is an orbit? Answer: An orbit is a path around a larger body."
+  }
+]

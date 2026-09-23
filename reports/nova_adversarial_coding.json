@@ -1,0 +1,908 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-07-27T19:41:48+00:00",
+  "evaluation_type": "live_nova_adversarial_full_stack",
+  "bank_version": "nova-adversarial-1.0",
+  "base_url": "http://127.0.0.1:8765",
+  "overall_score": 0.0,
+  "overall_percent": 0.0,
+  "passed_cases": 0,
+  "case_count": 10,
+  "error_count": 0,
+  "category_scores": {
+    "coding_debugging": {
+      "score": 0.0,
+      "percent": 0.0,
+      "passed_cases": 0,
+      "case_count": 10,
+      "error_count": 0
+    }
+  },
+  "selected_bank_counts": {
+    "coding_debugging": 10
+  },
+  "memory_read_allowed": false,
+  "memory_write_allowed": false,
+  "conversation_memory_allowed": true,
+  "long_term_memory_pollution_prevented": true,
+  "total_latency_ms": 3687.0,
+  "results": [
+    {
+      "sequence": 1,
+      "case_id": "python_off_by_one",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "In Python, why does range(3) produce 0, 1, 2 instead of 1, 2, 3?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "[DISTANCE] Turn on Distance Mode, start Camera, aim the reticle at the object, then ask me again. I can give a rough camera estimate from the reticle, but normal phone browsers usually do not expose true LiDAR/depth or calibrated two-camera depth.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "distance_awareness",
+        "confidence": 0.68,
+        "route_path": [
+          "distance_mode",
+          "browser_sensor_overlay",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "camera_distance_estimator",
+          "sensor_overlay",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "in_python_why_does",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 64
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "coding",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text",
+              "coding"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 125.0
+    },
+    {
+      "sequence": 2,
+      "case_id": "python_mutable_default",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What is wrong with def add(x, items=[]): items.append(x); return items?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains required ideas",
+          "kind": "contains_all",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_wrong_with",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 71
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 297.0
+    },
+    {
+      "sequence": 3,
+      "case_id": "js_equality",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "Why is JavaScript === usually safer than ==?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_is_javascript_usually",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 44
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "coding",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text",
+              "coding"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 218.0
+    },
+    {
+      "sequence": 4,
+      "case_id": "sql_injection",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What is the main safe fix for SQL built by concatenating user input?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_is_the_main",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 68
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "coding",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text",
+              "coding"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 438.0
+    },
+    {
+      "sequence": 5,
+      "case_id": "http_404",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What does HTTP status 404 mean?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "dictionary_system",
+          "critic_conscience_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_does_http_status",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 31
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 265.0
+    },
+    {
+      "sequence": 6,
+      "case_id": "binary_search",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "What prerequisite must data satisfy before ordinary binary search works?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "speech_output_transformer",
+          "memory_transformer",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "what_prerequisite_must_data",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 72
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 297.0
+    },
+    {
+      "sequence": 7,
+      "case_id": "null_guard",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "A program crashes reading user.profile.name when profile may be null. Name the core fix.",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "Yes, I can help with coding. I can plan patches, write code, run tests, inspect logs, and fix the app when something breaks.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": null,
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.85,
+        "fallback_used": false,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "nova_direct_answer",
+          "critic",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "conversation",
+          "dialogue_act": "respond",
+          "topic": "project_code",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": true,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 88
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 407.0
+    },
+    {
+      "sequence": 8,
+      "case_id": "test_regression",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "After fixing a bug, what test should be added so it does not return?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "after_fixing_a_bug",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 68
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 718.0
+    },
+    {
+      "sequence": 9,
+      "case_id": "json_parse",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "Why can JSON.parse fail on {'a':1}?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "memory_transformer",
+          "speech_output_transformer",
+          "context_recall",
+          "critic_conscience_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "why_can_json_parse",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 35
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 375.0
+    },
+    {
+      "sequence": 10,
+      "case_id": "race_condition",
+      "category": "coding_debugging",
+      "description": "",
+      "prompt": "Two threads update the same counter and lose increments. What kind of bug is this?",
+      "setup_turn_count": 0,
+      "setup_results": [],
+      "output": "I caught an off-topic draft before sending it. The active Nova route did not produce a reliable answer, so I stopped it instead of pretending it was correct.",
+      "score": 0.0,
+      "passed": false,
+      "criteria": [
+        {
+          "label": "contains a valid idea",
+          "kind": "contains_any",
+          "passed": false
+        }
+      ],
+      "trace": {
+        "reasoning_mode": "fast",
+        "final_answer_source": "answer_firewall_recovery",
+        "local_llm_model": "qwen2.5:1.5b",
+        "confidence": 0.95,
+        "fallback_used": true,
+        "route_path": [
+          "nova_planner",
+          "nova_validator",
+          "general_conversation",
+          "nova_context",
+          "answer_firewall",
+          "speech_output"
+        ],
+        "roles": [
+          "left_hemisphere",
+          "planner_transformer",
+          "critic_conscience_transformer",
+          "memory_transformer",
+          "speech_output_transformer"
+        ],
+        "turn_analysis": {
+          "intent": "question",
+          "dialogue_act": "answer",
+          "topic": "two_threads_update_the",
+          "complexity": "low",
+          "certainty_required": false,
+          "current_information_required": false,
+          "memory_required": false,
+          "project_context_required": false,
+          "rag_required": false,
+          "tools_required": false,
+          "reasoning_mode": "fast",
+          "risk_level": "low",
+          "requested_depth": "normal",
+          "open_loops": [],
+          "context_budget": 8192,
+          "max_tool_steps": 0,
+          "analyzer_version": "1.0",
+          "user_text_length": 82
+        },
+        "direct_middle_routing": {
+          "enabled": true,
+          "selected": false,
+          "reason": "below_direct_threshold",
+          "provider": null,
+          "model": null,
+          "tier": "middle",
+          "difficulty": {
+            "version": "1.0",
+            "difficulty_score": 0.08,
+            "difficulty_tier": "routine",
+            "task_type": "general",
+            "signals": [
+              "ordinary_request"
+            ],
+            "required_capabilities": [
+              "text"
+            ],
+            "larger_local_recommended": false,
+            "threshold": 0.84,
+            "content_logged": false,
+            "private_reasoning_used": false
+          },
+          "content_logged": false
+        }
+      },
+      "error": null,
+      "latency_ms": 547.0
+    }
+  ],
+  "limitations": [
+    "This is a bounded engineering regression suite, not an IQ test.",
+    "Keyword and format rubrics can miss semantically correct answers.",
+    "Passing does not establish ability outside the tested behavior classes."
+  ]
+}

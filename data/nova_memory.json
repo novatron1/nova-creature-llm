@@ -63,6 +63,11 @@
       "name": "NovaTest",
       "introduced_at": "2026-06-26T23:53:39.095425",
       "session": "08f65845"
+    },
+    "mr novatron": {
+      "name": "mr novatron",
+      "introduced_at": "2026-09-01T00:45:24.175898",
+      "session": "b8bb75a3"
     }
   },
   "lessons": {
@@ -403,6 +408,55 @@
       "session": "43becb35"
     }
   },
-  "last_person": "novatest",
-  "last_lesson": "lesson_67"
+  "last_person": "mr novatron",
+  "last_lesson": "lesson_67",
+  "relationships": {
+    "old_girlfriend_name": {
+      "name": "Chanel",
+      "relationship": "old_girlfriend",
+      "learned_at": "2026-07-04T10:25:10.786891",
+      "session": "582d5214"
+    },
+    "girlfriend_name": {
+      "name": "Chanel",
+      "relationship": "girlfriend",
+      "label": "girlfriend",
+      "learned_at": "2026-07-04T10:51:13.965058",
+      "session": "b4bd7319"
+    },
+    "friend_name": {
+      "name": "Q",
+      "relationship": "friend",
+      "label": "friend",
+      "learned_at": "2026-07-11T19:35:59.037189",
+      "session": "465fa14e"
+    }
+  },
+  "pets": {
+    "pet_name": {
+      "name": "Blaze",
+      "pet_type": "pet",
+      "learned_at": "2026-07-09T08:37:26.946861",
+      "session": "8bed8e3e"
+    }
+  },
+  "entities": {
+    "friend": {
+      "entity_key": "friend",
+      "label": "friend",
+      "kind": "user_connected_entity",
+      "slots": {
+        "name": {
+          "value": "Q",
+          "slot": "name",
+          "slot_label": "name",
+          "updated_at": "2026-07-11T19:35:59.037189",
+          "session": "465fa14e"
+        }
+      },
+      "created_at": "2026-07-11T19:35:59.037189",
+      "updated_at": "2026-07-11T19:35:59.037189",
+      "name": "Q"
+    }
+  }
 }

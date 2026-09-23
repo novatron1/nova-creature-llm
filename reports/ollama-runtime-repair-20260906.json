@@ -1,0 +1,8 @@
+{
+  "setting": "OLLAMA_LLM_LIBRARY",
+  "reason": "CUDA12 small-model GPU smoke test succeeded; CUDA13 warmup timed out",
+  "new": "cuda_v12",
+  "utc": "2026-09-07T01:28:59.9288012Z",
+  "scope": "User",
+  "previous": null
+}

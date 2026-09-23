@@ -41,19 +41,21 @@ class GpuHubError(RuntimeError):
 
 
 def detect_local_gpu(*, runner: Callable[[list[str]], str] | None = None) -> dict[str, object]:
+    allow_torch_fallback = runner is None
     runner = runner or _run_nvidia_smi
     base = {"available": False, "usable": False, "gpu_names": [], "memory_mb": 0, "driver": None, "backend": None, "reason": "No compatible GPU detected."}
     try:
         output = runner(["nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader,nounits"])
     except (FileNotFoundError, OSError, subprocess.SubprocessError) as exc:
         # CUDA may already be importable in an environment without nvidia-smi.
-        try:
-            import torch  # type: ignore
-            if bool(torch.cuda.is_available()):
-                names = [str(torch.cuda.get_device_name(i)) for i in range(torch.cuda.device_count())]
-                return {**base, "available": True, "usable": True, "gpu_names": names, "backend": "torch.cuda", "reason": "CUDA GPU detected."}
-        except Exception:
-            pass
+        if allow_torch_fallback:
+            try:
+                import torch  # type: ignore
+                if bool(torch.cuda.is_available()):
+                    names = [str(torch.cuda.get_device_name(i)) for i in range(torch.cuda.device_count())]
+                    return {**base, "available": True, "usable": True, "gpu_names": names, "backend": "torch.cuda", "reason": "CUDA GPU detected."}
+            except Exception:
+                pass
         return {**base, "reason": f"nvidia-smi unavailable: {type(exc).__name__}."}
     names, memories, drivers = [], [], []
     for row in csv.reader(io.StringIO(output or "")):
@@ -408,12 +410,63 @@ class GpuHubController:
         renewed["verified_at"] = datetime.now(timezone.utc).isoformat()
         return self.store.save(renewed)
 
+    def _refresh_expired_loopback_local_worker(
+        self,
+        state: Mapping[str, object],
+    ) -> dict[str, object]:
+        """Renew a local lease after its loopback model endpoint answers again."""
+
+        raw_endpoint = state.get("endpoint")
+        endpoint = raw_endpoint if isinstance(raw_endpoint, Mapping) else {}
+        url = str(endpoint.get("url") or "").strip()
+        model = str(endpoint.get("model") or "").strip()
+        if not url or not model or not _is_loopback_url(url):
+            return dict(state)
+        base = url.rstrip("/")
+        if base.endswith("/v1"):
+            base = base[:-3]
+        try:
+            request = urllib.request.Request(
+                base + "/v1/models",
+                headers={"Accept": "application/json"},
+                method="GET",
+            )
+            with open_without_redirects(request, timeout=3) as response:
+                final_url = response.geturl() if callable(getattr(response, "geturl", None)) else request.full_url
+                if not _is_loopback_url(final_url):
+                    return dict(state)
+                payload = json.loads(response.read().decode("utf-8") or "{}")
+            models = payload.get("data", []) if isinstance(payload, dict) else []
+            model_ids = {
+                str(item.get("id"))
+                for item in models
+                if isinstance(item, Mapping) and item.get("id")
+            }
+            if not model_ids or model not in model_ids:
+                return dict(state)
+        except (OSError, ValueError, TypeError, urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError):
+            return dict(state)
+        renewed = dict(state)
+        renewed["verified"] = True
+        renewed["verified_backend"] = ComputeMode.LOCAL_GPU
+        renewed["verified_at"] = datetime.now(timezone.utc).isoformat()
+        return self.store.save(renewed)
+
     def status(self) -> dict[str, object]:
         state = self.store.load()
         mode = str(state["mode"])
         local = detect_local_gpu()
         verification_healthy, verification_expired = self._verification_health(state)
         verified_backend = state.get("verified_backend")
+        if (
+            verification_expired
+            and verified_backend == ComputeMode.LOCAL_GPU
+            and mode in {ComputeMode.AUTO, ComputeMode.LOCAL_GPU}
+            and bool(local.get("usable"))
+        ):
+            state = self._refresh_expired_loopback_local_worker(state)
+            verification_healthy, verification_expired = self._verification_health(state)
+            verified_backend = state.get("verified_backend")
         if (
             verification_expired
             and verified_backend == ComputeMode.VAST_GPU
