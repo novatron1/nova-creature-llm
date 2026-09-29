@@ -26,11 +26,28 @@ def _public_job(job):
         item = job.manifest.get(name)
         if isinstance(item, dict) and item.get('relative_path'):
             outputs.append({'id': name, 'download_path': f'/nova/v1/studio/jobs/{job.id}/outputs/{name}'})
+    metadata = {}
+    final = job.manifest.get('final')
+    if isinstance(final, dict) and isinstance(final.get('metadata'), dict):
+        metadata = final['metadata']
+    streams = metadata.get('streams') if isinstance(metadata.get('streams'), list) else []
+    video = next((stream for stream in streams if stream.get('codec_type') == 'video'), {})
+    try:
+        fps = float(video.get('r_frame_rate', '24/1').split('/')[0]) / float(video.get('r_frame_rate', '24/1').split('/')[1])
+    except (AttributeError, IndexError, ValueError, ZeroDivisionError, TypeError):
+        fps = 24
+    try:
+        duration = float(video.get('duration', 17 / 24))
+    except (TypeError, ValueError):
+        duration = 17 / 24
     return {'id': job.id, 'stage': job.stage, 'created_at': job.created_at,
             'updated_at': job.updated_at, 'error': job.error, 'cleanup_error': job.cleanup_error,
             'waiting_reason': job.manifest.get('waiting_reason'), 'outputs': outputs,
-            'native_width': 384, 'native_height': 480, 'frames': 17, 'fps': 24,
-            'duration_seconds': 17/24, 'label': OVERLAY_LABEL if any(job.request.get(key) for key in
+            'native_width': (metadata.get('native_dimensions') or [384, 480])[0],
+            'native_height': (metadata.get('native_dimensions') or [384, 480])[1],
+            'frames': int(video.get('nb_frames') or 17), 'fps': fps,
+            'duration_seconds': duration,
+            'label': OVERLAY_LABEL if any(job.request.get(key) for key in
                 ('audio_asset_id', 'beat_asset_id', 'spoken_text')) else 'generated motion — no audio'}
 
 
