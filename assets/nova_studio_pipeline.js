@@ -132,7 +132,7 @@
       else if(!state.status.can_submit) message('This device lacks the required media or model-management permission.');
       else if(state.pending) message('A prior submission is unresolved. Retry pending submission to recover it safely.');
       const result=await request('jobs');const jobs=Array.isArray(result.data)?result.data:[];renderJobs(jobs);
-      if(jobs.some(job=>!terminal.has(job.stage))) state.timer=setTimeout(loadNovaStudioPipeline,3000);
+      if(jobs.some(job=>!terminal.has(job.stage))) state.timer=setTimeout(loadNovaStudioPipeline,10000);
     }catch(error){message(error.message);}
   }
 

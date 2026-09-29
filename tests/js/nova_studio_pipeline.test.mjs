@@ -14,7 +14,7 @@ function harness() {
   element('studioAudioKind').value = 'mixed';
   element('studioCharacterPrompt').value = 'restrained nod';
   element('studioExportPreset').value = 'vertical';
-  const calls = [], timers = [], jobs = [];
+  const calls = [], timers = [], jobs = [], timerDelays = [];
   let releaseUpload;
   let uploadGate = Promise.resolve();
   let sequence = 0;
@@ -39,10 +39,10 @@ function harness() {
   vm.runInNewContext(fs.readFileSync(new URL('../../assets/nova_studio_pipeline.js',import.meta.url),'utf8'), {
     window, document:{getElementById:element, createElement:node}, fetch,
     ensureProjectServer:async()=> 'http://local',authHeaders:extra=>extra,
-    setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){},
+    setTimeout:(fn,ms)=>{timers.push(fn);timerDelays.push(ms);return timers.length;},clearTimeout(){},
     URL:{createObjectURL:()=> 'blob:test',revokeObjectURL(){}}, console,
   });
-  return {window,element,calls,jobs,timers,replies, pauseUpload(){uploadGate=new Promise(r=>{releaseUpload=r;});},releaseUpload(){releaseUpload();}};
+  return {window,element,calls,jobs,timers,timerDelays,replies, pauseUpload(){uploadGate=new Promise(r=>{releaseUpload=r;});},releaseUpload(){releaseUpload();}};
 }
 
 test('uploads reference/audio, preserves classification and prevents duplicate submission',async()=>{
@@ -88,4 +88,10 @@ test('lost acknowledgement then rate limit preserves submission identity',async(
   const bodies=h.calls.filter(c=>c.options.method==='POST' && c.path.endsWith('/jobs')).map(c=>c.options.body);
   assert.equal(bodies.length,3);
   assert.equal(new Set(bodies).size,1);
+});
+
+test('active history polling preserves request budget for the rest of Nova',async()=>{
+  const h=harness();h.jobs.push({id:'job-1',stage:'queued',outputs:[]});
+  await h.window.loadNovaStudioPipeline();
+  assert.ok(h.timerDelays[0] >= 10000);
 });
