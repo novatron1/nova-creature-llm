@@ -10,6 +10,10 @@
     videoEngine: null,
     videoEngines: [],
     loading: false,
+    submitting: false,
+    autoReleaseJobId: '',
+    readinessTimer: null,
+    readinessRetries: 0,
     startupHealthRetries: 0
   };
 
@@ -99,14 +103,23 @@
     if(!button) return;
     const video = element('dreamStudioMode')?.value === 'video';
     const permitted = video ? !!state.access?.video_generate : !!state.access?.image_generate;
-    const health = (video ? state.videoEngine : state.imageEngine)?.health || {};
+    const engine = video ? state.videoEngine : state.imageEngine;
+    const health = engine?.health || {};
     const workflowReady = video
       ? !!health.video_workflow_configured
       : !!health.image_workflow_configured;
-    button.disabled = !(permitted && health.status === 'ready' && workflowReady);
+    button.disabled = state.submitting || !(permitted && canUseEngine(engine) && workflowReady);
     button.title = button.disabled
-      ? 'A local media engine must be ready and this device must have media access.'
+      ? 'A configured local workflow and media permission are required; wait if a request is starting.'
       : 'Queue this local media job through Nova.';
+  }
+
+  function canUseEngine(engine){
+    const health = engine?.health || {};
+    return health.status === 'ready' || (health.status === 'checking' && health.can_queue === true) || (
+      engine?.engine_id === 'comfyui-local' && health.enabled !== false
+      && ['offline', 'unavailable', 'launching'].includes(health.status)
+    );
   }
 
   function renderVideoEngineOptions(){
@@ -121,7 +134,7 @@
       const ready = health.status === 'ready' && !!health.video_workflow_configured;
       option.value = engine.engine_id || '';
       option.textContent = `${engine.engine_id || 'unknown'} - ${ready ? 'ready' : (health.status || 'unavailable')}`;
-      option.disabled = !ready;
+      option.disabled = !(canUseEngine(engine) && health.video_workflow_configured);
       option.dataset.ready = ready ? 'true' : 'false';
       select.appendChild(option);
     });
@@ -211,6 +224,9 @@
   async function loadDreamStudio(){
     if(state.loading) return;
     state.loading = true;
+    clearTimeout(state.readinessTimer);
+    state.readinessTimer = null;
+    let pendingReadiness = false;
     setMessage('Checking Nova media access and local engines...', 'working');
     try {
       const [engines, access, gpu] = await Promise.all([
@@ -219,15 +235,16 @@
         dreamJson('/api/gpu-hub/status').catch(() => null)
       ]);
       const available = Array.isArray(engines.data) ? engines.data : [];
+      pendingReadiness = available.some(item => item.health?.status === 'checking');
       const comfy = available.find(item => item.engine_id === 'comfyui-local') || null;
       const animatediffGpu = available.find(item => item.engine_id === 'nova-animatediff-gpu') || null;
       const videoLite = available.find(item => item.engine_id === 'nova-video-lite') || null;
       const animatediff = available.find(item => item.engine_id === 'nova-animatediff-cpu') || null;
       state.imageEngine = comfy;
       state.videoEngines = [comfy, animatediffGpu, videoLite, animatediff].filter(Boolean);
-      state.videoEngine = (
-        comfy?.health?.status === 'ready' && comfy?.health?.video_workflow_configured
-      ) ? comfy : (animatediffGpu || videoLite || animatediff);
+      const previouslySelected = state.videoEngine?.engine_id;
+      state.videoEngine = state.videoEngines.find(item => item.engine_id === previouslySelected)
+        || (comfy?.health?.video_workflow_configured ? comfy : (animatediffGpu || videoLite || animatediff));
       state.access = access;
       state.gpu = gpu;
       renderVideoEngineOptions();
@@ -270,6 +287,12 @@
       setMessage('Dream Studio check failed: ' + error.message, 'error');
     } finally {
       state.loading = false;
+      if(pendingReadiness && state.readinessRetries < 35){
+        state.readinessRetries += 1;
+        state.readinessTimer = setTimeout(() => loadDreamStudio(), 10000);
+      } else if(!pendingReadiness){
+        state.readinessRetries = 0;
+      }
     }
   }
 
@@ -307,6 +330,36 @@
     } else {
       setMessage('No local image workflow is configured.', 'error');
     }
+  }
+
+  async function ensureDreamStudioVideoEngine(){
+    return ensureDreamStudioEngine(state.videoEngine);
+  }
+
+  async function ensureDreamStudioEngine(engine){
+    if(engine?.engine_id !== 'comfyui-local') return;
+    const refresh = async () => {
+      const engines = await dreamJson('/nova/v1/engines');
+      const comfy = (engines.data || []).find(item => item.engine_id === 'comfyui-local');
+      if(comfy){
+        state.imageEngine = comfy;
+        if(state.videoEngine?.engine_id === 'comfyui-local') state.videoEngine = comfy;
+      }
+      return comfy;
+    };
+    // Launch is idempotent and invalidates the backend health cache before
+    // checking readiness. /engines alone can return five-second-old health.
+    setMessage('Starting the local media engine...', 'working');
+    const launch = await dreamJson('/nova/v1/engines/comfyui-local/launch', {method:'POST', body:{}});
+    if(launch.running) return;
+    for(let attempt = 0; attempt < 30; attempt += 1){
+      await delay(2000);
+      const comfy = await refresh();
+      if(comfy?.health?.status === 'ready'){
+        return;
+      }
+    }
+    throw new Error('The local media engine did not finish starting.');
   }
 
   function numberValue(id, minimum, maximum){
@@ -363,25 +416,32 @@
   }
 
   async function generateDreamMedia(){
+    if(state.submitting) return;
+    state.submitting = true;
     const button = element('dreamStudioGenerateBtn');
+    if(button) button.disabled = true;
     try {
       const mode = element('dreamStudioMode')?.value === 'video' ? 'video' : 'image';
       const allowed = mode === 'video' ? state.access?.video_generate : state.access?.image_generate;
       if(!allowed) throw new Error('Media permission is OFF for this device. Enable it from Settings on Nova’s desktop.');
       const body = buildGenerationBody();
-      if(button) button.disabled = true;
+      if(mode === 'video') await ensureDreamStudioVideoEngine();
+      else await ensureDreamStudioEngine(state.imageEngine);
       setMessage(`Queueing local ${mode} generation through Nova...`, 'working');
       const job = await dreamJson(
         mode === 'video' ? '/nova/v1/videos/generations' : '/nova/v1/images/generations',
         {method:'POST', body}
       );
       state.currentJobId = String(job.job_id || '');
+      state.autoReleaseJobId = job.engine_id === 'comfyui-local' ? state.currentJobId : '';
       renderCurrentJob(job);
       setMessage(`Job ${state.currentJobId} queued locally.`, 'working');
       await loadDreamStudioJobs();
       schedulePoll(800);
     } catch(error) {
       setMessage('Generation was not queued: ' + error.message, 'error');
+    } finally {
+      state.submitting = false;
       updateGenerateButton();
     }
   }
@@ -477,16 +537,23 @@
       const job = await dreamJson('/nova/v1/jobs/' + encodeURIComponent(safeId));
       renderCurrentJob(job);
       if(job.status === 'completed'){
-        setMessage('Generation completed locally.', 'ready');
+        const overlay = String(job.label || '').toLowerCase().includes('audio overlay')
+          || job.audio_overlay === true;
+        setMessage(overlay
+          ? 'Generation completed locally. Audio was added after motion; this is not verified lip-sync.'
+          : 'Generation completed locally.', 'ready');
         await renderOutputs(job);
+        await releaseDreamStudioWorker(job);
         await loadDreamStudioJobs(false);
       } else if(job.status === 'failed'){
         setMessage('Generation failed: ' + (job.error || 'The local engine returned no usable output.'), 'error');
         clearPreview('Generation failed. Check the local engine status.');
+        await releaseDreamStudioWorker(job);
         await loadDreamStudioJobs(false);
       } else if(job.status === 'cancelled'){
         setMessage('Generation cancelled.', 'error');
         clearPreview('This job was cancelled.');
+        await releaseDreamStudioWorker(job);
         await loadDreamStudioJobs(false);
       } else {
         setMessage(`Job ${safeId} is ${job.status || 'working'}...`, 'working');
@@ -494,6 +561,25 @@
       }
     } catch(error) {
       setMessage('Job status failed: ' + error.message, 'error');
+    }
+  }
+
+  async function releaseDreamStudioWorker(job){
+    if(job?.engine_id !== 'comfyui-local' || state.autoReleaseJobId !== job.job_id) return;
+    state.autoReleaseJobId = '';
+    const target = element('dreamStudioMessage');
+    const outcome = target?.textContent || '';
+    const kind = target?.className?.includes('error') ? 'error' : 'ready';
+    try {
+      const result = await dreamJson('/nova/v1/engines/comfyui-local/release', {method:'POST', body:{}});
+      const note = result?.unload_requested
+        ? 'Model unload requested; previews remain available. RAM savings are not measured.'
+        : (result?.message || 'Worker was left unchanged.');
+      setMessage(`${outcome} ${note}`, kind);
+    } catch(error) {
+      setMessage(`${outcome} Model unload needs attention: ${error.message}`, 'error');
+    } finally {
+      updateGenerateButton();
     }
   }
 

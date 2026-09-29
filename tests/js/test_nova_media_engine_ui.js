@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import './nova_dream_lifecycle.test.mjs';
+import './nova_studio_pipeline.test.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const html = fs.readFileSync(path.join(root, 'nova_chat_web.html'), 'utf8');
@@ -60,3 +62,8 @@ test('Dream Studio defaults to quality-oriented CPU settings and offers prompt i
     assert.match(js, /extra people/);
     assert.match(js, /garbled text/);
   });
+
+test('Dream Studio labels audio-overlay output honestly', () => {
+  assert.match(js, /Audio was added after motion; this is not verified lip-sync/);
+  assert.match(js, /job\.audio_overlay === true/);
+});
