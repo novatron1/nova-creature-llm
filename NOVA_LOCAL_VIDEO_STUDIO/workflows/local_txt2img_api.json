@@ -1,0 +1,9 @@
+{
+  "1": {"class_type":"DiffusersLoader","inputs":{"model_path":"sd15-fp16"}},
+  "2": {"class_type":"CLIPTextEncode","inputs":{"text":"a fictional masked rap performer in a black hoodie, silver chain, headphones, standing in a blue-lit recording studio beside a microphone, confident performance pose, cinematic realistic photography","clip":["1",1]}},
+  "3": {"class_type":"CLIPTextEncode","inputs":{"text":"extra people, exposed face, distorted hands, extra fingers, extra limbs, text, watermark, blurry, low quality","clip":["1",1]}},
+  "4": {"class_type":"EmptyLatentImage","inputs":{"width":512,"height":768,"batch_size":1}},
+  "5": {"class_type":"KSampler","inputs":{"model":["1",0],"seed":20260929,"steps":20,"cfg":7.0,"sampler_name":"euler","scheduler":"normal","positive":["2",0],"negative":["3",0],"latent_image":["4",0],"denoise":1.0}},
+  "6": {"class_type":"VAEDecode","inputs":{"samples":["5",0],"vae":["1",2]}},
+  "7": {"class_type":"SaveImage","inputs":{"images":["6",0],"filename_prefix":"NOVA_LOCAL/local_test_image"}}
+}
