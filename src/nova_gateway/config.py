@@ -107,6 +107,11 @@ class GatewayConfig:
         default_factory=lambda: Path("data") / "nova_animatediff_cpu_jobs.json"
     )
     animatediff_cpu_timeout_seconds: int = 3600
+    studio_enabled: bool = False
+    studio_root: Path = field(default_factory=lambda: Path('NOVA_LOCAL_VIDEO_STUDIO'))
+    studio_runtime: Path | None = None
+    studio_python: Path | None = None
+    studio_required_ram_bytes: int = 0
     config_version: str = CONFIG_VERSION
 
     @classmethod
@@ -119,6 +124,12 @@ class GatewayConfig:
     ) -> "GatewayConfig":
         source = env or os.environ
         root_path = Path(root or Path.cwd()).resolve()
+        def studio_path(name, default=None):
+            value = str(source.get(name) or default or '').strip()
+            if not value:
+                return None
+            path = Path(value)
+            return path if path.is_absolute() else root_path / path
         host = str(source.get("NOVA_API_HOST") or source.get("NOVA_HOST") or "127.0.0.1").strip()
         port = _int(source, "NOVA_API_PORT", _int(source, "NOVA_PORT", default_port, 1, 65535), 1, 65535)
         registry_value = str(source.get("NOVA_CLIENT_REGISTRY_PATH") or "data/nova_gateway_clients.json")
@@ -249,6 +260,11 @@ class GatewayConfig:
             world_model_checkpoint_path=world_model_path,
             world_model_max_age_days=_int(source, "NOVA_WORLD_MODEL_MAX_AGE_DAYS", 30, 1, 3650),
             dream_lab_enabled=_bool(source, "NOVA_DREAM_LAB_ENABLED", True),
+            studio_enabled=_bool(source, 'NOVA_STUDIO_ENABLED', False),
+            studio_root=studio_path('NOVA_STUDIO_ROOT', 'NOVA_LOCAL_VIDEO_STUDIO'),
+            studio_runtime=studio_path('NOVA_STUDIO_RUNTIME'),
+            studio_python=studio_path('NOVA_STUDIO_PYTHON'),
+            studio_required_ram_bytes=_int(source, 'NOVA_STUDIO_REQUIRED_RAM_MIB', 0, 0, 1048576) * 1024**2,
             comfyui_enabled=_bool(source, "NOVA_COMFYUI_ENABLED", True),
             comfyui_base_url=str(
                 source.get("NOVA_COMFYUI_BASE_URL") or "http://127.0.0.1:8188"

@@ -87,8 +87,9 @@ def test_stock_voice_is_lazy_and_waits_for_subprocess(tmp_path, monkeypatch):
         assert command[-1] == 'spoken preview'
         assert kwargs['timeout'] > 0 and not kwargs.get('shell')
         generated.write_bytes(b'generated audio fixture')
-        return subprocess.CompletedProcess(command, 0, str(generated)+'\n', '')
-    monkeypatch.setattr(subprocess, 'run', run)
+        return subprocess.CompletedProcess(command, 0, (str(generated)+'\n').encode(), b'')
+    from nova_gateway.media_export import MediaExporter
+    monkeypatch.setattr(MediaExporter, '_run', staticmethod(run))
     target = root / 'inputs/audio/managed.wav'
     assert voice.render('spoken preview', target).read_bytes() == b'generated audio fixture'
 

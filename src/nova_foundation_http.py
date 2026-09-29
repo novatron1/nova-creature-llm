@@ -167,6 +167,11 @@ class FoundationHttpController:
             "application/javascript; charset=utf-8",
             {},
         ),
+        "/assets/nova_studio_pipeline.js": (
+            "assets/nova_studio_pipeline.js",
+            "application/javascript; charset=utf-8",
+            {},
+        ),
         "/assets/nova_app_icon.svg": (
             "assets/nova_app_icon.svg",
             "image/svg+xml; charset=utf-8",

@@ -26,6 +26,7 @@ from .errors import InvalidRequestError, NovaGatewayError, PermissionDeniedError
 from nova_proxy_identity import trusted_tailscale_client_key
 from nova_runtime.verification_playwright import verify_playwright_page
 from .video_lite import VIDEO_LITE_MOTIONS
+from .media_http import handle_studio
 
 
 OPENAI_GET_PATHS = {"/v1/models", "/health"}
@@ -118,6 +119,7 @@ class NovaGatewayHttpController:
             or path.startswith("/nova/v1/agent-runs/")
             or path.startswith("/nova/v1/jobs/")
             or path.startswith("/nova/v1/conversations/")
+            or path.startswith("/nova/v1/studio/")
         )
 
     def _client_ip(self, handler: Any) -> str:
@@ -163,7 +165,7 @@ class NovaGatewayHttpController:
             if not isinstance(optional_scopes, (list, tuple, set, frozenset)):
                 optional_scopes = ()
             paired_scopes = frozenset(
-                set(LOCAL_SAFE_SCOPES)
+                set(LOCAL_SAFE_SCOPES - {'admin.models'})
                 | {
                     str(scope)
                     for scope in optional_scopes
@@ -216,6 +218,8 @@ class NovaGatewayHttpController:
         handler._send_json(gateway_error.to_openai(), status=gateway_error.status)
 
     def handle_get(self, handler: Any, parsed: Any) -> bool:
+        if handle_studio(self, handler, parsed, 'GET'):
+            return True
         path = parsed.path
         media_job_path = path.startswith("/nova/v1/jobs/") and not path.endswith("/cancel")
         agent_run_path = path.startswith("/nova/v1/agent-runs/")
@@ -434,6 +438,8 @@ class NovaGatewayHttpController:
         return False
 
     def handle_post(self, handler: Any, parsed: Any) -> bool:
+        if handle_studio(self, handler, parsed, 'POST'):
+            return True
         path = parsed.path
         media_cancel_path = path.startswith("/nova/v1/jobs/") and path.endswith("/cancel")
         media_resume_path = path.startswith("/nova/v1/jobs/") and path.endswith("/resume")

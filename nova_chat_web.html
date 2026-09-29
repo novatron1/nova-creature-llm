@@ -787,6 +787,22 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 </div>
 </div>
 <div class="dream-studio-message" id="dreamStudioMessage">Open Dream Studio to check the local engine.</div>
+<fieldset class="dream-studio-form" style="margin-top:16px">
+<legend>Character performance — managed local pipeline</legend>
+<p id="studioCharacterInfo" class="panel-note"></p>
+<label>Character picture (original preserved)<input id="studioCharacterImage" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<label>Performance description<textarea id="studioCharacterPrompt" maxlength="4000">Preserve the masked character, clothing, jewelry and recording studio. Restrained head nods, shoulder movement and a small confident hand gesture. Keep the mask on, stable identity and lighting, gentle camera push-in.</textarea></label>
+<label>Your recording (preferred)<input id="studioCharacterAudio" type="file" accept="audio/wav,audio/mpeg,audio/flac,audio/ogg"></label>
+<label>Recording contains<select id="studioAudioKind"><option value="">Choose when supplying audio</option><option value="clean_vocal">Clean vocal only</option><option value="mixed">Vocal mixed with music</option></select></label>
+<label>Audio segment start (seconds)<input id="studioAudioStart" type="number" min="0" step="0.1" value="0"></label>
+<label>Optional beat you own or have permission to use<input id="studioCharacterBeat" type="file" accept="audio/wav,audio/mpeg,audio/flac,audio/ogg"></label>
+<label>Or stock spoken preview (not rap; leave empty with a recording)<textarea id="studioSpokenPreview" maxlength="2000" placeholder="Lil Racks, big name, little flow. Lil Ammo runs the show."></textarea></label>
+<label>Export<select id="studioExportPreset"><option value="source">Native size</option><option value="vertical">Vertical 720×1280, padded without stretching</option></select></label>
+<div class="dream-studio-actions"><button type="button" class="panel-action primary" id="studioCharacterGenerate" onclick="generateStudioCharacter()" disabled>Generate character preview</button><button type="button" class="panel-action" onclick="loadNovaStudioPipeline()">Refresh character jobs</button></div>
+<p id="studioCharacterMessage" role="status"></p>
+<div id="studioCharacterPreview"></div>
+<div id="studioCharacterJobs" aria-live="polite"></div>
+</fieldset>
 </section>
 <section class="dream-studio-card" aria-labelledby="dreamStudioResultHeading">
 <h3 id="dreamStudioResultHeading">Current result</h3>
@@ -9010,5 +9026,6 @@ if(restoredConversationCount){
 </script>
 <script src="assets/nova_foundation_ui.js"></script>
 <script src="assets/nova_dream_studio.js"></script>
+<script src="assets/nova_studio_pipeline.js"></script>
 </body>
 </html>

@@ -15671,6 +15671,11 @@ def _start_model_warmup():
 # This keeps desktop configuration portable while preserving explicit env
 # precedence for service/remote deployments.
 _GATEWAY_RUNTIME_CONFIG_KEYS = (
+    "NOVA_STUDIO_ENABLED",
+    "NOVA_STUDIO_ROOT",
+    "NOVA_STUDIO_RUNTIME",
+    "NOVA_STUDIO_PYTHON",
+    "NOVA_STUDIO_REQUIRED_RAM_MIB",
     "NOVA_ALLOW_LOCAL_MEDIA",
     "NOVA_COMFYUI_IMAGE_WORKFLOW",
     "NOVA_ANIMATEDIFF_CPU_ENABLED",

@@ -588,6 +588,7 @@
   }
 
   async function loadDreamStudioJobs(showErrors=true){
+    if(typeof global.loadNovaStudioPipeline === 'function') global.loadNovaStudioPipeline();
     try {
       const jobs = await dreamJson('/nova/v1/jobs?limit=25');
       renderJobHistory(Array.isArray(jobs.data) ? jobs.data : []);

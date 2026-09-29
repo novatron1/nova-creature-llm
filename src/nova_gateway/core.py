@@ -116,8 +116,10 @@ class NovaGatewayCore:
         video_lite: NovaVideoLiteEngine | None = None,
         animatediff_cpu: NovaAnimateDiffCpuEngine | None = None,
         register_ollama: bool = True,
+        studio=None,
     ) -> None:
         self.config = config or GatewayConfig.from_env()
+        self.studio = studio
         if self.config.memory_mode not in MEMORY_MODES:
             raise ValueError(f"Unsupported NOVA_MEMORY_MODE {self.config.memory_mode!r}.")
         self.providers = providers or NovaProviderRegistry(default_provider=self.config.default_provider)
@@ -243,6 +245,16 @@ class NovaGatewayCore:
                     logger.info("Raw Ollama model discovery was unavailable: %s", exc)
 
         self.router = NovaTaskRouter(self.providers, self.models, self.config)
+        if self.studio is None and self.config.studio_enabled:
+            from .media_runtime import build_media_coordinator
+            self.studio = build_media_coordinator(self.config)
+            self.studio.start()
+            import atexit
+            atexit.register(self.close_media)
+
+    def close_media(self) -> None:
+        if self.studio is not None:
+            self.studio.shutdown()
 
     def _register_comfyui_tools(self) -> None:
         """Expose stable permission-scoped Nova tool names over the optional engine."""
@@ -268,11 +280,7 @@ class NovaGatewayCore:
                         "additionalProperties": False,
                     },
                     required_permissions=["image.generate"],
-                    handler=lambda args: self.comfyui.generate_image(
-                        str(args.pop("prompt")),
-                        owner_id="nova-tool",
-                        **args,
-                    ),
+                    handler=lambda args: self.generate_image(dict(args), client_id="nova-tool"),
                     local_or_remote="local",
                     risk_level="resource_intensive",
                     confirmation_policy="never",
@@ -869,6 +877,8 @@ class NovaGatewayCore:
         options = dict(payload)
         prompt = str(options.pop("prompt", "") or "")
         options["owner_id"] = client_id
+        if self.studio is not None:
+            return self.studio.submit_existing(self.comfyui, 'generate_image', prompt, options)
         return self.comfyui.generate_image(prompt, **options)
 
     def launch_comfyui(self) -> dict[str, Any]:
@@ -932,7 +942,10 @@ class NovaGatewayCore:
         prompt = str(options.pop("prompt", "") or "")
         requested_engine = str(options.pop("engine_id", "") or "").strip()
         options["owner_id"] = client_id
-        return self._select_video_engine(requested_engine or None).text_to_video(prompt, **options)
+        engine = self._select_video_engine(requested_engine or None)
+        if self.studio is not None:
+            return self.studio.submit_existing(engine, 'text_to_video', prompt, options)
+        return engine.text_to_video(prompt, **options)
 
     def _select_video_engine(self, requested_engine: str | None = None):
         if requested_engine:
@@ -1042,6 +1055,8 @@ class NovaGatewayCore:
         resume = getattr(engine, "resume_job", None)
         if not callable(resume):
             raise UnsupportedFeatureError("This media engine does not support resume.")
+        if self.studio is not None:
+            return self.studio.submit_existing(engine, 'resume_job', job_id, {'owner_id': client_id})
         return resume(job_id, owner_id=client_id)
 
     def open_media_job_output(

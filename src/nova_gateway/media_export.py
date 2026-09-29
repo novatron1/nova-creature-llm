@@ -31,7 +31,8 @@ class MediaExporter:
         self.root = Path(root).resolve()
         self.ffmpeg, self.ffprobe = Path(ffmpeg), Path(ffprobe)
 
-    def _run(self, command: list[str], timeout: int = 120, *, cancel_event: Event | None = None):
+    @staticmethod
+    def _run(command: list[str], timeout: int = 120, *, cancel_event: Event | None = None):
         process = None
         try:
             if cancel_event is not None and cancel_event.is_set():
@@ -197,7 +198,7 @@ class StockVoice:
     def __init__(self, root: Path):
         self.root = Path(root).resolve()
 
-    def render(self, text: str, destination: Path) -> Path:
+    def render(self, text: str, destination: Path, *, cancel_event: Event | None = None) -> Path:
         if not isinstance(text, str) or not text.strip() or len(text) > 2000:
             raise InvalidRequestError('Provide 1 to 2000 characters of spoken-preview text.')
         try:
@@ -210,11 +211,10 @@ class StockVoice:
         if not python.is_file() or not script.is_file():
             raise InvalidRequestError('Local stock voice is not installed.')
         try:
-            result = subprocess.run([str(python), str(script), text], capture_output=True, text=True,
-                                    timeout=180, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+            result = MediaExporter._run([str(python), str(script), text], timeout=180, cancel_event=cancel_event)
             if result.returncode:
                 raise InvalidRequestError('Stock spoken preview failed; use your recording instead.')
-            source = Path(result.stdout.strip().splitlines()[-1])
+            source = Path(result.stdout.decode(errors='replace').strip().splitlines()[-1])
             source = contained_path(self.root, source.relative_to(self.root).as_posix())
             if not source.is_relative_to(self.root / 'inputs/audio') or not source.is_file():
                 raise ValueError('voice output')

@@ -32,6 +32,7 @@ class WanAdapter:
         self._process_created = None
         self._lock = RLock()
         self._submitted: set[str] = set()
+        self._job_directories: dict[str, str] = {}
         self._saved: set[str] = set()
         self._idle_rss = None
         self._idle_gpu_free = None
@@ -178,9 +179,10 @@ class WanAdapter:
             if not isinstance(external_id, str) or not re.fullmatch(r'[a-zA-Z0-9_-]{1,200}', external_id) or result.get('node_errors'):
                 raise ProviderUnavailableError('Wan did not confirm an accepted prompt.')
             self._submitted.add(external_id)
+            self._job_directories[external_id] = 'NOVA_MANAGED/' + job.id
             return external_id
 
-    def poll(self, external_id: str) -> dict:
+    def poll(self, external_id: str, *, _reconcile: bool = True) -> dict:
         if external_id not in self._submitted:
             raise ProviderUnavailableError('Wan prompt custody is unavailable; no job was adopted.')
         history = self._request('GET', '/history/' + quote(external_id, safe=''))
@@ -196,6 +198,9 @@ class WanAdapter:
         for key, stage in (('queue_running', 'running'), ('queue_pending', 'queued')):
             if any(isinstance(item, list) and len(item) > 1 and item[1] == external_id for item in queue.get(key, [])):
                 return {'stage': stage}
+        # Completion may move a prompt from queue to history between the reads.
+        if _reconcile:
+            return self.poll(external_id, _reconcile=False)
         return {'stage': 'unknown'}
 
     def owns_prompt(self, external_id: str) -> bool:
@@ -212,7 +217,8 @@ class WanAdapter:
         for item in items:
             if (isinstance(item, dict) and re.fullmatch(r'[a-zA-Z0-9_.-]+\.mp4', str(item.get('filename', '')))
                     and item.get('type') == 'output'
-                    and re.fullmatch(r'NOVA_MANAGED/[a-zA-Z0-9_-]+', str(item.get('subfolder', '')))):
+                    and str(item.get('subfolder', '')).replace('\\', '/') == self._job_directories.get(external_id)
+                    and re.fullmatch(r'NOVA_MANAGED/[a-zA-Z0-9_-]+', str(item.get('subfolder', '')).replace('\\', '/'))):
                 selected = {name: item[name] for name in ('filename', 'subfolder', 'type')}
                 break
         if selected is None:

@@ -164,12 +164,14 @@ def test_first_launch_records_idle_footprint(tmp_path, monkeypatch):
     assert app._idle_rss == 100 and app._idle_gpu_free == 900
 
 
-def test_output_copy_is_durable_and_failed_copy_preserves_previous(tmp_path, monkeypatch):
+@pytest.mark.parametrize('folder', ['NOVA_MANAGED/abc', 'NOVA_MANAGED\\abc'])
+def test_output_copy_is_durable_and_failed_copy_preserves_previous(tmp_path, monkeypatch, folder):
     import io
     app = adapter(tmp_path)
     app._submitted.add('worker-1')
+    app._job_directories = {'worker-1': 'NOVA_MANAGED/abc'}
     monkeypatch.setattr(app, 'poll', lambda _: {'stage': 'completed', 'entry': {
-        'outputs': {'58': {'images': [{'filename': 'v.mp4', 'subfolder': 'NOVA_MANAGED/abc', 'type': 'output'}]}}}})
+        'outputs': {'58': {'images': [{'filename': 'v.mp4', 'subfolder': folder, 'type': 'output'}]}}}})
     class Response(io.BytesIO):
         status = 200
     class Connection:
@@ -189,3 +191,17 @@ def test_output_copy_is_durable_and_failed_copy_preserves_previous(tmp_path, mon
         app.save_output('worker-1', destination)
     assert destination.read_bytes() == b'mp4 fixture bytes'
     assert not list(destination.parent.glob('*.part'))
+
+
+def test_completion_between_history_and_queue_is_reconciled(tmp_path, monkeypatch):
+    app = adapter(tmp_path)
+    app._submitted.add('owned')
+    reads = []
+    def request(method, path, payload=None):
+        reads.append(path)
+        if path == '/queue': return {'queue_running': [], 'queue_pending': []}
+        if len(reads) == 1: return {}
+        return {'owned': {'status': {'completed': True, 'status_str': 'success'}}}
+    monkeypatch.setattr(app, '_request', request)
+    assert app.poll('owned')['stage'] == 'completed'
+    assert len(reads) == 3
