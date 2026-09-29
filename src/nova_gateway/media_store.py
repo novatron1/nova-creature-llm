@@ -134,6 +134,13 @@ class MediaStore:
                               (owner_id,)).fetchall()
         return [JobRecord(**json.loads(row[0])) for row in rows]
 
+    def recovery_jobs(self) -> list[JobRecord]:
+        """Internal scheduler only; never expose as an ownerless HTTP listing."""
+        with self._connection() as db:
+            rows = db.execute('SELECT record FROM media_jobs ORDER BY rowid').fetchall()
+        records = [JobRecord(**json.loads(row[0])) for row in rows]
+        return [record for record in records if record.stage not in TERMINAL]
+
     def transition(self, job_id: str, expected_stage: str, next_stage: str, **fields) -> JobRecord:
         allowed_fields = {'backend_id', 'external_id', 'manifest', 'error', 'cleanup_error'}
         valid_stage = expected_stage in STAGES[:-1]
@@ -186,4 +193,22 @@ class MediaStore:
     def get_quarantine(self) -> str | None:
         with self._connection() as db:
             row = db.execute('SELECT value FROM media_state WHERE key=?', ('quarantine',)).fetchone()
+        return row[0] if row else None
+
+    def acquire_lease(self, owner: str) -> bool:
+        _identity(owner)
+        with self._connection() as db:
+            blocked = db.execute("SELECT value FROM media_state WHERE key IN ('quarantine','lease') AND value IS NOT NULL").fetchone()
+            if blocked:
+                return False
+            db.execute("INSERT INTO media_state VALUES('lease',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (owner,))
+            return True
+
+    def release_lease(self, owner: str) -> None:
+        with self._connection() as db:
+            db.execute("DELETE FROM media_state WHERE key='lease' AND value=?", (owner,))
+
+    def lease_owner(self) -> str | None:
+        with self._connection() as db:
+            row = db.execute("SELECT value FROM media_state WHERE key='lease'").fetchone()
         return row[0] if row else None
