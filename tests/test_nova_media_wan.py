@@ -57,6 +57,23 @@ def test_external_or_exited_worker_is_never_adopted_or_released(tmp_path, monkey
     assert app.cancel('foreign') is False
 
 
+def test_owned_venv_launcher_accepts_declared_base_interpreter(tmp_path, monkeypatch):
+    app = adapter(tmp_path)
+    venv_python = app.python
+    venv_python.parent.parent.joinpath('pyvenv.cfg').write_text('home = C:/Python312\n')
+    class Process:
+        pid = 123
+        def poll(self): return None
+        def create_time(self): return 12.0
+        def exe(self): return 'C:/Python312/python.exe'
+    app._process = Process()
+    app._process_created = 12.0
+    monkeypatch.setattr('psutil.Process', lambda pid: Process())
+    monkeypatch.setattr(app, '_connection_owned_by', lambda connection, process: True, raising=False)
+    # The connection helper is reached only after executable identity passes.
+    assert app._worker_executable_is_owned(Process())
+
+
 def test_busy_worker_and_unsaved_output_block_release(tmp_path, monkeypatch):
     app = adapter(tmp_path)
     from nova_gateway.media_resources import ResourceSnapshot

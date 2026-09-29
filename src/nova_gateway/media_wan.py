@@ -54,14 +54,26 @@ class WanAdapter:
         try:
             import psutil
             process = psutil.Process(self._process.pid)
-            if (process.create_time() != self._process_created
-                    or Path(process.exe()).resolve() != self.python):
+            if process.create_time() != self._process_created or not self._worker_executable_is_owned(process):
                 return False
         except (OSError, ImportError, RuntimeError):
             return False
         except Exception:
             return False
         return ComfyUIEngine._connection_owned_by(connection, self._process)
+
+    def _worker_executable_is_owned(self, process) -> bool:
+        """Accept a Windows venv launcher whose process is the declared base Python."""
+        actual = Path(process.exe()).resolve()
+        expected = {self.python.resolve()}
+        cfg = self.python.parent.parent / 'pyvenv.cfg'
+        try:
+            for line in cfg.read_text(encoding='utf-8').splitlines():
+                if line.lower().startswith('home') and '=' in line:
+                    expected.add((Path(line.split('=', 1)[1].strip()) / 'python.exe').resolve())
+        except (OSError, ValueError):
+            pass
+        return actual in expected
 
     def _request(self, method: str, path: str, payload: dict | None = None) -> dict:
         connection = self._connection()
