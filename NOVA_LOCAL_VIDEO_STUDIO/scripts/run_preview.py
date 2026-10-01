@@ -59,8 +59,17 @@ def main():
         raise RuntimeError(r.text)
     pid = r.json()['prompt_id']
     print(f'Queued {pid}; {args.width}x{args.height}, {args.frames} frames',flush=True)
+    transient_failures = 0
     while time.monotonic()-start < args.timeout:
-        h = requests.get(API+'/history/'+pid,timeout=15).json().get(pid)
+        try:
+            h = requests.get(API+'/history/'+pid,timeout=30).json().get(pid)
+            transient_failures = 0
+        except requests.RequestException as exc:
+            transient_failures += 1
+            if transient_failures >= 20:
+                raise RuntimeError(f'ComfyUI history polling failed repeatedly: {exc}') from exc
+            time.sleep(min(10, 2 + transient_failures // 3))
+            continue
         if h:
             (ROOT/'logs'/f'{pid}.json').write_text(json.dumps(h,indent=2))
             if h['status']['status_str'] != 'success':
