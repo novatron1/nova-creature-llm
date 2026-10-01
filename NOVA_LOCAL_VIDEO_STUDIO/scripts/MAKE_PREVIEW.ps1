@@ -2,7 +2,7 @@
 param(
   [string]$Prompt = '',
   [string]$Image = '',
-  [int]$Frames = 17,
+  [int]$Frames = 8,
   [int]$Width = 384,
   [int]$Height = 480,
   [ValidateSet('wan','animatelcm')]
