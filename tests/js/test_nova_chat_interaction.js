@@ -117,6 +117,108 @@ test('two fast submissions cannot overlap while a local command is being checked
   assert.equal(context.chatRequestInFlight, false);
 });
 
+test('Talk reports a usable explanation when the browser cannot listen', () => {
+  let message = '';
+  const context = vm.createContext({
+    window: {},
+    sensoryState: {mic: false, listening: false, recognition: null},
+    addMsg: (_role, text) => { message = text; },
+    setListeningUi() {},
+  });
+  vm.runInContext(extractFunction('toggleListening'), context);
+  context.toggleListening();
+  assert.match(message, /SpeechRecognition|speech recognition/i);
+});
+
+test('Talk reports when browser speech recognition is unavailable', () => {
+  let message = '';
+  const context = vm.createContext({
+    window: {},
+    sensoryState: {mic: true, listening: false, recognition: null},
+    addMsg: (_role, text) => { message = text; },
+    setListeningUi() {},
+  });
+  vm.runInContext(extractFunction('toggleListening'), context);
+  context.toggleListening();
+  assert.match(message, /SpeechRecognition|speech recognition/i);
+});
+
+test('Talk interrupts current speech and submits one transcript even when recognition ends', () => {
+  let recognitionInstance = null;
+  let speechStops = 0;
+  let sends = 0;
+  const context = vm.createContext({
+    window: {SpeechRecognition: class {
+      constructor() { recognitionInstance = this; }
+      start() { this.started = true; }
+      stop() { this.stopped = true; }
+    }},
+    sensoryState: {mic: true, listening: false, recognition: null},
+    addMsg() {},
+    setListeningUi() {},
+    stopNovaSpeech: () => { speechStops += 1; },
+    input: {value: ''},
+    send: () => { sends += 1; },
+  });
+  vm.runInContext(extractFunction('toggleListening'), context);
+  context.toggleListening();
+  assert.equal(speechStops, 1);
+  assert.equal(recognitionInstance.started, true);
+  recognitionInstance.onresult({results: [[{transcript: 'check the latest update', isFinal: true}]]});
+  recognitionInstance.onend();
+  assert.equal(context.input.value, 'check the latest update');
+  assert.equal(sends, 1);
+});
+
+test('Talk enables Nova microphone permission and starts listening from one tap', async () => {
+  let recognitionInstance = null;
+  const synced = [];
+  const context = vm.createContext({
+    window: {SpeechRecognition: class {
+      constructor() { recognitionInstance = this; }
+      start() { this.started = true; }
+      stop() {}
+    }},
+    sensoryState: {mic: false, listening: false, recognition: null},
+    addMsg() {},
+    setMicUi: enabled => { context.sensoryState.mic = enabled; },
+    syncMicPermission: async enabled => { synced.push(enabled); },
+    setListeningUi() {},
+    stopNovaSpeech() {},
+    input: {value: ''},
+    send() {},
+  });
+  vm.runInContext(extractFunction('toggleListening'), context);
+  await context.toggleListening();
+  assert.deepEqual(synced, [true]);
+  assert.equal(recognitionInstance.started, true);
+});
+
+test('More control has a real advanced drawer contract', () => {
+  assert.match(html, /id="advancedControlsDrawer"/);
+  assert.match(html, /aria-controls="advancedControlsDrawer"/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /advanced-controls-open/);
+});
+
+test('Chat exposes quick-start prompts and grouped secondary navigation', () => {
+  assert.match(html, /id="chatQuickStarts"/);
+  assert.match(html, /useChatQuickPrompt\('Build me a simple app'\)/);
+  assert.match(html, /id="navMoreToggle"/);
+  assert.match(html, /id="secondaryNavTabs"/);
+  assert.match(html, /function toggleNavigationDrawer\(/);
+  assert.match(html, /function useChatQuickPrompt\(/);
+});
+
+test('Chat exposes simulation and bounded personality controls', () => {
+  assert.match(html, /id="simulationModeToggle"/);
+  assert.match(html, /id="personalityModeSelect"/);
+  assert.match(html, /payload\.simulation_mode = simulationModeEnabled/);
+  assert.match(html, /payload\.funny_personality = personalityMode === 'funny'/);
+  assert.match(html, /function setSimulationMode\(/);
+  assert.match(html, /function setPersonalityMode\(/);
+});
+
 test('handled and rejected local commands release the composer lock', async () => {
   const {context} = composer();
   Object.assign(context, {

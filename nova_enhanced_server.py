@@ -88,6 +88,7 @@ from nova_deterministic_verifier import (
     DETERMINISTIC_VERIFIER_VERSION,
     solve_deterministic_request,
 )
+from nova_simulation_mode import build_simulation_response, maybe_add_funny_aside
 from nova_model_quality import (
     benchmark_loaded_ollama_models,
     get_default_model_quality_registry,
@@ -114,10 +115,15 @@ FACT_EVIDENCE_STORE = LocalEvidenceStore(
     or (Path(ROOT) / "data" / "nova_grounding_evidence.json")
 )
 WEB_SOURCE_RETRIEVER = NovaSourceRetriever.from_environment()
+# Prefer Nova's local neural voice; the explicit female Windows voice remains a
+# safe fallback when the optional GPU worker is unavailable.
 NOVA_TTS_ENGINE = os.environ.get("NOVA_TTS_ENGINE", "kokoro_gpu").strip().lower()
 NOVA_TTS_NEURAL_VOICE = os.environ.get("NOVA_TTS_NEURAL_VOICE", "en-US-GuyNeural").strip() or "en-US-GuyNeural"
 NOVA_TTS_KOKORO_URL = os.environ.get("NOVA_TTS_KOKORO_URL", "http://127.0.0.1:8890").strip().rstrip("/")
 NOVA_TTS_KOKORO_VOICE = os.environ.get("NOVA_TTS_KOKORO_VOICE", "af_heart").strip() or "af_heart"
+NOVA_TTS_DRAMA3_URL = os.environ.get("NOVA_TTS_DRAMA3_URL", "http://127.0.0.1:8091/v1/audio/speech").strip().rstrip("/")
+NOVA_TTS_DRAMA3_VOICE = os.environ.get("NOVA_TTS_DRAMA3_VOICE", "default").strip() or "default"
+NOVA_TTS_WINDOWS_VOICE = os.environ.get("NOVA_TTS_WINDOWS_VOICE", "Microsoft Zira Desktop").strip() or "Microsoft Zira Desktop"
 NOVA_TTS_RATE = os.environ.get("NOVA_TTS_RATE", "+0%").strip()
 NOVA_TTS_PITCH = os.environ.get("NOVA_TTS_PITCH", "+0Hz").strip()
 NOVA_APP_VERSION = NOVA_VERSION
@@ -1434,6 +1440,27 @@ APP_BUILDER_PROJECTS_ROOT = os.path.join(ROOT, "sandbox", "app_builder_projects"
 PROJECT_EXPORTS_ROOT = os.path.join(ROOT, "sandbox", "exports")
 PROJECT_DEPLOYMENTS_ROOT = os.path.join(ROOT, "sandbox", "deployments")
 GPU_TRAINING_EXPORTS_ROOT = os.path.join(ROOT, "sandbox", "gpu_training_exports")
+# Nova's user-facing Computer/Workspace root is intentionally separate from
+# the application project root.  The root can be moved with configuration, but
+# defaults to the dedicated F: workspace created for Nova.
+NOVA_WORKSPACE_ROOT = Path(os.environ.get("NOVA_WORKSPACE_ROOT", r"F:\NovaWorkspace")).expanduser()
+NOVA_WORKSPACE_FOLDERS = ("Documents", "Downloads", "Music", "Videos")
+
+
+def _workspace_status() -> dict[str, object]:
+    root = NOVA_WORKSPACE_ROOT.resolve()
+    folders = []
+    for name in NOVA_WORKSPACE_FOLDERS:
+        path = root / name
+        folders.append({"name": name, "path": str(path), "exists": path.is_dir()})
+    return {
+        "ok": root.is_dir() and all(item["exists"] for item in folders),
+        "root": str(root),
+        "scope": "nova_workspace",
+        "folders": folders,
+        "approval_required_for_writes": True,
+        "system_paths_allowed": False,
+    }
 _GAME_BUILDER_AVAIL = False
 try:
     import nova_sandbox_game_builder as _game_builder
@@ -1587,9 +1614,10 @@ def _weather_seasonal_explanation(text):
     location = next((name.title() for name in _WEATHER_LOCATION_NAMES if name in q), None)
     if not location:
         return None
-    month = datetime.now().astimezone().month
-    if month != 9 and "september" not in q:
-        return None
+    # This route is also used for a follow-up to a recently discussed
+    # September forecast.  Do not make the answer disappear merely because
+    # the wall clock has moved into another month; the caller's wording and
+    # conversation context are the authority here.
     return (
         f"You're right to notice it: {location} can have a short early-September heat spell, "
         "but a mid-90s day is well above normal. National Weather Service September normals "
@@ -1674,6 +1702,76 @@ def _fetch_news_headlines(query, limit=3):
 # ── Memory ──────────────────────────────────────────────────────────────────
 MEMORY_FILE = os.path.join(ROOT, "data", "nova_memory.json")
 PERMISSIONS = {"mic": False, "camera": False, "speaker": False}
+_ROBOT_BRIDGE_LOCK = threading.RLock()
+_ROBOT_BRIDGE_STATE = {
+    "connected": False,
+    "heartbeat_at": None,
+    "battery": None,
+    "last_command": "stop",
+}
+_ROBOT_BRIDGE_SEQUENCE = 0
+_ROBOT_BRIDGE_QUEUE = []
+
+
+def _robot_bridge_status():
+    config = (_runtime_cognitive_config().get("robot") or {}) if callable(globals().get("_runtime_cognitive_config")) else {}
+    physical_enabled = bool(config.get("physical_movement_enabled", False))
+    with _ROBOT_BRIDGE_LOCK:
+        state = dict(_ROBOT_BRIDGE_STATE)
+    state.update({
+        "ok": True,
+        "mode": "physical" if physical_enabled else "simulation",
+        "simulation_enabled": bool(config.get("simulation_enabled", True)),
+        "physical_movement_enabled": physical_enabled,
+    })
+    return state
+
+
+def _robot_bridge_command(payload):
+    global _ROBOT_BRIDGE_SEQUENCE
+    payload = payload if isinstance(payload, dict) else {}
+    command = str(payload.get("command") or "").strip().lower()
+    allowed = {"stop", "emergency_stop", "look_left", "look_right", "face_neutral", "face_asking", "face_happy"}
+    if command not in allowed:
+        return {"ok": False, "code": "robot_command_rejected", "error": "Command is not allowlisted."}
+    config = (_runtime_cognitive_config().get("robot") or {}) if callable(globals().get("_runtime_cognitive_config")) else {}
+    if command in {"look_left", "look_right"} and not bool(config.get("physical_movement_enabled", False)):
+        return {"ok": False, "code": "robot_physical_movement_disabled", "error": "Physical movement is disabled; simulation only."}
+    with _ROBOT_BRIDGE_LOCK:
+        _ROBOT_BRIDGE_SEQUENCE += 1
+        queued = {"sequence": _ROBOT_BRIDGE_SEQUENCE, "command": "stop" if command == "emergency_stop" else command, "payload": payload.get("payload") if isinstance(payload.get("payload"), dict) else {}}
+        _ROBOT_BRIDGE_QUEUE.append(queued)
+        del _ROBOT_BRIDGE_QUEUE[:-50]
+        _ROBOT_BRIDGE_STATE["last_command"] = "stop" if command == "emergency_stop" else command
+        _ROBOT_BRIDGE_STATE["heartbeat_at"] = time.time()
+    return {"ok": True, "command": command, "sequence": queued["sequence"], "status": _robot_bridge_status()}
+
+
+def _robot_bridge_commands(after_sequence=0):
+    try:
+        cursor = max(0, int(after_sequence or 0))
+    except (TypeError, ValueError):
+        cursor = 0
+    with _ROBOT_BRIDGE_LOCK:
+        commands = [item.copy() for item in _ROBOT_BRIDGE_QUEUE if item["sequence"] > cursor]
+        latest = _ROBOT_BRIDGE_SEQUENCE
+    return {"ok": True, "commands": commands, "latest_sequence": latest}
+
+
+def _robot_bridge_telemetry(payload):
+    payload = payload if isinstance(payload, dict) else {}
+    battery = payload.get("battery")
+    try:
+        battery = max(0, min(100, float(battery))) if battery is not None else None
+    except (TypeError, ValueError):
+        battery = None
+    with _ROBOT_BRIDGE_LOCK:
+        _ROBOT_BRIDGE_STATE["connected"] = True
+        _ROBOT_BRIDGE_STATE["heartbeat_at"] = time.time()
+        if battery is not None:
+            _ROBOT_BRIDGE_STATE["battery"] = battery
+    status = _robot_bridge_status()
+    return {"ok": True, "battery": status.get("battery"), "status": status}
 
 
 def _companion_vision_route_readiness(handler=None):
@@ -3306,7 +3404,14 @@ def _generate_windows_tts_wav_base64(text):
     script = r"""
 Add-Type -AssemblyName System.Speech
 $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$s.Rate = -1
+    $preferred = $env:NOVA_TTS_WINDOWS_VOICE
+    $available = @($s.GetInstalledVoices() | ForEach-Object { $_.VoiceInfo.Name })
+    if($available -contains $preferred) {
+      $s.SelectVoice($preferred)
+    } elseif($available -match '(?i)zira|female|aria|susan|hazel') {
+      $s.SelectVoice(($available -match '(?i)zira|female|aria|susan|hazel' | Select-Object -First 1))
+    }
+    $s.Rate = -1
 $s.Volume = 100
 $s.SetOutputToWaveFile($env:NOVA_TTS_OUT)
 $s.Speak($env:NOVA_TTS_TEXT)
@@ -3317,7 +3422,7 @@ Write-Output $voice
     try:
         completed = subprocess.run(
             ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
-            env=env,
+        env={**env, "NOVA_TTS_WINDOWS_VOICE": NOVA_TTS_WINDOWS_VOICE},
             capture_output=True,
             text=True,
             timeout=20,
@@ -3332,6 +3437,34 @@ Write-Output $voice
             os.remove(wav_path)
         except OSError:
             pass
+
+
+def _generate_drama3_tts_audio_base64(text, voice=None):
+    """Call an optional local Drama 3 OpenAI-compatible TTS server."""
+    spoken = str(text or "").strip()
+    if not spoken:
+        raise ValueError("Drama 3 received empty text")
+    # Drama 3 accepts ordinary inline event tags; keep the direction subtle so
+    # normal conversation stays natural while allowing breath timing.
+    sentences = re.split(r"(?<=[.!?])\s+", spoken)
+    directed = " [breath] ".join(sentences[:8]) if len(sentences) > 1 else spoken
+    payload = {
+        "input": directed,
+        "voice": voice or NOVA_TTS_DRAMA3_VOICE,
+        "response_format": "wav",
+    }
+    request = urllib.request.Request(
+        NOVA_TTS_DRAMA3_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "audio/wav"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=45) as response:
+        audio = response.read()
+        mime_type = response.headers.get_content_type() or "audio/wav"
+    if not audio:
+        raise RuntimeError("Drama 3 returned empty audio")
+    return base64.b64encode(audio).decode("ascii"), voice or NOVA_TTS_DRAMA3_VOICE, mime_type
 
 
 def _tts_response_from_text(body):
@@ -3351,6 +3484,23 @@ def _tts_response_from_text(body):
             "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
         }, 400
     neural_error = None
+    fallback_from = None
+    if NOVA_TTS_ENGINE in ("drama3", "drama-3", "fish_drama3"):
+        try:
+            audio_b64, voice_name, mime_type = _generate_drama3_tts_audio_base64(text, NOVA_TTS_DRAMA3_VOICE)
+            return {
+                "ok": True,
+                "mime_type": mime_type,
+                "audio_base64": audio_b64,
+                "voice_engine": "drama3",
+                "voice_name": voice_name,
+                "text": text,
+                "prosody": "natural_conversational_breaths",
+                "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
+            }, 200
+        except Exception as exc:
+            neural_error = f"Drama 3 unavailable: {exc}"
+            fallback_from = "drama3"
     if NOVA_TTS_ENGINE in ("kokoro", "kokoro_gpu", "local_gpu"):
         try:
             audio_b64, voice_name, mime_type, device = _generate_kokoro_tts_audio_base64(
@@ -3368,10 +3518,11 @@ def _tts_response_from_text(body):
             }, 200
         except Exception as exc:
             neural_error = str(exc)
+            fallback_from = "kokoro_gpu"
     if NOVA_TTS_ENGINE not in ("windows", "windows_sapi", "sapi"):
         try:
             audio_b64, voice_name, mime_type = _generate_edge_neural_tts_audio_base64(text, NOVA_TTS_NEURAL_VOICE)
-            return {
+            payload = {
                 "ok": True,
                 "mime_type": mime_type,
                 "audio_base64": audio_b64,
@@ -3379,9 +3530,14 @@ def _tts_response_from_text(body):
                 "voice_name": voice_name,
                 "text": text,
                 "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
-            }, 200
+            }
+            if neural_error:
+                payload["fallback_from"] = fallback_from or "edge_neural"
+                payload["fallback_reason"] = neural_error[:240]
+            return payload, 200
         except Exception as exc:
             neural_error = "; ".join(part for part in (neural_error, str(exc)) if part)
+            fallback_from = fallback_from or "edge_neural"
     try:
         audio_b64, voice_name = _generate_windows_tts_wav_base64(text)
         payload = {
@@ -3394,7 +3550,7 @@ def _tts_response_from_text(body):
             "permissions": {**PERMISSIONS, "private_mode": PRIVATE_MODE},
         }
         if neural_error:
-            payload["fallback_from"] = "edge_neural"
+            payload["fallback_from"] = fallback_from or "edge_neural"
             payload["fallback_reason"] = neural_error[:240]
         return payload, 200
     except Exception as exc:
@@ -6865,12 +7021,19 @@ def _adapter_registry_list():
                     chat_url = _ollama_adapter_chat_url(config, "NOVA_DOLPHIN_LORA_OLLAMA_URL")
                     reason = "The trained quantized Dolphin adapter is installed locally; its first CPU load can take several minutes."
                     slow_cpu_override_available = True
+                elif "3b" in family_text and "qwen" in family_text:
+                    # The new controller is a native HF/PEFT adapter. It must
+                    # not be reported as the legacy 1.5B Ollama adapter.
+                    model_name = "Qwen2.5-3B-Instruct + PEFT"
+                    chat_url = ""
+                    reason = "The trained Qwen 3B controller is installed locally and uses the quantized HF/PEFT runtime."
+                    slow_cpu_override_available = False
                 else:
                     model_name = str(os.environ.get("NOVA_QWEN_LORA_OLLAMA_MODEL") or "nova-qwen2.5-1.5b-lora").strip()
                     chat_url = _ollama_adapter_chat_url(config, "NOVA_QWEN_LORA_OLLAMA_URL")
                     reason = "The trained quantized Qwen adapter is installed locally and uses the Ollama LoRA runtime."
                     slow_cpu_override_available = False
-                if _ollama_adapter_model_available(chat_url, model_name):
+                if chat_url and _ollama_adapter_model_available(chat_url, model_name):
                     runtime.update(
                         {
                             "runnable": True,
@@ -8675,7 +8838,22 @@ def _generate_raw_ollama_lora_adapter(prompt, adapter_id, max_new_tokens, metada
         },
     }
     timeout = _raw_llm_timeout_seconds()
+    # Ollama 0.12+ no longer supports attaching LoRA adapters through the
+    # create API.  The old 8B Dolphin artifact can therefore remain listed
+    # while its runner hangs during generation on this 8 GB GPU.  Bound that
+    # probe and use the verified small local model when Dolphin cannot answer.
+    is_dolphin = "dolphin" in family_text
+    if is_dolphin:
+        try:
+            dolphin_probe_timeout = float(os.environ.get("NOVA_DOLPHIN_PROBE_TIMEOUT_SECONDS", "12"))
+        except (TypeError, ValueError):
+            dolphin_probe_timeout = 12.0
+        attempt_timeout = max(2.0, min(timeout, dolphin_probe_timeout, 90.0))
+    else:
+        attempt_timeout = timeout
     started = time.monotonic()
+    fallback_used = False
+    fallback_reason = ""
     try:
         from nova_model_memory import model_activity
 
@@ -8686,7 +8864,7 @@ def _generate_raw_ollama_lora_adapter(prompt, adapter_id, max_new_tokens, metada
             method="POST",
         )
         with model_activity("dolphin"):
-            with urllib.request.urlopen(request, timeout=timeout) as response:
+            with urllib.request.urlopen(request, timeout=attempt_timeout) as response:
                 payload = json.loads(response.read().decode("utf-8"))
         message = payload.get("message") if isinstance(payload.get("message"), dict) else {}
         raw_output = str(message.get("content") or "").strip()
@@ -8694,6 +8872,32 @@ def _generate_raw_ollama_lora_adapter(prompt, adapter_id, max_new_tokens, metada
     except Exception as exc:
         raw_output = ""
         error = "Local trained Dolphin adapter error: " + str(exc)
+        if is_dolphin:
+            fallback_model = str(
+                os.environ.get("NOVA_DOLPHIN_FALLBACK_MODEL") or "qwen2.5:1.5b"
+            ).strip()
+            if fallback_model and fallback_model != model_name and _ollama_adapter_model_available(chat_url, fallback_model):
+                fallback_payload = dict(request_payload)
+                fallback_payload["model"] = fallback_model
+                try:
+                    request = urllib.request.Request(
+                        chat_url,
+                        data=json.dumps(fallback_payload).encode("utf-8"),
+                        headers={"Content-Type": "application/json", "Accept": "application/json"},
+                        method="POST",
+                    )
+                    with model_activity("dolphin"):
+                        with urllib.request.urlopen(request, timeout=attempt_timeout) as response:
+                            fallback_payload_result = json.loads(response.read().decode("utf-8"))
+                    fallback_message = fallback_payload_result.get("message") if isinstance(fallback_payload_result.get("message"), dict) else {}
+                    raw_output = str(fallback_message.get("content") or "").strip()
+                    if raw_output:
+                        fallback_used = True
+                        fallback_reason = error
+                        error = None
+                        model_name = fallback_model
+                except Exception as fallback_exc:
+                    error = error + "; fallback model error: " + str(fallback_exc)
     return {
         "adapter_id": str(adapter_id),
         "label": _raw_adapter_label(adapter_id, metadata),
@@ -8706,8 +8910,8 @@ def _generate_raw_ollama_lora_adapter(prompt, adapter_id, max_new_tokens, metada
         "raw_output": raw_output,
         "local_llm_used": bool(raw_output),
         "error": error,
-        "fallback_used": False,
-        "fallback_reason": "",
+        "fallback_used": fallback_used,
+        "fallback_reason": fallback_reason,
         "response_time_ms": round((time.monotonic() - started) * 1000, 3),
     }
 
@@ -8716,7 +8920,22 @@ def _generate_raw_lora_adapter(prompt, adapter_id, max_new_tokens=192, *, allow_
     metadata = _adapter_compare_metadata(adapter_id)
     eval_metrics = metadata.get("eval_metrics") if isinstance(metadata.get("eval_metrics"), dict) else {}
     adapter_family = (str(adapter_id or "") + " " + str(metadata.get("base_model") or "")).lower()
-    if "dolphin" in adapter_family or "qwen" in adapter_family:
+    native_dolphin_base = ""
+    if "dolphin" in adapter_family:
+        candidate = str(os.environ.get("NOVA_DOLPHIN_NATIVE_BASE_MODEL") or "").strip()
+        candidate_path = Path(candidate) if candidate else None
+        shards_ready = bool(
+            candidate_path
+            and candidate_path.is_dir()
+            and all((candidate_path / f"model-{index:05d}-of-00004.safetensors").is_file() for index in range(1, 5))
+            and all((candidate_path / f"model-{index:05d}-of-00004.safetensors").stat().st_size > 100_000_000 for index in range(1, 5))
+        )
+        if shards_ready:
+            native_dolphin_base = str(candidate_path)
+    # Prefer the retained PEFT adapter once its local base is complete. While
+    # the base is still downloading, keep the bounded Ollama compatibility
+    # route so the app remains responsive.
+    if ("dolphin" in adapter_family and not native_dolphin_base) or "qwen" in adapter_family:
         ollama_result = _generate_raw_ollama_lora_adapter(
             prompt,
             adapter_id,
@@ -8767,6 +8986,7 @@ def _generate_raw_lora_adapter(prompt, adapter_id, max_new_tokens=192, *, allow_
             max_new_tokens=int(max_new_tokens or 192),
             temperature=0.35,
             top_p=0.9,
+            base_model=native_dolphin_base or None,
             allow_slow_cpu=allow_slow_cpu,
             raw_mode=True,
         )
@@ -9775,6 +9995,7 @@ def brain_route(text, context=None):
         ]
         trace["confidence"] = 0.98
         trace["memory_event"] = "human_likeness_followup"
+        trace["context_resolution"] = "perspective_response"
         trace["route_path"] = ["recent_conversation", "nova_identity_followup", "speech_output"]
         trace["final_answer_source"] = "nova_identity_followup"
         _LAST_USER_TEXT = text
@@ -11232,11 +11453,41 @@ def brain_route(text, context=None):
     # ─── MEANING PIPELINE: Deep Understanding Before Routing ───
     # sensory_input → clean → normalize → repair → dict_check → expand → associate → intent → memory_bind → route → generate → critic → speech
     # Game Builder Path: build commands should execute before generic LLM conversation.
-    if _GAME_BUILDER_AVAIL:
+    # A current build command may refer to a game described in the bounded
+    # client history (for example, "go ahead and build that version"). Resolve
+    # that context before Cognitive OS so a generic reply cannot swallow a
+    # write-capable request. Question-form follow-ups stay conversational.
+    game_context_text = text
+    if isinstance(conversation_history, list):
+        history_text = " ".join(
+            str(item.get("content") or "")
+            for item in conversation_history[-8:]
+            if isinstance(item, dict)
+        )
+        game_context_text = (history_text + " " + text).strip()
+    current_build_verb = bool(re.search(r"\b(?:make|create|build|generate|try)\b", str(text or "").casefold()))
+    current_question = str(text or "").strip().casefold().startswith(
+        ("what ", "why ", "when ", "where ", "who ", "how ")
+    )
+    contextual_game_request = current_build_verb and not current_question
+    if _GAME_BUILDER_AVAIL and not evaluation_only:
         game_result = None
         game_kind = None
         try:
             if (
+                hasattr(_game_builder, "is_scooter_race_game_request")
+                and hasattr(_game_builder, "build_scooter_race_game")
+                and (
+                    _game_builder.is_scooter_race_game_request(text)
+                    or (
+                        contextual_game_request
+                        and _game_builder.is_scooter_race_game_request(game_context_text)
+                    )
+                )
+            ):
+                game_result = _game_builder.build_scooter_race_game(projects_root=APP_BUILDER_PROJECTS_ROOT)
+                game_kind = "scooter_race_2d"
+            elif (
                 hasattr(_game_builder, "is_temple_run_game_request")
                 and hasattr(_game_builder, "build_temple_run_game")
                 and _game_builder.is_temple_run_game_request(text)
@@ -11253,7 +11504,13 @@ def brain_route(text, context=None):
             elif (
                 hasattr(_game_builder, "is_pacman_game_request")
                 and hasattr(_game_builder, "build_pacman_game")
-                and _game_builder.is_pacman_game_request(text)
+                and (
+                    _game_builder.is_pacman_game_request(text)
+                    or (
+                        contextual_game_request
+                        and _game_builder.is_pacman_game_request(game_context_text)
+                    )
+                )
             ):
                 game_result = _game_builder.build_pacman_game(projects_root=APP_BUILDER_PROJECTS_ROOT)
                 game_kind = "maze_runner"
@@ -11270,11 +11527,12 @@ def brain_route(text, context=None):
             trace["project_name"] = project_name
             trace["project_url"] = project_url
             trace["roles"] = ["right_hemisphere", "dream_simulation_transformer", "planner_transformer"]
-            trace["skills"] = ["three_webgl", "game_builder", game_kind]
-            trace["verification"] = {"checks": ["three_webgl", game_kind, "sandbox_project_created"]}
+            renderer_skill = "canvas_2d" if game_kind == "scooter_race_2d" else "three_webgl"
+            trace["skills"] = [renderer_skill, "game_builder", game_kind]
+            trace["verification"] = {"checks": [renderer_skill, game_kind, "sandbox_project_created"]}
             trace["confidence"] = 0.92
             trace["domain"] = "game_builder"
-            response = "[GAME BUILDER] Created " + project_name + " using Three.js/WebGL.\nOpen: " + project_url + "\nFile: " + str(game_result.entry_file)
+            response = "[GAME BUILDER] Created " + project_name + " using " + ("Canvas 2D" if renderer_skill == "canvas_2d" else "Three.js/WebGL") + ".\nOpen: " + project_url + "\nFile: " + str(game_result.entry_file)
             response = _apply_game_supercheck(response, trace, project_url)
             _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
             if _CONV_ENGINE_AVAIL:
@@ -11599,6 +11857,28 @@ def brain_route(text, context=None):
                     trace["transformer_output_quality"] = "no_router"
                     trace["fallback_reason"] = str((llm_candidate or {}).get("reason") or "llm_fallback_failed")
 
+            # Cognitive OS and hybrid routes can complete inside the meaning
+            # pipeline, so apply the same final conversational shaper here as
+            # the later fallback path. This keeps short social acknowledgments
+            # connected to the active story instead of ending abruptly.
+            try:
+                from nova_natural_chat import natural_chat_enabled, shape_response
+
+                if natural_chat_enabled() and not trace.get("native_streaming"):
+                    shaped_response = shape_response(
+                        response,
+                        user_input=normalized_text,
+                        recent_memory=_natural_history_for_client(context or {}, text) if conversation_memory_allowed else [],
+                    )
+                    if shaped_response:
+                        trace["natural_chat_used"] = True
+                        trace["natural_response_shaped"] = bool(
+                            trace.get("natural_response_shaped")
+                        ) or shaped_response != response
+                        response = shaped_response
+            except Exception as natural_err:
+                trace["natural_chat_error"] = str(natural_err)[:120]
+
             if _CONV_ENGINE_AVAIL:
                 try: _CONV_ENGINE.add_exchange(text, response)
                 except: pass
@@ -11610,31 +11890,6 @@ def brain_route(text, context=None):
             traceback.print_exc()
             trace["roles"]=["error_handler","pipeline"]; trace["skills"]=["fallback"]; trace["confidence"]=0.70
 
-
-    # --- Game Builder Path ---
-    if _GAME_BUILDER_AVAIL and hasattr(_game_builder, "is_pacman_game_request") and _game_builder.is_pacman_game_request(text):
-        try:
-            result = _game_builder.build_pacman_game(projects_root=APP_BUILDER_PROJECTS_ROOT)
-            project_name = result.project_name
-            project_url = result.url_path
-            trace["source"] = "sandbox_game_builder"
-            trace["target_surface"] = "preview_area"
-            trace["action"] = "create_game"
-            trace["safety_level"] = "safe_write"
-            trace["project_name"] = project_name
-            trace["project_url"] = project_url
-            trace["roles"] = ["right_hemisphere", "dream_simulation_transformer"]
-            trace["skills"] = ["three_webgl", "game_builder"]
-            trace["verification"] = {"checks": ["three_webgl"]}
-            trace["confidence"] = 0.90
-            trace["domain"] = "game_builder"
-            response = "[GAME BUILDER] Created " + project_name + " using Three.js/WebGL.\nOpen: " + project_url + "\nFile: " + str(result.entry_file)
-            response = _apply_game_supercheck(response, trace, project_url)
-            _LAST_USER_TEXT = text; _LAST_NOVA_RESPONSE = response
-            trace = _set_final_answer_source(trace)
-            return response, trace
-        except Exception:
-            pass
 
     # ─── App Navigation (before hybrid router) ───
     if APP_NAV_AVAIL and _NAV_CONTEXT:
@@ -13768,6 +14023,14 @@ def _run_nova_chat_turn_impl(text, context=None):
     evaluation_mutation_block = _evaluation_mutation_guard_response(text, context)
     if evaluation_mutation_block is not None:
         return evaluation_mutation_block
+    if context.get("simulation_mode") is True:
+        response, trace = build_simulation_response(text, context)
+        response, funny_trace = maybe_add_funny_aside(response, text, context)
+        if funny_trace.get("enabled"):
+            trace["funny_personality"] = funny_trace
+        trace["simulation_state_commit_allowed"] = False
+        trace["evaluation_only"] = evaluation_only
+        return response, trace
     runtime_cognitive_config = _runtime_cognitive_config()
     raw_adapter_request = _is_trained_adapter_only_context(context)
     optional_model_mode = _optional_strong_model_decision(
@@ -13998,6 +14261,7 @@ def _run_nova_chat_turn_impl(text, context=None):
                 ("emotional", "user_positive"),
                 ("emotional", "encouragement_request"),
                 ("social", "conversation_invite"),
+                ("social", "quiet_update"),
                 ("social", "gratitude"),
                 ("social", "compliment"),
                 ("social", "positive_reaction"),
@@ -15104,6 +15368,25 @@ def _run_nova_chat_turn_impl(text, context=None):
                     trace["memory_v2_error"] = type(memory_v2_error).__name__
 
     if isinstance(trace, dict):
+        # Direct reviewed/recall branches return before the normal cognitive
+        # shaper. Give those social responses the same follow-through pass and
+        # clean malformed replacement characters from local-model text.
+        response = str(response or "").replace("\ufffd", "'")
+        if trace.get("source") in {"reviewed_conversation_response", "conversation_evidence_recall"}:
+            try:
+                from nova_natural_chat import shape_response
+
+                shaped_direct = shape_response(
+                    response,
+                    user_input=text,
+                    recent_memory=history_before_turn,
+                )
+                if shaped_direct:
+                    trace["natural_chat_used"] = True
+                    trace["natural_response_shaped"] = shaped_direct != response
+                    response = shaped_direct
+            except Exception as direct_shape_error:
+                trace["natural_chat_error"] = str(direct_shape_error)[:120]
         deterministic_route = (
             trace.get("source") == "dictionary"
             or str(trace.get("source") or "").startswith("deterministic_")
@@ -15120,6 +15403,11 @@ def _run_nova_chat_turn_impl(text, context=None):
             trace["training_write_allowed"] = False
             trace["memory_write_allowed"] = False
         trace["permissions_snapshot"] = {**PERMISSIONS, "private_mode": PRIVATE_MODE}
+
+    if not raw_adapter_request:
+        response, funny_trace = maybe_add_funny_aside(response, text, context)
+        if funny_trace.get("enabled"):
+            trace["funny_personality"] = funny_trace
 
     trace = _attach_conversation_summary(
         trace,
@@ -15175,6 +15463,27 @@ def _run_nova_chat_turn_impl(text, context=None):
     return response, trace
 
 
+def _display_scene_for_request(text):
+    """Return a small, safe display instruction for natural front-screen requests."""
+    prompt = re.sub(r"\s+", " ", str(text or "")).strip()
+    lowered = prompt.lower()
+    if not prompt or not re.search(r"\b(show|display|put|draw|make)\b", lowered):
+        return None
+    if re.search(r"\b(ask|asking|question|wait|waiting)\b", lowered):
+        return {"type": "face", "emotion": "asking"}
+    for emotion, words in (("happy", ("happy", "smile", "smiling")), ("thinking", ("think", "thinking")), ("listening", ("listen", "listening"))):
+        if any(re.search(rf"\b{re.escape(word)}\b", lowered) for word in words):
+            return {"type": "face", "emotion": emotion}
+    image_match = re.search(r"https?://[^\s]+", prompt, flags=re.IGNORECASE)
+    if image_match and re.search(r"\b(image|picture|photo|screen)\b", lowered):
+        return {"type": "image", "image_url": image_match.group(0).rstrip(".,);"), "caption": "Nova display"}
+    text_match = re.search(r"\b(?:show|display|put|draw)\s+(?:the\s+)?text\s*[:\-]?\s*(.+)$", prompt, flags=re.IGNORECASE)
+    if text_match:
+        title = text_match.group(1).strip()[:60]
+        return {"type": "text", "title": title or "NOVA DISPLAY", "lines": []}
+    return None
+
+
 def _run_nova_chat_turn(text, context=None):
     """Serialize legacy state access and make evaluation turns non-retained."""
 
@@ -15198,12 +15507,26 @@ def _run_nova_chat_turn(text, context=None):
             result = _run_nova_chat_turn_impl(text, resolved_context)
             if isinstance(result, tuple) and len(result) == 2:
                 response, trace = result
+                from nova_text_quality import sanitize_response_text
+                response = sanitize_response_text(response)
                 trace = dict(trace or {}) if isinstance(trace, dict) else {}
-                state_committed, reason = _conversation_turn_commit_decision(
-                    response,
-                    trace,
-                    evaluation_only=resolved_context.get("evaluation_only") is True,
-                )
+                display_scene = _display_scene_for_request(text)
+                if display_scene:
+                    trace["display_scene"] = display_scene
+                decision = trace.get('conversation_decision') or resolved_context.get('conversation_decision')
+                family = decision.get('intent_family') if isinstance(decision, dict) else getattr(decision, 'intent_family', None)
+                if family in {'social', 'emotional', 'open_ended', 'follow_up'} and not callable(resolved_context.get('stream_callback')):
+                    from nova_personality_review import review_response
+                    response, review = review_response(response, resolved_context.get('conversation_history') or [])
+                    trace['personality_review'] = review
+                if trace.get("simulation_mode"):
+                    state_committed, reason = False, "simulation_mode"
+                else:
+                    state_committed, reason = _conversation_turn_commit_decision(
+                        response,
+                        trace,
+                        evaluation_only=resolved_context.get("evaluation_only") is True,
+                    )
                 trace["conversation_state_committed"] = state_committed
                 trace["conversation_state_commit_reason"] = reason
                 trace["pending_turn"] = not state_committed
@@ -15628,6 +15951,32 @@ def _start_model_warmup():
         if result.get("ok"):
             elapsed_ms = float(result.get("elapsed_ms") or 0)
             print(f"  [WARMUP] Ready: {result.get('model') or result.get('provider')} ({elapsed_ms:.0f} ms)")
+            # Raw + Memory uses a separate Ollama model. Preload the small
+            # Qwen adapter while the startup barrier is active so switching
+            # modes does not make the user's first raw request race a cold
+            # adapter load. Larger Dolphin remains explicitly on-demand.
+            try:
+                if str(result.get("provider") or "").lower() != "ollama":
+                    raise RuntimeError("primary provider is not Ollama")
+                adapter_model = str(os.environ.get("NOVA_QWEN_LORA_OLLAMA_MODEL") or "nova-qwen2.5-1.5b-lora")
+                adapter_url = str(config.url or "http://127.0.0.1:11434/api/generate")
+                adapter_payload = json.dumps({
+                    "model": adapter_model,
+                    "prompt": "",
+                    "stream": False,
+                    "keep_alive": str(config.ollama_keep_alive),
+                    "options": {"num_predict": 0},
+                }).encode("utf-8")
+                adapter_request = urllib.request.Request(
+                    adapter_url,
+                    data=adapter_payload,
+                    headers={"Content-Type": "application/json"},
+                )
+                with urllib.request.urlopen(adapter_request, timeout=min(config.model_warmup_timeout, 120)):
+                    pass
+                print(f"  [WARMUP] Raw Qwen adapter ready: {adapter_model}")
+            except Exception as adapter_exc:
+                print(f"  [WARMUP] Raw Qwen adapter deferred safely: {adapter_exc}")
         else:
             print(f"  [WARMUP] Deferred safely: {result.get('error') or result.get('reason') or 'unavailable'}")
 
@@ -16325,6 +16674,8 @@ class NovaHandler(BaseHTTPRequestHandler):
         )
 
     def _send_json(self, payload, status=200):
+        from nova_text_quality import sanitize_json_payload
+        payload = sanitize_json_payload(payload)
         encoded = json.dumps(payload, default=str).encode('utf-8')
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
@@ -16406,6 +16757,17 @@ class NovaHandler(BaseHTTPRequestHandler):
         if length < 0:
             raise RequestBodyError('Content-Length must be a non-negative integer.')
         if length > maximum:
+            # Do not leave a small rejected request queued on the socket.  On
+            # Windows, responding immediately while the client is still
+            # writing the body can produce WinError 10053 instead of the
+            # intended 413.  Drain only a bounded prefix, then close the
+            # connection so an attacker cannot make us read an arbitrary
+            # oversized body.
+            self.close_connection = True
+            try:
+                self.rfile.read(min(length, 64 * 1024))
+            except (OSError, ConnectionError):
+                pass
             raise RequestBodyTooLarge(
                 f'Request body exceeds the {maximum // (1024 * 1024)} MB limit.'
             )
@@ -16629,6 +16991,16 @@ class NovaHandler(BaseHTTPRequestHandler):
         if self._handle_gpu_hub_get(parsed):
             return
         if self._handle_projects_get(parsed):
+            return
+        if parsed.path == '/api/workspace/status':
+            self._send_json(_workspace_status())
+            return
+        if parsed.path == '/api/robot/status':
+            self._send_json(_robot_bridge_status())
+            return
+        if parsed.path == '/api/robot/commands':
+            query = parse_qs(parsed.query or "")
+            self._send_json(_robot_bridge_commands((query.get("after") or [0])[0]))
             return
         if parsed.path in ('/', '/index.html'):
             config = _companion_ui_config()
@@ -16965,6 +17337,12 @@ class NovaHandler(BaseHTTPRequestHandler):
                 report = _run_full_training_suite()
                 self._send_json({"ok": report.get("ok", False), "report": report, "training_job": training_job})
                 return
+            if parsed.path == '/api/robot/command':
+                self._send_json(_robot_bridge_command(self._read_json_body()))
+                return
+            if parsed.path == '/api/robot/telemetry':
+                self._send_json(_robot_bridge_telemetry(self._read_json_body()))
+                return
             if parsed.path == '/api/chat':
                 body = self._read_json_body()
                 text = _chat_text_from_body(body)
@@ -17092,8 +17470,12 @@ def main():
         port_error=None if port_available else f"Port {port} is already in use.",
     )
     class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-        allow_reuse_address = True
+        allow_reuse_address = os.name != 'nt'
         daemon_threads = True
+        def server_bind(self):
+            if os.name == 'nt':
+                self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+            super().server_bind()
     try:
         server = ThreadedHTTPServer((host, port), NovaHandler)
     except OSError as exc:
@@ -17145,7 +17527,20 @@ def main():
         print(f"  [LOAD] Warning: {e}")
 
     RELIABILITY.start_automatic_backups()
-    _start_model_warmup()
+    warmup_thread = _start_model_warmup()
+    # Do not expose a listening port while the first local model is competing
+    # with user traffic for GPU memory. The previous background-only startup
+    # let the first few chat requests time out during cold load. Warmup still
+    # has its configured timeout and remains non-blocking for callers/tests of
+    # _start_model_warmup itself; production serving begins after this one
+    # startup barrier.
+    if warmup_thread is not None:
+        try:
+            from nova_local_llm_connector import LocalLLMConfig
+
+            warmup_thread.join(timeout=float(LocalLLMConfig().model_warmup_timeout) + 5.0)
+        except Exception:
+            warmup_thread.join(timeout=30.0)
 
     try:
         server.serve_forever()

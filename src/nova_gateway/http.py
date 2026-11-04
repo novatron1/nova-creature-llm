@@ -46,6 +46,7 @@ POST_PATHS = {
     "/nova/v1/images/generations",
     "/nova/v1/videos/generations",
     "/nova/v1/engines/comfyui-local/launch",
+    "/nova/v1/engines/comfyui-local/release",
     "/nova/v1/runtime/verification/playwright",
     "/nova/v1/agent-runs",
 }
@@ -61,6 +62,8 @@ DESKTOP_BOOLEAN_CONTEXT_KEYS = frozenset(
         "allow_slow_dolphin_cpu",
         "allow_slow_adapter_cpu",
         "conversation_summary_write_allowed",
+        "simulation_mode",
+        "funny_personality",
     }
 )
 DESKTOP_STRING_CONTEXT_KEYS = frozenset(
@@ -69,6 +72,7 @@ DESKTOP_STRING_CONTEXT_KEYS = frozenset(
         "lora_adapter_path",
         "lora_base_model",
         "nova_model_mode",
+        "personality",
     }
 )
 
@@ -539,9 +543,14 @@ class NovaGatewayHttpController:
                 handler._send_json(self.core.generate_video(body, client_id=auth.client_id), status=202)
                 return True
             if path == "/nova/v1/engines/comfyui-local/launch":
-                self._authorize(handler, "tools.list")
+                self._authorize(handler, "admin.models")
                 result = self.core.launch_comfyui()
                 handler._send_json(result, status=202 if result.get("started") or result.get("launching") else 200)
+                return True
+            if path == "/nova/v1/engines/comfyui-local/release":
+                self._authorize(handler, "admin.models")
+                result = self.core.release_comfyui()
+                handler._send_json(result)
                 return True
             if path == "/nova/v1/runtime/verification/playwright":
                 self._authorize(handler, "tools.list")
@@ -773,7 +782,10 @@ class NovaGatewayHttpController:
             if not isinstance(raw_history, list):
                 raise InvalidRequestError("conversation_history must be an array.", param="conversation_history")
             conversation_history = []
-            for index, item in enumerate(raw_history[-8:]):
+            # Keep the same bounded window as the desktop client and Nova's
+            # conversation router. Eight messages was too short for a normal
+            # chat to resolve references such as “before the walk”.
+            for index, item in enumerate(raw_history[-20:]):
                 if not isinstance(item, dict):
                     raise InvalidRequestError(
                         "Each conversation_history item must be an object.",

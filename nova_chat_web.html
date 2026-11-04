@@ -191,6 +191,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .gpu-steps{display:grid;gap:5px;font-size:12px;color:#cfd0ee;line-height:1.35}
 .gpu-steps span{border:1px solid #2e2e58;background:#101020;border-radius:9px;padding:7px 8px}
 .display-dashboard{display:grid;grid-template-columns:minmax(260px,1.1fr) minmax(260px,.9fr);gap:14px}
+.simple-display-surface{border:1px solid #334b55;background:linear-gradient(135deg,#0b1115,#101a20);border-radius:16px;padding:12px;margin-bottom:14px;display:grid;gap:9px}
+.simple-display-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.simple-display-head strong{color:#e8f5f3;font-size:13px}.simple-display-head span{color:#8fa6ad;font-size:11px}
+.simple-display-canvas{width:100%;height:230px;display:block;border:1px solid #23373d;border-radius:12px;background:#020405;image-rendering:pixelated;box-shadow:inset 0 0 26px #000,0 0 20px #48f7ff12}
+.simple-display-controls{display:flex;flex-wrap:wrap;gap:6px}.simple-display-controls button{border:1px solid #38545b;background:#142329;color:#cde9e5;border-radius:999px;padding:6px 10px;font-size:11px;cursor:pointer}.simple-display-controls button:hover{border-color:#62d3d0;background:#1b363c;color:#fff}
 .display-stage{position:relative;overflow:hidden;border:1px solid #37376a;background:radial-gradient(circle at 50% 12%,#2d2360 0,#16162b 42%,#0e0e19 100%);border-radius:18px;padding:18px;min-height:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .display-stage:before,.display-stage:after{content:"";position:absolute;border-radius:50%;border:1px solid #7777ff22;inset:28px;animation:displayPulse 4s infinite}
 .display-stage:after{inset:62px;animation-delay:1.1s}
@@ -415,12 +419,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .picture-review-actions button:disabled{opacity:.5;cursor:not-allowed}
 .picture-upload-progress{display:none;border:1px solid #3f5375;background:#10182b;color:#cfe5ff;border-radius:10px;padding:8px 10px;font-size:11px;line-height:1.35}
 .picture-upload-progress.on{display:block}
-.model-control-bar{display:flex;align-items:center;gap:7px;margin:7px 0 2px;min-width:0}
+.model-control-bar{display:flex;align-items:center;gap:7px;margin:7px 0 2px;min-width:0;flex-wrap:wrap}
 .model-control-label{font-size:10px;color:#9ea0c8;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
 .model-mode-select{min-width:0;max-width:180px;border:1px solid #4b4482;background:#1b1831;color:#f4f2ff;border-radius:10px;padding:7px 9px;font-size:11px;font-weight:700}
-.model-mode-status{min-width:0;flex:1;color:#bfc1ff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.model-mode-status{min-width:120px;flex:1 1 150px;color:#bfc1ff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .model-quick-btn{flex:0 0 auto;border:1px solid #494477;background:#24213f;color:#eeedff;border-radius:10px;padding:7px 9px;font-size:10px;cursor:pointer;white-space:nowrap}
 .model-quick-btn:disabled,.model-mode-select:disabled{opacity:.55;cursor:not-allowed}
+.experience-toggle{display:inline-flex;align-items:center;gap:5px;border:1px solid #4b4482;background:#1b1831;color:#dfe1ff;border-radius:10px;padding:6px 8px;font-size:10px;font-weight:700;white-space:nowrap;cursor:pointer}
+.experience-toggle input{accent-color:#6f69ff;margin:0}
+.personality-select{min-width:88px;border:1px solid #4b4482;background:#1b1831;color:#f4f2ff;border-radius:10px;padding:7px 8px;font-size:10px;font-weight:700}
+.experience-mode-status{min-width:100px;flex:1 1 110px;color:#9fe8d0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .legacy-model-toggle{display:none!important}
 .bottom-scroll-shell{position:relative;min-width:0}
 .activation-scroll-shell{margin-top:6px}
@@ -573,6 +581,53 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 #btnMic,#btnCam{display:none}
 .voice-mode-label{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;border:1px solid #4b3f86;background:#16132a;color:#d7ceff;font-size:10px;white-space:nowrap}
 @media(max-width:760px){.display-dashboard{grid-template-columns:1fr}.display-stage{min-height:520px}.walk-space{min-height:360px}.display-avatar{width:68px;height:68px;padding:16px 12px 13px}.display-eye{width:10px;height:10px}.display-mouth{width:28px}.bot-3d-actor{width:235px}.control-cluster{grid-template-columns:1fr}.bot-chat-row{flex-direction:column}}
+
+/* Mature studio skin: preserve existing layout, IDs, and handlers. */
+:root{--nova-bg:#0b0e12;--nova-surface:#12171d;--nova-surface-2:#171e26;--nova-border:#2b3742;--nova-border-strong:#3c5363;--nova-text:#e6edf2;--nova-muted:#8e9ba6;--nova-accent:#62d3d0;--nova-accent-strong:#35aaa9;--nova-success:#7bd6a5;--nova-danger:#e58b9c}
+html,body{background:var(--nova-bg);color:var(--nova-text)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;background:radial-gradient(circle at 50% -20%,#17222b 0,#0b0e12 48%);letter-spacing:.005em}
+.app{max-width:1280px;background:rgba(11,14,18,.96)}
+.header{background:rgba(15,20,25,.97);padding:14px 22px;border-bottom:1px solid var(--nova-border);gap:14px}
+.header h1{font-size:17px;letter-spacing:.01em;background:none;-webkit-text-fill-color:initial;color:var(--nova-text)}
+.header h1:first-letter{color:var(--nova-accent)}
+.header .sub{color:var(--nova-muted)}
+.status.online{background:#122b24;color:var(--nova-success);border-color:#28634e}.status.offline{background:#2b1820;color:#efa1af;border-color:#663443}
+.face{background:#11171d;border-color:var(--nova-border);border-radius:8px;margin:7px auto;padding:6px 12px}.face .eye{background:var(--nova-accent)}.face .mouth{background:var(--nova-accent)}
+.tabs{gap:4px;padding:8px 14px;background:#0f1419;border-top-color:#151d24;border-bottom-color:var(--nova-border);max-height:108px}
+.nav-tab{border:1px solid var(--nova-border);background:#151b21;color:#aebbc4;border-radius:7px;padding:7px 10px;font-weight:600}
+.nav-tab:hover{border-color:var(--nova-accent-strong);color:var(--nova-text);background:#1a252c}.nav-tab.active{background:#173235;color:#dff9f7;border-color:var(--nova-accent-strong);box-shadow:0 0 0 1px #62d3d022 inset}
+.nav-more-toggle{border:1px solid var(--nova-border);background:#10171c;color:#c8d4da;border-radius:7px;padding:7px 10px;font-weight:700;cursor:pointer}
+.nav-more-toggle:hover,.nav-more-toggle[aria-expanded="true"]{border-color:var(--nova-accent-strong);color:var(--nova-text);background:#173235}
+.secondary-nav-tabs{display:flex;flex-wrap:wrap;gap:6px;width:100%;padding:2px 0 0;border-top:1px solid #243039;margin-top:1px}
+.secondary-nav-tabs[hidden]{display:none}
+.chat-quick-starts{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 10px;padding:10px 12px;border:1px solid #2e444b;border-radius:12px;background:linear-gradient(110deg,#101b20,#141a25)}
+.chat-quick-starts-copy{display:grid;gap:2px;min-width:150px}.chat-quick-starts-copy strong{font-size:12px;color:#e6f5f3}.chat-quick-starts-copy span{font-size:11px;color:#95aab0}
+.chat-quick-start-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.chat-quick-start-buttons button{border:1px solid #38545b;background:#182a30;color:#cde9e5;border-radius:999px;padding:6px 9px;font-size:11px;cursor:pointer}.chat-quick-start-buttons button:hover{border-color:#62d3d0;background:#1d393d;color:#fff}
+@media(max-width:700px){.chat-quick-starts{align-items:flex-start;flex-direction:column}.chat-quick-start-buttons{justify-content:flex-start}.chat-quick-start-buttons button{flex:1 1 auto}}
+.workspace-panel{padding:18px 22px}.panel-title{color:var(--nova-text)}.panel-note{color:var(--nova-muted)}
+.surface-card,.project-card,.research-card,.gpu-hub-card,.training-center,.training-studio,.adapter-installer,.dream-studio-card,.foundation-card{border-color:var(--nova-border);background:linear-gradient(145deg,var(--nova-surface),var(--nova-surface-2));border-radius:10px;box-shadow:0 8px 24px #0005}
+.surface-card h3,.project-card h3,.research-card h3,.gpu-hub-card h3,.dream-studio-card h3{color:var(--nova-text)}
+.surface-card p,.panel-note,.research-card-head span{color:var(--nova-muted)}
+.panel-action{border-color:var(--nova-border-strong);background:#1a252d;color:#d9e3e8;border-radius:7px}.panel-action:hover{background:#22343d;color:#fff;border-color:var(--nova-accent-strong)}
+.panel-action.primary,.dream-studio-actions button.primary{background:#185052;border-color:var(--nova-accent-strong);color:#eaffff}
+.chat-toolbar{background:#10161c;border-bottom-color:var(--nova-border)}.chat-toolbar-title{color:var(--nova-text)}.chat-toolbar-note{color:var(--nova-muted)}
+.chat{padding:18px 22px;gap:10px}.msg{border-radius:9px;padding:10px 13px}.msg.user{background:#1b3037;color:#e3eff2;border-bottom-right-radius:3px}.msg.nova{background:#151d24;color:#dbe4e9;border-color:#2d414d;border-bottom-left-radius:3px}
+.input-bar{background:#10161c;border-top-color:var(--nova-border);box-shadow:0 -8px 24px #0004}.input-row input{background:#151d24;border-color:var(--nova-border);color:var(--nova-text)}.input-row input:focus{border-color:var(--nova-accent)}.input-row button{background:#185052}.input-row button:hover{background:#216b6b}
+.dream-studio-card{background:linear-gradient(145deg,#121a20,#182329)}.dream-studio-state,.dream-studio-job{border-color:var(--nova-border);background:#0f151a}.dream-studio-form textarea,.dream-studio-form input,.dream-studio-form select{background:#0d1216;border-color:var(--nova-border);color:var(--nova-text)}.dream-studio-form textarea:focus,.dream-studio-form input:focus,.dream-studio-form select:focus{border-color:var(--nova-accent);box-shadow:0 0 0 2px #62d3d01f}.dream-studio-message{background:#0e1418;border-color:var(--nova-border)}.dream-studio-preview{background:radial-gradient(circle at 50% 10%,#20343a,#0b0e12 64%);border-color:#35515a}
+.bottom-dock-primary{border-top:1px solid var(--nova-border);background:#0f151a;padding:10px 18px 8px;box-shadow:0 -10px 26px #0004}
+.bottom-dock-primary-actions{display:flex;align-items:center;gap:8px;max-width:1200px;margin:0 auto}
+.bottom-dock-primary-actions button{flex:0 0 auto;min-height:38px;border:1px solid var(--nova-border-strong);border-radius:8px;padding:8px 13px;color:var(--nova-text);font-size:12px;font-weight:650;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.bottom-dock-primary-actions button:hover{transform:translateY(-1px);border-color:var(--nova-accent-strong)}
+.bottom-dock-primary-actions .mic-btn{background:#3a3022}.bottom-dock-primary-actions .mic-btn.on{background:#164a3c;border-color:#3e9b7c}
+.bottom-dock-primary-actions .camera-btn{background:#203b4a}.bottom-dock-primary-actions .camera-btn.on{background:#185776;border-color:#4ba5c4}
+.bottom-dock-primary-actions .voice-btn{background:#283348}.bottom-dock-primary-actions .voice-btn.on{background:#244a50;border-color:var(--nova-accent-strong)}
+.bottom-dock-primary-actions .talk-btn{background:#185052;border-color:var(--nova-accent-strong);min-width:86px}.bottom-dock-primary-actions .talk-btn.listening{background:#2b786c;box-shadow:0 0 0 2px #62d3d033}
+.bottom-dock-primary-actions #mainMoreControlsBtn{margin-left:auto;background:#1a252d}
+.advanced-controls-drawer{border-top:1px solid var(--nova-border);background:#0d1318;padding:9px 18px 10px;max-height:34dvh;overflow:auto;box-shadow:0 -12px 28px #0003}
+.advanced-controls-head{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1200px;margin:0 auto 5px;color:var(--nova-text);font-size:11px}.advanced-controls-head span{color:var(--nova-muted);font-size:10px;text-align:right}
+.advanced-controls-drawer .activation-scroll-shell,.advanced-controls-drawer .permissions-scroll-shell{margin-top:5px}.advanced-controls-drawer .activation-dock{padding-top:5px}.advanced-controls-drawer .permissions{padding-bottom:2px}
+.advanced-controls-drawer .bottom-scroll-arrow{background:#18242b;border-color:var(--nova-border-strong);border-radius:7px}
+.advanced-controls-drawer[hidden]{display:none}
 @media(max-width:600px){
   .header{padding:10px 12px}
   .face{margin:5px auto;padding:6px 12px}
@@ -582,6 +637,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .perm-btn{font-size:10px;padding:4px 9px}
   .workspace-panel{padding:12px}
   .nav-tab{font-size:11px;padding:7px 10px}
+  .bottom-dock-primary{padding:8px 10px 7px}.bottom-dock-primary-actions{gap:5px}.bottom-dock-primary-actions button{min-height:36px;padding:8px 9px;font-size:11px}.bottom-dock-primary-actions .talk-btn{min-width:74px}.bottom-dock-primary-actions #mainMoreControlsBtn{margin-left:0}.advanced-controls-drawer{padding:8px 10px;max-height:42dvh}.advanced-controls-head{align-items:flex-start;flex-direction:column;gap:2px}.advanced-controls-head span{text-align:left}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
@@ -605,19 +661,23 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <button class="nav-tab" data-panel="home-panel">Home</button>
 <button class="nav-tab" data-panel="display-panel">Display</button>
 <button class="nav-tab" data-panel="dream-studio-panel">Dream Studio</button>
-<button class="nav-tab" data-panel="agent-library-panel">Agent Library</button>
 <button class="nav-tab" data-panel="app-builder-panel">App Builder</button>
 <button class="nav-tab" data-panel="gpu-hub-panel">GPU Hub</button>
+<button class="nav-tab" data-panel="saved-projects-panel">Projects</button>
+<button class="nav-tab" data-panel="settings-panel">Settings</button>
+<button class="nav-more-toggle" id="navMoreToggle" type="button" aria-expanded="false" aria-controls="secondaryNavTabs" onclick="toggleNavigationDrawer()">More <span aria-hidden="true">⌄</span></button>
+<div class="secondary-nav-tabs" id="secondaryNavTabs" hidden aria-label="More Nova panels">
+<button class="nav-tab" data-panel="agent-library-panel">Agent Library</button>
 <button class="nav-tab" data-panel="memory-panel">Memory</button>
 <button class="nav-tab" data-panel="tools-panel">Tools</button>
 <button class="nav-tab" data-panel="research-panel">Research</button>
 <button class="nav-tab" data-panel="test-check-panel">Test/Check</button>
-<button class="nav-tab" data-panel="saved-projects-panel">Projects</button>
 <button class="nav-tab" data-panel="preview-panel">Preview</button>
 <button class="nav-tab" data-panel="debug-logs-panel">Logs</button>
 <button class="nav-tab" data-panel="scheduler-panel">Scheduler</button>
 <button class="nav-tab" data-panel="file-manager-panel">Files</button>
-<button class="nav-tab" data-panel="settings-panel">Settings</button>
+<button class="nav-tab" data-panel="workspace-panel">Computer</button>
+</div>
 </nav>
 <main class="workspace">
 <section class="workspace-panel active" id="chat-panel">
@@ -628,6 +688,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <button class="panel-action" id="chatSaveBtn" type="button" onclick="saveCurrentConversation()">Save chat</button>
 <button class="panel-action" type="button" onclick="startNewConversation()">New</button>
 <button class="panel-action" type="button" onclick="exportCurrentConversation()">Export</button>
+</div>
+</div>
+<div class="chat-quick-starts" id="chatQuickStarts" aria-label="Quick start prompts">
+<div class="chat-quick-starts-copy"><strong>Jump in</strong><span>Try a starter prompt or type anything below.</span></div>
+<div class="chat-quick-start-buttons">
+<button type="button" onclick="useChatQuickPrompt('What can you do?')">What can you do?</button>
+<button type="button" onclick="useChatQuickPrompt('Build me a simple app')">Build an app</button>
+<button type="button" onclick="useChatQuickPrompt('Create an image of a futuristic city')">Create an image</button>
+<button type="button" onclick="useChatQuickPrompt('Check my system status')">Check my system</button>
 </div>
 </div>
 <aside class="chat-history-drawer" id="chatHistoryDrawer" aria-label="Saved conversations" hidden>
@@ -782,7 +851,8 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <button class="panel-action" type="button" onclick="improveDreamPrompt()">Improve Prompt</button>
 <button class="panel-action" id="dreamStudioCancelBtn" type="button" onclick="cancelDreamStudioJob()" disabled>Cancel Job</button>
 <button class="panel-action" id="dreamStudioResumeBtn" type="button" onclick="resumeDreamStudioJob()" disabled>Resume Job</button>
-<button class="panel-action" id="dreamStudioReconnectImageBtn" type="button" onclick="reconnectDreamStudioImageWorkflow()">Reconnect Image Workflow</button>
+<button class="panel-action" id="dreamStudioReconnectImageBtn" type="button" onclick="reconnectDreamStudioImageWorkflow()">Start ComfyUI / Free RAM</button>
+<button class="panel-action" id="dreamStudioStopImageBtn" type="button" onclick="stopDreamStudioAndFreeRam()">Stop ComfyUI / Free RAM</button>
 <button class="panel-action" type="button" onclick="loadDreamStudio()">Refresh Studio</button>
 </div>
 </div>
@@ -826,6 +896,42 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <section class="workspace-panel" id="display-panel">
 <h2 class="panel-title">Nova Display / Body</h2>
 <p class="panel-note">This is Nova's big display: face, brain routes, memory counts, permission state, and operator shortcuts in one place.</p>
+<section class="simple-display-surface" aria-labelledby="simpleDisplayHeading">
+<div class="simple-display-head"><strong id="simpleDisplayHeading">Programmable front screen</strong><span id="simpleDisplayState">Face · ready</span></div>
+<canvas class="simple-display-canvas" id="novaSimpleDisplayCanvas" width="960" height="420" role="img" aria-label="Nova pixel face display"></canvas>
+<div class="simple-display-controls" aria-label="Front screen examples">
+<button type="button" onclick="window.NovaDisplayStage?.setFace('neutral')">Face</button>
+<button type="button" onclick="window.NovaDisplayStage?.setFace('asking')">Ask / wait</button>
+<button type="button" onclick="window.NovaDisplayStage?.setFace('happy')">Happy</button>
+<button type="button" onclick="window.NovaDisplayStage?.showText('NOVA DISPLAY','I can create here')">Show text</button>
+<button type="button" onclick="window.NovaDisplayStage?.clear()">Clear</button>
+</div>
+</section>
+<section class="surface-card" id="robotModePanel" aria-labelledby="robotModeHeading" style="margin-top:12px">
+<div class="simple-display-head"><strong id="robotModeHeading">Robot Mode</strong><span id="robotConnectionState">Offline</span></div>
+<p class="panel-note">The robot bridge carries approved face and movement commands. The local controller remains responsible for motor limits and emergency stopping.</p>
+<div class="surface-grid">
+<div class="surface-card"><strong>Connection</strong><span id="robotHeartbeatState">Heartbeat: never</span></div>
+<div class="surface-card"><strong>Battery</strong><span id="robotBatteryState">Unknown</span></div>
+</div>
+<div class="simple-display-controls" aria-label="Robot controls">
+<button class="panel-action" type="button" onclick="window.NovaRobotBridge?.connect()">Connect bridge</button>
+<button class="panel-action" type="button" onclick="window.NovaRobotBridge?.sendCommand('look_left')">Look left</button>
+<button class="panel-action" type="button" onclick="window.NovaRobotBridge?.sendCommand('look_right')">Look right</button>
+<button class="panel-action" type="button" onclick="window.NovaRobotBridge?.sendCommand('stop')">Stop</button>
+<button class="panel-action" type="button" onclick="window.NovaRobotBridge?.emergencyStop()">Emergency stop</button>
+</div>
+<div id="robotBridgeMessage" class="panel-note" role="status">Robot bridge is not connected.</div>
+</section>
+<section class="surface-card" id="intelligencePromotionPanel" aria-labelledby="intelligencePromotionHeading" style="margin-top:12px">
+<div class="simple-display-head"><strong id="intelligencePromotionHeading">Intelligence upgrade check</strong><span id="intelligenceDecisionState">Not evaluated</span></div>
+<p class="panel-note">Read-only evidence from the latest baseline-versus-candidate comparison. Nova keeps the current baseline unless every safety and quality gate passes.</p>
+<div class="surface-grid">
+<div class="surface-card"><strong>Baseline quality</strong><span id="intelligenceBaselineScore">—</span></div>
+<div class="surface-card"><strong>Candidate quality</strong><span id="intelligenceCandidateScore">—</span></div>
+</div>
+<div class="panel-note" id="intelligenceDecisionReason">No comparison report has been evaluated.</div>
+</section>
 <div class="display-dashboard">
 <div class="display-stage">
 <div class="walk-space" id="novaWalkSpace" aria-label="Nova first-bot virtual driving space">
@@ -899,6 +1005,7 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <button class="panel-action" data-drive="turn-left">Turn L</button>
 <button class="panel-action" data-drive="turn-right">Turn R</button>
 <button class="panel-action" data-drive="stop" data-motion="stop">Stop</button>
+<button class="panel-action" id="autonomyToggle" type="button">Start practice</button>
 </div>
 </div>
 <div class="control-group">
@@ -1234,6 +1341,18 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 </div>
 </div>
 </section>
+<section class="workspace-panel" id="workspace-panel">
+<h2 class="panel-title">Nova Computer Workspace</h2>
+<p class="panel-note">Nova can work inside this dedicated workspace. Reads can run directly; creating, moving, renaming, or editing files always shows the exact path and waits for approval.</p>
+<div class="surface-card">
+  <div class="project-status" id="workspaceStatus">Checking workspace...</div>
+  <div class="memory-list" id="workspaceFolders" aria-live="polite"></div>
+</div>
+<div class="surface-card">
+  <h3>Workspace boundary</h3>
+  <p class="panel-note">System folders, secrets, and paths outside this root stay blocked. A future root grant can add one more folder or drive after you approve it.</p>
+</div>
+</section>
 <section class="workspace-panel" id="settings-panel">
 <h2 class="panel-title">Nova Foundation</h2>
 <p class="panel-note">Secure device access, durable job history, and controls designed to survive app restarts.</p>
@@ -1520,7 +1639,7 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <span class="model-control-label">Model</span>
 <select class="model-mode-select" id="mainModelModeSelect" aria-label="Choose Nova model mode" onchange="selectModelMode(this.value)">
 <option value="nova">Nova</option>
-<option value="strong">Nova Strong · Qwen 3 4B · GPU</option><option value="dolphin_deep">Dolphin Deep · GPU · tools stay on</option>
+<option value="strong">Nova Strong · local GPU model</option><option value="dolphin_deep">Dolphin Deep · GPU · tools stay on</option>
 <option value="raw_memory">Raw + Memory · Qwen</option>
 <option value="qwen">Raw Qwen · no tools</option>
 <option value="dolphin">Raw Dolphin · no tools</option>
@@ -1528,12 +1647,30 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <span class="model-mode-status" id="mainModelModeStatus">Nova routing · ready</span>
 <button class="model-quick-btn" id="mainModelCompareBtn" type="button" onclick="runRawAdapterCompare()">Compare</button>
 <button class="model-quick-btn model-memory-control" id="mainFreeModelMemoryBtn" type="button" onclick="unloadModelMemory('idle')">Free RAM</button>
+<label class="experience-toggle" title="Use a local dry run without model, tool, memory, or external actions">
+<input id="simulationModeToggle" type="checkbox" onchange="setSimulationMode(this.checked)">
+<span>Simulation</span>
+</label>
+<select class="personality-select" id="personalityModeSelect" aria-label="Choose Nova personality" onchange="setPersonalityMode(this.value)">
+<option value="warm">Warm</option>
+<option value="funny">Funny</option>
+</select>
+<span class="experience-mode-status" id="experienceModeStatus">Warm personality</span>
 </div>
+<div class="bottom-dock-primary" aria-label="Primary conversation controls">
+<div class="bottom-dock-primary-actions">
+<button id="mainMicBtn" class="mic-btn" title="Tap Mic OFF so it changes to Mic ON first" onclick="toggleMicPermission()">Mic OFF</button>
+<button id="mainCameraBtn" class="camera-btn" onclick="toggleCameraPermission()">Camera OFF</button>
+<button id="voiceBtn" class="voice-btn" onclick="toggleSpeakerOutput()">Voice OFF</button>
+<button id="talkBtn" class="talk-btn" onclick="toggleListening()">Talk</button>
+<button id="mainMoreControlsBtn" class="adapter-only-btn" type="button" aria-expanded="false" aria-controls="advancedControlsDrawer" onclick="toggleAdvancedActivationControls()">More controls</button>
+</div>
+</div>
+<div id="advancedControlsDrawer" class="advanced-controls-drawer" hidden aria-label="Advanced controls">
+<div class="advanced-controls-head"><strong>Advanced controls</strong><span>Camera, sensors, memory, engines, and safety tools</span></div>
 <div class="bottom-scroll-shell activation-scroll-shell" data-scroll-shell="activationDock">
 <button class="bottom-scroll-arrow left" type="button" aria-label="Scroll activation controls left" aria-controls="activationDock" onclick="scrollBottomRow('activationDock',-1)">‹</button>
 <div class="activation-dock" id="activationDock" aria-label="Activation buttons">
-<button id="mainMicBtn" class="mic-btn" onclick="toggleMicPermission()">Mic OFF</button>
-<button id="mainCameraBtn" class="camera-btn" onclick="toggleCameraPermission()">Camera OFF</button>
 <button id="mainFlipCameraBtn" class="flip-camera-btn" onclick="flipCamera()">Front Cam</button>
 <button id="mainLookBtn" class="look-btn" onclick="captureCameraFrame()">Look</button>
 <button id="mainSensorsBtn" class="sensors-btn" onclick="toggleSensorOverlay()">Full Sensors</button>
@@ -1546,9 +1683,6 @@ Media permission is separate from chat. On Nova’s desktop, open Settings and e
 <button id="mainAdapterOnlyBtn" class="adapter-only-btn legacy-model-toggle" onclick="toggleAdapterOnlyMode()">Qwen Adapter OFF</button>
 <button id="mainDolphinAdapterBtn" class="adapter-only-btn legacy-model-toggle" onclick="toggleDolphinAdapterOnlyMode()">Dolphin Adapter OFF</button>
 <button id="mainAdapterCompareBtn" class="adapter-only-btn legacy-model-toggle" onclick="runRawAdapterCompare()">Raw Compare</button>
-<button id="voiceBtn" class="voice-btn" onclick="toggleSpeakerOutput()">Voice OFF</button>
-<button id="talkBtn" class="talk-btn" onclick="toggleListening()">Talk</button>
-<button id="mainMoreControlsBtn" class="adapter-only-btn" onclick="toggleAdvancedActivationControls()">More</button>
 </div>
 <button class="bottom-scroll-arrow right" type="button" aria-label="Scroll activation controls right" aria-controls="activationDock" onclick="scrollBottomRow('activationDock',1)">›</button>
 </div>
@@ -1616,6 +1750,130 @@ const panels=[...document.querySelectorAll('.workspace-panel')];
 const displayAvatar=document.getElementById('displayAvatar'),displayMoodState=document.getElementById('displayMoodState'),displayRouteTrace=document.getElementById('displayRouteTrace'),displayRouteModel=document.getElementById('displayRouteModel');
 const displaySessionState=document.getElementById('displaySessionState'),displayPeopleCount=document.getElementById('displayPeopleCount'),displayLessonsCount=document.getElementById('displayLessonsCount');
 const novaFullBody=document.getElementById('novaFullBody'),walkStatus=document.getElementById('walkStatus'),virtualSelfState=document.getElementById('virtualSelfState');
+const novaSimpleDisplayCanvas=document.getElementById('novaSimpleDisplayCanvas'),novaSimpleDisplayState=document.getElementById('simpleDisplayState');
+
+const NovaDisplayStage=(()=>{
+  const canvas=novaSimpleDisplayCanvas, ctx=canvas?.getContext('2d');
+  const state={mode:'face',emotion:'neutral',title:'',lines:[],imageUrl:''};
+  if(!ctx) return {setFace(){},showText(){},showImage(){},showScene(){},clear(){},getState:()=>({...state})};
+  ctx.imageSmoothingEnabled=false;
+  const colors={ink:'#020405',grid:'#102329',cream:'#d9d0b8',shadow:'#8d8876',dark:'#11171a',accent:'#76e6d1',pink:'#ef9eaa'};
+  function pixelText(value,x,y,size=18,color=colors.accent){ctx.font=`700 ${size}px Consolas,monospace`;ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(String(value||'').slice(0,30),x,y);}
+  function roundedFace(x,y,w,h){ctx.fillStyle=colors.cream;ctx.beginPath();ctx.roundRect(x,y,w,h,24);ctx.fill();ctx.fillStyle=colors.shadow;ctx.fillRect(x+12,y+h-18,w-24,8);}
+  function drawFace(){
+    const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2+10, asking=state.emotion==='asking', happy=state.emotion==='happy', thinking=state.emotion==='thinking', listening=state.emotion==='listening';
+    ctx.fillStyle=colors.ink;ctx.fillRect(0,0,w,h);
+    for(let x=24;x<w;x+=24){ctx.fillStyle=colors.grid;ctx.fillRect(x,18,2,h-36)}
+    for(let y=18;y<h;y+=24){ctx.fillStyle=colors.grid;ctx.fillRect(18,y,w-36,2)}
+    roundedFace(cx-170,cy-130,340,255);
+    ctx.fillStyle=colors.dark;
+    const browY=cy-74-(asking?18:0), eyeY=cy-36-(asking?7:0), eyeHeight=asking?34:(thinking?18:46);
+    ctx.save();ctx.lineWidth=12;ctx.lineCap='square';ctx.strokeStyle=colors.dark;
+    ctx.beginPath();ctx.moveTo(cx-112,browY+(asking?5:0));ctx.lineTo(cx-42,browY-(asking?7:0));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+42,browY-(asking?7:0));ctx.lineTo(cx+112,browY+(asking?5:0));ctx.stroke();ctx.restore();
+    ctx.fillRect(cx-98,eyeY,46,eyeHeight);ctx.fillRect(cx+52,eyeY,46,eyeHeight);
+    ctx.fillStyle=colors.cream;ctx.fillRect(cx-84,eyeY+8,16,12);ctx.fillRect(cx+66,eyeY+8,16,12);
+    ctx.fillStyle=colors.dark;
+    if(happy){ctx.fillRect(cx-78,cy+52,156,12);ctx.fillRect(cx-58,cy+64,116,12)}
+    else if(asking){ctx.fillRect(cx-48,cy+48,96,10);ctx.fillRect(cx-10,cy+58,20,10)}
+    else if(thinking){ctx.fillRect(cx-12,cy+44,24,24)}
+    else {ctx.fillRect(cx-52,cy+52,104,10)}
+    ctx.fillStyle=colors.pink;if(happy){ctx.fillRect(cx-130,cy+35,22,12);ctx.fillRect(cx+108,cy+35,22,12)}
+    pixelText(state.mode==='face'?'NOVA':state.title,cx,34,18,colors.accent);
+    if(state.lines.length) state.lines.slice(0,2).forEach((line,index)=>pixelText(line,cx,h-34+(index*20),14,colors.accent));
+  }
+  function drawImage(){
+    ctx.fillStyle=colors.ink;ctx.fillRect(0,0,canvas.width,canvas.height);
+    const image=new Image();
+    image.onload=()=>{
+      const scale=Math.min((canvas.width-80)/image.width,(canvas.height-100)/image.height,1);
+      const width=Math.max(1,Math.round(image.width*scale)),height=Math.max(1,Math.round(image.height*scale));
+      ctx.drawImage(image,(canvas.width-width)/2,(canvas.height-height)/2,width,height);
+      pixelText(state.title,canvas.width/2,30,18,colors.accent);
+      state.lines.slice(0,2).forEach((line,index)=>pixelText(line,canvas.width/2,canvas.height-30+(index*18),13,colors.cream));
+    };
+    image.onerror=()=>showText('IMAGE UNAVAILABLE','I could not load that image');
+    image.src=state.imageUrl;
+  }
+  function render(){
+    if(state.mode==='face') drawFace();
+    else if(state.mode==='image') drawImage();
+    else {ctx.fillStyle=colors.ink;ctx.fillRect(0,0,canvas.width,canvas.height);pixelText(state.title,canvas.width/2,canvas.height/2-20,24,colors.accent);state.lines.slice(0,5).forEach((line,index)=>pixelText(line,canvas.width/2,canvas.height/2+20+(index*24),16,colors.cream));}
+    if(novaSimpleDisplayState) novaSimpleDisplayState.textContent=`${state.mode==='face'?'Face':state.mode} · ${state.emotion}`;
+  }
+  function setFace(emotion='neutral'){state.mode='face';state.emotion=['neutral','asking','happy','thinking','listening'].includes(emotion)?emotion:'neutral';state.title='';state.lines=[];state.imageUrl='';render();}
+  function showText(title, ...lines){state.mode='text';state.emotion='neutral';state.title=String(title||'NOVA').slice(0,30);state.lines=lines.flat().map(item=>String(item||'').slice(0,30)).filter(Boolean);state.imageUrl='';render();}
+  function showImage(url, caption=''){const source=String(url||'').trim();if(!/^https?:\/\//i.test(source))return showText('IMAGE UNAVAILABLE','Nova needs a safe image URL');state.mode='image';state.emotion='neutral';state.title='NOVA IMAGE';state.lines=caption?[String(caption).slice(0,30)]:[];state.imageUrl=source;render();}
+  function showScene(scene={}){if(scene.mode==='face'||scene.type==='face')return setFace(scene.emotion||'neutral');if(scene.type==='image'||scene.image||scene.image_url)return showImage(scene.image_url||scene.image,scene.caption||scene.title||'');if(scene.type==='text'||scene.title)return showText(scene.title,scene.lines||scene.text||[]);return showText('NOVA DISPLAY','Scene ready');}
+  function clear(){state.mode='clear';state.emotion='neutral';state.title='';state.lines=[];state.imageUrl='';ctx.fillStyle=colors.ink;ctx.fillRect(0,0,canvas.width,canvas.height);if(novaSimpleDisplayState)novaSimpleDisplayState.textContent='Clear · ready';}
+  const api={setFace,showText,showImage,showScene,clear,getState:()=>({...state})};
+  render();
+  return api;
+})();
+window.NovaDisplayStage=NovaDisplayStage;
+function NovaRobotBridge(){
+  const allowedCommands=new Set(['look_left','look_right','stop','face_neutral','face_asking','face_happy']);
+  const state={connected:false,heartbeatAt:null,battery:null,lastCommand:null};
+  const connectionState=document.getElementById('robotConnectionState'),heartbeatState=document.getElementById('robotHeartbeatState'),batteryState=document.getElementById('robotBatteryState'),message=document.getElementById('robotBridgeMessage');
+  function render(){
+    if(connectionState) connectionState.textContent=state.connected?'Connected':'Offline';
+    if(heartbeatState) heartbeatState.textContent=state.heartbeatAt?`Heartbeat: ${new Date(state.heartbeatAt).toLocaleTimeString()}`:'Heartbeat: never';
+    if(batteryState) batteryState.textContent=state.battery == null ? 'Unknown' : `${Math.round(state.battery)}%`;
+  }
+  function transport(){return window.NovaRobotTransport && typeof window.NovaRobotTransport.send==='function'?window.NovaRobotTransport:null;}
+  async function connect(){
+    const bridge=transport();
+    if(bridge){state.connected=true;state.heartbeatAt=Date.now();if(message)message.textContent='Robot bridge connected.';render();return true;}
+    try{
+      const response=await fetch((typeof SERVER_BASE==='string'?SERVER_BASE:'')+'/api/robot/status',{headers:typeof authHeaders==='function'?authHeaders():{}});
+      const data=await response.json();
+      state.connected=!!data.ok;state.heartbeatAt=data.heartbeat_at?data.heartbeat_at*1000:null;state.battery=data.battery;
+      if(message)message.textContent=state.connected?'Robot bridge connected.':'Robot bridge is offline.';
+    }catch(error){state.connected=false;if(message)message.textContent='Robot bridge is offline.';}
+    render();
+    return state.connected;
+  }
+  async function sendCommand(command,payload={}){
+    if(!allowedCommands.has(command)){if(message)message.textContent='robot_command_rejected: command is not allowlisted.';return false;}
+    if(command==='face_neutral') NovaDisplayStage?.setFace('neutral');
+    if(command==='face_asking') NovaDisplayStage?.setFace('asking');
+    if(command==='face_happy') NovaDisplayStage?.setFace('happy');
+    const bridge=transport();
+    try{
+      const result=bridge?await bridge.send({type:'robot_command',command,payload}):await fetch((typeof SERVER_BASE==='string'?SERVER_BASE:'')+'/api/robot/command',{method:'POST',headers:typeof authHeaders==='function'?authHeaders({'Content-Type':'application/json'}):{'Content-Type':'application/json'},body:JSON.stringify({command,payload})}).then(response=>response.json());
+      if(result?.ok===false){if(message)message.textContent=result.error||'Robot command was rejected.';return false;}
+      state.connected=true;state.heartbeatAt=Date.now();state.lastCommand=command;if(message)message.textContent=`Sent ${command}.`;render();return true;
+    }catch(error){state.connected=false;if(message)message.textContent='Robot bridge error. Movement is stopped.';render();return false;}
+  }
+  async function emergencyStop(){
+    const bridge=transport();
+    try{if(bridge)await bridge.send({type:'robot_emergency_stop',command:'stop'});else await fetch((typeof SERVER_BASE==='string'?SERVER_BASE:'')+'/api/robot/command',{method:'POST',headers:typeof authHeaders==='function'?authHeaders({'Content-Type':'application/json'}):{'Content-Type':'application/json'},body:JSON.stringify({command:'emergency_stop'})});}catch(error){}
+    state.lastCommand='stop';state.connected=!!bridge;if(message)message.textContent='Emergency stop sent. Robot movement is locked until the local controller resets it.';render();return true;
+  }
+  function updateTelemetry(telemetry={}){if(Number.isFinite(Number(telemetry.battery)))state.battery=Math.max(0,Math.min(100,Number(telemetry.battery)));state.heartbeatAt=Date.now();state.connected=true;render();}
+  const api={connect,sendCommand,emergencyStop,updateTelemetry,getState:()=>({...state})};
+  render();
+  return api;
+}
+window.NovaRobotBridge=NovaRobotBridge();
+const NovaIntelligencePromotion=(()=>{
+  const state=document.getElementById('intelligenceDecisionState'),baseline=document.getElementById('intelligenceBaselineScore'),candidate=document.getElementById('intelligenceCandidateScore'),reason=document.getElementById('intelligenceDecisionReason');
+  function render(report={}){
+    const decision=report&&typeof report.decision==='object'?report.decision:{};
+    const status=String(decision.status||'NOT_EVALUATED').toUpperCase();
+    let label='Not evaluated';
+    if(status==='PROMOTED')label=report?.pointer?.updated===true?'Promoted · candidate is active':'Promotion passed · pointer not updated';
+    if(status==='REJECTED')label='Rejected · baseline remains active';
+    if(status==='INCOMPLETE')label='Incomplete · baseline remains active';
+    if(state)state.textContent=label;
+    if(baseline)baseline.textContent=typeof report?.baseline?.quality_score==='number'?report.baseline.quality_score.toFixed(3):'—';
+    if(candidate)candidate.textContent=typeof report?.candidate?.quality_score==='number'?report.candidate.quality_score.toFixed(3):'—';
+    if(reason){const reasons=Array.isArray(decision.reasons)?decision.reasons:[];reason.textContent=reasons.length?reasons.join(' · '):status==='PROMOTED'?'All promotion gates passed.':'No comparison report has been evaluated.';}
+    return status;
+  }
+  return {render};
+})();
+window.NovaIntelligencePromotion=NovaIntelligencePromotion;
 const nova3DCanvas=document.getElementById('nova3DCanvas'),nova3DCtx=nova3DCanvas ? nova3DCanvas.getContext('2d') : null;
 const nova3DStage=document.getElementById('nova3DStage'),botChatLog=document.getElementById('botChatLog'),botChatInput=document.getElementById('botChatInput'),botChatSend=document.getElementById('botChatSend');
 const pictureInput=document.getElementById('pictureInput');
@@ -1655,6 +1913,8 @@ let pendingDeleteConversationId = null;
 let pendingRenameConversationId = null;
 let conversationPersistenceEnabled = true;
 let privateModeEnabled = false;
+let simulationModeEnabled = false;
+let personalityMode = 'warm';
 let researchHistory = [];
 let activeResearchRun = null;
 let adapterLoadingHeartbeatCount = 0;
@@ -1677,6 +1937,7 @@ let adapterRuntimeCapabilities = Object.create(null);
 const ADAPTER_MODE_STORAGE_KEY = 'nova_adapter_mode_state_v1';
 const CONVERSATION_STORAGE_KEY = 'nova_recent_conversation_v1';
 const CONVERSATION_PREFS_STORAGE_KEY = 'nova_conversation_preferences_v1';
+const EXPERIENCE_PREFS_STORAGE_KEY = 'nova_experience_preferences_v1';
 const RESEARCH_HISTORY_KEY = 'nova_research_history_v1';
 const CONVERSATION_MAX_MESSAGES = 24;
 const RESEARCH_HISTORY_MAX = 8;
@@ -1709,6 +1970,7 @@ let novaVoiceList = [];
 let novaSelectedVoice = null;
 let novaSpeechRunId = 0;
 let novaAudioElement = null;
+let novaAudioRequestId = 0;
 let novaServerVoiceAvailable = true;
 let cameraStream = null;
 let cameraFacingMode = 'user';
@@ -1729,7 +1991,9 @@ let distanceUpdateTimer = null;
 const distancePopupDragState = {active:false, startY:0, latestY:0, pointerId:null, closeThreshold:46};
 let liveWatchTimer = null;
 let liveWatchBusy = false;
-const botState = {drive:'parked', head:'center', screen:'face', motion:'idle', x:0, z:0, yaw:0};
+const botState = {drive:'parked', head:'center', screen:'face', motion:'idle', x:0, z:0, yaw:0, autonomy:false, worldTick:0, lastIntent:'rest'};
+let autonomyTimer = null;
+const autonomyToggle = document.getElementById('autonomyToggle');
 let lastBodyAction = '';
 let latestTrainingStudioDataset = null;
 let latestCorrectionReviewQueue = null;
@@ -1894,6 +2158,23 @@ window.addEventListener('resize', syncVisibleAppViewport, {passive:true});
 window.addEventListener('orientationchange', () => setTimeout(syncVisibleAppViewport, 120), {passive:true});
 syncVisibleAppViewport();
 
+function toggleNavigationDrawer(force){
+  const drawer = document.getElementById('secondaryNavTabs');
+  const toggle = document.getElementById('navMoreToggle');
+  if(!drawer || !toggle) return;
+  const open = typeof force === 'boolean' ? force : drawer.hidden;
+  drawer.hidden = !open;
+  toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  toggle.querySelector('span').textContent = open ? '⌃' : '⌄';
+}
+
+function useChatQuickPrompt(text){
+  if(!input) return;
+  input.value = text;
+  input.dispatchEvent(new Event('input', {bubbles:true}));
+  input.focus();
+}
+
 function openPanel(panelId){
   panels.forEach(panel => {
     const active = panel.id === panelId;
@@ -1905,6 +2186,8 @@ function openPanel(panelId){
     tab.classList.toggle('active', active);
     tab.setAttribute('aria-current', active ? 'page' : 'false');
   });
+  const secondary = document.getElementById('secondaryNavTabs');
+  if(secondary?.contains(document.querySelector(`[data-panel="${panelId}"]`))) toggleNavigationDrawer(true);
   if(panelId === 'chat-panel') setTimeout(() => { scrollChatToBottom(); focusChatInputWhenStable(); }, 0);
   if(panelId === 'saved-projects-panel') setTimeout(loadProjects, 0);
   if(panelId === 'file-manager-panel') setTimeout(() => loadProjects(true), 0);
@@ -1912,6 +2195,7 @@ function openPanel(panelId){
   if(panelId === 'agent-library-panel') setTimeout(loadWorkspaceAgents, 0);
   if(panelId === 'scheduler-panel') setTimeout(loadWorkspaceSchedules, 0);
   if(panelId === 'research-panel') setTimeout(loadResearchHistory, 0);
+  if(panelId === 'workspace-panel') setTimeout(loadNovaWorkspace, 0);
   if(panelId === 'dream-studio-panel') setTimeout(loadDreamStudio, 0);
   if(panelId === 'gpu-hub-panel') setTimeout(loadGpuHubStatus, 0);
   if(panelId === 'settings-panel') setTimeout(async () => {
@@ -1932,6 +2216,25 @@ function openPanel(panelId){
     setTimeout(loadCorrectionReviews, 0);
     setTimeout(loadAdapterRegistry, 0);
     setTimeout(loadGpuTrainingStatus, 0);
+  }
+}
+
+async function loadNovaWorkspace(){
+  const status = document.getElementById('workspaceStatus');
+  const folders = document.getElementById('workspaceFolders');
+  if(!status || !folders) return;
+  status.textContent = 'Checking workspace...';
+  try{
+    const data = await projectJson('/api/workspace/status');
+    status.textContent = data.ok ? `Granted root: ${data.root}` : `Workspace unavailable: ${data.root || 'not configured'}`;
+    folders.innerHTML = (data.folders || []).map(folder => `
+      <div class="memory-item">
+        <strong>${escapeHtml(folder.name)}</strong>
+        <span>${escapeHtml(folder.path)} · ${folder.exists ? 'ready' : 'missing'}</span>
+      </div>`).join('');
+  }catch(error){
+    status.textContent = 'Workspace status unavailable: ' + String(error?.message || error);
+    folders.textContent = '';
   }
 }
 
@@ -2381,6 +2684,7 @@ async function playNovaServerVoice(text, options={}){
   if(!novaServerVoiceAvailable || !SERVER_BASE) return false;
   const spoken = speechTextFromMessage(text);
   if(!spoken) return false;
+  const requestId = ++novaAudioRequestId;
   const audio = unlockNovaAudio();
   try {
     window.__novaSpeechEvents.push({event:'server_tts_request', text:spoken.slice(0,120), at:Date.now()});
@@ -2390,6 +2694,7 @@ async function playNovaServerVoice(text, options={}){
       body: JSON.stringify({text: spoken, force: !!options.force})
     });
     const data = await res.json();
+    if(requestId !== novaAudioRequestId) return null;
     if(data.permissions) updatePerms(data.permissions);
     if(!res.ok || !data.ok || !data.audio_base64){
       window.__novaSpeechEvents.push({event:'server_tts_failed', error:data.error || res.status, at:Date.now()});
@@ -2537,7 +2842,7 @@ function speakNova(text, options={}){
   const spoken = chunks.join(' ');
   if(SERVER_BASE){
     playNovaServerVoice(spoken, options).then(ok => {
-      if(!ok) speakNovaChunkQueue(chunks, options);
+      if(ok === false) speakNovaChunkQueue(chunks, options);
     });
     return;
   }
@@ -2546,6 +2851,7 @@ function speakNova(text, options={}){
 
 function stopNovaSpeech(){
   novaSpeechRunId++;
+  novaAudioRequestId++;
   document.body.dataset.novaSpeaking = 'false';
   if('speechSynthesis' in window) window.speechSynthesis.cancel();
   if(novaAudioElement){
@@ -3315,6 +3621,62 @@ function syncAdapterModeState(){
   document.body.dataset.dolphinAdapterOnly = dolphinAdapterOnlyMode ? 'on' : 'off';
 }
 
+function syncExperienceUi(){
+  const toggle = document.getElementById('simulationModeToggle');
+  const select = document.getElementById('personalityModeSelect');
+  const status = document.getElementById('experienceModeStatus');
+  if(toggle) toggle.checked = simulationModeEnabled;
+  if(select && select.value !== personalityMode) select.value = personalityMode;
+  document.body.dataset.simulationMode = simulationModeEnabled ? 'on' : 'off';
+  document.body.dataset.personality = personalityMode;
+  if(status) status.textContent = simulationModeEnabled
+    ? `Simulation · ${personalityMode} personality`
+    : `${personalityMode === 'funny' ? 'Funny' : 'Warm'} personality`;
+}
+
+function persistExperiencePrefs(){
+  try {
+    localStorage.setItem(EXPERIENCE_PREFS_STORAGE_KEY, JSON.stringify({
+      simulation_mode: simulationModeEnabled,
+      personality: personalityMode
+    }));
+  } catch(error) {}
+}
+
+function loadExperiencePrefs(){
+  try {
+    const raw = localStorage.getItem(EXPERIENCE_PREFS_STORAGE_KEY);
+    if(raw){
+      const prefs = JSON.parse(raw);
+      simulationModeEnabled = prefs.simulation_mode === true;
+      personalityMode = ['warm','funny'].includes(prefs.personality) ? prefs.personality : 'warm';
+    }
+  } catch(error) {}
+  syncExperienceUi();
+}
+
+function setSimulationMode(enabled, announce=true){
+  simulationModeEnabled = !!enabled;
+  persistExperiencePrefs();
+  syncExperienceUi();
+  if(announce){
+    addMsg('nova', simulationModeEnabled
+      ? 'Simulation mode is on. I will keep this run local and make no model, tool, memory, file, or external changes.'
+      : 'Simulation mode is off. Nova is back on the normal live route.', {no_feedback:true, memory_event:'simulation_mode:' + (simulationModeEnabled ? 'on' : 'off')});
+  }
+}
+
+function setPersonalityMode(value, announce=true){
+  personalityMode = ['warm','funny'].includes(value) ? value : 'warm';
+  persistExperiencePrefs();
+  syncExperienceUi();
+  if(announce){
+    addMsg('nova', personalityMode === 'funny'
+      ? 'Funny personality is ready. I will add occasional light asides where the topic is not serious.'
+      : 'Warm personality is ready. I will keep replies clear and companionable.', {no_feedback:true, memory_event:'personality:' + personalityMode});
+  }
+}
+
 function persistAdapterModeState(){
   syncAdapterModeState();
   try {
@@ -3872,7 +4234,7 @@ function selectModelMode(mode, announce=true){
 
 function applyAppNavigationTrace(meta){
   if(!meta || meta.source !== 'app_navigation' || meta.blocked) return false;
-  const panelBySurface = {home:'chat-panel', chat:'chat-panel', agent_library:'agent-library-panel', app_builder:'app-builder-panel', memory_panel:'memory-panel', settings:'settings-panel', tools_page:'agent-library-panel', research_panel:'research-panel', test_check_page:'debug-logs-panel', saved_projects:'saved-projects-panel', preview_area:'preview-panel', debug_logs:'debug-logs-panel', file_manager:'file-manager-panel'};
+  const panelBySurface = {home:'chat-panel', chat:'chat-panel', agent_library:'agent-library-panel', app_builder:'app-builder-panel', memory_panel:'memory-panel', settings:'settings-panel', tools_page:'agent-library-panel', research_panel:'research-panel', test_check_page:'debug-logs-panel', saved_projects:'saved-projects-panel', preview_area:'preview-panel', debug_logs:'debug-logs-panel', file_manager:'file-manager-panel', workspace:'workspace-panel'};
   const panel = panelBySurface[String(meta.target_surface || '')];
   if(!panel || typeof openPanel !== 'function') return false;
   openPanel(panel);
@@ -3882,7 +4244,7 @@ function applyAppNavigationTrace(meta){
 // the typed tool registry and explicit approval.
 async function handleLocalUiCommand(rawText){
   const text = String(rawText || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]+$/, '');
-  const panelsByName = {chat:'chat-panel', home:'home-panel', display:'display-panel', settings:'settings-panel', memory:'memory-panel', logs:'debug-logs-panel', research:'research-panel', 'dream studio':'dream-studio-panel', 'gpu hub':'gpu-hub-panel', projects:'saved-projects-panel', files:'file-manager-panel', preview:'preview-panel', 'agent library':'agent-library-panel', 'app builder':'app-builder-panel', tools:'tools-panel', 'test/check':'test-check-panel', scheduler:'scheduler-panel'};
+  const panelsByName = {chat:'chat-panel', home:'home-panel', display:'display-panel', settings:'settings-panel', memory:'memory-panel', logs:'debug-logs-panel', research:'research-panel', 'dream studio':'dream-studio-panel', 'gpu hub':'gpu-hub-panel', projects:'saved-projects-panel', files:'file-manager-panel', computer:'workspace-panel', workspace:'workspace-panel', preview:'preview-panel', 'agent library':'agent-library-panel', 'app builder':'app-builder-panel', tools:'tools-panel', 'test/check':'test-check-panel', scheduler:'scheduler-panel'};
   const aliases = {gpu:'gpu hub', 'saved projects':'projects', 'file manager':'files', 'debug logs':'logs', 'test check':'test/check'};
   const openMatch = text.match(/^(?:please\s+)?(?:open|show|go to|navigate to|take me to)\s+(?:the\s+)?(.+?)(?:\s+please)?$/);
   if(openMatch){
@@ -3917,7 +4279,12 @@ async function handleLocalUiCommand(rawText){
 function toggleAdvancedActivationControls(){
   const open = document.body.classList.toggle('advanced-controls-open');
   const button = document.getElementById('mainMoreControlsBtn');
-  if(button) button.textContent = open ? 'Less' : 'More';
+  const drawer = document.getElementById('advancedControlsDrawer');
+  if(drawer) drawer.hidden = !open;
+  if(button){
+    button.textContent = open ? 'Close controls' : 'More controls';
+    button.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
 }
 
 async function showWorldModel(){
@@ -4131,6 +4498,13 @@ function formatModelResidentState(state){
   return state.loaded ? 'Loaded in memory' : 'Not loaded';
 }
 
+function describeFoundationCheckFailure(error){
+  const message = String(error?.message || '');
+  return /paired with Nova|pair this device|pairing required/i.test(message)
+    ? 'Pair device first'
+    : 'Check failed';
+}
+
 async function loadModelMemoryStatus(){
   const memoryEl = document.getElementById('systemModelMemoryState');
   const qwenEl = document.getElementById('qwenModelMemoryState');
@@ -4178,8 +4552,10 @@ async function loadModelMemoryStatus(){
     if(messageEl) messageEl.textContent = 'Smart RAM protects active and raw models, then releases only idle managed runtimes. Installed files are never deleted.';
     return data;
   } catch(error) {
-    if(memoryEl) memoryEl.textContent = 'Check failed';
-    if(messageEl) messageEl.textContent = 'Model memory check failed: ' + error.message;
+    if(memoryEl) memoryEl.textContent = describeFoundationCheckFailure(error);
+    if(messageEl) messageEl.textContent = /Pair device first/i.test(describeFoundationCheckFailure(error))
+      ? 'Pair this device in Secure phone pairing to inspect model memory.'
+      : 'Model memory check failed: ' + error.message;
     return null;
   }
 }
@@ -4194,8 +4570,10 @@ async function startModelQualityCheck(){
     setTimeout(loadModelMemoryStatus, 1200);
     setTimeout(loadModelMemoryStatus, 6000);
   } catch(error) {
-    if(qualityEl) qualityEl.textContent = 'Check failed';
-    if(messageEl) messageEl.textContent = 'Model quality check failed: ' + error.message;
+    if(qualityEl) qualityEl.textContent = describeFoundationCheckFailure(error);
+    if(messageEl) messageEl.textContent = /Pair device first/i.test(describeFoundationCheckFailure(error))
+      ? 'Pair this device in Secure phone pairing before checking loaded models.'
+      : 'Model quality check failed: ' + error.message;
   }
 }
 
@@ -4459,36 +4837,54 @@ function setListeningUi(active, label){
   if(active) setFace('listening');
 }
 
-function toggleListening(){
+async function toggleListening(){
   if(sensoryState.listening && sensoryState.recognition){
     sensoryState.recognition.stop();
     return;
   }
-  if(!sensoryState.mic){
-    addMsg('nova', "Tap Mic OFF so it changes to Mic ON first, then hit Talk. I won't start the microphone without that permission.", {permission:'mic_required'});
-    return;
-  }
   const RecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!RecognitionClass){
-    addMsg('nova', 'This browser does not expose SpeechRecognition. You can still type to me.', {permission:'speech_recognition_unavailable'});
+    addMsg('nova', 'Speech recognition is unavailable in this browser. You can still type to me.', {permission:'speech_recognition_unavailable'});
     return;
   }
+  if(!sensoryState.mic){
+    if(typeof setMicUi === 'function') setMicUi(true);
+    else sensoryState.mic = true;
+    if(typeof syncMicPermission === 'function') await syncMicPermission(true);
+    addMsg('nova', 'Mic is ON for Talk. Allow browser microphone access if it asks.', {permission:'mic_on'});
+  }
+  stopNovaSpeech();
+  const turnId = (window.__novaTalkTurnId = Number(window.__novaTalkTurnId || 0) + 1);
+  let resultHandled = false;
   const recognition = new RecognitionClass();
   sensoryState.recognition = recognition;
   recognition.lang = 'en-US';
-  recognition.interimResults = false;
+  recognition.interimResults = true;
   recognition.continuous = false;
   recognition.onstart = () => setListeningUi(true, 'Listening...');
   recognition.onerror = event => {
+    if(turnId !== window.__novaTalkTurnId) return;
     setListeningUi(false, 'Listen');
     addMsg('nova', 'I could not hear clean speech: ' + (event.error || 'microphone error'), {permission:'mic_error'});
   };
-  recognition.onend = () => setListeningUi(false, 'Listen');
+  recognition.onend = () => {
+    if(turnId !== window.__novaTalkTurnId) return;
+    if(sensoryState.recognition === recognition) sensoryState.recognition = null;
+    setListeningUi(false, 'Listen');
+  };
   recognition.onresult = event => {
+    if(turnId !== window.__novaTalkTurnId || resultHandled) return;
     const transcript = Array.from(event.results || [])
       .map(result => result?.[0]?.transcript || '')
       .join(' ')
       .trim();
+    const finalResult = Array.from(event.results || []).at(-1);
+    const isFinal = finalResult?.isFinal !== false;
+    if(!isFinal){
+      setListeningUi(true, 'Hearing you...');
+      return;
+    }
+    resultHandled = true;
     setListeningUi(false, 'Listen');
     if(transcript){
       input.value = transcript;
@@ -5377,6 +5773,7 @@ function modelPrefix(meta){
 
 function modelLabel(meta){
   if(!meta) return 'Model: waiting';
+  if(meta.simulation_mode === true) return 'Simulation: local dry run';
   const model = meta.local_llm_model || meta.model;
   if(model) return 'Model: ' + model;
   return meta.local_llm_synthesis_used ? 'Model: local LLM' : 'Model: Nova direct / tool route';
@@ -5411,6 +5808,23 @@ function updateDisplayTelemetry(meta, text){
   if(displayRouteModel) displayRouteModel.textContent = modelLabel(meta);
   displayRouteTrace.textContent = `${source}: ${route}${confidence}${memory}`;
   if(botState.screen === 'route') setScreenMode('route');
+}
+
+function syncSimpleDisplayFromResponse(text, meta={}){
+  const response = String(text || '').replace(/\s+/g, ' ').trim();
+  if(!response || meta?.cancelled) return;
+  const scene = meta.display_scene || meta.displayScene || meta.scene;
+  if(scene && typeof scene === 'object'){
+    NovaDisplayStage?.showScene(scene);
+    return;
+  }
+  const explicitQuestion = /\?\s*$/.test(response);
+  const questionCue = /\b(can|could|did|do|does|is|are|have|has|should|would|what|where|when|which|who|why|how)\b[^.!]{0,120}\?*$/i.test(response);
+  if(explicitQuestion || questionCue){
+    setFace('asking');
+    return;
+  }
+  setFace('happy');
 }
 
 function clampSpaceValue(value, min, max){
@@ -5846,6 +6260,73 @@ function setBotDrive(drive){
   setScreenMode(botState.screen);
 }
 
+function updateAutonomyControl(){
+  if(!autonomyToggle) return;
+  autonomyToggle.textContent = botState.autonomy ? 'Pause practice' : 'Start practice';
+  autonomyToggle.setAttribute('aria-pressed', botState.autonomy ? 'true' : 'false');
+  autonomyToggle.classList.toggle('active', botState.autonomy);
+}
+
+function runVirtualAutonomyStep(){
+  if(!botState.autonomy) return;
+  botState.worldTick += 1;
+  const phase = botState.worldTick % 8;
+  if(phase === 1 || phase === 2){
+    botState.lastIntent = 'explore forward';
+    setBotDrive('forward');
+    setScreenLines('EXPLORE', `X ${botState.x} Z ${botState.z}`, 'CHECKING SPACE');
+    setBodyMotion('walk');
+  } else if(phase === 3){
+    botState.lastIntent = 'observe left';
+    setBotDrive('stop');
+    setHeadTurn('left');
+    setScreenLines('NOTICE', 'LOOKING LEFT', 'VIRTUAL SENSES');
+    setBodyMotion('thinking');
+  } else if(phase === 4){
+    botState.lastIntent = 'turn right';
+    setBotDrive('turn-right');
+    setHeadTurn('center');
+    setScreenLines('ORIENT', `YAW ${botState.yaw}`, 'MAP UPDATED');
+  } else if(phase === 5 || phase === 6){
+    botState.lastIntent = 'continue practice';
+    setBotDrive('forward');
+    setScreenLines('PRACTICE', 'I AM HERE', 'LEARNING MY SPACE');
+    setBodyMotion('walk');
+  } else if(phase === 7){
+    botState.lastIntent = 'express presence';
+    setBotDrive('stop');
+    setBotMood('happy');
+    setScreenLines('PRESENCE', 'I SEE YOU', 'VIRTUAL SELF ONLINE');
+  } else {
+    botState.lastIntent = 'rest and listen';
+    setBotDrive('stop');
+    setBotMood('neutral');
+    setScreenLines('LISTENING', 'I AM HERE', 'READY TO TALK');
+  }
+  if(virtualSelfState){
+    virtualSelfState.textContent = `Aware: Nova is practicing autonomously. Intent=${botState.lastIntent} | Tick=${botState.worldTick} | X=${botState.x} | Z=${botState.z} | Yaw=${botState.yaw}deg.`;
+  }
+}
+
+function setVirtualAutonomy(enabled){
+  botState.autonomy = Boolean(enabled);
+  if(autonomyTimer){ clearInterval(autonomyTimer); autonomyTimer = null; }
+  if(botState.autonomy){
+    setScreenLines('PRACTICE', 'VIRTUAL SELF', 'AUTONOMY ONLINE');
+    setBodyMotion('thinking');
+    runVirtualAutonomyStep();
+    autonomyTimer = setInterval(runVirtualAutonomyStep, 2400);
+  } else {
+    setBotDrive('stop');
+    setBotMood('neutral');
+    setScreenMode('face');
+  }
+  updateAutonomyControl();
+}
+
+autonomyToggle?.addEventListener('click', () => setVirtualAutonomy(!botState.autonomy));
+updateAutonomyControl();
+
 function setHeadTurn(direction){
   const allowed = ['left','center','right'];
   const next = allowed.includes(direction) ? direction : 'center';
@@ -5900,8 +6381,9 @@ function setFace(state){
   eyeL.style.animation = eyeR.style.animation = 'pulse 2s infinite';
   mouth.className = 'mouth';
   if(displayAvatar) displayAvatar.className = 'display-avatar' + (state ? ' ' + state : '');
+  NovaDisplayStage?.setFace(state === 'question' ? 'asking' : (state || 'neutral'));
   if(displayMoodState){
-    const labels = {thinking:'Thinking...',talking:'Speaking answer',happy:'Answer ready',angry:'Pretend mad',listening:'Listening',neutral:'Ready and watching'};
+    const labels = {thinking:'Thinking...',talking:'Speaking answer',happy:'Answer ready',angry:'Pretend mad',listening:'Listening',asking:'Waiting for your answer',question:'Asking a question',neutral:'Ready and watching'};
     displayMoodState.textContent = labels[state] || 'Ready and watching';
   }
   if(state === 'thinking'){ setBodyMotion('thinking'); setScreenMode('status'); }
@@ -6085,9 +6567,16 @@ function buildAnswerStatus(status){
 function attachAnswerStatus(container, status, meta){
   const diagnostics = container.querySelector('.meta');
   if(!status && !diagnostics) return;
-  const statusNode = buildAnswerStatus(status || {
+  const statusData = {...(status || {
     model: meta?.local_llm_model || meta?.route_summary?.model || 'Nova'
-  });
+  })};
+  if(meta?.simulation_mode === true){
+    statusData.model = 'Simulation';
+    statusData.personality = meta?.funny_personality?.enabled ? 'funny (bounded)' : 'warm';
+    statusData.memory = 'not used';
+    statusData.safety = 'dry run';
+  }
+  const statusNode = buildAnswerStatus(statusData);
   if(!statusNode) return;
   if(diagnostics){
     statusNode.querySelector('.answer-status-details').appendChild(diagnostics);
@@ -6396,6 +6885,9 @@ async function saveCorrectionExample(box, userText, novaText, betterText, trace)
 function buildChatPayload(text){
   const payload = {text};
   payload.private_mode = privateModeEnabled;
+  payload.simulation_mode = simulationModeEnabled;
+  payload.personality = personalityMode;
+  payload.funny_personality = personalityMode === 'funny';
   payload.conversation_history = recentConversationHistory.slice(-20).map(item => ({role:item.role, content:item.content}));
   payload.conversation_summary_history = recentConversationHistory
     .filter(item => item && !item.private && !item.ephemeral)
@@ -8496,6 +8988,7 @@ async function send(){
     } else {
       addMsg('nova', data.response, data.trace);
     }
+    syncSimpleDisplayFromResponse(data.response, data);
     if(!data.cancelled) rememberConversationTurn(text, data.response, data.trace || {});
     if(!data.cancelled) speakNova(data.response);
   } catch(e) {
@@ -9007,6 +9500,7 @@ bindDistancePopupDragToClose();
 startNova3DAnimation();
 const restoredConversationCount = loadConversationContext();
 loadAdapterModeState();
+loadExperiencePrefs();
 loadResearchHistory();
 refreshAdapterModeUi();
 setTimeout(tryConnect, 250);
