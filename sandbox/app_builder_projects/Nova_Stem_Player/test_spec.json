@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "renders Nova Stem Player workstation",
+    "supports drag and drop local audio loading",
+    "shows vocals drums bass and other stem controls",
+    "uses Web Audio API helper with BiquadFilterNode",
+    "labels true stem mode and simulated stem shaping honestly",
+    "includes Vite build and Vitest test scripts",
+    "exposes media key metadata through MediaSession when available"
+  ]
+}

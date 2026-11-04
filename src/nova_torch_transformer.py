@@ -39,6 +39,18 @@ class ModelConfig:
             raise ValueError("dropout must be in [0.0, 1.0)")
 
 
+def medium_candidate_config() -> ModelConfig:
+    """Return Nova's larger candidate transformer config without changing live defaults."""
+    return ModelConfig(
+        vocab_size=260,
+        block_size=384,
+        d_model=192,
+        n_heads=6,
+        n_layers=4,
+        dropout=0.1,
+    )
+
+
 class CausalSelfAttention(nn.Module):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()

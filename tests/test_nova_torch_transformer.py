@@ -13,6 +13,7 @@ from nova_torch_transformer import (
     ModelConfig,
     NovaCausalLM,
     load_checkpoint,
+    medium_candidate_config,
     save_checkpoint,
 )
 
@@ -26,6 +27,21 @@ def _small_config() -> ModelConfig:
         n_layers=1,
         dropout=0.0,
     )
+
+
+def test_medium_candidate_config_is_bigger_but_valid():
+    default = ModelConfig()
+    medium = medium_candidate_config()
+
+    assert medium.d_model > default.d_model
+    assert medium.n_layers > default.n_layers
+    assert medium.block_size > default.block_size
+    assert medium.d_model % medium.n_heads == 0
+
+    default_params = sum(p.numel() for p in NovaCausalLM(default).parameters())
+    medium_params = sum(p.numel() for p in NovaCausalLM(medium).parameters())
+
+    assert medium_params > default_params * 4
 
 
 def test_model_computes_answer_masked_loss():

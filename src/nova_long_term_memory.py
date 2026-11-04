@@ -270,10 +270,17 @@ def add_memory(raw_text, slot=None, value=None, importance="normal",
             value = extracted_value
             pet_type = ptype or pet_type
     
+    preserve_value_punctuation = False
+    if not value and source_command in ("long_term", "memory_write", "explicit_teaching"):
+        slot = slot or "custom_knowledge"
+        value = raw_text.strip()
+        category = "knowledge"
+        preserve_value_punctuation = True
+
     if not value:
         return None
-    
-    value_clean = value.rstrip('.!,;:?').strip()
+
+    value_clean = value.strip() if preserve_value_punctuation else value.rstrip('.!,;:?').strip()
     
     # Generate keywords
     keywords = set()
@@ -611,6 +618,9 @@ def synthesize_memory_answer(slot, value, user_question=None, pet_type=None):
     """
     if not slot or not value:
         return None
+
+    if slot == "custom_knowledge":
+        return value
     
     # Pet name with type
     if pet_type and slot == pet_type + "_name":

@@ -472,19 +472,20 @@ def route_and_respond(text, dict_lookup_fn=None, memory=None):
             try:
                 raw_output_hint = gen_response[:200]
                 import subprocess as _sp, json as _json
+                from nova_local_llm_connector import clean_local_llm_output
                 _payload = _json.dumps({
-                    "model": "qwen2.5:1.5b",
+                    "model": "deepseek-r1:7b",
                     "prompt": f"[INST] The user asked: {text}\n\nNova's brain roughed out: {raw_output_hint}\n\nProvide a clean, helpful answer based on the rough output. Do not invent facts. Be direct.[/INST]",
                     "stream": False,
-                    "options": {"temperature": 0.3, "num_predict": 200}
+                    "options": {"temperature": 0.3, "num_predict": 260}
                 })
                 _result = _sp.run(
                     ["curl", "-s", "-X", "POST", "http://127.0.0.1:11434/api/generate", "-d", _payload],
-                    capture_output=True, text=True, timeout=12
+                    capture_output=True, text=True, timeout=120
                 )
                 if _result.returncode == 0:
                     _data = _json.loads(_result.stdout)
-                    _raw = _data.get("response", "").strip()
+                    _raw = clean_local_llm_output(_data.get("response", ""))
                     if _raw and len(_raw) > 10:
                         trace["local_llm_synthesis_used"] = True
                         trace["local_llm_synthesis_reason"] = f"transformer_rejected:{quality_result['transformer_output_quality']}"

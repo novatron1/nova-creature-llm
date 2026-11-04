@@ -18,7 +18,7 @@ Architecture:
   → Nova saves training log
 """
 
-import json, os, time, sys
+import json, os, time, sys, re
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Any
@@ -33,6 +33,17 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+DEFAULT_FAST_LOCAL_LLM_MODEL = "qwen2.5:1.5b"
+DEFAULT_DEEP_LOCAL_LLM_MODEL = "deepseek-r1:7b"
+DEFAULT_LOCAL_LLM_MODEL = DEFAULT_DEEP_LOCAL_LLM_MODEL
+
+
+def clean_local_llm_output(raw: str) -> str:
+    """Remove local reasoning blocks before Nova uses a model answer."""
+    text = str(raw or "").strip()
+    text = re.sub(r"(?is)<think>.*?</think>", "", text).strip()
+    return text
+
 # ─── Config ──────────────────────────────────────────────────
 class LocalLLMConfig:
     """Configuration for local LLM connection."""
@@ -40,9 +51,11 @@ class LocalLLMConfig:
     DEFAULT_CONFIG = {
         "NOVA_USE_LOCAL_LLM": False,
         "NOVA_LOCAL_LLM_PROVIDER": "ollama",
-        "NOVA_LOCAL_LLM_MODEL": "qwen2.5:1.5b",
+        "NOVA_LOCAL_LLM_MODEL": DEFAULT_LOCAL_LLM_MODEL,
+        "NOVA_FAST_LOCAL_LLM_MODEL": DEFAULT_FAST_LOCAL_LLM_MODEL,
+        "NOVA_DEEP_LOCAL_LLM_MODEL": DEFAULT_DEEP_LOCAL_LLM_MODEL,
         "NOVA_LOCAL_LLM_URL": "http://127.0.0.1:11434/api/generate",
-        "NOVA_LOCAL_LLM_TIMEOUT": 30,
+        "NOVA_LOCAL_LLM_TIMEOUT": 120,
         "NOVA_LOCAL_LLM_FALLBACK": True,
         "NOVA_LOG_LOCAL_LLM_PROMPTS": True,
     }
@@ -106,7 +119,15 @@ class LocalLLMConfig:
     
     @property
     def model(self) -> str:
-        return self.config.get("NOVA_LOCAL_LLM_MODEL", "qwen2.5:1.5b")
+        return self.config.get("NOVA_LOCAL_LLM_MODEL", DEFAULT_LOCAL_LLM_MODEL)
+
+    @property
+    def fast_model(self) -> str:
+        return self.config.get("NOVA_FAST_LOCAL_LLM_MODEL", DEFAULT_FAST_LOCAL_LLM_MODEL)
+
+    @property
+    def deep_model(self) -> str:
+        return self.config.get("NOVA_DEEP_LOCAL_LLM_MODEL", DEFAULT_DEEP_LOCAL_LLM_MODEL)
     
     @property
     def url(self) -> str:
@@ -201,6 +222,9 @@ class LocalLLMConnector:
     
     def _build_prompt(self, context: dict) -> str:
         """Build the full prompt for the local LLM with Nova context."""
+        if context.get("raw_prompt"):
+            return str(context["raw_prompt"])
+
         system = f"""You are Nova Creature's language cortex. Nova's router has already selected the task route. Use the supplied memory, dictionary meanings, route context, and brain votes. Do not invent saved personal facts. Do not claim to remember anything unless Nova memory provides it. Answer clearly and directly.
 
 NOVA IDENTITY:
@@ -244,30 +268,42 @@ OUTPUT RULES:
 
         return system
     
-    def _call_ollama(self, prompt: str) -> LocalLLMResponse:
+    def _call_ollama(
+        self,
+        prompt: str,
+        options_override: dict = None,
+        model_override: str = None,
+        timeout_override: int = None,
+    ) -> LocalLLMResponse:
         """Call Ollama API."""
         url = self.config.url
         if not url.startswith("http"):
             url = f"http://{url}"
+        active_model = model_override or self.config.model
+        active_timeout = int(timeout_override or self.config.timeout)
+
+        options = {
+            "temperature": 0.7,
+            "top_k": 40,
+            "num_predict": 256,
+        }
+        if options_override:
+            options.update(options_override)
         
         payload = {
-            "model": self.config.model,
+            "model": active_model,
             "prompt": prompt,
             "stream": False,
-            "options": {
-                "temperature": 0.7,
-                "top_k": 40,
-                "num_predict": 256,
-            }
+            "options": options,
         }
         
         start = time.time()
         try:
             if HAS_HTTPX:
-                resp = httpx.post(url, json=payload, timeout=self.config.timeout)
+                resp = httpx.post(url, json=payload, timeout=active_timeout)
                 resp.raise_for_status()
                 data = resp.json()
-                raw = data.get("response", "")
+                raw = clean_local_llm_output(data.get("response", ""))
             else:
                 import urllib.request
                 req = urllib.request.Request(
@@ -275,15 +311,15 @@ OUTPUT RULES:
                     data=json.dumps(payload).encode(),
                     headers={"Content-Type": "application/json"},
                 )
-                with urllib.request.urlopen(req, timeout=self.config.timeout) as r:
+                with urllib.request.urlopen(req, timeout=active_timeout) as r:
                     data = json.loads(r.read())
-                raw = data.get("response", "")
+                raw = clean_local_llm_output(data.get("response", ""))
             
             elapsed = (time.time() - start) * 1000
             return LocalLLMResponse(
                 local_llm_used=True,
                 provider="ollama",
-                model=self.config.model,
+                model=active_model,
                 url=url,
                 prompt=prompt,
                 raw_output=raw,
@@ -296,7 +332,7 @@ OUTPUT RULES:
             return LocalLLMResponse(
                 local_llm_used=False,
                 provider="ollama",
-                model=self.config.model,
+                model=active_model,
                 url=url,
                 prompt=prompt,
                 raw_output="",
@@ -329,7 +365,7 @@ OUTPUT RULES:
                 resp = httpx.post(url, json=payload, timeout=self.config.timeout)
                 resp.raise_for_status()
                 data = resp.json()
-                raw = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                raw = clean_local_llm_output(data.get("choices", [{}])[0].get("message", {}).get("content", ""))
             else:
                 import urllib.request
                 req = urllib.request.Request(
@@ -339,7 +375,7 @@ OUTPUT RULES:
                 )
                 with urllib.request.urlopen(req, timeout=self.config.timeout) as r:
                     data = json.loads(r.read())
-                raw = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                raw = clean_local_llm_output(data.get("choices", [{}])[0].get("message", {}).get("content", ""))
             
             elapsed = (time.time() - start) * 1000
             return LocalLLMResponse(
@@ -378,11 +414,19 @@ OUTPUT RULES:
             )
         
         prompt = self._build_prompt(context)
+        options_override = context.get("ollama_options") or context.get("local_llm_options")
+        model_override = context.get("local_llm_model") or context.get("ollama_model")
+        timeout_override = context.get("local_llm_timeout") or context.get("ollama_timeout")
         
         if self.config.provider == "lm_studio":
             response = self._call_lm_studio(prompt)
         else:  # Default to ollama
-            response = self._call_ollama(prompt)
+            response = self._call_ollama(
+                prompt,
+                options_override=options_override,
+                model_override=model_override,
+                timeout_override=timeout_override,
+            )
         
         if self.config.log_prompts:
             self._save_log(context, response)
