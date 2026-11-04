@@ -178,7 +178,7 @@ def maybe_add_funny_aside(
 
     context = context if isinstance(context, dict) else {}
     prompt = _normalise(text)
-    result = _normalise(response)
+    result = str(response or "").strip()
     trace: dict[str, Any] = {
         "enabled": False,
         "applied": False,

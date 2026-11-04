@@ -81,3 +81,14 @@ def test_funny_personality_is_bounded_and_skips_truth_checks():
     assert serious == "This claim is unverified."
     assert serious_trace["applied"] is False
     assert serious_trace["reason"] == "serious_or_truth_check"
+
+
+def test_disabled_funny_personality_preserves_response_formatting():
+    formatted = "Privacy: local storage.\nOffline behavior: available.\n\nRecommendation: start small."
+    response, trace = maybe_add_funny_aside(
+        formatted,
+        "Compare two storage options.",
+        _context(simulation_mode=False, personality="warm"),
+    )
+    assert response == formatted
+    assert trace["enabled"] is False
