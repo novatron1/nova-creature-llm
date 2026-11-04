@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AudioLines,
   Disc3,
@@ -16,8 +16,10 @@ import {
 } from 'lucide-react';
 import {
   createDefaultStemState,
+  createStemEngine,
   resolveSoloStemGains,
   stemOrder,
+  type StemEngine,
   type StemName,
   type StemState,
 } from './audio/stemEngine';
@@ -77,8 +79,14 @@ function updateStem(
   };
 }
 
+function getAudioContextConstructor(): typeof AudioContext | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+}
+
 export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const engineRef = useRef<StemEngine | null>(null);
   const [tracks, setTracks] = useState<LibraryTrack[]>(demoLibrary);
   const [activeTrack, setActiveTrack] = useState<LibraryTrack>(demoLibrary[0]);
   const [loadedFiles, setLoadedFiles] = useState<LoadedFile[]>([]);
@@ -92,11 +100,56 @@ export default function App() {
   const [playing, setPlaying] = useState(false);
   const [loopEnabled, setLoopEnabled] = useState(true);
   const [dropActive, setDropActive] = useState(false);
+  const [audioEngineStatus, setAudioEngineStatus] = useState('waiting for playback');
 
   const effectiveGains = useMemo(() => resolveSoloStemGains(stems), [stems]);
   const loadedStemCount = stemOrder.filter((stem) => stems[stem].loaded).length;
   const workstationMode =
     loadedStemCount >= 2 ? 'true stem mode' : 'simulated stem shaping';
+
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    engine.setMasterGain(volume);
+    engine.setEq(eq.low, eq.mid, eq.high);
+  }, [eq.high, eq.low, eq.mid, volume]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.playbackRate = speed * Math.pow(2, pitch / 12);
+    if ('preservesPitch' in audio) {
+      (audio as HTMLMediaElement & { preservesPitch?: boolean }).preservesPitch = pitch === 0;
+    }
+  }, [pitch, speed]);
+
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (engine) engine.setMediaSession(activeTrack.title, activeTrack.artist);
+  }, [activeTrack.artist, activeTrack.title]);
+
+  function ensureAudioEngine() {
+    if (engineRef.current) return engineRef.current;
+    const audio = audioRef.current;
+    const AudioContextConstructor = getAudioContextConstructor();
+    if (!audio || !AudioContextConstructor) {
+      setAudioEngineStatus('browser fallback');
+      return null;
+    }
+    try {
+      const engine = createStemEngine(audio, new AudioContextConstructor());
+      engine.connect();
+      engine.setMasterGain(volume);
+      engine.setEq(eq.low, eq.mid, eq.high);
+      engine.setMediaSession(activeTrack.title, activeTrack.artist);
+      engineRef.current = engine;
+      setAudioEngineStatus('ready');
+      return engine;
+    } catch {
+      setAudioEngineStatus('browser fallback');
+      return null;
+    }
+  }
 
   function handleFiles(files: FileList | File[], stem?: StemName) {
     const nextFiles = Array.from(files).filter((file) => file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|m4a|ogg|flac)$/i));
@@ -123,9 +176,19 @@ export default function App() {
   async function togglePlayback() {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = volume;
-    audio.playbackRate = speed;
     try {
+      const engine = ensureAudioEngine();
+      if (engine) {
+        await engine.context.resume();
+        engine.setMasterGain(volume);
+        audio.volume = 1;
+      } else {
+        audio.volume = volume;
+      }
+      audio.playbackRate = speed * Math.pow(2, pitch / 12);
+      if ('preservesPitch' in audio) {
+        (audio as HTMLMediaElement & { preservesPitch?: boolean }).preservesPitch = pitch === 0;
+      }
       if (playing) {
         audio.pause();
         setPlaying(false);
@@ -227,6 +290,7 @@ export default function App() {
           <div className="status-cluster">
             <span>{workstationMode}</span>
             <span>{loadedStemCount}/4 stems loaded</span>
+            <span>audio graph: {audioEngineStatus}</span>
           </div>
         </header>
 

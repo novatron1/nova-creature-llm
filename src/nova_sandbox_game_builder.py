@@ -237,21 +237,21 @@ def _stem_package_json() -> str:
                 "preview": "vite preview --host 127.0.0.1",
             },
             "dependencies": {
-                "@vitejs/plugin-react": "^6.0.3",
-                "lucide-react": "^1.21.0",
-                "react": "^19.2.7",
-                "react-dom": "^19.2.7",
-                "vite": "^8.1.0",
+                "@vitejs/plugin-react": "^6.2.1",
+                "lucide-react": "^1.68.0",
+                "react": "^19.3.1",
+                "react-dom": "^19.3.1",
+                "vite": "^8.3.5",
             },
             "devDependencies": {
-                "@testing-library/jest-dom": "^6.6.3",
-                "@testing-library/react": "^16.1.0",
-                "@testing-library/user-event": "^14.5.2",
-                "@types/react": "^19.2.17",
-                "@types/react-dom": "^19.2.3",
-                "jsdom": "^29.1.1",
-                "typescript": "^6.0.3",
-                "vitest": "^4.1.9",
+                "@testing-library/jest-dom": "^7.0.1",
+                "@testing-library/react": "^16.3.3",
+                "@testing-library/user-event": "^14.6.8",
+                "@types/react": "^19.3.0",
+                "@types/react-dom": "^19.3.0",
+                "jsdom": "^30.1.3",
+                "typescript": "^7.0.2",
+                "vitest": "^5.1.0",
             },
         },
         indent=2,
@@ -469,12 +469,13 @@ def _stem_engine_ts() -> str:
           highShelf: BiquadFilterNode;
           analyser: AnalyserNode;
           connect(): void;
+          disconnect(): void;
           setMasterGain(value: number): void;
           setEq(low: number, mid: number, high: number): void;
           setMediaSession(trackTitle: string, artist: string): void;
         };
 
-        export function createStemEngine(audio: HTMLAudioElement, context = new AudioContext()): StemEngine {
+        export function createStemEngine(audio: HTMLAudioElement, context: AudioContext): StemEngine {
           const source = context.createMediaElementSource(audio);
           const preamp = context.createGain();
           const lowShelf = context.createBiquadFilter();
@@ -511,6 +512,16 @@ def _stem_engine_ts() -> str:
               analyser.connect(context.destination);
               connected = true;
             },
+            disconnect() {
+              if (!connected) return;
+              source.disconnect();
+              preamp.disconnect();
+              lowShelf.disconnect();
+              midPeak.disconnect();
+              highShelf.disconnect();
+              analyser.disconnect();
+              connected = false;
+            },
             setMasterGain(value: number) {
               preamp.gain.value = Math.max(0, Math.min(1.4, value));
             },
@@ -520,14 +531,19 @@ def _stem_engine_ts() -> str:
               highShelf.gain.value = high;
             },
             setMediaSession(trackTitle: string, artist: string) {
-              if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
+              const MetadataConstructor = (window as Window & { MediaMetadata?: typeof MediaMetadata }).MediaMetadata;
+              if ('mediaSession' in navigator && MetadataConstructor) {
+                navigator.mediaSession.metadata = new MetadataConstructor({
                   title: trackTitle,
                   artist,
                   album: 'Nova Stem Player',
                 });
-                navigator.mediaSession.setActionHandler('play', () => void audio.play());
-                navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+                try {
+                  navigator.mediaSession.setActionHandler('play', () => void audio.play());
+                  navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+                } catch {
+                  // Some browsers expose Media Session but reject unsupported handlers.
+                }
               }
             },
           };
@@ -539,7 +555,7 @@ def _stem_engine_ts() -> str:
 def _stem_app_tsx() -> str:
     return dedent(
         """
-        import { useMemo, useRef, useState } from 'react';
+        import { useEffect, useMemo, useRef, useState } from 'react';
         import {
           AudioLines,
           Disc3,
@@ -557,8 +573,10 @@ def _stem_app_tsx() -> str:
         } from 'lucide-react';
         import {
           createDefaultStemState,
+          createStemEngine,
           resolveSoloStemGains,
           stemOrder,
+          type StemEngine,
           type StemName,
           type StemState,
         } from './audio/stemEngine';
@@ -618,8 +636,14 @@ def _stem_app_tsx() -> str:
           };
         }
 
+        function getAudioContextConstructor(): typeof AudioContext | undefined {
+          if (typeof window === 'undefined') return undefined;
+          return window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        }
+
         export default function App() {
           const audioRef = useRef<HTMLAudioElement | null>(null);
+          const engineRef = useRef<StemEngine | null>(null);
           const [tracks, setTracks] = useState<LibraryTrack[]>(demoLibrary);
           const [activeTrack, setActiveTrack] = useState<LibraryTrack>(demoLibrary[0]);
           const [loadedFiles, setLoadedFiles] = useState<LoadedFile[]>([]);
@@ -633,11 +657,56 @@ def _stem_app_tsx() -> str:
           const [playing, setPlaying] = useState(false);
           const [loopEnabled, setLoopEnabled] = useState(true);
           const [dropActive, setDropActive] = useState(false);
+          const [audioEngineStatus, setAudioEngineStatus] = useState('waiting for playback');
 
           const effectiveGains = useMemo(() => resolveSoloStemGains(stems), [stems]);
           const loadedStemCount = stemOrder.filter((stem) => stems[stem].loaded).length;
           const workstationMode =
             loadedStemCount >= 2 ? 'true stem mode' : 'simulated stem shaping';
+
+          useEffect(() => {
+            const engine = engineRef.current;
+            if (!engine) return;
+            engine.setMasterGain(volume);
+            engine.setEq(eq.low, eq.mid, eq.high);
+          }, [eq.high, eq.low, eq.mid, volume]);
+
+          useEffect(() => {
+            const audio = audioRef.current;
+            if (!audio) return;
+            audio.playbackRate = speed * Math.pow(2, pitch / 12);
+            if ('preservesPitch' in audio) {
+              (audio as HTMLMediaElement & { preservesPitch?: boolean }).preservesPitch = pitch === 0;
+            }
+          }, [pitch, speed]);
+
+          useEffect(() => {
+            const engine = engineRef.current;
+            if (engine) engine.setMediaSession(activeTrack.title, activeTrack.artist);
+          }, [activeTrack.artist, activeTrack.title]);
+
+          function ensureAudioEngine() {
+            if (engineRef.current) return engineRef.current;
+            const audio = audioRef.current;
+            const AudioContextConstructor = getAudioContextConstructor();
+            if (!audio || !AudioContextConstructor) {
+              setAudioEngineStatus('browser fallback');
+              return null;
+            }
+            try {
+              const engine = createStemEngine(audio, new AudioContextConstructor());
+              engine.connect();
+              engine.setMasterGain(volume);
+              engine.setEq(eq.low, eq.mid, eq.high);
+              engine.setMediaSession(activeTrack.title, activeTrack.artist);
+              engineRef.current = engine;
+              setAudioEngineStatus('ready');
+              return engine;
+            } catch {
+              setAudioEngineStatus('browser fallback');
+              return null;
+            }
+          }
 
           function handleFiles(files: FileList | File[], stem?: StemName) {
             const nextFiles = Array.from(files).filter((file) => file.type.startsWith('audio/') || file.name.match(/\\.(mp3|wav|m4a|ogg|flac)$/i));
@@ -664,9 +733,19 @@ def _stem_app_tsx() -> str:
           async function togglePlayback() {
             const audio = audioRef.current;
             if (!audio) return;
-            audio.volume = volume;
-            audio.playbackRate = speed;
             try {
+              const engine = ensureAudioEngine();
+              if (engine) {
+                await engine.context.resume();
+                engine.setMasterGain(volume);
+                audio.volume = 1;
+              } else {
+                audio.volume = volume;
+              }
+              audio.playbackRate = speed * Math.pow(2, pitch / 12);
+              if ('preservesPitch' in audio) {
+                (audio as HTMLMediaElement & { preservesPitch?: boolean }).preservesPitch = pitch === 0;
+              }
               if (playing) {
                 audio.pause();
                 setPlaying(false);
@@ -768,6 +847,7 @@ def _stem_app_tsx() -> str:
                   <div className="status-cluster">
                     <span>{workstationMode}</span>
                     <span>{loadedStemCount}/4 stems loaded</span>
+                    <span>audio graph: {audioEngineStatus}</span>
                   </div>
                 </header>
 
@@ -942,6 +1022,7 @@ def _stem_app_test_tsx() -> str:
           expect(screen.getByRole('heading', { name: /Nova Stem Player/i })).toBeInTheDocument();
           expect(screen.getByText(/true stem mode/i)).toBeInTheDocument();
           expect(screen.getAllByText(/simulated stem shaping/i).length).toBeGreaterThan(0);
+          expect(screen.getByText(/audio graph: waiting for playback/i)).toBeInTheDocument();
           expect(screen.getByRole('region', { name: /Stem mixer/i })).toBeInTheDocument();
           expect(screen.getByText('Vocals')).toBeInTheDocument();
           expect(screen.getByText('Drums')).toBeInTheDocument();

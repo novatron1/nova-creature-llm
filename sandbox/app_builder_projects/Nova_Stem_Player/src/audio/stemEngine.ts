@@ -48,12 +48,13 @@ export type StemEngine = {
   highShelf: BiquadFilterNode;
   analyser: AnalyserNode;
   connect(): void;
+  disconnect(): void;
   setMasterGain(value: number): void;
   setEq(low: number, mid: number, high: number): void;
   setMediaSession(trackTitle: string, artist: string): void;
 };
 
-export function createStemEngine(audio: HTMLAudioElement, context = new AudioContext()): StemEngine {
+export function createStemEngine(audio: HTMLAudioElement, context: AudioContext): StemEngine {
   const source = context.createMediaElementSource(audio);
   const preamp = context.createGain();
   const lowShelf = context.createBiquadFilter();
@@ -90,6 +91,16 @@ export function createStemEngine(audio: HTMLAudioElement, context = new AudioCon
       analyser.connect(context.destination);
       connected = true;
     },
+    disconnect() {
+      if (!connected) return;
+      source.disconnect();
+      preamp.disconnect();
+      lowShelf.disconnect();
+      midPeak.disconnect();
+      highShelf.disconnect();
+      analyser.disconnect();
+      connected = false;
+    },
     setMasterGain(value: number) {
       preamp.gain.value = Math.max(0, Math.min(1.4, value));
     },
@@ -99,14 +110,19 @@ export function createStemEngine(audio: HTMLAudioElement, context = new AudioCon
       highShelf.gain.value = high;
     },
     setMediaSession(trackTitle: string, artist: string) {
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
+      const MetadataConstructor = (window as Window & { MediaMetadata?: typeof MediaMetadata }).MediaMetadata;
+      if ('mediaSession' in navigator && MetadataConstructor) {
+        navigator.mediaSession.metadata = new MetadataConstructor({
           title: trackTitle,
           artist,
           album: 'Nova Stem Player',
         });
-        navigator.mediaSession.setActionHandler('play', () => void audio.play());
-        navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+        try {
+          navigator.mediaSession.setActionHandler('play', () => void audio.play());
+          navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+        } catch {
+          // Some browsers expose Media Session but reject unsupported handlers.
+        }
       }
     },
   };

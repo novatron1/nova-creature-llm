@@ -8,6 +8,7 @@ test('renders the Nova Stem Player workstation surface', () => {
   expect(screen.getByRole('heading', { name: /Nova Stem Player/i })).toBeInTheDocument();
   expect(screen.getByText(/true stem mode/i)).toBeInTheDocument();
   expect(screen.getAllByText(/simulated stem shaping/i).length).toBeGreaterThan(0);
+  expect(screen.getByText(/audio graph: waiting for playback/i)).toBeInTheDocument();
   expect(screen.getByRole('region', { name: /Stem mixer/i })).toBeInTheDocument();
   expect(screen.getByText('Vocals')).toBeInTheDocument();
   expect(screen.getByText('Drums')).toBeInTheDocument();
