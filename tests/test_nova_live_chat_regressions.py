@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from nova_conversation_context import resolve_contextual_followup
 from nova_conversation_intelligence import understand_conversation_turn
 from nova_response_repair import reviewed_direct_response
+from nova_enhanced_server import _is_deep_conversation_request
 
 
 @pytest.mark.parametrize("prompt", [
@@ -84,6 +85,29 @@ def test_a_new_topic_after_a_question_is_not_forced_into_a_short_answer():
         {"role": "assistant", "content": "What kind of music do you like?"},
     ])
     assert not resolution.is_followup
+
+
+@pytest.mark.parametrize("prompt", [
+    "Why is it useful to test an app with many different questions?",
+    "Is it true that taking short breaks can improve focus?",
+    "What about using simulation mode before turning on live model mode?",
+    "Why should an app explain when it is in simulation mode?",
+    "What about privacy when I am testing chat features?",
+])
+def test_substantive_new_questions_are_not_replayed_as_contextual_followups(prompt):
+    resolution = resolve_contextual_followup(prompt, [
+        {"role": "user", "content": "Hello Nova."},
+        {"role": "assistant", "content": "Hello. What are you thinking about?"},
+    ])
+    assert not resolution.is_followup
+
+
+def test_generic_what_do_you_think_prompt_is_not_deep_conversation():
+    assert not _is_deep_conversation_request(
+        "What do you think about learning a new skill?",
+        "Hello Nova.",
+        "Hello. What are you thinking about?",
+    )
 
 
 def test_open_conversational_updates_request_recent_context():

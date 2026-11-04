@@ -160,6 +160,19 @@ def build_simulation_response(text: str, context: dict[str, Any] | None = None) 
     return response, trace
 
 
+def simulation_mode_info_response(text: str) -> str:
+    """Answer a simulation-status question without entering the model route."""
+
+    prompt = _normalise(text).lower()
+    if not re.search(r"\b(?:simulation\s+mode|simulation\s+test|dry\s*run|test\s+mode)\b", prompt):
+        return ""
+    return (
+        "Simulation mode is available as a dry run: no model, tool, memory, file, "
+        "or external action is used. It is useful for checking conversation shapes "
+        "before you switch back to live model mode."
+    )
+
+
 def _funny_enabled(text: str, context: dict[str, Any]) -> bool:
     personality = _normalise(context.get("personality")).lower()
     return bool(

@@ -88,7 +88,11 @@ from nova_deterministic_verifier import (
     DETERMINISTIC_VERIFIER_VERSION,
     solve_deterministic_request,
 )
-from nova_simulation_mode import build_simulation_response, maybe_add_funny_aside
+from nova_simulation_mode import (
+    build_simulation_response,
+    maybe_add_funny_aside,
+    simulation_mode_info_response,
+)
 from nova_model_quality import (
     benchmark_loaded_ollama_models,
     get_default_model_quality_registry,
@@ -5455,7 +5459,6 @@ def _is_deep_conversation_request(text, last_user=None, last_response=None):
         "deep talk",
         "reason through",
         "walk me through",
-        "what do you think",
         "challenge that",
         "does that make sense",
     )
@@ -5506,6 +5509,18 @@ def _is_deep_conversation_request(text, last_user=None, last_response=None):
         "think",
         "thought",
     }
+    if "what do you think" in q:
+        deep_opinion_topics = context_abstract_topics | {
+            "war",
+            "land",
+            "justice",
+            "humanity",
+            "society",
+            "politics",
+        }
+        if "should" in words or any(topic in words for topic in deep_opinion_topics):
+            return True
+        return False
     starts_reflective = any(q.startswith(prefix) for prefix in reflective_starts)
     has_abstract_topic = any(word in abstract_topics for word in words)
     has_context_topic = False
@@ -14031,6 +14046,35 @@ def _run_nova_chat_turn_impl(text, context=None):
         trace["simulation_state_commit_allowed"] = False
         trace["evaluation_only"] = evaluation_only
         return response, trace
+    simulation_status_response = simulation_mode_info_response(text)
+    if simulation_status_response:
+        response, funny_trace = maybe_add_funny_aside(
+            simulation_status_response,
+            text,
+            context,
+        )
+        trace = {
+            "source": "simulation_status",
+            "final_answer_source": "simulation_status",
+            "domain": "simulation",
+            "roles": ["simulation_router", "speech_output_transformer"],
+            "skills": ["simulation_status", "model_bypass"],
+            "route_path": ["nova_core", "simulation_status", "speech_output"],
+            "confidence": 0.98,
+            "local_llm_synthesis_used": False,
+            "model_called": False,
+            "memory_write_used": False,
+            "memory_read_used": False,
+            "actions_executed": False,
+            "simulation_mode": False,
+            "evaluation_only": evaluation_only,
+            "conversation_state_committed": False,
+            "conversation_state_commit_reason": "simulation_status",
+            "pending_turn": True,
+        }
+        if funny_trace.get("enabled"):
+            trace["funny_personality"] = funny_trace
+        return response, trace
     runtime_cognitive_config = _runtime_cognitive_config()
     raw_adapter_request = _is_trained_adapter_only_context(context)
     optional_model_mode = _optional_strong_model_decision(
@@ -15403,6 +15447,12 @@ def _run_nova_chat_turn_impl(text, context=None):
             trace["training_write_allowed"] = False
             trace["memory_write_allowed"] = False
         trace["permissions_snapshot"] = {**PERMISSIONS, "private_mode": PRIVATE_MODE}
+        trace["model_called"] = bool(
+            trace.get("model_called")
+            or trace.get("local_llm_synthesis_used")
+            or trace.get("local_llm_used")
+            or trace.get("llm_synthesis_used")
+        )
 
     if not raw_adapter_request:
         response, funny_trace = maybe_add_funny_aside(response, text, context)

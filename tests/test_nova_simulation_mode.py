@@ -5,7 +5,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from nova_simulation_mode import build_simulation_response, maybe_add_funny_aside
+import nova_simulation_mode
+
+from nova_simulation_mode import (
+    build_simulation_response,
+    maybe_add_funny_aside,
+)
 
 
 def _context(**overrides):
@@ -92,3 +97,36 @@ def test_disabled_funny_personality_preserves_response_formatting():
     )
     assert response == formatted
     assert trace["enabled"] is False
+
+
+def test_simulation_status_question_has_a_normal_route_answer():
+    response = nova_simulation_mode.simulation_mode_info_response(
+        "Give me a quick simulation test summary."
+    )
+
+    assert response
+    assert "dry run" in response.lower()
+    assert "no model" in response.lower()
+
+
+def test_normal_route_answers_simulation_status_without_calling_the_model(monkeypatch):
+    import nova_enhanced_server as server
+
+    def fail_if_model_route_runs(*args, **kwargs):
+        raise AssertionError("simulation status should be answered before model routing")
+
+    monkeypatch.setattr(server, "brain_route", fail_if_model_route_runs)
+    response, trace = server._run_nova_chat_turn_impl(
+        "Give me a quick simulation test summary.",
+        {
+            "simulation_mode": False,
+            "personality": "warm",
+            "funny_personality": False,
+            "private_mode": True,
+            "evaluation_only": True,
+        },
+    )
+
+    assert "dry run" in response.lower()
+    assert trace["source"] == "simulation_status"
+    assert trace["model_called"] is False

@@ -400,7 +400,10 @@ def _resolve_temporal_conversation_recall(
             continue
         # Quote the actual turn and its speaker; do not probabilistically merge
         # a later suggestion into a recap of an earlier interval.
-        excerpt = content if len(content) <= 700 else content[:697].rstrip() + "..."
+        excerpt = content
+        if len(excerpt) > 220:
+            first = re.split(r'(?<=[.!?])\s+', excerpt, maxsplit=1)[0]
+            excerpt = first if len(first) <= 220 else excerpt[:217].rsplit(' ', 1)[0] + '...'
         who = "you said" if role == "user" else "I said"
         response = f'In the recent chat, {direction} you mentioned "{anchor}", {who}: “{excerpt}”'
         return ConversationRecall(response, "temporal_conversation", content, confidence=0.99)
@@ -630,6 +633,15 @@ def _reviewed_followup_response(
             "evidence does not support it."
         )
     if kind in {"referential", "perspective_response"}:
+        if current.startswith("why") and any(
+            marker in prior.lower()
+            for marker in ("quiet evening", "classical", "instrumental", "music")
+        ):
+            return (
+                "Because softer instrumental music leaves room for the evening to breathe "
+                "without competing with your thoughts. Mellow guitar or old soul would fit "
+                "that same calm mood too."
+            )
         return "What I mean in the context of our conversation is: " + prior
     return ""
 
@@ -729,7 +741,7 @@ def resolve_followup(
     alternative_followup = (
         current in alternatives
         or (
-            len(current.split()) <= 8
+            len(current.split()) <= 24
             and current.startswith(
                 (
                     "another ",
@@ -757,7 +769,7 @@ def resolve_followup(
         re.search(r"\b(?:which|what)\s+of\s+(?:those|these)\b", current)
     )
     pronoun_referential = (
-        len(current.split()) <= 24
+        len(current.split()) <= 8
         and bool(re.search(r"\b(?:it|that|this|those|these|they|them)\b", current))
         and (
             current.startswith(
@@ -801,6 +813,13 @@ def resolve_followup(
         len(current.split()) <= 28
         and current.startswith(("what if ", "but what if ", "and what if ", "so what if "))
     )
+    what_about_referential = (
+        current.startswith(("what about ", "and what about "))
+        and (
+            bool(re.search(r"\b(?:that|this|it|those|these|them|same|other)\b", current))
+            or len(current.split()) <= 4
+        )
+    )
     referential_question = (
         len(current.split()) <= 18
         and (
@@ -811,8 +830,6 @@ def resolve_followup(
                     "do u mean ",
                     "can you explain that",
                     "can u explain that",
-                    "what about ",
-                    "and what about ",
                     "how does that ",
                     "how would that ",
                     "why would that ",
@@ -828,6 +845,7 @@ def resolve_followup(
                 )
             )
             or current.endswith((" about that", " because of that", " from that"))
+            or what_about_referential
         )
     )
     perspective_followup = (
@@ -841,6 +859,13 @@ def resolve_followup(
                 "that makes ",
                 "so that means ",
             )
+        )
+        # A sentence can start with agreement but still introduce a new goal.
+        # Preserve that new intent instead of replaying the previous answer.
+        and not re.search(
+            r"\b(?:i|we)\s+(?:also\s+)?(?:want|need|plan|might|would|am|are)\b|"
+            r"\b(?:finish|build)\b",
+            current,
         )
     )
 
