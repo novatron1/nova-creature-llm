@@ -1,0 +1,34 @@
+name: Phase 1 Bootstrap
+
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Record checkout metadata
+        shell: bash
+        run: |
+          git rev-parse HEAD > phase1-head-sha.txt
+          git rev-parse 'HEAD^{tree}' > phase1-tree-sha.txt
+          find . -path './.git' -prune -o -type f -print | sort > phase1-file-inventory.txt
+      - name: Package isolated checkout
+        shell: bash
+        run: tar -czf /tmp/nova-creature-llm-phase1-source.tgz .
+      - name: Upload isolated checkout
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-creature-llm-phase1-source
+          path: /tmp/nova-creature-llm-phase1-source.tgz
+          if-no-files-found: error
+          retention-days: 1
